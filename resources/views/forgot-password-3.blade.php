@@ -1,0 +1,51 @@
+<?php $page = 'forgot-password-3'; ?>
+@extends('layout.mainlayout')
+@section('content')
+    <div class="account-content">
+        <div class="login-wrapper login-new">
+            <div class="row w-100">
+                <div class="col-lg-5 mx-auto">
+                    <div class="login-content user-login">
+                        <div class="login-logo">
+                            <img src="{{URL::asset('build/img/logo.svg')}}" alt="img">
+                            <a href="{{url('index')}}" class="login-logo logo-white">
+                                <img src="{{URL::asset('build/img/logo-white.svg')}}"  alt="Img">
+                            </a>
+                        </div>
+                        <form action="{{url('signin-3')}}">
+                            <div class="card">
+                                <div class="card-body p-5">
+                                    <div class="login-userheading">
+                                        <h3>Forgot password?</h3>
+                                        <h4>If you forgot your password, well, then we’ll email you instructions to reset your password.</h4>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Email <span class="text-danger"> *</span></label>
+                                        <div class="input-group">
+                                            <input type="text" value="" class="form-control border-end-0">
+                                            <span class="input-group-text border-start-0">
+                                                <i class="ti ti-mail"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="form-login">
+                                        <button type="submit" class="btn btn-login">Sign Up</button>
+                                    </div>
+                                    <div class="signinform text-center">
+                                        <h4>Return to<a href="{{url('signin-3')}}" class="hover-a"> login </a></h4>
+                                    </div>
+                                    <div class="form-setlogin or-text">
+                                        <h4>OR</h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="my-4 d-flex justify-content-center align-items-center copyright-text">
+                        <p>Copyright &copy; 2025 DreamsPOS</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+@endsection

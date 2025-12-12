@@ -1,0 +1,55 @@
+<?php $page = 'reset-password'; ?>
+@extends('layout.mainlayout')
+@section('content')
+    <div class="account-content">
+        <div class="login-wrapper reset-pass-wrap bg-img">
+            <div class="login-content authent-content">
+                <form action="{{url('success-3')}}">
+                    <div class="login-userset">
+                        <div class="login-logo logo-normal">
+                            <img src="{{URL::asset('build/img/logo.svg')}}" alt="img">
+                        </div>
+                        <a href="{{url('index')}}" class="login-logo logo-white">
+                            <img src="{{URL::asset('build/img/logo-white.svg')}}"  alt="Img">
+                        </a>
+                        <div class="login-userheading">
+                            <h3>Reset password?</h3>
+                            <h4>Enter New Password & Confirm Password to get inside</h4>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Old Password <span class="text-danger"> *</span></label>
+                            <div class="pass-group">
+                                <input type="password" class="pass-input form-control">
+                                <span class="ti toggle-password ti-eye-off text-gray-9"></span>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">New Password <span class="text-danger"> *</span></label>
+                            <div class="pass-group">
+                                <input type="password" class="pass-inputs form-control">
+                                <span class="ti toggle-passwords ti-eye-off text-gray-9"></span>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Confirm Password <span class="text-danger"> *</span></label>
+                            <div class="pass-group">
+                                <input type="password" class="pass-inputa form-control">
+                                <span class="ti toggle-passworda ti-eye-off text-gray-9"></span>
+                            </div>
+                        </div>
+                        <div class="form-login">
+                            <button type="submit" class="btn btn-login">Change Password</button>
+                        </div>
+                        <div class="signinform text-center">
+                            <h4>Return to <a href="{{url('signin')}}" class="hover-a"> login </a></h4>
+                        </div>
+                        <div class="my-4 d-flex justify-content-center align-items-center copyright-text">
+                            <p>Copyright &copy; 2025 DreamsPOS</p>
+                        </div>
+                    </div>
+                </form>
+                
+            </div>
+        </div>
+    </div>
+@endsection
