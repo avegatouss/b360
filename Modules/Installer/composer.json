@@ -1,0 +1,30 @@
+{
+    "name": "$VENDOR$/installer",
+    "description": "",
+    "authors": [
+        {
+            "name": "$AUTHOR_NAME$",
+            "email": "$AUTHOR_EMAIL$"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Installer\\": "app/",
+            "Modules\\Installer\\Database\\Factories\\": "database/factories/",
+            "Modules\\Installer\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\Installer\\Tests\\": "tests/"
+        }
+    }
+}
