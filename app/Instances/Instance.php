@@ -17,15 +17,21 @@ class Instance extends Model
      */
     protected $table = 'instances';
 
+    // IMPORTANT: la table instances est TOUJOURS sur la DB "system"
+    protected $connection = 'system';
+
     /**
      * Champs assignables.
      */
     protected $fillable = [
         'name',
         'slug',
+        'domain',
         'database',
+        'db_driver',
         'is_active',
         'meta',
+        'installed_at',
     ];
 
     /**
@@ -34,5 +40,6 @@ class Instance extends Model
     protected $casts = [
         'is_active' => 'boolean',
         'meta'      => 'array',
+        'installed_at' => 'datetime',
     ];
 }

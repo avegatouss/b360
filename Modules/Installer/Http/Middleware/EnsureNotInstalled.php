@@ -2,10 +2,19 @@
 
 namespace Modules\Installer\Http\Middleware;
 
+use App\Installer\InstallLock;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Empêche tout accès à l’installateur après installation.
+ *
+ * IMPORTANT :
+ * - On ne se base pas uniquement sur APP_INSTALLED (flag) :
+ *   un cache config ou une mauvaise manip pourrait le rendre incohérent.
+ * - On ajoute installed.lock comme source de vérité "physique".
+ */
 class EnsureNotInstalled
 {
     /**
@@ -30,10 +39,11 @@ class EnsureNotInstalled
         | - éviter toute lecture directe du .env
         |
         */
+        // Double barrière : flag config + lock file
+        $installedFlag = (bool) config('app.installed', false);
 
-        $installed = (bool) config('app.installed', false);
-
-        if ($installed === true) {
+  // Installer définitivement inaccessible
+        if ($installedFlag === true || InstallLock::isInstalled()) {
 
             /*
             |--------------------------------------------------------------------------
@@ -45,8 +55,15 @@ class EnsureNotInstalled
             | - Aucune exception volontairement levée
             |
             */
+             abort(404);
+           // return redirect('/');
+        }
 
-            return redirect('/');
+         // Si une installation est déjà en cours : refuser
+           // Anti-concurrence : si une installation est déjà en cours
+        // (On autorise /install/stream car c'est le flux qui exécute le runner)
+        if (InstallLock::isInstalling() && !$request->is('install/stream')) {
+            return response('Installation en cours. Veuillez patienter.', 409);
         }
 
         return $next($request);

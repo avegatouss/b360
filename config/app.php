@@ -123,8 +123,26 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
-        'installed' => env('APP_INSTALLED', false),
-        'instance_mode' => env('INSTANCE_MODE', 'single'),
-        'instance_db_strategy' => env('INSTANCE_DB_STRATEGY', 'shared'), // shared | database-per-instance
+   /*
+    |--------------------------------------------------------------------------
+    | B360 - Installation
+    |--------------------------------------------------------------------------
+    */
+
+    'installed' => env('APP_INSTALLED', false),
+
+    /*
+    |--------------------------------------------------------------------------
+    | B360 - Instances
+    |--------------------------------------------------------------------------
+    | instance_mode: single|multi
+    | instance_resolution: domain (v1)
+    | instance_db_strategy: shared|database-per-instance
+    */
+
+    'installed' => env('APP_INSTALLED', false),
+    'instance_mode' => env('INSTANCE_MODE', 'single'),
+    'instance_resolution' => env('INSTANCE_RESOLUTION', 'subdomain'), // subdomain (v1)
+    'instance_db_strategy' => env('INSTANCE_DB_STRATEGY', 'shared'), // shared | database-per-instance
 
 ];

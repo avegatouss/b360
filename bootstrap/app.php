@@ -13,12 +13,14 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->web(append: [
-            App\Instances\Middleware\InstanceMiddleware::class,
+            \App\Http\Middleware\EnsureInstalled::class,
+            \App\Instances\Middleware\InstanceMiddleware::class,
 
 
         ]);
          $middleware->api(append: [
-            App\Instances\Middleware\InstanceMiddleware::class,
+            \App\Http\Middleware\EnsureInstalled::class,
+            \App\Instances\Middleware\InstanceMiddleware::class,
 
 
         ]);

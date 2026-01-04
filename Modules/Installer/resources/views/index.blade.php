@@ -341,13 +341,14 @@
                                                     </select>
                                                     <small class="text-muted">
                                                         <strong>Single:</strong> Une seule instance de l'application |
-                                                        <strong>Multi:</strong> Plusieurs instances / Entreprises / Equipes / ou Equipes
+                                                        <strong>Multi:</strong> Plusieurs instances / Entreprises / Equipes
+                                                        / ou Equipes
                                                     </small>
                                                 </div>
 
                                                 <div class="mb-3">
-                                                    <select name="instance_db_strategy" class="form-select" id="instance_db_strategy"
-                                                        required>
+                                                    <select name="instance_db_strategy" class="form-select"
+                                                        id="instance_db_strategy" required>
                                                         <option value="">-- Choisir le mode --</option>
                                                         <option value="shared" @selected(old('instance_db_strategy') === 'single')>
                                                             Base de données unique et partagées
@@ -359,6 +360,23 @@
                                                     <small class="text-muted">
                                                         <strong>Single:</strong> Toutes les données dans une base |
                                                         <strong>Multi:</strong> Base séparée par instance
+                                                    </small>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <select name="instance_resolution" class="form-select"
+                                                        id="instance_resolution" required>
+                                                        <option value="subdomain" selected>Sous-domaine (par défaut)
+                                                        </option>
+                                                        <option value="domain">Domaine</option>
+                                                        <option value="path">Dossier</option>
+                                                    </select>
+
+                                                    <small class="text-muted">
+                                                        <strong>Sous-domaine :</strong> acme.b360.test |
+                                                        <strong>Domaine :</strong> acme.com (nécessite DNS + vhost serveur)
+                                                        |
+                                                        <strong>Dossier :</strong> acme.com/acme (nécessite vhost serveur)
+                                                    </small>
                                                     </small>
                                                 </div>
 
@@ -1052,10 +1070,15 @@
                     app_url: document.querySelector('[name="app_url"]')?.value,
                     timezone: document.querySelector('[name="timezone"]')?.value,
                     locale: document.querySelector('[name="locale"]')?.value,
+
                     instance_mode: document.querySelector('[name="instance_mode"]')?.value,
+                    instance_db_strategy: document.querySelector('[name="instance_db_strategy"]')?.value,
+                    instance_resolution: document.querySelector('[name="instance_resolution"]')?.value || 'subdomain',
+
                     db_prefix: document.querySelector('[name="db_prefix"]')?.value || '',
                     db_suffix: document.querySelector('[name="db_suffix"]')?.value || '',
                 };
+
 
                 try {
                     const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
@@ -1271,11 +1294,10 @@
                     "'": '&#039;'
                 } [m]));
             }
-                document.addEventListener('DOMContentLoaded', function() {
-                    const installBtn = document.getElementById('installBtn');
-                    if (installBtn) installBtn.addEventListener('click', startInstallationAjax);
-                });
-
+            document.addEventListener('DOMContentLoaded', function() {
+                const installBtn = document.getElementById('installBtn');
+                if (installBtn) installBtn.addEventListener('click', startInstallationAjax);
+            });
         </script>
     @endpush
 

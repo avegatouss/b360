@@ -6,6 +6,7 @@ use App\Instances\InstanceManager;
 use App\Instances\InstanceResolver;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class InstanceMiddleware
 {
@@ -38,16 +39,27 @@ class InstanceMiddleware
         $resolver = app(InstanceResolver::class);
         $manager  = app(InstanceManager::class);
 
-        $instance = $resolver->resolveSafely();
+        $instance = $resolver->resolveSafely($request);
 
         // Si aucune instance résolue : on laisse passer (évite crash)
         if (!$instance) {
+            // v1 domain : si pas d'instance => 404 (évite servir mauvaise instance)
+            if (config('app.instance_resolution', 'domain') === 'domain') {
+                abort(404, 'Instance not found');
+            }
             return $next($request);
         }
+        // Appliquer le contexte DB (shared/database-per-instance)
 
         $manager->apply($instance);
-
+        // Publier le contexte dans le container pour usage applicatif
         app()->instance('currentInstance', $instance);
+        // Log minimal (sans secret)
+        Log::info('instance.resolved', [
+            'instance_id' => $instance->id,
+            'instance_slug' => $instance->slug,
+            'host' => $request->getHost(),
+        ]);
 
         return $next($request);
     }

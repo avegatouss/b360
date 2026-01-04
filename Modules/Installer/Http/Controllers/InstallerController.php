@@ -475,7 +475,13 @@ class InstallerController extends Controller
             'timezone' => ['required', 'string'],
             'locale'   => ['required', 'string', 'max:5'],
 
+            // Instance
             'instance_mode' => ['required', 'in:single,multi'],
+            'instance_db_strategy' => ['required', 'in:shared,database-per-instance'],
+
+            // v1 uniquement
+            'instance_resolution' => ['required', 'in:subdomain,domain,path'],
+
 
             // futur : db_prefix / db_suffix
             'db_prefix' => ['nullable', 'string', 'max:32', 'regex:/^[a-zA-Z0-9_]*$/'],
@@ -488,7 +494,8 @@ class InstallerController extends Controller
         //  Règles conditionnelles
         $validator->after(function ($v) use ($request) {
             $mode = $request->input('instance_mode');
-
+            $strategy_db = $request->input('instance_db_strategy');
+            $resolution = $request->input('instance_resolution', 'subdomain');
             // single => on ignore prefix/suffix (mais on peut les stocker vides)
             if ($mode === 'single') {
                 return;
@@ -497,12 +504,35 @@ class InstallerController extends Controller
             // multi => au moins l’un des deux conseillé (pas obligatoire, mais on peut imposer)
             // on ne bloque pas, mais on avertira côté UI.
             // Si tu veux imposer : on décommente
-            /*
+
             $prefix = (string) $request->input('db_prefix');
             $suffix = (string) $request->input('db_suffix');
-            if ($prefix === '' || $suffix === '') {
-                $v->errors()->add('db_prefix', "En mode multi, définis un préfixe ou suffixe pour éviter les collisions.");
-            }*/
+            if ($strategy_db === 'shared') {
+                if ($prefix === '' || $suffix === '') {
+                    $v->errors()->add('db_prefix', "En mode multi Avec la strategie shared, définis un préfixe ou suffixe pour éviter les collisions.");
+                }
+            }
+
+            // Règle métier v1:
+            // - domain: nécessite que APP_URL soit sur un domaine "normal"
+            //   (pas localhost, pas IP), sinon on force fallback subdomain.
+            if ($resolution === 'domain') {
+                $appUrl = (string) $request->input('app_url');
+                $host = parse_url($appUrl, PHP_URL_HOST);
+
+                if (!$host) {
+                    $v->errors()->add('app_url', "APP_URL invalide (host introuvable).");
+                    return;
+                }
+
+                // domain mode interdit sur localhost et IP (v1)
+                if ($host === 'localhost' || filter_var($host, FILTER_VALIDATE_IP)) {
+                    $v->errors()->add(
+                        'instance_resolution',
+                        "Le mode Domaine nécessite un nom de domaine (pas localhost / IP). Utilise Sous-domaine."
+                    );
+                }
+            }
         });
 
         if ($validator->fails()) {
@@ -527,6 +557,8 @@ class InstallerController extends Controller
                 'timezone' => $data['timezone'],
                 'locale' => $data['locale'],
                 'instance_mode' => $data['instance_mode'],
+                'instance_db_strategy' => $data['instance_db_strategy'],
+                'instance_resolution' => $data['instance_resolution'],
 
                 // futur : juste stockage, pas d’application ici
                 'db_prefix' => $data['instance_mode'] === 'multi' ? ($data['db_prefix'] ?? null) : null,
