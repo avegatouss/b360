@@ -16,8 +16,9 @@
                 @endslot
             @endcomponent
 
-            <div class="row">
             
+            <div class="row">
+
                 <!-- Lightbox -->
                 <div class="col-lg-12">
                     <div class="card">
@@ -41,7 +42,7 @@
                                             </div>
                                         </a>
                                     </li>
-                                    
+
                                     <li class="nav-item w-100 text-center">
                                         <a href="#bank-detail" class="nav-link py-2 bg-transparent" data-bs-toggle="tab">
                                             <div class="step-icon" data-bs-toggle="tooltip" data-bs-placement="top" title="Bank Details">
@@ -209,7 +210,7 @@
                     </div>
                 </div>
                 <!-- /Wizard -->
-                
+
                 <!-- Wizard -->
                 <div class="col-lg-12">
                     <div class="card">
@@ -234,7 +235,7 @@
                                             </div>
                                         </a>
                                     </li>
-                                    
+
                                     <li class="nav-item">
                                         <a href="#progress-bank-detail" class="nav-link bg-transparent" data-toggle="tab">
                                             <div class="step-icon" data-bs-toggle="tooltip" data-bs-placement="top" title="Payment Details">
@@ -396,7 +397,7 @@
                                                             <label for="progresspill-expiration-input" class="form-label">Expiration Date</label>
                                                             <input type="text" class="form-control" id="progresspill-expiration-input">
                                                         </div>
-                                                    </div>  
+                                                    </div>
                                                 </div>
                                             </form>
                                             <ul class="pager wizard twitter-bs-wizard-pager-link">
@@ -415,7 +416,7 @@
                     <!-- end card -->
                 </div>
                 <!-- /Wizard -->
-                
+
             </div>
 
         </div>

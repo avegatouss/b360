@@ -6,27 +6,84 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | Core Identity
+            |--------------------------------------------------------------------------
+            */
             $table->id();
-            $table->string('name');
+
+            $table->string('username')->unique()->nullable();
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
+
             $table->string('password');
+
+            /*
+            |--------------------------------------------------------------------------
+            | Personal Information
+            |--------------------------------------------------------------------------
+            */
+            $table->string('first_name')->nullable();
+            $table->string('last_name')->nullable();
+            $table->string('full_name')->nullable();
+            $table->string('phone')->nullable()->index();
+            $table->string('avatar')->nullable();
+
+            /*
+            |--------------------------------------------------------------------------
+            | Status & Access
+            |--------------------------------------------------------------------------
+            */
+            $table->boolean('is_active')->default(true)->index();
+            $table->boolean('is_blocked')->default(false)->index();
+            $table->timestamp('last_login_at')->nullable();
+
+            /*
+            |--------------------------------------------------------------------------
+            | Preferences & Settings
+            |--------------------------------------------------------------------------
+            */
+            $table->json('notification_preferences')->nullable();
+            $table->json('settings')->nullable(); // préférences globales user
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Security & Tokens
+            |--------------------------------------------------------------------------
+            */
             $table->rememberToken();
+
+            /*
+            |--------------------------------------------------------------------------
+            | Timestamps & Soft Deletes
+            |--------------------------------------------------------------------------
+            */
             $table->timestamps();
+            $table->softDeletes();
         });
 
+        /*
+        |--------------------------------------------------------------------------
+        | Password Reset Tokens
+        |--------------------------------------------------------------------------
+        */
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');
             $table->timestamp('created_at')->nullable();
         });
 
+        /*
+        |--------------------------------------------------------------------------
+        | Sessions
+        |--------------------------------------------------------------------------
+        */
         Schema::create('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->foreignId('user_id')->nullable()->index();
@@ -37,13 +94,10 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('users');
-        Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
+        Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('users');
     }
 };

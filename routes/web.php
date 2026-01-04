@@ -13,11 +13,11 @@ use App\Http\Controllers\CustomAuthController;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-Route::get('index', [CustomAuthController::class, 'dashboard']); 
+Route::get('index', [CustomAuthController::class, 'dashboard']);
 Route::get('signin', [CustomAuthController::class, 'index'])->name('signin');
-Route::post('custom-login', [CustomAuthController::class, 'customSignin'])->name('signin.custom'); 
+Route::post('custom-login', [CustomAuthController::class, 'customSignin'])->name('signin.custom');
 Route::get('register', [CustomAuthController::class, 'registration'])->name('register');
-Route::post('custom-register', [CustomAuthController::class, 'customRegister'])->name('register.custom'); 
+Route::post('custom-register', [CustomAuthController::class, 'customRegister'])->name('register.custom');
 Route::get('signout', [CustomAuthController::class, 'signOut'])->name('signout');
 
 Route::get('/', function () {
@@ -147,138 +147,138 @@ Route::get('/file-manager-deleted', function () {
     return view('file-manager-deleted');
 })->name('file-manager-deleted');
 
-Route::get('/chat', function () {                         
+Route::get('/chat', function () {
     return view('chat');
-})->name('chat');     
+})->name('chat');
 
-Route::get('/manage-stocks', function () {                         
+Route::get('/manage-stocks', function () {
     return view('manage-stocks');
-})->name('manage-stocks');      
+})->name('manage-stocks');
 
-Route::get('/stock-adjustment', function () {                         
+Route::get('/stock-adjustment', function () {
     return view('stock-adjustment');
-})->name('stock-adjustment');     
+})->name('stock-adjustment');
 
-Route::get('/stock-transfer', function () {                         
+Route::get('/stock-transfer', function () {
     return view('stock-transfer');
-})->name('stock-transfer'); 
+})->name('stock-transfer');
 
-Route::get('/purchase-list', function () {                         
+Route::get('/purchase-list', function () {
     return view('purchase-list');
-})->name('purchase-list'); 
+})->name('purchase-list');
 
-Route::get('/purchase-order-report', function () {                         
+Route::get('/purchase-order-report', function () {
     return view('purchase-order-report');
-})->name('purchase-order-report'); 
+})->name('purchase-order-report');
 
-Route::get('/purchase-returns', function () {                         
+Route::get('/purchase-returns', function () {
     return view('purchase-returns');
-})->name('purchase-returns'); 
+})->name('purchase-returns');
 
-Route::get('/expense-list', function () {                         
+Route::get('/expense-list', function () {
     return view('expense-list');
-})->name('expense-list'); 
+})->name('expense-list');
 
-Route::get('/expense-category', function () {                         
+Route::get('/expense-category', function () {
     return view('expense-category');
-})->name('expense-category');     
+})->name('expense-category');
 
-Route::get('/purchase-report', function () {                         
+Route::get('/purchase-report', function () {
     return view('purchase-report');
-})->name('purchase-report');     
+})->name('purchase-report');
 
-Route::get('/employees-grid', function () {                         
+Route::get('/employees-grid', function () {
     return view('employees-grid');
-})->name('employees-grid');     
+})->name('employees-grid');
 
-Route::get('/edit-employee', function () {                         
+Route::get('/edit-employee', function () {
     return view('edit-employee');
-})->name('edit-employee');     
+})->name('edit-employee');
 
-Route::get('/department-grid', function () {                         
+Route::get('/department-grid', function () {
     return view('department-grid');
-})->name('department-grid');   
+})->name('department-grid');
 
-Route::get('/designation', function () {                         
+Route::get('/designation', function () {
     return view('designation');
-})->name('designation');   
+})->name('designation');
 
-Route::get('/shift', function () {                         
+Route::get('/shift', function () {
     return view('shift');
-})->name('shift'); 
+})->name('shift');
 
-Route::get('/attendance-employee', function () {                         
+Route::get('/attendance-employee', function () {
     return view('attendance-employee');
-})->name('attendance-employee'); 
+})->name('attendance-employee');
 
-Route::get('/attendance-admin', function () {                         
+Route::get('/attendance-admin', function () {
     return view('attendance-admin');
-})->name('attendance-admin'); 
+})->name('attendance-admin');
 
-Route::get('/leaves-admin', function () {                         
+Route::get('/leaves-admin', function () {
     return view('leaves-admin');
-})->name('leaves-admin'); 
+})->name('leaves-admin');
 
-Route::get('/leaves-employee', function () {                         
+Route::get('/leaves-employee', function () {
     return view('leaves-employee');
-})->name('leaves-employee'); 
+})->name('leaves-employee');
 
-Route::get('/leave-types', function () {                         
+Route::get('/leave-types', function () {
     return view('leave-types');
-})->name('leave-types'); 
+})->name('leave-types');
 
-Route::get('/holidays', function () {                         
+Route::get('/holidays', function () {
     return view('holidays');
-})->name('holidays'); 
+})->name('holidays');
 
-Route::get('/payroll-list', function () {                         
+Route::get('/payroll-list', function () {
     return view('payroll-list');
-})->name('payroll-list'); 
+})->name('payroll-list');
 
-Route::get('/payslip', function () {                         
+Route::get('/payslip', function () {
     return view('payslip');
-})->name('payslip'); 
+})->name('payslip');
 
 
-Route::get('/sales-list', function () {                         
+Route::get('/sales-list', function () {
     return view('sales-list');
-})->name('sales-list'); 
+})->name('sales-list');
 
-Route::get('/invoice-report', function () {                         
+Route::get('/invoice-report', function () {
     return view('invoice-report');
-})->name('invoice-report'); 
+})->name('invoice-report');
 
-Route::get('/sales-returns', function () {                         
+Route::get('/sales-returns', function () {
     return view('sales-returns');
-})->name('sales-returns'); 
+})->name('sales-returns');
 
-Route::get('/quotation-list', function () {                         
+Route::get('/quotation-list', function () {
     return view('quotation-list');
-})->name('quotation-list');  
+})->name('quotation-list');
 
-Route::get('/pos', function () {                         
+Route::get('/pos', function () {
     return view('pos');
-})->name('pos');  
+})->name('pos');
 
-Route::get('/coupons', function () {                         
+Route::get('/coupons', function () {
     return view('coupons');
-})->name('coupons');  
+})->name('coupons');
 
-Route::get('/customers', function () {                         
+Route::get('/customers', function () {
     return view('customers');
-})->name('customers');  
+})->name('customers');
 
-Route::get('/suppliers', function () {                         
+Route::get('/suppliers', function () {
     return view('suppliers');
-})->name('suppliers');  
+})->name('suppliers');
 
-Route::get('/store-list', function () {                         
+Route::get('/store-list', function () {
     return view('store-list');
-})->name('store-list');  
+})->name('store-list');
 
-Route::get('/warehouse', function () {                         
+Route::get('/warehouse', function () {
     return view('warehouse');
-})->name('warehouse');  
+})->name('warehouse');
 
 Route::get('/ui-accordion', function () {
     return view('ui-accordion');
@@ -821,27 +821,27 @@ Route::get('/payment-gateway-settings', function () {
 
 Route::get('/bank-settings-grid', function () {
     return view('bank-settings-grid');
-})->name('bank-settings-grid');     
+})->name('bank-settings-grid');
 
 Route::get('/tax-rates', function () {
     return view('tax-rates');
-})->name('tax-rates');   
+})->name('tax-rates');
 
 Route::get('/currency-settings', function () {
     return view('currency-settings');
-})->name('currency-settings');    
+})->name('currency-settings');
 
 Route::get('/storage-settings', function () {
     return view('storage-settings');
-})->name('storage-settings');   
+})->name('storage-settings');
 
 Route::get('/ban-ip-address', function () {
     return view('ban-ip-address');
-})->name('ban-ip-address'); 
+})->name('ban-ip-address');
 
 Route::get('/activities', function () {
     return view('activities');
-})->name('activities'); 
+})->name('activities');
 
 Route::get('/add-employee', function () {
     return view('add-employee');

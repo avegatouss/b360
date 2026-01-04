@@ -1,30 +1,66 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="fr" data-theme="light">
+<head>
+    <meta charset="utf-8">
+    <title>B360 • Installation</title>
 
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Installation de la plateforme B360">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>Installer Module - {{ config('app.name', 'Laravel') }}</title>
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="{{ asset('/build/img/favicon.png') }}">
 
-        <meta name="description" content="{{ $description ?? '' }}">
-        <meta name="keywords" content="{{ $keywords ?? '' }}">
-        <meta name="author" content="{{ $author ?? '' }}">
+    {{-- Head DreamPOS (CSS globaux uniquement) --}}
+    @include('layout.partials.head')
+</head>
 
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+<body class="account-page bg-light">
 
-        {{-- Vite CSS --}}
-        {{-- {{ module_vite('build-installer', 'resources/assets/sass/app.scss') }} --}}
-    </head>
+    {{-- Loader simple --}}
+    @component('components.loader')
+    @endcomponent
 
-    <body>
-        {{ $slot }}
+    <!-- Installer Wrapper -->
+    <div class="main-wrapper d-flex align-items-center justify-content-center min-vh-100">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-xl-8 col-lg-7 col-md-9 col-sm-12">
 
-        {{-- Vite JS --}}
-        {{-- {{ module_vite('build-installer', 'resources/assets/js/app.js') }} --}}
-    </body>
+                    {{-- Card Installer --}}
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body p-4">
+
+                            {{-- Logo --}}
+                            <div class="text-center mb-4">
+                                <img src="{{ asset('/build/img/logo.svg') }}"
+                                     alt="B360"
+                                     height="50">
+                                <h4 class="mt-3 fw-bold">Installation B360</h4>
+                                <p class="text-muted mb-0">
+                                    Configuration initiale de la plateforme
+                                </p>
+                            </div>
+
+                            {{-- Contenu Installer --}}
+                            @yield('content')
+
+                        </div>
+                    </div>
+
+                    {{-- Footer --}}
+                    <div class="text-center mt-3 text-muted small">
+                        © {{ date('Y') }} B360 — Tous droits réservés par KHOGA
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Scripts DreamPOS (JS globaux uniquement) --}}
+    @include('layout.partials.footer-scripts')
+    @stack('scripts')
+</body>
 </html>

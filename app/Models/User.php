@@ -2,47 +2,184 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Table
+    |--------------------------------------------------------------------------
+    */
+    protected $table = 'users';
+
+    /*
+    |--------------------------------------------------------------------------
+    | Mass Assignment
+    |--------------------------------------------------------------------------
+    | ⚠️ Toujours explicite pour éviter les failles
+    */
     protected $fillable = [
-        'name',
+        'username',
         'email',
         'password',
+
+        'first_name',
+        'last_name',
+        'full_name',
+        'phone',
+        'avatar',
+
+        'is_active',
+        'is_blocked',
+        'last_login_at',
+
+        'notification_preferences',
+        'settings',
+
+        'personne_id',
+        'personne_physique_id',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Hidden attributes (sécurité API / JSON)
+    |--------------------------------------------------------------------------
+    */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
+    /*
+    |--------------------------------------------------------------------------
+    | Attribute Casting
+    |--------------------------------------------------------------------------
+    */
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'last_login_at'     => 'datetime',
+
+        'is_active'   => 'boolean',
+        'is_blocked'  => 'boolean',
+
+        'notification_preferences' => 'array',
+        'settings'                 => 'array',
+    ];
+
+    /*
+    |--------------------------------------------------------------------------
+    | Accessors / Mutators
+    |--------------------------------------------------------------------------
+    */
+
     /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
+     * Toujours stocker le mot de passe hashé
      */
-    protected function casts(): array
+    public function setPasswordAttribute(string $value): void
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        if (!empty($value)) {
+            $this->attributes['password'] = bcrypt($value);
+        }
+    }
+
+    /**
+     * Nom complet automatique si absent
+     */
+    public function getFullNameAttribute(): ?string
+    {
+        if (!empty($this->attributes['full_name'])) {
+            return $this->attributes['full_name'];
+        }
+
+        return trim(($this->first_name ?? '') . ' ' . ($this->last_name ?? '')) ?: null;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Relations
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Personne morale (ex: entreprise, organisation)
+     */
+    public function personne()
+    {
+        return $this->belongsTo(Personne::class);
+    }
+
+    /**
+     * Personne physique (ex: individu)
+     */
+    public function personnePhysique()
+    {
+        return $this->belongsTo(PersonnePhysique::class);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Scopes
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Utilisateurs actifs uniquement
+     */
+    public function scopeActive($query)
+    {
+        return $query
+            ->where('is_active', true)
+            ->where('is_blocked', false);
+    }
+
+    /**
+     * Utilisateurs bloqués
+     */
+    public function scopeBlocked($query)
+    {
+        return $query->where('is_blocked', true);
+    }
+    /*
+    |--------------------------------------------------------------------------
+    | Alias name ⇄ full_name
+    |--------------------------------------------------------------------------
+    */
+
+    // Lire $user->name
+    public function getNameAttribute(): ?string
+    {
+        return $this->full_name;
+    }
+
+    // Écrire $user->name = 'John Doe'
+    public function setNameAttribute(?string $value): void
+    {
+        $this->attributes['full_name'] = $value;
+    }
+    /*
+    |--------------------------------------------------------------------------
+    | Helpers métier
+    |--------------------------------------------------------------------------
+    */
+
+    public function block(): void
+    {
+        $this->update(['is_blocked' => true]);
+    }
+
+    public function unblock(): void
+    {
+        $this->update(['is_blocked' => false]);
+    }
+
+    public function markAsLoggedIn(): void
+    {
+        $this->update(['last_login_at' => now()]);
     }
 }

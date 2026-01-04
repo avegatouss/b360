@@ -123,4 +123,8 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+        'installed' => env('APP_INSTALLED', false),
+        'instance_mode' => env('INSTANCE_MODE', 'single'),
+        'instance_db_strategy' => env('INSTANCE_DB_STRATEGY', 'shared'), // shared | database-per-instance
+
 ];
