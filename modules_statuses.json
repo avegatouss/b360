@@ -1,3 +1,4 @@
 {
-    "Installer": true
+    "Installer": true,
+    "Core": true
 }
