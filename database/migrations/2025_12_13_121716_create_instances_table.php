@@ -19,12 +19,23 @@ return new class extends Migration {
             $table->string('name');
             $table->string('slug')->unique();
 
+
             /*
             |--------------------------------------------------------------------------
-            | Database (Multi DB uniquement)
+            | Resolution (domain, subdomain, path)
+            |--------------------------------------------------------------------------
+            */
+            $table->string('domain')->nullable()->index();
+            $table->string('subdomain')->nullable()->index(); // ex: "v1.acme.com"
+            $table->string('path')->nullable()->index();    // ex: "acme.com/acme"
+
+            /*
+            |--------------------------------------------------------------------------
+            | Database (Multi DB uniquement)  database-per-instance
             |--------------------------------------------------------------------------
             */
             $table->string('database')->nullable();
+            $table->string('db_driver')->nullable(); // mysql/pgsql/sqlsrv
 
             /*
             |--------------------------------------------------------------------------
@@ -32,6 +43,7 @@ return new class extends Migration {
             |--------------------------------------------------------------------------
             */
             $table->boolean('is_active')->default(true)->index();
+            $table->timestamp('installed_at')->nullable();
 
             /*
             |--------------------------------------------------------------------------

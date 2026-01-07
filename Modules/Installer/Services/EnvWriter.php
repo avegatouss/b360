@@ -1,7 +1,7 @@
 <?php
 
 namespace Modules\Installer\Services;
-
+use App\Installer\InstallLock;
 use Illuminate\Support\Facades\File;
 use RuntimeException;
 
@@ -40,7 +40,8 @@ class EnvWriter
      */
     public function write(array $data): void
     {
-        if (config('app.installed', false) === true) {
+         // Double barrière : flag config + lock FS
+        if (config('app.installed', false) === true || InstallLock::isInstalled()) {
             throw new RuntimeException('Application déjà installée.');
         }
 
@@ -79,7 +80,7 @@ class EnvWriter
 
         // Instance (v1)
         $updates['INSTANCE_MODE'] = $data['instance_mode'] ?? 'single';
-        $updates['INSTANCE_RESOLUTION'] = $data['instance_resolution'] ?? 'subdomain';
+        $updates['INSTANCE_RESOLUTION'] = $data['instance_resolution'] ?? 'path';
         $updates['INSTANCE_DB_STRATEGY'] = $data['instance_db_strategy'] ?? 'shared';
         $updates['DB_PREFIX']     = $data['db_prefix'] ?? '';
         $updates['DB_SUFFIX']     = $data['db_suffix'] ?? '';
@@ -119,6 +120,12 @@ class EnvWriter
 
         $this->atomicWrite($envPath, $content);
         @chmod($envPath, 0640);
+        // Réduction surface d’attaque : supprimer le backup après succès
+        // (le lock FS + .env en place suffisent; le backup est sensible)
+        $backup = $this->backupPath();
+        if (File::exists($backup)) {
+            @File::delete($backup);
+        }
     }
 
     /**
@@ -154,7 +161,7 @@ class EnvWriter
             'APP_LOCALE=fr',
             'APP_INSTALLED=false',
             'INSTANCE_MODE=single',
-            'INSTANCE_RESOLUTION=domain',
+            'INSTANCE_RESOLUTION=path',
             'INSTANCE_DB_STRATEGY=shared',
             '',
         ]) . PHP_EOL;
@@ -209,8 +216,12 @@ class EnvWriter
 
     private function atomicWrite(string $path, string $content): void
     {
-        $tmpPath = $path . '.tmp';
+
+        // Écriture atomique + concurrent-safe : tmp unique puis rename
+        $tmpPath = $path . '.' . bin2hex(random_bytes(6)) . '.tmp';
         File::put($tmpPath, $content);
-        File::move($tmpPath, $path);
+        @chmod($tmpPath, 0640);
+        // rename est atomique sur la plupart des FS
+        @rename($tmpPath, $path);
     }
 }

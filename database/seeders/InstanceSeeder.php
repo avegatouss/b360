@@ -3,50 +3,54 @@
 namespace Database\Seeders;
 
 use App\Instances\Instance;
+use App\Installer\InstallLock;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use RuntimeException;
 
 /**
  * Seed de l'Instance ROOT.
  *
- * MVP :
- * - users restent system (global)
- * - root instance sert de "fallback" et de base de configuration
+ * Règles absolues :
+ * - Exécuté UNIQUEMENT pendant l’Installer
+ * - Écrit uniquement dans la DB "system"
+ * - Idempotent
  */
 class InstanceSeeder extends Seeder
 {
     public function run(): void
     {
-        $mode = config('app.instance_mode', 'single');
-        $strategy = config('app.instance_db_strategy', 'shared');
-
-        $rootSlug = 'root';
-        $rootDomain = strtolower(parse_url(config('app.url'), PHP_URL_HOST) ?: 'localhost');
-
-        // En database-per-instance, on renseignera "database" plus tard (ou via l’installer)
-        // Pour le MVP, on laisse null si on ne sait pas, mais l’idempotence est garantie.
-        $database = null;
-
-        if ($mode === 'multi' && $strategy === 'database-per-instance') {
-            // Option : si tu veux pointer sur une DB instance créée lors du runner,
-            // tu peux la recalculer ici avec prefix/suffix + app_name,
-            // mais cela dépend des données wizard. MVP : on garde null.
-            $database = null;
+        // Barrière dure : jamais après installation
+        if (config('app.installed', false) === true || InstallLock::isInstalled()) {
+            throw new RuntimeException('InstanceSeeder exécuté après installation.');
         }
 
-        Instance::query()->updateOrCreate(
-            ['slug' => $rootSlug],
-            [
-                'name' => 'B360 Root',
-                'domain' => $rootDomain,
-                'subdomain' => null,
-                'database' => $database,
-                'db_driver' => config('database.connections.system.driver'),
-                'is_active' => true,
-                'installed_at' => now(),
-                'meta' => [
-                    'is_root' => true,
-                ],
-            ]
-        );
+        DB::connection('system')->transaction(function () {
+            $rootSlug = 'root';
+            $rootDomain = strtolower(
+                parse_url(config('app.url'), PHP_URL_HOST) ?: 'localhost'
+            );
+
+            $instance = Instance::query()->firstOrNew([
+                'slug' => $rootSlug,
+            ]);
+
+            $instance->name = 'B360 Root';
+            $instance->domain = $rootDomain;
+            $instance->database = null; // ROOT n’a jamais de DB dédiée au MVP
+            $instance->db_driver = config('database.connections.system.driver');
+            $instance->is_active = true;
+
+            $instance->meta = array_merge(
+                (array) $instance->meta,
+                ['is_root' => true]
+            );
+
+            if (!$instance->installed_at) {
+                $instance->installed_at = now();
+            }
+
+            $instance->save();
+        });
     }
 }

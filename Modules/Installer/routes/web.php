@@ -58,4 +58,5 @@ Route::middleware(['web', 'installer.not_installed'])
         Route::get('/stream', [InstallerController::class, 'streamInstall'])
             ->middleware('signed')
             ->name('stream');
+            
     });

@@ -20,12 +20,6 @@ final class HostParser
         return $host ? strtolower($host) : null;
     }
 
-    public static function host(): string
-    {
-        // On ne dépend pas de Request ici; le middleware passe déjà le host
-        return '';
-    }
-
     public static function extractSubdomain(string $currentHost, ?string $baseHost): ?string
     {
         $currentHost = strtolower($currentHost);

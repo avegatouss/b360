@@ -54,6 +54,16 @@ class InstallerRunner
         Log::info('installer.start', $safeContext);
 
         try {
+            // Défense en profondeur: revalider les valeurs critiques
+            $mode = $data['instance_mode'] ?? 'single';
+            $strategy = $data['instance_db_strategy'] ?? 'shared';
+            if (!in_array($mode, ['single', 'multi'], true)) {
+                throw new RuntimeException('Mode Instance invalide.');
+            }
+            if (!in_array($strategy, ['shared', 'database-per-instance'], true)) {
+                throw new RuntimeException('Stratégie DB Instance invalide.');
+            }
+
             $emit(10, 'Écriture du fichier .env...');
             app(EnvWriter::class)->write($data);
 
@@ -74,16 +84,13 @@ class InstallerRunner
             $emit(40, 'Exécution des migrations...');
             Artisan::call('migrate', ['--force' => true]);
 
-            // Création DB instance ROOT uniquement si multi + database-per-instance
-            $mode = $data['instance_mode'] ?? 'single';
-            $strategy = $data['instance_db_strategy'] ?? 'shared';
-
             if ($mode === 'multi' && $strategy === 'database-per-instance') {
                 $emit(55, 'Création de la base de données de l’instance ROOT...');
 
-                $databaseName = ($data['db_prefix'] ?? '')
-                    . \Illuminate\Support\Str::slug($data['app_name'] ?? 'b360')
-                    . ($data['db_suffix'] ?? '');
+                // Nom DB déterministe basé sur le slug (évite collisions liées à app_name)
+                $rootSlug = \Illuminate\Support\Str::slug($data['instance_root_slug'] ?? ($data['app_name'] ?? 'b360'));
+                $databaseName = ($data['db_prefix'] ?? '') . $rootSlug . ($data['db_suffix'] ?? '');
+                $databaseName = substr($databaseName, 0, 64); // garde-fou (MySQL)
 
                 app(DatabaseCreator::class)->create($databaseName);
             }
@@ -110,10 +117,11 @@ class InstallerRunner
             ]);
 
             $emit(95, 'Finalisation de l’installation...');
-            app(EnvWriter::class)->markInstalled();
 
-            // Lock définitif
+             // Finalisation cohérente: lock définitif d'abord, puis flag env.
+            // Rationale: si le lock existe, l'app est considérée installée même si cache/config a un délai.
             InstallLock::markInstalled($runId);
+            app(EnvWriter::class)->markInstalled();
 
             $emit(98, 'Nettoyage final des caches...');
             Artisan::call('config:clear');
@@ -123,7 +131,9 @@ class InstallerRunner
             $emit(100, 'Installation terminée.');
         } catch (Throwable $e) {
             Log::error('installer.failed', $safeContext + [
+                 // Ne pas loguer le message brut; seulement une version durcie
                 'error' => $this->sanitizeError($e->getMessage()),
+                'error_class' => get_class($e),
             ]);
 
             // Rollback minimal : restaurer .env + libérer lock installing
@@ -176,8 +186,13 @@ class InstallerRunner
      */
     private function sanitizeError(string $msg): string
     {
-        $msg = preg_replace('/(password=)[^;]+/i', '$1***', $msg);
+        // Masque patterns usuels (dsn, password, env)
+        $msg = preg_replace('/(password=)[^;\s]+/i', '$1***', $msg);
+        $msg = preg_replace('/(pwd=)[^;\s]+/i', '$1***', $msg);
         $msg = preg_replace('/(DB_PASSWORD=).*/i', '$1***', $msg);
-        return $msg;
+        $msg = preg_replace('/(mysql:host=)[^;]+/i', '$1***', $msg);
+        $msg = preg_replace('/(pgsql:host=)[^;]+/i', '$1***', $msg);
+        // Coupe les messages trop longs (évite dump driver)
+        return mb_substr($msg, 0, 300);
     }
 }

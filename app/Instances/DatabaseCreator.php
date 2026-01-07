@@ -4,7 +4,7 @@ namespace App\Instances;
 
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
-
+use App\Installer\InstallLock;
 class DatabaseCreator
 {
     /**
@@ -22,10 +22,16 @@ class DatabaseCreator
         | Sécurité 1 : App déjà installée
         |--------------------------------------------------------------------------
         */
-        if (config('app.installed', false) === true) {
+         // Double barrière : flag + lock FS
+        if (config('app.installed', false) === true || InstallLock::isInstalled()) {
             throw new RuntimeException(
                 'Création de base interdite après installation.'
             );
+        }
+
+        // Uniquement pendant l'installer (anti-abus)
+        if (!InstallLock::isInstalling()) {
+            throw new RuntimeException('Création de base autorisée uniquement pendant l’installation.');
         }
 
         /*
@@ -39,25 +45,28 @@ class DatabaseCreator
             );
         }
 
+        // Uniquement pendant l'installer (anti-abus)
+        if (config('app.instance_db_strategy', 'shared') !== 'database-per-instance') {
+            throw new RuntimeException('Création de base autorisée uniquement en stratégie database-per-instance.');
+        }
         /*
         |--------------------------------------------------------------------------
         | Sécurité 3 : Nom de base valide
         |--------------------------------------------------------------------------
         */
-        if (
-            empty($database) ||
-            !preg_match('/^[a-zA-Z0-9_]+$/', $database)
-        ) {
+         $database = trim($database);
+
+        // MySQL: max 64 chars, charset sûr, pas d'espaces, pas de tirets
+        if ($database === '' || strlen($database) > 64 || !preg_match('/^[a-zA-Z0-9_]+$/', $database)) {
             throw new RuntimeException('Nom de base invalide.');
         }
-
         /*
         |--------------------------------------------------------------------------
         | Création DB (via connexion centrale)
         |--------------------------------------------------------------------------
         */
         try {
-            DB::statement(
+            DB::connection('system')->statement(
                 "CREATE DATABASE IF NOT EXISTS `{$database}`
                  CHARACTER SET utf8mb4
                  COLLATE utf8mb4_unicode_ci"

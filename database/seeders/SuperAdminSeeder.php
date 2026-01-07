@@ -12,7 +12,7 @@ class SuperAdminSeeder extends Seeder
     public function run(): void
     {
         $admin = config('installer.admin');
-
+        $now = now();
         if (!$admin || empty($admin['username']) || empty($admin['email']) || empty($admin['password'])) {
             throw new RuntimeException('Données Super Admin manquantes dans config(installer.admin).');
         }
@@ -24,6 +24,8 @@ class SuperAdminSeeder extends Seeder
         | Upsert (évite doublons si relance)
         |----------------------------------------------------------------------
         */
+        $exists = DB::table('users')->where('email', $admin['email'])->exists();
+
         DB::table('users')->updateOrInsert(
             ['email' => $admin['email']],
             [
@@ -36,9 +38,8 @@ class SuperAdminSeeder extends Seeder
 
                 'is_active'  => true,
                 'is_blocked' => false,
-
-                'updated_at' => now(),
-                'created_at' => now(),
+                'updated_at' => $now,
+                'created_at' => $exists ? DB::raw('created_at') : $now,
             ]
         );
     }

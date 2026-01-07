@@ -21,8 +21,6 @@ return Application::configure(basePath: dirname(__DIR__))
          $middleware->api(append: [
             \App\Http\Middleware\EnsureInstalled::class,
             \App\Instances\Middleware\InstanceMiddleware::class,
-
-
         ]);
         //$middleware->append();
     })

@@ -16,14 +16,23 @@ class EnsureInstalled
      */
     public function handle(Request $request, Closure $next)
     {
-        // Autoriser le healthcheck + installer
-        if ($request->is('up') || $request->is('install') || $request->is('install/*')) {
+        // Autoriser le healthcheck (même avant installation)
+        if ($request->is('up')) {
             return $next($request);
         }
 
         $installed = (bool) config('app.installed', false) || InstallLock::isInstalled();
+        // Tant que non installé : autoriser l'installateur
+        if (!$installed && ($request->is('install') || $request->is('install/*'))) {
+            return $next($request);
+        }
 
         if (!$installed) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Application not installed.',
+                ], 503);
+            }
             return redirect('/install');
         }
 

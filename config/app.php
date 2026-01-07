@@ -142,7 +142,7 @@ return [
 
     'installed' => env('APP_INSTALLED', false),
     'instance_mode' => env('INSTANCE_MODE', 'single'),
-    'instance_resolution' => env('INSTANCE_RESOLUTION', 'subdomain'), // subdomain (v1)
+    'instance_resolution' => env('INSTANCE_RESOLUTION', 'subdomain'), // 
     'instance_db_strategy' => env('INSTANCE_DB_STRATEGY', 'shared'), // shared | database-per-instance
 
 ];

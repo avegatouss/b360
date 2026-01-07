@@ -2,8 +2,10 @@
 
 namespace App\Instances;
 
+use App\Installer\InstallLock;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use RuntimeException;
 
 /**
@@ -21,33 +23,37 @@ class InstanceManager
      * Applique la configuration de base de données
      * pour l’instance courante.
      */
-   public function apply(Instance $instance): void
+    public function apply(Instance $instance): void
     {
+
+         if (!config('app.installed', false) || !InstallLock::isInstalled()) {
+            throw new RuntimeException('InstanceManager appelé avant installation.');
+        }
+
         $mode = config('app.instance_mode', 'single');
         $strategy = config('app.instance_db_strategy', 'shared');
 
         // Toujours repartir sur la DB centrale pour éviter les fuites
         DB::setDefaultConnection('system');
-
+        DB::purge('instance');
+        app()->forgetInstance('currentInstanceConnection');
+        // Single => pas de séparation
+        // Single DB : tout est system
         if ($mode === 'single') {
-            // Single => pas de séparation
-           // Single DB : tout est system
             return;
         }
 
-        if ($mode !== 'multi') {
-            throw new RuntimeException('Mode Instance invalide.');
+        if (!in_array($mode, ['single', 'multi'], true)) {
+             throw new RuntimeException('Mode Instance invalide.');
         }
 
-        // Toujours conserver master DB
-        DB::setDefaultConnection('system');
 
         if ($strategy === 'shared') {
             // Shared : isolation via GlobalScopes (à implémenter sur tables métiers).
             return;
         }
 
-        if ($strategy !== 'database-per-instance') {
+        if (!in_array($strategy, ['shared', 'database-per-instance'], true)) {
             throw new RuntimeException('Stratégie DB Instance invalide.');
         }
 
@@ -68,7 +74,10 @@ class InstanceManager
 
         DB::purge('instance');
         DB::reconnect('instance');
-
+        Log::debug('Instance DB context applied', [
+            'instance_id' => $instance->id,
+            'strategy' => $strategy,
+        ]);
         // Par convention, la DB "métier" doit utiliser connection('instance') explicitement
         // OU on peut définir un "currentInstanceConnection" dans le container.
         app()->instance('currentInstanceConnection', 'instance');

@@ -7,6 +7,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Résolution SAFE d'Instance :
@@ -55,44 +56,98 @@ class InstanceResolver
 
         // Récupère la méthode de résolution configurée
         // Par défaut, utilise la résolution par domaine
-        $resolution = config('app.instance_resolution', 'domain');
-
+        $resolution = config('app.instance_resolution', 'path');
+        if (!in_array($resolution, ['path', 'subdomain', 'domain', 'header'], true)) {
+            $resolution = 'path';
+        }
         $host = strtolower($request->getHost());
         try {
             // Résolution par domaine : compare l'hôte de la requête avec les domaines enregistrés
-            // 1) domain (si configuré)
-            if ($resolution === 'domain') {
-                $found = Instance::query()
-                    ->where('is_active', true) // Seulement les instances actives
-                    ->where('domain', $host)  // Correspondance exacte du domaine
-                    ->first();  // Prend la première correspondance
-
-                if ($found) {
-                    return $found;
+            // 1) PATH (default): /i/{slug}/...
+            if ($resolution === 'path') {
+                $slug = $this->extractSlugFromPath($request->path());
+                if ($slug) {
+                    return Instance::query()
+                        ->where('is_active', true)
+                        ->where('slug', $slug)
+                        ->first();
                 }
-
-                // fallback obligatoire v1
+                // fallback safe
                 $resolution = 'subdomain';
             }
 
-            // 2) subdomain (default + fallback)
-            $baseHost = HostParser::baseHost();
-            $sub = HostParser::extractSubdomain($host, $baseHost);
-
-            if (!$sub) {
-                return null;
+            // 2) SUBDOMAIN: {slug}.example.com
+            if ($resolution === 'subdomain') {
+                $baseHost = HostParser::baseHost();
+                $sub = HostParser::extractSubdomain($host, $baseHost);
+                if ($sub && $sub !== 'www') {
+                    $found = Instance::query()
+                        ->where('is_active', true)
+                        ->where('slug', $sub)
+                        ->first();
+                    if ($found) {
+                        return $found;
+                    }
+                }
+                // fallback safe
+                $resolution = 'domain';
             }
 
-            // Fallback sécurisé : retourne la première instance active
-            // Utilisé lorsque la résolution par domaine n'est pas configurée ou en cas d'autre méthode
-            return Instance::query()
-                ->where('is_active', true)  // Seulement les instances actives
-                ->orderBy('id')             // Ordonne par ID pour une cohérence
-                ->first();                  // Prend la première instance active
+            // 3) DOMAIN: mapping exact sur instances.domain
+            if ($resolution === 'domain') {
+                $found = Instance::query()
+                    ->where('is_active', true)
+                    ->where('domain', $host)
+                    ->first();
+                if ($found) {
+                    return $found;
+                }
+                // fallback safe
+                $resolution = 'header';
+            }
+
+            // 4) HEADER: X-Instance / X-Instance-Slug
+            if ($resolution === 'header') {
+                $raw = trim((string) ($request->header('X-Instance') ?: $request->header('X-Instance-Slug')));
+                $slug = $this->normalizeSlug($raw);
+                if ($slug) {
+                    return Instance::query()
+                        ->where('is_active', true)
+                        ->where('slug', $slug)
+                        ->first();
+                }
+            }
+
+            return null;
         } catch (QueryException) {
             // En cas d'erreur de base de données (table non existante, etc.)
             // Retourne null au lieu de propager l'exception
+            Log::debug('InstanceResolver DB error', ['host' => $host]);
             return null;
         }
+    }
+    
+    private function extractSlugFromPath(string $path): ?string
+    {
+        // Format MVP: /i/{slug}/...
+        // - Accepte "/i/slug" et "/i/slug/..."
+        $path = '/' . ltrim($path, '/');
+        if (!preg_match('#^/i/([a-z0-9][a-z0-9\-]{0,62})(?:/|$)#i', $path, $m)) {
+            return null;
+        }
+        return $this->normalizeSlug($m[1]);
+    }
+
+    private function normalizeSlug(?string $value): ?string
+    {
+        $value = $value === null ? null : strtolower(trim($value));
+        if ($value === '' || $value === null) {
+            return null;
+        }
+        // Même règle que path: slug 1..63, alnum + tiret, commence par alnum
+        if (!preg_match('/^[a-z0-9][a-z0-9\-]{0,62}$/', $value)) {
+            return null;
+        }
+        return $value;
     }
 }
