@@ -1,0 +1,30 @@
+{
+    "name": "b360/dashboard",
+    "description": "",
+    "authors": [
+        {
+            "name": "B360 Core",
+            "email": "dev@b360.app"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Dashboard\\": "",
+            "Modules\\Dashboard\\Database\\Factories\\": "database/factories/",
+            "Modules\\Dashboard\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\Dashboard\\Tests\\": "tests/"
+        }
+    }
+}

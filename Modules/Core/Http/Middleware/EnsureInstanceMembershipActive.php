@@ -24,7 +24,7 @@ final class EnsureInstanceMembershipActive
 
         $instance = CurrentInstance::get();
         if (!$instance) {
-            abort(503, 'Instance context not resolved.');
+            abort(503, 'Contexte d\'instance non résolu.');
         }
 
         $isActive = DB::connection('system')
@@ -35,7 +35,7 @@ final class EnsureInstanceMembershipActive
             ->exists();
 
         if (!$isActive) {
-            abort(403, 'User is not an active member of this instance.');
+            abort(403, 'L\'utilisateur n\'est pas un membre actif de cette instance.');
         }
 
         return $next($request);

@@ -16,5 +16,8 @@ final class CoreHttpServiceProvider extends ServiceProvider
         $router->aliasMiddleware('core.instance.resolved', EnsureInstanceResolved::class);
         $router->aliasMiddleware('core.instance.member', EnsureInstanceMembershipActive::class);
         $router->aliasMiddleware('core.spatie.team', SetSpatieTeamContextFromInstance::class);
+
+        $router->aliasMiddleware('core.redirect.not_installed', RedirectIfNotInstalled::class);
+        $router->aliasMiddleware('core.redirect.root_after_install', RedirectRootAfterInstall::class);
     }
 }

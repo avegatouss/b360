@@ -1,4 +1,7 @@
 {
     "Installer": true,
-    "Core": true
+    "Core": true,
+    "Users": true,
+    "Auth": true,
+    "Dashboard": true
 }
