@@ -6,6 +6,8 @@ use Illuminate\Support\ServiceProvider;
 use Modules\Core\Http\Middleware\EnsureInstanceResolved;
 use Modules\Core\Http\Middleware\EnsureInstanceMembershipActive;
 use Modules\Core\Http\Middleware\SetSpatieTeamContextFromInstance;
+use Modules\Core\Http\Middleware\RedirectIfNotInstalled;
+use Modules\Core\Http\Middleware\RedirectRootAfterInstall;
 
 final class CoreHttpServiceProvider extends ServiceProvider
 {

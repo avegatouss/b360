@@ -508,8 +508,9 @@ class InstallerController extends Controller
             $prefix = (string) $request->input('db_prefix');
             $suffix = (string) $request->input('db_suffix');
             if ($strategy_db === 'shared') {
-                if ($prefix === '' || $suffix === '') {
-                    $v->errors()->add('db_prefix', "En mode multi Avec la strategie shared, définis un préfixe ou suffixe pour éviter les collisions.");
+                // En shared, au moins l'un des deux est recommandé pour éviter les collisions de noms de tables
+                if ($prefix === '' && $suffix === '') {
+                    $v->errors()->add('db_prefix', "En mode multi avec la stratégie partagée, définissez un préfixe ou un suffixe pour éviter les collisions entre instances.");
                 }
             }
 

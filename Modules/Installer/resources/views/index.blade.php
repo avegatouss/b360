@@ -350,11 +350,11 @@
                                                     <select name="instance_db_strategy" class="form-select"
                                                         id="instance_db_strategy" required>
                                                         <option value="">-- Choisir le mode --</option>
-                                                        <option value="shared" @selected(old('instance_db_strategy') === 'single')>
-                                                            Base de données unique et partagées
+                                                        <option value="shared" @selected(old('instance_db_strategy', 'shared') === 'shared')>
+                                                            Base de données unique et partagée
                                                         </option>
-                                                        <option value="database-per-instance" @selected(old('instance_db_strategy') === 'multi')>
-                                                            Bases de données multiples et unique par instance
+                                                        <option value="database-per-instance" @selected(old('instance_db_strategy') === 'database-per-instance')>
+                                                            Base de données séparée par instance
                                                         </option>
                                                     </select>
                                                     <small class="text-muted">
@@ -553,7 +553,7 @@
                                                 </div>
                                             </div>
 
-                                            <h5 class="mb-3">Installation de DreamPos...</h5>
+                                            <h5 class="mb-3">Installation de B360...</h5>
                                             <p class="text-muted mb-4">Veuillez patienter pendant la configuration du
                                                 système.</p>
 

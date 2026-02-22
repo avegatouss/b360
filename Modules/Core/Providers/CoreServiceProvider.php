@@ -32,6 +32,9 @@ final class CoreServiceProvider extends ServiceProvider
     {
         $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
 
+        // Migrations Core : instance_user + modules tables
+        $this->loadMigrationsFrom(__DIR__ . '/../Database/Migrations');
+
         // Boot hooks once (providers listed in hooks config)
         $providers = (array) config('hooks.providers', []);
         app(HookManager::class)->boot($providers);

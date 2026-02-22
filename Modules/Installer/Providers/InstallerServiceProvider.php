@@ -68,11 +68,24 @@ class InstallerServiceProvider extends ServiceProvider
 
     /**
      * Register services.
-     *
-     * Aucun binding global.
      */
     public function register(): void
     {
+        // Force le driver de session en "file" tant que l'app n'est pas installée.
         //
+        // Pourquoi : si SESSION_DRIVER=database est dans le .env (valeur par défaut
+        // recommandée post-install) et que la base cible n'existe pas encore
+        // (ou a été supprimée entre deux tentatives), le middleware StartSession
+        // lève SQLSTATE[HY000][1049] Unknown database '...' avant même d'atteindre
+        // les routes de l'installeur.
+        //
+        // register() s'exécute avant le binding du session store → c'est le seul
+        // endroit garanti pour surcharger ce driver sans race condition.
+        if (config('app.installed', false) !== true) {
+            config([
+                'session.driver' => 'file',
+                'cache.default'  => 'file',
+            ]);
+        }
     }
 }

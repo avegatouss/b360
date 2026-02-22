@@ -1,36 +1,78 @@
-﻿@extends('layouts.app')
+<x-authmod::layouts.master title="{{ ($mode ?? 'global') === 'instance' ? 'Connexion — ' . ($instance->name ?? $instance->slug) : 'Connexion' }}">
 
-@section('content')
-<div class="container" style="max-width: 420px;">
-    <h1>{{ $mode === 'instance' ? 'Login — ' . $instance->slug : 'Login' }}</h1>
+    <div class="auth-card">
 
-    <form method="POST" action="{{ $mode === 'instance' ? url('/i/'.$instance->slug.'/login') : route('login.post') }}">
-        @csrf
-
-        <div class="mb-3">
-            <label class="form-label">Email</label>
-            <input name="email" type="email" class="form-control" value="{{ old('email') }}" required autofocus>
-            @error('email') <div class="text-danger">{{ $message }}</div> @enderror
+        <div class="auth-logo">
+            <span class="auth-logo-text">B360</span>
         </div>
 
-        <div class="mb-3">
-            <label class="form-label">Password</label>
-            <input name="password" type="password" class="form-control" required>
-            @error('password') <div class="text-danger">{{ $message }}</div> @enderror
-        </div>
+        <h1 class="auth-title">
+            @if(($mode ?? 'global') === 'instance' && isset($instance))
+                Connexion à <strong>{{ $instance->name ?? $instance->slug }}</strong>
+            @else
+                Connexion
+            @endif
+        </h1>
 
-        <div class="form-check mb-3">
-            <input class="form-check-input" type="checkbox" name="remember" value="1" id="remember">
-            <label class="form-check-label" for="remember">Remember me</label>
-        </div>
-
-        <button class="btn btn-primary w-100">Sign in</button>
-
-        @if($mode === 'global')
-            <div class="mt-3 text-muted small">
-                Best practice: use instance login URL <code>/i/{slug}/login</code>.
+        @if($errors->any())
+            <div class="auth-alert auth-alert-error">
+                @foreach($errors->all() as $error)
+                    <p>{{ $error }}</p>
+                @endforeach
             </div>
         @endif
-    </form>
-</div>
-@endsection
+
+        @if(session('status'))
+            <div class="auth-alert auth-alert-success">
+                {{ session('status') }}
+            </div>
+        @endif
+
+        <form method="POST"
+              action="{{ ($mode ?? 'global') === 'instance' && isset($instance)
+                ? route('instance.login.post', $instance->slug)
+                : route('login.post') }}">
+            @csrf
+
+            <div class="auth-field">
+                <label for="email">Adresse e-mail</label>
+                <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value="{{ old('email') }}"
+                    required
+                    autofocus
+                    autocomplete="email"
+                    placeholder="vous@exemple.com"
+                >
+            </div>
+
+            <div class="auth-field">
+                <label for="password">
+                    Mot de passe
+                    <a href="{{ route('password.request') }}" class="auth-link-right">Mot de passe oublié ?</a>
+                </label>
+                <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    required
+                    autocomplete="current-password"
+                    placeholder="••••••••"
+                >
+            </div>
+
+            <div class="auth-checkbox">
+                <input type="checkbox" name="remember" value="1" id="remember">
+                <label for="remember">Se souvenir de moi</label>
+            </div>
+
+            <button type="submit" class="auth-btn">
+                Se connecter
+            </button>
+        </form>
+
+    </div>
+
+</x-authmod::layouts.master>

@@ -4,13 +4,24 @@ use Illuminate\Support\Facades\Route;
 use Modules\Users\Http\Controllers\UserController;
 use Modules\Users\Http\Controllers\UserMembershipController;
 
+/*
+|--------------------------------------------------------------------------
+| Users Routes — Instance-scoped
+|--------------------------------------------------------------------------
+|
+| Toutes les routes utilisateurs sont sous /i/{slug}/ pour permettre
+| la résolution d'instance via le path (mode de résolution par défaut).
+|
+*/
 Route::middleware([
     'web',
+    'core.redirect.not_installed',
     'core.instance.resolved',
     'core.spatie.team',
     'auth',
     'core.instance.member',
-])->group(function () {
+])->prefix('/i/{slug}')->group(function () {
+
     Route::get('/users', [UserController::class, 'index'])
         ->middleware('can:users.view')
         ->name('users.index');
