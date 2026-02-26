@@ -88,8 +88,8 @@ class RolesPermissionsSeeder extends Seeder
         $user = Role::firstOrCreate(['name' => 'user', 'guard_name' => 'web']);
         $user->syncPermissions(['dashboard.view']);
 
-        // Remettre à null (pas de contexte par défaut)
-        $registrar->setPermissionsTeamId(null);
+        // Restaurer au contexte global (convention B360 : 0 = global, null interdit en PK)
+        $registrar->setPermissionsTeamId(self::GLOBAL_TEAM_ID);
         $registrar->forgetCachedPermissions();
     }
 }

@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Modules\Core\Support\CurrentInstance;
+use Spatie\Permission\PermissionRegistrar;
 
 final class EnsureInstanceMembershipActive
 {
@@ -20,7 +21,20 @@ final class EnsureInstanceMembershipActive
             return $next($request); // auth middleware handles unauthenticated
         }
 
-        // super-admin bypass via RBAC Gate::before, not here.
+        // Super-admin bypass : vérifier avec team_id=0 (contexte global)
+        if (method_exists($user, 'hasRole')) {
+            $registrar = app(PermissionRegistrar::class);
+            $previousTeamId = $registrar->getPermissionsTeamId();
+
+            try {
+                $registrar->setPermissionsTeamId(0);
+                if ($user->hasRole('super-admin')) {
+                    return $next($request);
+                }
+            } finally {
+                $registrar->setPermissionsTeamId($previousTeamId);
+            }
+        }
 
         $instance = CurrentInstance::get();
         if (!$instance) {

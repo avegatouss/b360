@@ -2,300 +2,301 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? config('app.name', 'B360') }}</title>
-    <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        :root {
-            --primary: #2563eb;
-            --primary-dark: #1d4ed8;
-            --sidebar-w: 240px;
-            --header-h: 56px;
-            --bg: #f1f5f9;
-            --surface: #ffffff;
-            --border: #e2e8f0;
-            --text: #1e293b;
-            --muted: #64748b;
-        }
+    <!-- Favicon -->
+    <link rel="shortcut icon" type="image/x-icon" href="{{ asset('build/img/favicon.png') }}">
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            display: flex;
-            min-height: 100vh;
-        }
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="{{ asset('build/css/bootstrap.min.css') }}">
 
-        /* Sidebar */
-        .sidebar {
-            width: var(--sidebar-w);
-            background: var(--surface);
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            position: fixed;
-            top: 0; left: 0; bottom: 0;
-            z-index: 10;
-        }
+    <!-- Tabler Icons CSS -->
+    <link rel="stylesheet" href="{{ asset('build/plugins/tabler-icons/tabler-icons.min.css') }}">
 
-        .sidebar-brand {
-            padding: 0 1.25rem;
-            height: var(--header-h);
-            display: flex;
-            align-items: center;
-            border-bottom: 1px solid var(--border);
-            font-size: 1.25rem;
-            font-weight: 800;
-            color: var(--primary);
-            letter-spacing: -0.04em;
-            text-decoration: none;
-        }
+    <!-- Fontawesome CSS -->
+    <link rel="stylesheet" href="{{ asset('build/plugins/fontawesome/css/fontawesome.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('build/plugins/fontawesome/css/all.min.css') }}">
 
-        .sidebar-instance {
-            padding: 0.75rem 1.25rem;
-            font-size: 0.75rem;
-            color: var(--muted);
-            border-bottom: 1px solid var(--border);
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            font-weight: 600;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
+    <!-- Feathericon CSS -->
+    <link rel="stylesheet" href="{{ asset('build/css/feather.css') }}">
 
-        .sidebar-nav {
-            flex: 1;
-            padding: 0.75rem;
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-
-        .nav-link {
-            display: flex;
-            align-items: center;
-            gap: 0.625rem;
-            padding: 0.5rem 0.75rem;
-            border-radius: 6px;
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: var(--muted);
-            text-decoration: none;
-            transition: background .12s, color .12s;
-        }
-
-        .nav-link:hover, .nav-link.active {
-            background: #eff6ff;
-            color: var(--primary);
-        }
-
-        .sidebar-footer {
-            padding: 0.75rem 1rem;
-            border-top: 1px solid var(--border);
-        }
-
-        .sidebar-user {
-            font-size: 0.8125rem;
-            color: var(--muted);
-            margin-bottom: 0.5rem;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .logout-btn {
-            display: block;
-            width: 100%;
-            padding: 0.4rem 0.75rem;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            background: none;
-            font-size: 0.8125rem;
-            color: var(--muted);
-            cursor: pointer;
-            text-align: left;
-            transition: background .12s, color .12s;
-        }
-
-        .logout-btn:hover { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
-
-        /* Main */
-        .main {
-            margin-left: var(--sidebar-w);
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        .topbar {
-            height: var(--header-h);
-            background: var(--surface);
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            padding: 0 1.5rem;
-        }
-
-        .topbar-title {
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--text);
-            flex: 1;
-        }
-
-        .content {
-            flex: 1;
-            padding: 1.5rem;
-        }
-
-        /* Cards */
-        .stat-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .stat-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 1.25rem;
-        }
-
-        .stat-label {
-            font-size: 0.8125rem;
-            color: var(--muted);
-            font-weight: 500;
-            margin-bottom: 0.375rem;
-        }
-
-        .stat-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--text);
-            line-height: 1;
-        }
-
-        .stat-sub {
-            font-size: 0.75rem;
-            color: var(--muted);
-            margin-top: 0.25rem;
-        }
-
-        /* Section */
-        .section-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 1.25rem;
-            margin-bottom: 1rem;
-        }
-
-        .section-title {
-            font-size: 0.9375rem;
-            font-weight: 600;
-            color: var(--text);
-            margin-bottom: 0.75rem;
-        }
-
-        .info-row {
-            display: flex;
-            gap: 0.5rem;
-            font-size: 0.875rem;
-            padding: 0.375rem 0;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .info-row:last-child { border-bottom: none; }
-
-        .info-key {
-            color: var(--muted);
-            min-width: 140px;
-            font-weight: 500;
-        }
-
-        .info-val { color: var(--text); }
-
-        /* Badge */
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.125rem 0.5rem;
-            border-radius: 999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .badge-green { background: #dcfce7; color: #166534; }
-        .badge-blue { background: #dbeafe; color: #1d4ed8; }
-        .badge-gray { background: #f1f5f9; color: #475569; }
-
-        /* Alert */
-        .alert {
-            border-radius: 8px;
-            padding: 0.875rem 1rem;
-            margin-bottom: 1rem;
-            font-size: 0.875rem;
-        }
-        .alert-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
-    </style>
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="{{ asset('build/css/style.css') }}">
 </head>
 <body>
 
-    {{-- Sidebar --}}
-    <aside class="sidebar">
-        <a href="{{ isset($instance) ? route('dashboard.instance', $instance->slug) : '/' }}" class="sidebar-brand">
-            B360
-        </a>
+<div class="main-wrapper">
 
-        @if(isset($instance))
-            <div class="sidebar-instance">{{ $instance->name ?? $instance->slug }}</div>
-        @endif
+    {{-- ============================================================ --}}
+    {{-- HEADER                                                       --}}
+    {{-- ============================================================ --}}
+    <div class="header">
+        <div class="main-header">
 
-        <nav class="sidebar-nav">
-            @if(isset($instance))
-                <a href="{{ route('dashboard.instance', $instance->slug) }}"
-                   class="nav-link {{ request()->routeIs('dashboard.*') ? 'active' : '' }}">
-                    Tableau de bord
+            <!-- Logo -->
+            <div class="header-left active">
+                <a href="{{ isset($instance) ? route('dashboard.instance', $instance->slug) : '/' }}"
+                   class="logo logo-normal">
+                    <img src="{{ asset('build/img/logo.svg') }}" alt="{{ config('app.name', 'B360') }}">
                 </a>
-                <a href="{{ route('users.index', $instance->slug) }}"
-                   class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
-                    Utilisateurs
+                <a href="{{ isset($instance) ? route('dashboard.instance', $instance->slug) : '/' }}"
+                   class="logo logo-white">
+                    <img src="{{ asset('build/img/logo-white.svg') }}" alt="{{ config('app.name', 'B360') }}">
                 </a>
-            @endif
-        </nav>
+                <a href="{{ isset($instance) ? route('dashboard.instance', $instance->slug) : '/' }}"
+                   class="logo-small">
+                    <img src="{{ asset('build/img/logo-small.png') }}" alt="{{ config('app.name', 'B360') }}">
+                </a>
+            </div>
+            <!-- /Logo -->
 
-        <div class="sidebar-footer">
-            @auth
-                <div class="sidebar-user">{{ auth()->user()->name ?? auth()->user()->email }}</div>
-                <form method="POST"
-                      action="{{ isset($instance) ? route('instance.logout', $instance->slug) : route('logout') }}">
-                    @csrf
-                    <button type="submit" class="logout-btn">Se déconnecter</button>
-                </form>
-            @endauth
+            <a id="mobile_btn" class="mobile_btn" href="#sidebar">
+                <span class="bar-icon">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </span>
+            </a>
+
+            <!-- Header Menu -->
+            <ul class="nav user-menu">
+
+                {{-- Instance badge --}}
+                @if(isset($instance))
+                <li class="nav-item dropdown has-arrow main-drop select-store-dropdown">
+                    <a href="javascript:void(0);" class="nav-link select-store">
+                        <span class="user-info">
+                            <span class="user-detail">
+                                <span class="user-name">{{ $instance->name ?? $instance->slug }}</span>
+                            </span>
+                        </span>
+                    </a>
+                </li>
+                @endif
+
+                <li class="nav-item nav-item-box">
+                    <a href="javascript:void(0);" id="btnFullscreen">
+                        <i class="ti ti-maximize"></i>
+                    </a>
+                </li>
+
+                {{-- User dropdown --}}
+                <li class="nav-item dropdown has-arrow main-drop profile-nav">
+                    <a href="javascript:void(0);" class="nav-link userset" data-bs-toggle="dropdown">
+                        <span class="user-info p-0">
+                            <span class="user-letter">
+                                @auth
+                                <span class="d-flex align-items-center justify-content-center rounded-circle bg-primary text-white fw-bold"
+                                      style="width:36px;height:36px;font-size:14px;line-height:1;">
+                                    {{ strtoupper(substr(auth()->user()->name ?? auth()->user()->email, 0, 1)) }}
+                                </span>
+                                @endauth
+                            </span>
+                        </span>
+                    </a>
+                    <div class="dropdown-menu menu-drop-user">
+                        @auth
+                        <div class="profileset d-flex align-items-center">
+                            <div>
+                                <h6 class="fw-medium">{{ auth()->user()->name ?? auth()->user()->email }}</h6>
+                                <p>{{ auth()->user()->roles->first()?->name ?? 'Utilisateur' }}</p>
+                            </div>
+                        </div>
+                        <hr class="my-2">
+                        <form method="POST"
+                              action="{{ isset($instance) ? route('instance.logout', $instance->slug) : route('logout') }}">
+                            @csrf
+                            <button type="submit"
+                                    class="dropdown-item logout pb-0 w-100 text-start border-0 bg-transparent">
+                                <i class="ti ti-logout me-2"></i>Se déconnecter
+                            </button>
+                        </form>
+                        @endauth
+                    </div>
+                </li>
+
+            </ul>
+            <!-- /Header Menu -->
+
+            <!-- Mobile Menu -->
+            <div class="dropdown mobile-user-menu">
+                <a href="javascript:void(0);" class="nav-link dropdown-toggle"
+                   data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fa fa-ellipsis-v"></i>
+                </a>
+                <div class="dropdown-menu dropdown-menu-right">
+                    @auth
+                    <form method="POST"
+                          action="{{ isset($instance) ? route('instance.logout', $instance->slug) : route('logout') }}">
+                        @csrf
+                        <button type="submit"
+                                class="dropdown-item w-100 text-start border-0 bg-transparent">
+                            Se déconnecter
+                        </button>
+                    </form>
+                    @endauth
+                </div>
+            </div>
+            <!-- /Mobile Menu -->
+
         </div>
-    </aside>
+    </div>
+    {{-- ============================================================ --}}
+    {{-- /HEADER                                                      --}}
+    {{-- ============================================================ --}}
 
-    {{-- Main --}}
-    <div class="main">
-        <header class="topbar">
-            <h1 class="topbar-title">{{ $pageTitle ?? 'Tableau de bord' }}</h1>
-        </header>
 
-        <main class="content">
+    {{-- ============================================================ --}}
+    {{-- SIDEBAR                                                      --}}
+    {{-- ============================================================ --}}
+    <div class="sidebar" id="sidebar">
+
+        <!-- Logo -->
+        <div class="sidebar-logo active">
+            <a href="{{ isset($instance) ? route('dashboard.instance', $instance->slug) : '/' }}"
+               class="logo logo-normal">
+                <img src="{{ asset('build/img/logo.svg') }}" alt="{{ config('app.name', 'B360') }}">
+            </a>
+            <a href="{{ isset($instance) ? route('dashboard.instance', $instance->slug) : '/' }}"
+               class="logo logo-white">
+                <img src="{{ asset('build/img/logo-white.svg') }}" alt="{{ config('app.name', 'B360') }}">
+            </a>
+            <a href="{{ isset($instance) ? route('dashboard.instance', $instance->slug) : '/' }}"
+               class="logo-small">
+                <img src="{{ asset('build/img/logo-small.png') }}" alt="{{ config('app.name', 'B360') }}">
+            </a>
+            <a id="toggle_btn" href="javascript:void(0);">
+                <i data-feather="chevrons-left" class="feather-16"></i>
+            </a>
+        </div>
+        <!-- /Logo -->
+
+        <!-- Sidebar User Profile -->
+        <div class="sidebar-header p-3 pb-0 pt-2">
+            <div class="text-center rounded bg-light p-2 mb-4 sidebar-profile d-flex align-items-center">
+                @auth
+                <div class="d-flex align-items-center justify-content-center rounded-circle bg-primary text-white fw-bold flex-shrink-0"
+                     style="width:36px;height:36px;font-size:14px;line-height:1;">
+                    {{ strtoupper(substr(auth()->user()->name ?? auth()->user()->email, 0, 1)) }}
+                </div>
+                <div class="text-start sidebar-profile-info ms-2">
+                    <h6 class="fs-12 fw-normal mb-1">
+                        {{ auth()->user()->name ?? auth()->user()->email }}
+                    </h6>
+                    <p class="fs-10">
+                        {{ auth()->user()->roles->first()?->name ?? 'Utilisateur' }}
+                    </p>
+                </div>
+                @endauth
+            </div>
+        </div>
+        <!-- /Sidebar User Profile -->
+
+        <div class="sidebar-inner slimscroll">
+            <div id="sidebar-menu" class="sidebar-menu">
+                <ul>
+
+                    {{-- Instance navigation --}}
+                    @if(isset($instance))
+                    <li class="submenu-open">
+                        <h6 class="submenu-hdr">{{ $instance->name ?? $instance->slug }}</h6>
+                        <ul>
+                            <li>
+                                <a href="{{ route('dashboard.instance', $instance->slug) }}"
+                                   class="{{ request()->routeIs('dashboard.*') ? 'active' : '' }}">
+                                    <i class="ti ti-layout-grid fs-16 me-2"></i>
+                                    <span>Tableau de bord</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ route('users.index', $instance->slug) }}"
+                                   class="{{ request()->routeIs('users.*') ? 'active' : '' }}">
+                                    <i class="ti ti-users fs-16 me-2"></i>
+                                    <span>Utilisateurs</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    @endif
+
+                    {{-- Account section --}}
+                    <li class="submenu-open">
+                        <h6 class="submenu-hdr">Compte</h6>
+                        <ul>
+                            <li>
+                                <form method="POST"
+                                      action="{{ isset($instance) ? route('instance.logout', $instance->slug) : route('logout') }}"
+                                      id="sidebar-logout-form">
+                                    @csrf
+                                    <a href="javascript:void(0);"
+                                       onclick="document.getElementById('sidebar-logout-form').submit();">
+                                        <i class="ti ti-logout fs-16 me-2"></i>
+                                        <span>Se déconnecter</span>
+                                    </a>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+
+                </ul>
+            </div>
+        </div>
+    </div>
+    {{-- ============================================================ --}}
+    {{-- /SIDEBAR                                                     --}}
+    {{-- ============================================================ --}}
+
+
+    {{-- ============================================================ --}}
+    {{-- PAGE WRAPPER                                                 --}}
+    {{-- ============================================================ --}}
+    <div class="page-wrapper">
+        <div class="content">
+
             @if(session('status'))
-                <div class="alert alert-success">{{ session('status') }}</div>
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ session('status') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            @endif
+
+            {{-- Page header --}}
+            @if(isset($pageTitle))
+            <div class="page-header">
+                <div class="page-title">
+                    <h4>{{ $pageTitle }}</h4>
+                    @if(isset($instance))
+                        <h6>{{ $instance->name ?? $instance->slug }}</h6>
+                    @endif
+                </div>
+            </div>
             @endif
 
             {{ $slot }}
-        </main>
+
+        </div>
     </div>
+    {{-- ============================================================ --}}
+    {{-- /PAGE WRAPPER                                                --}}
+    {{-- ============================================================ --}}
+
+</div>
+<!-- /Main Wrapper -->
+
+<!-- jQuery -->
+<script src="{{ asset('build/js/jquery-3.7.1.min.js') }}"></script>
+<!-- Feather Icon JS -->
+<script src="{{ asset('build/js/feather.min.js') }}"></script>
+<!-- Slimscroll JS -->
+<script src="{{ asset('build/js/jquery.slimscroll.min.js') }}"></script>
+<!-- Bootstrap Core JS -->
+<script src="{{ asset('build/js/bootstrap.bundle.min.js') }}"></script>
+<!-- Theme JS -->
+<script src="{{ asset('build/js/theme-colorpicker.js') }}"></script>
+<!-- Custom JS -->
+<script src="{{ asset('build/js/script.js') }}"></script>
 
 </body>
 </html>

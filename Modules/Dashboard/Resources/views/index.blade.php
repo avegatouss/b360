@@ -3,76 +3,140 @@
     :instance="$instance"
     pageTitle="Tableau de bord">
 
-    {{-- Statistiques --}}
-    <div class="stat-grid">
+    {{-- ============================================================ --}}
+    {{-- Stat Cards (DreamPos dash-widget style)                     --}}
+    {{-- ============================================================ --}}
+    <div class="row">
 
-        <div class="stat-card">
-            <div class="stat-label">Membres actifs</div>
-            <div class="stat-value">{{ $memberCount }}</div>
-            <div class="stat-sub">sur cette instance</div>
+        <div class="col-xl-3 col-sm-6 col-12 d-flex">
+            <div class="dash-widget w-100">
+                <div class="dash-widgetimg">
+                    <span><img src="{{ asset('build/img/icons/dash1.svg') }}" alt="Membres" width="40"></span>
+                </div>
+                <div class="dash-widgetcontent">
+                    <h5>{{ $memberCount }}</h5>
+                    <h6>Membres actifs</h6>
+                </div>
+            </div>
         </div>
 
-        <div class="stat-card">
-            <div class="stat-label">Utilisateurs totaux</div>
-            <div class="stat-value">{{ $totalUsers }}</div>
-            <div class="stat-sub">dans le système</div>
+        <div class="col-xl-3 col-sm-6 col-12 d-flex">
+            <div class="dash-widget dash1 w-100">
+                <div class="dash-widgetimg">
+                    <span><img src="{{ asset('build/img/icons/dash2.svg') }}" alt="Utilisateurs" width="40"></span>
+                </div>
+                <div class="dash-widgetcontent">
+                    <h5>{{ $totalUsers }}</h5>
+                    <h6>Utilisateurs totaux</h6>
+                </div>
+            </div>
         </div>
 
-        <div class="stat-card">
-            <div class="stat-label">Mode instance</div>
-            <div class="stat-value" style="font-size:1.25rem;">{{ config('app.instance_mode', 'single') }}</div>
-            <div class="stat-sub">{{ config('app.instance_db_strategy', 'shared') }}</div>
+        <div class="col-xl-3 col-sm-6 col-12 d-flex">
+            <div class="dash-widget dash2 w-100">
+                <div class="dash-widgetimg">
+                    <span><img src="{{ asset('build/img/icons/dash3.svg') }}" alt="Mode" width="40"></span>
+                </div>
+                <div class="dash-widgetcontent">
+                    <h5 style="font-size:1.1rem;text-transform:capitalize;">
+                        {{ config('app.instance_mode', 'single') }}
+                    </h5>
+                    <h6>Mode instance</h6>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-sm-6 col-12 d-flex">
+            <div class="dash-widget dash3 w-100">
+                <div class="dash-widgetimg">
+                    <span><img src="{{ asset('build/img/icons/dash4.svg') }}" alt="Statut" width="40"></span>
+                </div>
+                <div class="dash-widgetcontent">
+                    @if($instance->is_active)
+                        <h5 class="text-success">Active</h5>
+                    @else
+                        <h5 class="text-danger">Inactive</h5>
+                    @endif
+                    <h6>Statut de l'instance</h6>
+                </div>
+            </div>
         </div>
 
     </div>
+    {{-- ============================================================ --}}
+    {{-- /Stat Cards                                                  --}}
+    {{-- ============================================================ --}}
 
-    {{-- Infos instance --}}
-    <div class="section-card">
-        <div class="section-title">Instance courante</div>
 
-        <div class="info-row">
-            <span class="info-key">Nom</span>
-            <span class="info-val">{{ $instance->name }}</span>
+    {{-- ============================================================ --}}
+    {{-- Instance info card                                          --}}
+    {{-- ============================================================ --}}
+    <div class="card mb-0">
+        <div class="card-header">
+            <h5 class="card-title">Instance courante</h5>
         </div>
-        <div class="info-row">
-            <span class="info-key">Slug</span>
-            <span class="info-val"><code>{{ $instance->slug }}</code></span>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered mb-0">
+                    <tbody>
+                        <tr>
+                            <td class="fw-medium text-muted" style="width:200px;">Nom</td>
+                            <td>{{ $instance->name }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-medium text-muted">Slug</td>
+                            <td><code>{{ $instance->slug }}</code></td>
+                        </tr>
+                        <tr>
+                            <td class="fw-medium text-muted">Domaine</td>
+                            <td>{{ $instance->domain ?? '—' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-medium text-muted">Statut</td>
+                            <td>
+                                @if($instance->is_active)
+                                    <span class="badge bg-success">Active</span>
+                                @else
+                                    <span class="badge bg-danger">Inactive</span>
+                                @endif
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="fw-medium text-muted">Installée le</td>
+                            <td>{{ $instance->installed_at?->format('d/m/Y H:i') ?? '—' }}</td>
+                        </tr>
+                        @if($instance->meta && ($instance->meta['is_root'] ?? false))
+                        <tr>
+                            <td class="fw-medium text-muted">Type</td>
+                            <td><span class="badge bg-primary">Instance ROOT</span></td>
+                        </tr>
+                        @endif
+                    </tbody>
+                </table>
+            </div>
         </div>
-        <div class="info-row">
-            <span class="info-key">Domaine</span>
-            <span class="info-val">{{ $instance->domain ?? '—' }}</span>
-        </div>
-        <div class="info-row">
-            <span class="info-key">Statut</span>
-            <span class="info-val">
-                @if($instance->is_active)
-                    <span class="badge badge-green">Active</span>
-                @else
-                    <span class="badge badge-gray">Inactive</span>
-                @endif
-            </span>
-        </div>
-        <div class="info-row">
-            <span class="info-key">Installée le</span>
-            <span class="info-val">{{ $instance->installed_at?->format('d/m/Y H:i') ?? '—' }}</span>
-        </div>
-        @if($instance->meta && isset($instance->meta['is_root']) && $instance->meta['is_root'])
-        <div class="info-row">
-            <span class="info-key">Type</span>
-            <span class="info-val"><span class="badge badge-blue">Instance ROOT</span></span>
-        </div>
-        @endif
     </div>
+    {{-- ============================================================ --}}
+    {{-- /Instance info card                                         --}}
+    {{-- ============================================================ --}}
 
-    {{-- Liens rapides --}}
-    <div class="section-card">
-        <div class="section-title">Accès rapides</div>
-        <div style="display:flex;gap:.75rem;flex-wrap:wrap;padding:.25rem 0;">
+
+    {{-- ============================================================ --}}
+    {{-- Quick links                                                  --}}
+    {{-- ============================================================ --}}
+    <div class="card mt-3 mb-0">
+        <div class="card-header">
+            <h5 class="card-title">Accès rapides</h5>
+        </div>
+        <div class="card-body">
             <a href="{{ route('users.index', $instance->slug) }}"
-               style="padding:.5rem 1rem;background:#eff6ff;color:#2563eb;border-radius:6px;font-size:.875rem;font-weight:500;text-decoration:none;">
-                Gérer les utilisateurs
+               class="btn btn-primary me-2">
+                <i class="ti ti-users me-1"></i>Gérer les utilisateurs
             </a>
         </div>
     </div>
+    {{-- ============================================================ --}}
+    {{-- /Quick links                                                 --}}
+    {{-- ============================================================ --}}
 
 </x-dashboard::layouts.master>

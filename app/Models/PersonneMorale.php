@@ -43,6 +43,14 @@ class PersonneMorale extends Model implements HasMedia
         return $this->representants()->where('est_principal', true)->first();
     }
 
+    /**
+     * Rôles de la personne liée (via personne_id partagé).
+     */
+    public function personneRoles()
+    {
+        return $this->hasMany(PersonneRole::class, 'personne_id', 'personne_id');
+    }
+
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('logos')->singleFile();
@@ -94,7 +102,7 @@ class PersonneMorale extends Model implements HasMedia
     public function getReferenceRoleActuelAttribute(): ?string
     {
         $dernierRole = $this->personneRoles()->latest()->first();
-        return $dernierRole ? $dernierRole->reference : null;
+        return $dernierRole ? $dernierRole->reference_role : null;
     }
 
     /**
@@ -123,8 +131,8 @@ class PersonneMorale extends Model implements HasMedia
 
         return $this->personneRoles()->create([
             'role' => $role,
-            'reference' => $reference,
-            'metadata' => $metadata
+            'reference_role' => $reference,
+            'metadata' => $metadata,
         ]);
     }
 

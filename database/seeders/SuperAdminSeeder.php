@@ -69,8 +69,8 @@ class SuperAdminSeeder extends Seeder
             $user->assignRole('super-admin');
         }
 
-        // Restaurer : pas de contexte par défaut
-        $registrar->setPermissionsTeamId(null);
+        // Restaurer au contexte global (convention B360 : 0 = global, null interdit en PK)
+        $registrar->setPermissionsTeamId(0);
         $registrar->forgetCachedPermissions();
 
         /*

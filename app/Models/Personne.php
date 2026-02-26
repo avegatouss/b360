@@ -3,8 +3,6 @@
 
 namespace App\Models;
 
-use App\Services\AppPersonnes\Logic\ContactNormalizer;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -29,12 +27,6 @@ class Personne extends Model implements HasMedia
 
     protected $casts = [
         'actif' => 'bool',
-    ];
-
-    protected $appends = [
-        'roles_list',
-        'full_name',
-        'nom_affichage'
     ];
 
     /**
@@ -68,28 +60,6 @@ class Personne extends Model implements HasMedia
             'personne_id',
             'personne_morale_id'
         );
-    }
-
-    /**
-     * RELATIONS AVEC LES BIENS ET CONTRATS
-     */
-
-    // Relation avec les biens comme propriétaire
-    public function biensPossedes()
-    {
-        return $this->hasMany(Bien::class, 'proprietaire_id');
-    }
-
-    // Relation avec les contrats de location comme locataire
-    public function contratsLocation()
-    {
-        return $this->hasMany(ContratLocation::class, 'locataire_id');
-    }
-
-    // NOUVELLE RELATION : Contrats de gérance comme propriétaire
-    public function contratsGerance()
-    {
-        return $this->hasMany(ContratGerance::class, 'proprietaire_id');
     }
 
     /**
@@ -245,76 +215,17 @@ class Personne extends Model implements HasMedia
                 $payload['personne_physique_id'] = $pp->id;
                 $payload['first_name'] = $payload['first_name'] ?? ($pp->prenom ?? null);
                 $payload['last_name']  = $payload['last_name']  ?? ($pp->nom ?? null);
-                $payload['name']       = $payload['name']       ?? trim(($payload['first_name'] ?? '') . ' ' . ($payload['last_name'] ?? ''));
+                $payload['full_name']  = $payload['full_name']  ?? trim(($payload['first_name'] ?? '') . ' ' . ($payload['last_name'] ?? ''));
             }
         }
 
-        if (empty($payload['name'])) {
-            $payload['name'] = $this->nom_affichage ?? ($this->email ?: 'User-' . $this->id);
+        if (empty($payload['full_name'])) {
+            $payload['full_name'] = $this->nom_affichage ?? ($this->email ?: 'User-' . $this->id);
         }
 
         return User::create($payload);
     }
 
-    /**
-     * MÉTHODES POUR LES STATISTIQUES
-     */
-
-    // Nombre de biens possédés par statut
-    public function getNombreBiensParStatut(): array
-    {
-        return $this->biensPossedes()
-            ->selectRaw('statut, COUNT(*) as count')
-            ->groupBy('statut')
-            ->pluck('count', 'statut')
-            ->toArray();
-    }
-
-    // Nombre de contrats actifs
-    public function getNombreContratsActifs(): array
-    {
-        return [
-            'location' => $this->contratsLocation()->actifs()->count(),
-            'gerance' => $this->contratsGerance()->actifs()->count(),
-        ];
-    }
-
-    // Vérifie si la personne a des biens en gérance
-    public function hasBiensEnGerance(): bool
-    {
-        return $this->biensPossedes()
-            ->whereHas('contratGerances', function ($query) {
-                $query->actifs();
-            })
-            ->exists();
-    }
-
-    // Vérifie si la personne a des contrats en cours
-    public function hasContratsActifs(): bool
-    {
-        return $this->contratsLocation()->actifs()->exists() ||
-            $this->contratsGerance()->actifs()->exists();
-    }
-
-    /**
-     * MUTATEURS
-     */
-    protected function email(): Attribute
-    {
-        return Attribute::make(
-            set: fn($value) => ContactNormalizer::normalizeEmail($value)
-        );
-    }
-
-    protected function telephone(): Attribute
-    {
-        return Attribute::make(
-            set: fn($value) => ContactNormalizer::normalizePhone(
-                $value,
-                $this->pays ?: config('app_settings.personnes.default_country_code')
-            )
-        );
-    }
     public function currentRole()
     {
         return $this->roles()->latest()->first();

@@ -125,24 +125,17 @@ return [
 
    /*
     |--------------------------------------------------------------------------
-    | B360 - Installation
+    | B360 - Installation & Instances
     |--------------------------------------------------------------------------
-    */
-
-    'installed' => env('APP_INSTALLED', false),
-
-    /*
-    |--------------------------------------------------------------------------
-    | B360 - Instances
-    |--------------------------------------------------------------------------
+    | installed: flag d'installation (true après wizard)
     | instance_mode: single|multi
-    | instance_resolution: domain (v1)
+    | instance_resolution: path|subdomain|domain|header
     | instance_db_strategy: shared|database-per-instance
     */
 
     'installed' => env('APP_INSTALLED', false),
     'instance_mode' => env('INSTANCE_MODE', 'single'),
-    'instance_resolution' => env('INSTANCE_RESOLUTION', 'subdomain'), // 
-    'instance_db_strategy' => env('INSTANCE_DB_STRATEGY', 'shared'), // shared | database-per-instance
+    'instance_resolution' => env('INSTANCE_RESOLUTION', 'path'),
+    'instance_db_strategy' => env('INSTANCE_DB_STRATEGY', 'shared'),
 
 ];

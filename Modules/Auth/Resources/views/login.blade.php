@@ -1,78 +1,121 @@
-<x-authmod::layouts.master title="{{ ($mode ?? 'global') === 'instance' ? 'Connexion — ' . ($instance->name ?? $instance->slug) : 'Connexion' }}">
+<x-authmod::layouts.master :title="($mode ?? 'global') === 'instance'
+    ? 'Connexion — ' . ($instance->name ?? $instance->slug ?? 'Instance')
+    : 'Connexion — ' . config('app.name', 'B360')">
 
-    <div class="auth-card">
+    <div class="account-content">
+        <div class="login-wrapper bg-img">
+            <div class="login-content authent-content">
 
-        <div class="auth-logo">
-            <span class="auth-logo-text">B360</span>
+                <form method="POST"
+                      action="{{ ($mode ?? 'global') === 'instance' && isset($instance)
+                          ? route('instance.login.post', $instance->slug)
+                          : route('login.post') }}">
+                    @csrf
+
+                    <div class="login-userset">
+
+                        {{-- Logo --}}
+                        <div class="login-logo logo-normal">
+                            <img src="{{ asset('build/img/logo.svg') }}" alt="{{ config('app.name', 'B360') }}">
+                        </div>
+                        <a href="{{ url('/') }}" class="login-logo logo-white">
+                            <img src="{{ asset('build/img/logo-white.svg') }}" alt="{{ config('app.name', 'B360') }}">
+                        </a>
+
+                        {{-- Heading --}}
+                        <div class="login-userheading">
+                            <h3>Connexion</h3>
+                            @if(($mode ?? 'global') === 'instance' && isset($instance))
+                                <h4 class="fs-16">
+                                    Connectez-vous à <strong>{{ $instance->name ?? $instance->slug }}</strong>
+                                </h4>
+                            @else
+                                <h4 class="fs-16">
+                                    Accédez au panneau {{ config('app.name', 'B360') }} avec votre e-mail et mot de passe.
+                                </h4>
+                            @endif
+                        </div>
+
+                        {{-- Alerts --}}
+                        @if($errors->any())
+                            <div class="alert alert-danger" role="alert">
+                                @foreach($errors->all() as $error)
+                                    <p class="mb-0">{{ $error }}</p>
+                                @endforeach
+                            </div>
+                        @endif
+
+                        @if(session('status'))
+                            <div class="alert alert-success" role="alert">
+                                {{ session('status') }}
+                            </div>
+                        @endif
+
+                        {{-- Email --}}
+                        <div class="mb-3">
+                            <label class="form-label">E-mail <span class="text-danger"> *</span></label>
+                            <div class="input-group">
+                                <input type="email"
+                                       name="email"
+                                       value="{{ old('email') }}"
+                                       class="form-control border-end-0"
+                                       required
+                                       autofocus
+                                       autocomplete="email"
+                                       placeholder="vous@exemple.com">
+                                <span class="input-group-text border-start-0">
+                                    <i class="ti ti-mail"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        {{-- Password --}}
+                        <div class="mb-3">
+                            <label class="form-label">Mot de passe <span class="text-danger"> *</span></label>
+                            <div class="pass-group">
+                                <input type="password"
+                                       name="password"
+                                       class="pass-input form-control"
+                                       required
+                                       autocomplete="current-password"
+                                       placeholder="••••••••">
+                                <span class="ti toggle-password ti-eye-off text-gray-9"></span>
+                            </div>
+                        </div>
+
+                        {{-- Remember me + Forgot --}}
+                        <div class="form-login authentication-check">
+                            <div class="row">
+                                <div class="col-12 d-flex align-items-center justify-content-between">
+                                    <div class="custom-control custom-checkbox">
+                                        <label class="checkboxs ps-4 mb-0 pb-0 line-height-1 fs-16 text-gray-6">
+                                            <input type="checkbox" name="remember" value="1">
+                                            <span class="checkmarks"></span>Se souvenir de moi
+                                        </label>
+                                    </div>
+                                    <div class="text-end">
+                                        <a class="text-orange fs-16 fw-medium"
+                                           href="{{ route('password.request') }}">Mot de passe oublié ?</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Submit --}}
+                        <div class="form-login">
+                            <button type="submit" class="btn btn-primary w-100">Se connecter</button>
+                        </div>
+
+                        {{-- Footer copyright --}}
+                        <div class="my-4 d-flex justify-content-center align-items-center copyright-text">
+                            <p>Copyright &copy; {{ date('Y') }} {{ config('app.name', 'B360') }}</p>
+                        </div>
+
+                    </div>
+                </form>
+
+            </div>
         </div>
-
-        <h1 class="auth-title">
-            @if(($mode ?? 'global') === 'instance' && isset($instance))
-                Connexion à <strong>{{ $instance->name ?? $instance->slug }}</strong>
-            @else
-                Connexion
-            @endif
-        </h1>
-
-        @if($errors->any())
-            <div class="auth-alert auth-alert-error">
-                @foreach($errors->all() as $error)
-                    <p>{{ $error }}</p>
-                @endforeach
-            </div>
-        @endif
-
-        @if(session('status'))
-            <div class="auth-alert auth-alert-success">
-                {{ session('status') }}
-            </div>
-        @endif
-
-        <form method="POST"
-              action="{{ ($mode ?? 'global') === 'instance' && isset($instance)
-                ? route('instance.login.post', $instance->slug)
-                : route('login.post') }}">
-            @csrf
-
-            <div class="auth-field">
-                <label for="email">Adresse e-mail</label>
-                <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    value="{{ old('email') }}"
-                    required
-                    autofocus
-                    autocomplete="email"
-                    placeholder="vous@exemple.com"
-                >
-            </div>
-
-            <div class="auth-field">
-                <label for="password">
-                    Mot de passe
-                    <a href="{{ route('password.request') }}" class="auth-link-right">Mot de passe oublié ?</a>
-                </label>
-                <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    required
-                    autocomplete="current-password"
-                    placeholder="••••••••"
-                >
-            </div>
-
-            <div class="auth-checkbox">
-                <input type="checkbox" name="remember" value="1" id="remember">
-                <label for="remember">Se souvenir de moi</label>
-            </div>
-
-            <button type="submit" class="auth-btn">
-                Se connecter
-            </button>
-        </form>
-
     </div>
 
 </x-authmod::layouts.master>

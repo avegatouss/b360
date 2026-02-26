@@ -19,19 +19,16 @@ final class InstanceSelectionController extends Controller
             ->where('instance_user.user_id', $user->id)
             ->where('instance_user.status', 'active')
             ->where('instances.is_active', true)
-            ->select(['instances.slug'])
-            ->orderBy('instances.slug')
-            ->get()
-            ->pluck('slug')
-            ->values()
-            ->all();
+            ->select(['instances.slug', 'instances.name'])
+            ->orderBy('instances.name')
+            ->get();
 
-        if (count($instances) === 0) {
+        if ($instances->isEmpty()) {
             return redirect()->route('instances.no_active');
         }
 
-        if (count($instances) === 1) {
-            return redirect()->to('/i/' . $instances[0]);
+        if ($instances->count() === 1) {
+            return redirect()->to('/i/' . $instances->first()->slug);
         }
 
         return view('authmod::instances.select', compact('instances'));

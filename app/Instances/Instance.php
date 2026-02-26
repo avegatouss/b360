@@ -2,44 +2,86 @@
 
 namespace App\Instances;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Class Instance
+ * Instance B360
  *
- * Représente une instance B360.
- * Cette table est TOUJOURS dans la base centrale.
+ * Règles fondamentales :
+ * - Toujours stockée dans la base "system"
+ * - Ne contient AUCUNE donnée métier
+ * - Sert uniquement à la résolution, au routage et au contexte
  */
 class Instance extends Model
 {
-    /**
-     * Table explicite pour éviter toute ambiguïté.
-     */
-    protected $table = 'instances';
-
-    // IMPORTANT: la table instances est TOUJOURS sur la DB "system"
     protected $connection = 'system';
 
-    /**
-     * Champs assignables.
-     */
+    protected $table = 'instances';
+
     protected $fillable = [
         'name',
         'slug',
         'domain',
+        'subdomain',
+        'path',
         'database',
         'db_driver',
         'is_active',
-        'meta',
         'installed_at',
+        'meta',
     ];
 
-    /**
-     * Casts automatiques.
-     */
     protected $casts = [
-        'is_active' => 'boolean',
-        'meta'      => 'array',
+        'is_active'    => 'boolean',
         'installed_at' => 'datetime',
+        'meta'         => 'array',
     ];
+
+    /* -----------------------------------------------------------------
+     |  Scopes
+     |-----------------------------------------------------------------*/
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('is_active', true);
+    }
+
+    public function scopeRoot(Builder $query): Builder
+    {
+        return $query->where('slug', 'root');
+    }
+
+    /* -----------------------------------------------------------------
+     |  Helpers
+     |-----------------------------------------------------------------*/
+
+    public function isRoot(): bool
+    {
+        return ($this->meta['is_root'] ?? false) === true;
+    }
+
+    public function hasDedicatedDatabase(): bool
+    {
+        return !empty($this->database);
+    }
+
+    public function getBusinessConnectionName(): string
+    {
+        return $this->hasDedicatedDatabase()
+            ? 'instance'
+            : 'system';
+    }
+
+    /* -----------------------------------------------------------------
+     |  Guards de sécurité
+     |-----------------------------------------------------------------*/
+
+    protected static function booted(): void
+    {
+        static::updating(function (Instance $instance) {
+            // Toujours autoriser la mise à jour (y compris désactivation)
+            return true;
+        });
+    }
 }

@@ -15,10 +15,11 @@ use Modules\Dashboard\Http\Controllers\DashboardController;
 Route::middleware([
     'web',
     'core.redirect.not_installed',
-    'core.instance.resolved',
-    'core.spatie.team',
+    'core.instance.bind',      // résout slug → Instance (CurrentInstance::set)
+    'core.instance.resolved',  // valide que l'instance est bien liée
+    'core.spatie.team',        // setPermissionsTeamId(instance->id)
     'auth',
-    'core.instance.member',
+    'core.instance.member',    // vérifie membership actif
 ])->prefix('/i/{slug}')->group(function () {
 
     // Accueil instance = dashboard

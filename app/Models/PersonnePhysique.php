@@ -36,12 +36,6 @@ class PersonnePhysique extends Model  implements HasMedia
         'date_expiration' => 'date',
     ];
 
-    protected $appends = [
-        'nom_affichage',
-        'nom_complet',
-        'age'
-    ];
-
     public function personne()
     {
         return $this->belongsTo(Personne::class);

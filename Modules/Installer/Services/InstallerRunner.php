@@ -70,8 +70,16 @@ class InstallerRunner
 
             // ── Étape 2 : cache ───────────────────────────────────────────────
             $emit(18, 'Nettoyage des caches Laravel…');
-            Artisan::call('config:clear');
-            Artisan::call('cache:clear');
+            $this->step('Nettoyage config', function () {
+                if (Artisan::call('config:clear') !== 0) {
+                    throw new RuntimeException('Échec du nettoyage de la configuration.');
+                }
+            });
+            $this->step('Nettoyage cache', function () {
+                if (Artisan::call('cache:clear') !== 0) {
+                    throw new RuntimeException('Échec du nettoyage du cache.');
+                }
+            });
 
             // Synchroniser la config en mémoire (config:clear efface le fichier
             // mais pas les valeurs déjà chargées dans la request courante).
@@ -126,19 +134,29 @@ class InstallerRunner
             // ── Étape 6 : instance ROOT ───────────────────────────────────────
             $emit(60, 'Création de l\'instance ROOT…');
             $this->step('Instance ROOT', function () {
-                Artisan::call('db:seed', [
+                $exitCode = Artisan::call('db:seed', [
                     '--class' => InstanceSeeder::class,
                     '--force' => true,
                 ]);
+                if ($exitCode !== 0) {
+                    throw new RuntimeException(
+                        'Le seeder InstanceSeeder a échoué (code ' . $exitCode . ').'
+                    );
+                }
             });
 
             // ── Étape 7 : rôles & permissions ────────────────────────────────
             $emit(72, 'Initialisation des rôles et permissions…');
             $this->step('Rôles & permissions', function () {
-                Artisan::call('db:seed', [
+                $exitCode = Artisan::call('db:seed', [
                     '--class' => RolesPermissionsSeeder::class,
                     '--force' => true,
                 ]);
+                if ($exitCode !== 0) {
+                    throw new RuntimeException(
+                        'Le seeder RolesPermissionsSeeder a échoué (code ' . $exitCode . ').'
+                    );
+                }
             });
 
             // ── Étape 8 : super admin ─────────────────────────────────────────
@@ -152,10 +170,15 @@ class InstallerRunner
 
             $emit(84, 'Création du compte Super Administrateur…');
             $this->step('Super Administrateur', function () {
-                Artisan::call('db:seed', [
+                $exitCode = Artisan::call('db:seed', [
                     '--class' => SuperAdminSeeder::class,
                     '--force' => true,
                 ]);
+                if ($exitCode !== 0) {
+                    throw new RuntimeException(
+                        'Le seeder SuperAdminSeeder a échoué (code ' . $exitCode . ').'
+                    );
+                }
             });
 
             // ── Étape 9 : finalisation ────────────────────────────────────────
@@ -237,9 +260,11 @@ class InstallerRunner
      */
     private function sanitizeError(string $msg): string
     {
-        $msg = preg_replace('/(password=)[^;\s]+/i', '$1***', $msg);
-        $msg = preg_replace('/(pwd=)[^;\s]+/i', '$1***', $msg);
+        // Masquer les mots de passe dans tous les formats courants
+        $msg = preg_replace('/(password|passwd|pwd)[=:]\s*[^\s,;\]\)"\']+/i', '$1=***', $msg);
         $msg = preg_replace('/(DB_PASSWORD=).*/i', '$1***', $msg);
+        // Masquer les DSN complets
+        $msg = preg_replace('/(mysql|pgsql|sqlsrv):\/\/[^@]+@/i', '$1://***:***@', $msg);
         $msg = preg_replace('/(mysql:host=)[^;]+/i', '$1***', $msg);
         $msg = preg_replace('/(pgsql:host=)[^;]+/i', '$1***', $msg);
         // Patterns Spatie Permission souvent verbeux

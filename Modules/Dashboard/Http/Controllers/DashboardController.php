@@ -16,16 +16,17 @@ final class DashboardController extends Controller
             abort(503, 'Instance non résolue.');
         }
 
-        // Stats de base (connexion system)
+        // Membres actifs de CETTE instance
         $memberCount = DB::connection('system')
             ->table('instance_user')
             ->where('instance_id', $instance->id)
             ->where('status', 'active')
             ->count();
 
+        // Utilisateurs de CETTE instance (pas tous les users system)
         $totalUsers = DB::connection('system')
-            ->table('users')
-            ->whereNull('deleted_at')
+            ->table('instance_user')
+            ->where('instance_id', $instance->id)
             ->count();
 
         return view('dashboard::index', [

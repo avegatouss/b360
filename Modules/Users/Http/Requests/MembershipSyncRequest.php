@@ -17,8 +17,7 @@ final class MembershipSyncRequest extends FormRequest
             'memberships' => ['required','array','min:1'],
             'memberships.*.instance_id' => ['required','integer','min:1'],
             'memberships.*.status' => ['required','in:active,invited,disabled'],
-            'memberships.*.roles' => ['array'],
-            'memberships.*.roles.*' => ['string','max:100'],
+            'memberships.*.role' => ['nullable','string','max:100'],
         ];
     }
 }

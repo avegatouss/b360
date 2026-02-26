@@ -230,6 +230,9 @@ class EnvWriter
         File::put($tmpPath, $content);
         @chmod($tmpPath, 0640);
         // rename est atomique sur la plupart des FS
-        @rename($tmpPath, $path);
+        if (!rename($tmpPath, $path)) {
+            @unlink($tmpPath);
+            throw new RuntimeException("Échec d'écriture atomique vers {$path}");
+        }
     }
 }

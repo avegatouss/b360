@@ -15,7 +15,7 @@ use Modules\Installer\Http\Controllers\InstallerController;
 |
 */
 
-Route::middleware(['web', 'installer.not_installed'])
+Route::middleware(['web', 'installer.not_installed', 'throttle:15,1'])
     ->prefix('install')
     ->name('installer.')
     ->group(function () {
@@ -27,14 +27,6 @@ Route::middleware(['web', 'installer.not_installed'])
         */
         Route::get('/', [InstallerController::class, 'index'])
             ->name('index');
-
-        /*
-        |----------------------------------------------------------------------
-        | Soumission du formulaire d’installation
-        |----------------------------------------------------------------------
-        */
-        Route::post('/', [InstallerController::class, 'install'])
-            ->name('process');
 
         // Étape 1 Vérification prérequis
         Route::get('/requirements', [InstallerController::class, 'requirements'])->name('requirements');

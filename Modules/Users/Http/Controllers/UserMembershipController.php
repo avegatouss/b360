@@ -12,6 +12,7 @@ final class UserMembershipController extends Controller
 {
     public function sync(
         MembershipSyncRequest $request,
+        string $slug,
         User $user,
         MembershipService $memberships,
         TeamRoleAssigner $roles
@@ -21,12 +22,13 @@ final class UserMembershipController extends Controller
         foreach ($request->input('memberships', []) as $row) {
             $instanceId = (int) $row['instance_id'];
             $status = (string) $row['status'];
-            $roleList = (array) ($row['roles'] ?? []);
+            $role = $row['role'] ?? null;
+            $roleList = $role ? [$role] : [];
 
             $memberships->addToInstance($user, $instanceId, $status);
             $roles->syncRolesForInstance($user, $instanceId, $roleList);
         }
 
-        return back()->with('status', 'Memberships updated.');
+        return back()->with('status', 'Adhésions mises à jour.');
     }
 }

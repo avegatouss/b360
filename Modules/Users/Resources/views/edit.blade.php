@@ -1,41 +1,78 @@
-﻿@extends('layouts.app')
+<x-dashboard::layouts.master
+    :title="'Modifier ' . ($user->name ?? $user->email) . ' — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :instance="$instance"
+    pageTitle="Modifier l'utilisateur">
 
-@section('content')
-<div class="container">
-    <h1>Edit User</h1>
-
-    @if(session('status')) <div class="alert alert-success">{{ session('status') }}</div> @endif
-
-    <form method="POST" action="{{ route('users.update', $user) }}" class="mb-4">
-        @csrf
-        @method('PUT')
-
-        <div class="mb-3">
-            <label class="form-label">Name</label>
-            <input name="name" class="form-control" value="{{ old('name', $user->name) }}" required>
-            @error('name') <div class="text-danger">{{ $message }}</div> @enderror
+    @if(session('status'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('status') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
+    @endif
 
-        <div class="mb-3">
-            <label class="form-label">Email</label>
-            <input name="email" type="email" class="form-control" value="{{ old('email', $user->email) }}" required>
-            @error('email') <div class="text-danger">{{ $message }}</div> @enderror
+    <div class="card mb-3">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Informations</h5>
         </div>
+        <div class="card-body">
+            <form method="POST" action="{{ route('users.update', [$instance->slug, $user]) }}">
+                @csrf
+                @method('PUT')
 
-        <div class="mb-3">
-            <label class="form-label">Password (optional)</label>
-            <input name="password" type="password" class="form-control">
-            @error('password') <div class="text-danger">{{ $message }}</div> @enderror
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Nom complet</label>
+                        <input name="name" class="form-control @error('name') is-invalid @enderror"
+                               value="{{ old('name', $user->name) }}" required>
+                        @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Email</label>
+                        <input name="email" type="email" class="form-control @error('email') is-invalid @enderror"
+                               value="{{ old('email', $user->email) }}" required>
+                        @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Mot de passe <small class="text-muted">(laisser vide pour ne pas changer)</small></label>
+                        <input name="password" type="password" class="form-control @error('password') is-invalid @enderror">
+                        @error('password') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button class="btn btn-primary">
+                        <i class="ti ti-check me-1"></i>Enregistrer
+                    </button>
+                    <a class="btn btn-outline-secondary" href="{{ route('users.index', $instance->slug) }}">
+                        Retour
+                    </a>
+                </div>
+            </form>
         </div>
+    </div>
 
-        <button class="btn btn-primary">Save</button>
-        <form method="POST" action="{{ route('users.destroy', $user) }}" class="d-inline">
-            @csrf @method('DELETE')
-            <button class="btn btn-danger" onclick="return confirm('Delete user?')">Delete</button>
-        </form>
-        <a class="btn btn-link" href="{{ route('users.index') }}">Back</a>
-    </form>
+    {{-- Zone de danger --}}
+    <div class="card mb-3">
+        <div class="card-header">
+            <h5 class="card-title mb-0 text-danger">Zone de danger</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ route('users.destroy', [$instance->slug, $user]) }}"
+                  onsubmit="return confirm('Supprimer cet utilisateur ? Cette action est irréversible.')">
+                @csrf
+                @method('DELETE')
+                <button class="btn btn-outline-danger btn-sm">
+                    <i class="ti ti-trash me-1"></i>Supprimer l'utilisateur
+                </button>
+            </form>
+        </div>
+    </div>
 
+    {{-- Memberships --}}
     @include('users::partials.memberships')
-</div>
-@endsection
+
+</x-dashboard::layouts.master>

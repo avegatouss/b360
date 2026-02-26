@@ -5,7 +5,7 @@ namespace App\Models\Concerns;
 use App\Instances\Instance;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Scope;
+use Modules\Core\Database\Scopes\InstanceScope;
 use Modules\Core\Support\CurrentInstance;
 
 /**
@@ -32,9 +32,13 @@ trait BelongsToInstance
         static::creating(function (Model $model) {
             if (empty($model->instance_id)) {
                 $instance = CurrentInstance::get();
-                if ($instance) {
-                    $model->instance_id = $instance->id;
+                if (!$instance) {
+                    throw new \RuntimeException(
+                        'Impossible de créer un model ' . get_class($model) . ' sans contexte d\'instance. '
+                        . 'Vérifiez que le middleware core.instance.bind est appliqué.'
+                    );
                 }
+                $model->instance_id = $instance->id;
             }
         });
     }
@@ -53,36 +57,5 @@ trait BelongsToInstance
     public function instance()
     {
         return $this->belongsTo(Instance::class);
-    }
-}
-
-/**
- * Scope d'isolation par instance.
- *
- * - En mode single : pas de filtrage (une seule instance)
- * - En mode multi shared : filtre sur instance_id
- * - Si aucune instance résolue : ne filtre pas (sécurité conservative)
- */
-class InstanceScope implements Scope
-{
-    public function apply(Builder $builder, Model $model): void
-    {
-        $mode = config('app.instance_mode', 'single');
-        $strategy = config('app.instance_db_strategy', 'shared');
-
-        // Mode single ou database-per-instance → pas de filtrage logique
-        if ($mode === 'single' || $strategy !== 'shared') {
-            return;
-        }
-
-        $instance = CurrentInstance::get();
-
-        if (!$instance) {
-            // Fail-open conservative : ne bloque pas mais ne filtre pas non plus.
-            // Le middleware EnsureInstanceResolved doit rejeter avant d'arriver ici.
-            return;
-        }
-
-        $builder->where($model->getTable() . '.instance_id', $instance->id);
     }
 }

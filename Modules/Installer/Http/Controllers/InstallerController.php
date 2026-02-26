@@ -4,20 +4,15 @@ namespace Modules\Installer\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
-use Modules\Installer\Services\EnvWriter;
-use Modules\Installer\Services\InstallerRunner;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\URL;
-use Symfony\Component\HttpFoundation\StreamedResponse;
-
+use Modules\Installer\Services\InstallerRunner;
 use PDO;
-use PDOException;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class InstallerController extends Controller
 {
@@ -27,142 +22,6 @@ class InstallerController extends Controller
     public function index()
     {
         return view('installer::index');
-    }
-
-    /**
-     * Traite la soumission du formulaire d’installation.
-     *
-     * À ce stade :
-     * - aucune écriture disque
-     * - aucune migration
-     * - aucune création de base
-     *
-     * On valide et on prépare les données uniquement.
-     */
-    public function installv0(Request $request)
-    {
-        /*
-        |--------------------------------------------------------------------------
-        | Validation stricte
-        |--------------------------------------------------------------------------
-        */
-
-        $validator = Validator::make($request->all(), [
-
-            // Application
-            'app_name' => ['required', 'string', 'max:255'],
-            'app_url'  => ['required', 'url'],
-            'timezone' => ['required', 'string'],
-            'locale'   => ['required', 'string', 'max:5'],
-
-            // Base centrale
-            'db_host'     => ['required', 'string'],
-            'db_port'     => ['required', 'numeric'],
-            'db_database' => ['required', 'string'],
-            'db_username' => ['required', 'string'],
-            'db_password' => ['nullable', 'string'],
-
-            // Mode Instance
-            'instance_mode' => ['required', 'in:single,multi'],
-            'db_prefix'     => ['nullable', 'string'],
-            'db_suffix'     => ['nullable', 'string'],
-
-            // Super Admin
-            'admin_firstname' => ['required', 'string', 'max:100'],
-            'admin_lastname'  => ['required', 'string', 'max:100'],
-            'admin_username'  => ['required', 'string', 'max:100'],
-            'admin_password'  => ['required', 'string', 'min:8'],
-        ]);
-
-        if ($validator->fails()) {
-            return back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Stockage temporaire en session
-        |--------------------------------------------------------------------------
-        |
-        | Ces données seront utilisées par les étapes suivantes :
-        | - écriture du .env
-        | - migrations
-        | - seed
-        |
-        */
-
-        session([
-            'installer' => $validator->validated(),
-        ]);
-
-        /*
-        |--------------------------------------------------------------------------
-        | Étape suivante
-        |--------------------------------------------------------------------------
-        |
-        | Pour l’instant on reste sur la même page.
-        | Une confirmation ou une étape 2 sera ajoutée ensuite.
-        |
-        */
-        try {
-
-            app(EnvWriter::class)->write($validator->validated());
-        } catch (\Throwable $e) {
-
-            return back()
-                ->withErrors(['env' => $e->getMessage()])
-                ->withInput();
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Nettoyage cache config
-        |--------------------------------------------------------------------------
-        */
-        Artisan::call('config:clear');
-
-        return redirect('/')
-            ->with('success', 'Installation terminée. Application prête.');
-    }
-
-    public function install(Request $request)
-    {
-        $steps = session('installer.steps', []);
-        $installer = session('installer', []);
-
-        $required = [1, 2, 3, 4];
-        foreach ($required as $s) {
-            if (!($steps[$s] ?? false)) {
-                return back()->withErrors(['install' => "Installation bloquée : étape {$s} non validée."]);
-            }
-        }
-
-        if (!($installer['db_confirmed'] ?? false) || !($installer['config_confirmed'] ?? false) || !($installer['admin_confirmed'] ?? false)) {
-            return back()->withErrors(['install' => "Installation bloquée : validations serveur incomplètes."]);
-        }
-
-        $validator = Validator::make($request->all(), [
-            // règles inchangées
-        ]);
-
-        if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
-        }
-
-        try {
-            app(InstallerRunner::class)->run($validator->validated());
-        } catch (\Throwable $e) {
-            return back()
-                ->withErrors(['install' => $e->getMessage()])
-                ->withInput();
-        }
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return redirect('/login')
-            ->with('success', 'Installation terminée avec succès.');
     }
 
     public function requirements(Request $request)
@@ -449,8 +308,12 @@ class InstallerController extends Controller
 
     private function sanitizeDbError(string $msg): string
     {
-        // On évite de renvoyer des infos sensibles / DSN
-        $msg = preg_replace('/(password=)[^;]+/i', '$1***', $msg);
+        // Masquer les mots de passe dans les DSN et messages PDO
+        $msg = preg_replace('/(password[=:\s]*)[^;,\s\)]+/i', '$1***', $msg);
+        // Masquer les DSN complets (mysql://user:pass@host)
+        $msg = preg_replace('#(mysql|pgsql|sqlsrv)://[^@]+@#i', '$1://***:***@', $msg);
+        // Masquer les chemins serveur complets
+        $msg = preg_replace('#\s/[a-z][a-z0-9/_.-]+\.php(:\d+)?#i', ' [path hidden]', $msg);
         return $msg;
     }
 
@@ -711,10 +574,10 @@ class InstallerController extends Controller
         $token = Str::random(40);
         session(['installer.install_token' => $token]);
 
-        // URL SSE signée (valide 10 minutes)
+        // URL SSE signée (valide 30 minutes — l'installation peut être longue)
         $streamUrl = URL::temporarySignedRoute(
             'installer.stream',
-            now()->addMinutes(10),
+            now()->addMinutes(30),
             ['token' => $token]
         );
 

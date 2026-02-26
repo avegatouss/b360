@@ -1,34 +1,70 @@
-<x-users::layouts.master>
+<x-dashboard::layouts.master
+    :title="'Utilisateurs — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :instance="$instance"
+    pageTitle="Utilisateurs">
 
-@section('content')
-<div class="container">
-    <h1>Users</h1>
+    @if(session('status'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('status') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
 
-    @if(session('status')) <div class="alert alert-success">{{ session('status') }}</div> @endif
+    <div class="card mb-0">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">Liste des utilisateurs</h5>
+            @can('users.manage')
+            <a class="btn btn-primary btn-sm" href="{{ route('users.create', $instance->slug) }}">
+                <i class="ti ti-plus me-1"></i>Nouvel utilisateur
+            </a>
+            @endcan
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Email</th>
+                            <th>Statut</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @forelse($users as $u)
+                        <tr>
+                            <td>{{ $u->name ?? $u->email }}</td>
+                            <td>{{ $u->email }}</td>
+                            <td>
+                                @if($u->is_active && !$u->is_blocked)
+                                    <span class="badge bg-success">Actif</span>
+                                @elseif($u->is_blocked)
+                                    <span class="badge bg-danger">Bloqué</span>
+                                @else
+                                    <span class="badge bg-secondary">Inactif</span>
+                                @endif
+                            </td>
+                            <td class="text-end">
+                                @can('users.manage')
+                                <a class="btn btn-sm btn-outline-primary" href="{{ route('users.edit', [$instance->slug, $u]) }}">
+                                    <i class="ti ti-edit me-1"></i>Modifier
+                                </a>
+                                @endcan
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-3">Aucun utilisateur trouvé.</td>
+                        </tr>
+                    @endforelse
+                    </tbody>
+                </table>
+            </div>
 
-    <div class="mb-3">
-        <a class="btn btn-primary" href="{{ route('users.create') }}">Create User</a>
+            <div class="mt-3">
+                {{ $users->links() }}
+            </div>
+        </div>
     </div>
 
-    <table class="table table-sm">
-        <thead>
-        <tr><th>Name</th><th>Email</th><th></th></tr>
-        </thead>
-        <tbody>
-        @foreach($users as $u)
-            <tr>
-                <td>{{ $u->name }}</td>
-                <td>{{ $u->email }}</td>
-                <td class="text-end">
-                    <a class="btn btn-sm btn-outline-secondary" href="{{ route('users.edit', $u) }}">Edit</a>
-                </td>
-            </tr>
-        @endforeach
-        </tbody>
-    </table>
-
-    {{ $users->links() }}
-</div>
-
-
-</x-users::layouts.master>
+</x-dashboard::layouts.master>
