@@ -219,6 +219,29 @@
                             </li>
                         </ul>
                     </li>
+
+                    {{-- Administration (ROOT + super-admin uniquement) --}}
+                    @if($instance->isRoot() && auth()->user()?->hasRole('super-admin'))
+                    <li class="submenu-open">
+                        <h6 class="submenu-hdr">Administration</h6>
+                        <ul>
+                            <li>
+                                <a href="{{ route('instances.index', $instance->slug) }}"
+                                   class="{{ request()->routeIs('instances.*') ? 'active' : '' }}">
+                                    <i class="ti ti-building fs-16 me-2"></i>
+                                    <span>Instances</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ route('modules.index', $instance->slug) }}"
+                                   class="{{ request()->routeIs('modules.*') ? 'active' : '' }}">
+                                    <i class="ti ti-puzzle fs-16 me-2"></i>
+                                    <span>Modules</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    @endif
                     @endif
 
                     {{-- Account section --}}

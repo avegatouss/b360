@@ -20,6 +20,21 @@
             @endcan
         </div>
         <div class="card-body">
+            <form method="GET" action="{{ route('users.index', $instance->slug) }}" class="mb-3">
+                <div class="input-group">
+                    <input type="text" name="search" class="form-control" placeholder="Rechercher par nom, email ou username..."
+                           value="{{ request('search') }}">
+                    <button class="btn btn-outline-secondary" type="submit">
+                        <i class="ti ti-search"></i>
+                    </button>
+                    @if(request('search'))
+                        <a class="btn btn-outline-danger" href="{{ route('users.index', $instance->slug) }}">
+                            <i class="ti ti-x"></i>
+                        </a>
+                    @endif
+                </div>
+            </form>
+
             <div class="table-responsive">
                 <table class="table table-bordered table-hover mb-0">
                     <thead>
@@ -33,7 +48,7 @@
                     <tbody>
                     @forelse($users as $u)
                         <tr>
-                            <td>{{ $u->name ?? $u->email }}</td>
+                            <td>{{ $u->full_name ?? $u->email }}</td>
                             <td>{{ $u->email }}</td>
                             <td>
                                 @if($u->is_active && !$u->is_blocked)

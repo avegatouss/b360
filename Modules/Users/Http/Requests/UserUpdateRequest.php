@@ -16,9 +16,12 @@ final class UserUpdateRequest extends FormRequest
         $userId = (int) $this->route('user')->id;
 
         return [
-            'name' => ['required','string','max:190'],
+            'full_name' => ['required','string','max:190'],
+            'username' => ['nullable','string','max:100',"unique:system.users,username,{$userId}"],
             'email' => ['required','email','max:190',"unique:system.users,email,{$userId}"],
             'password' => ['nullable','string','min:8','max:255'],
+            'is_active' => ['boolean'],
+            'is_blocked' => ['boolean'],
         ];
     }
 }

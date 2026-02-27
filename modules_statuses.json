@@ -3,5 +3,7 @@
     "Core": true,
     "Users": true,
     "Auth": true,
-    "Dashboard": true
+    "Dashboard": true,
+    "ModuleManager": true,
+    "Instances": true
 }

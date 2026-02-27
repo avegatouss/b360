@@ -1,0 +1,11 @@
+{
+    "name": "ModuleManager",
+    "alias": "module-manager",
+    "description": "Gestion des modules B360 : activation, désactivation, installation via ZIP",
+    "keywords": ["modules", "admin"],
+    "priority": 0,
+    "providers": [
+        "Modules\\ModuleManager\\Providers\\ModuleManagerServiceProvider"
+    ],
+    "files": []
+}

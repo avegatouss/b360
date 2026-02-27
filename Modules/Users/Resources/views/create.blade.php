@@ -14,9 +14,9 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Nom complet</label>
-                        <input name="name" class="form-control @error('name') is-invalid @enderror"
-                               value="{{ old('name') }}" required>
-                        @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        <input name="full_name" class="form-control @error('full_name') is-invalid @enderror"
+                               value="{{ old('full_name') }}" required>
+                        @error('full_name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
 
                     <div class="col-md-6 mb-3">
@@ -29,9 +29,23 @@
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
+                        <label class="form-label">Nom d'utilisateur <small class="text-muted">(optionnel)</small></label>
+                        <input name="username" class="form-control @error('username') is-invalid @enderror"
+                               value="{{ old('username') }}">
+                        @error('username') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
                         <label class="form-label">Mot de passe</label>
                         <input name="password" type="password" class="form-control @error('password') is-invalid @enderror" required>
                         @error('password') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Confirmer le mot de passe</label>
+                        <input name="password_confirmation" type="password" class="form-control" required>
                     </div>
                 </div>
 

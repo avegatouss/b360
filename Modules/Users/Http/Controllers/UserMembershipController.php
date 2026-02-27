@@ -3,6 +3,7 @@
 namespace Modules\Users\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Routing\Controller;
 use Modules\Users\Http\Requests\MembershipSyncRequest;
 use Modules\Users\Services\MembershipService;
@@ -10,6 +11,7 @@ use Modules\Users\Services\TeamRoleAssigner;
 
 final class UserMembershipController extends Controller
 {
+    use AuthorizesRequests;
     public function sync(
         MembershipSyncRequest $request,
         string $slug,

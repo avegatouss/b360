@@ -43,7 +43,7 @@ class InstallerServiceProvider extends ServiceProvider
         | Routes Installer
         |--------------------------------------------------------------------------
         */
-        $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
+        $this->loadRoutesFrom(__DIR__ . '/../Routes/web.php');
 
         /*
         |--------------------------------------------------------------------------
@@ -51,7 +51,7 @@ class InstallerServiceProvider extends ServiceProvider
         |--------------------------------------------------------------------------
         */
         $this->loadViewsFrom(
-            __DIR__ . '/../resources/views',
+            __DIR__ . '/../Resources/views',
             'installer'
         );
 
@@ -61,7 +61,7 @@ class InstallerServiceProvider extends ServiceProvider
         |--------------------------------------------------------------------------
         */
         $this->mergeConfigFrom(
-            __DIR__ . '/../config/config.php',
+            __DIR__ . '/../Config/config.php',
             'installer'
         );
     }

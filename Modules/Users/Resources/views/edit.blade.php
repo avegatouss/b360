@@ -22,9 +22,9 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Nom complet</label>
-                        <input name="name" class="form-control @error('name') is-invalid @enderror"
-                               value="{{ old('name', $user->name) }}" required>
-                        @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        <input name="full_name" class="form-control @error('full_name') is-invalid @enderror"
+                               value="{{ old('full_name', $user->full_name) }}" required>
+                        @error('full_name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
 
                     <div class="col-md-6 mb-3">
@@ -37,9 +37,35 @@
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
+                        <label class="form-label">Nom d'utilisateur <small class="text-muted">(optionnel)</small></label>
+                        <input name="username" class="form-control @error('username') is-invalid @enderror"
+                               value="{{ old('username', $user->username) }}">
+                        @error('username') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    </div>
+
+                    <div class="col-md-6 mb-3">
                         <label class="form-label">Mot de passe <small class="text-muted">(laisser vide pour ne pas changer)</small></label>
                         <input name="password" type="password" class="form-control @error('password') is-invalid @enderror">
                         @error('password') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="form-check form-switch">
+                            <input type="hidden" name="is_active" value="0">
+                            <input class="form-check-input" type="checkbox" name="is_active" value="1"
+                                   id="is_active" @checked(old('is_active', $user->is_active))>
+                            <label class="form-check-label" for="is_active">Compte actif</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="form-check form-switch">
+                            <input type="hidden" name="is_blocked" value="0">
+                            <input class="form-check-input" type="checkbox" name="is_blocked" value="1"
+                                   id="is_blocked" @checked(old('is_blocked', $user->is_blocked))>
+                            <label class="form-check-label text-danger" for="is_blocked">Compte bloqué</label>
+                        </div>
                     </div>
                 </div>
 

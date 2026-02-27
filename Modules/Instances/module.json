@@ -1,0 +1,11 @@
+{
+    "name": "Instances",
+    "alias": "instances",
+    "description": "Gestion des instances SaaS B360 : création, édition, activation, suppression",
+    "keywords": ["instances", "saas", "admin"],
+    "priority": 0,
+    "providers": [
+        "Modules\\Instances\\Providers\\InstancesServiceProvider"
+    ],
+    "files": []
+}

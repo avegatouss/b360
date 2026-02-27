@@ -18,7 +18,10 @@
                     </thead>
                     <tbody>
                     @foreach($instances as $inst)
-                        @php $m = $memberships->get($inst->id); @endphp
+                        @php
+                            $m = $memberships->get($inst->id);
+                            $currentRole = $userRoles[$inst->id] ?? null;
+                        @endphp
                         <tr>
                             <td>
                                 <code>{{ $inst->slug }}</code>
@@ -38,7 +41,7 @@
                                 <select class="form-select form-select-sm" name="memberships[{{ $loop->index }}][role]">
                                     <option value="">— Aucun —</option>
                                     @foreach(['instance-admin', 'manager', 'agent', 'user'] as $role)
-                                        <option value="{{ $role }}">{{ $role }}</option>
+                                        <option value="{{ $role }}" @selected($role === $currentRole)>{{ $role }}</option>
                                     @endforeach
                                 </select>
                             </td>
