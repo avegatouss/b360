@@ -3,7 +3,13 @@
     "allow": [
       "Bash(find:*)",
       "Read(//c/Users/agato/**)",
-      "Read(//c/Users/agato/OneDrive/dev/b360/Modules/**)"
+      "Read(//c/Users/agato/OneDrive/dev/b360/Modules/**)",
+      "Bash(C:/laragon/bin/php/php-8.4.16-nts-Win32-vs17-x64/php.exe artisan config:clear)",
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(C:/laragon/bin/php/php-8.4.16-nts-Win32-vs17-x64/php.exe artisan migrate --path=Modules/Settings/Database/Migrations --force)",
+      "Bash(C:/laragon/bin/php/php-8.4.16-nts-Win32-vs17-x64/php.exe artisan route:list --name=settings)",
+      "Bash(C:/laragon/bin/php/php-8.4.16-nts-Win32-vs17-x64/php.exe artisan view:cache)",
+      "Bash(C:/laragon/bin/php/php-8.4.16-nts-Win32-vs17-x64/php.exe artisan route:list --name=modules)"
     ]
   }
 }

@@ -12,7 +12,7 @@ trait CreatesInstanceContext
 {
     protected function makeInstance(string $slug = 'acme'): Instance
     {
-        return Instance::query()->on('system')->create([
+        return Instance::create([
             'slug' => $slug,
             'is_active' => true,
         ]);
@@ -20,7 +20,7 @@ trait CreatesInstanceContext
 
     protected function makeUser(string $email = 'u@example.com'): User
     {
-        return User::query()->on('system')->create([
+        return User::create([
             'name' => 'User',
             'email' => $email,
             'password' => bcrypt('password'),

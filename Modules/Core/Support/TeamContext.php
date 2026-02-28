@@ -39,4 +39,27 @@ final class TeamContext
     {
         return app(PermissionRegistrar::class)->getPermissionsTeamId();
     }
+
+    /**
+     * Vérifie si l'utilisateur a le rôle super-admin (stocké avec instance_id = 0).
+     * Bascule temporairement le team_id à 0 puis restaure l'ancien contexte.
+     */
+    public static function isSuperAdmin($user): bool
+    {
+        if (!$user || !method_exists($user, 'hasRole')) {
+            return false;
+        }
+
+        $registrar = app(PermissionRegistrar::class);
+        $previous = $registrar->getPermissionsTeamId();
+
+        try {
+            $registrar->setPermissionsTeamId(self::GLOBAL_TEAM_ID);
+            $user->unsetRelation('roles');
+            return $user->hasRole('super-admin');
+        } finally {
+            $registrar->setPermissionsTeamId($previous);
+            $user->unsetRelation('roles');
+        }
+    }
 }

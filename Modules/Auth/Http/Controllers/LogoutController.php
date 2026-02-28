@@ -2,17 +2,17 @@
 
 namespace Modules\Auth\Http\Controllers;
 
+use App\Instances\Instance;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
-use Modules\Core\Support\CurrentInstance;
 
 final class LogoutController extends Controller
 {
     public function __invoke(Request $request, string $slug)
     {
-        $instance = CurrentInstance::get();
-        if (!$instance || $instance->slug !== $slug) {
+        $instance = Instance::where('slug', $slug)->first();
+        if (!$instance) {
             abort(404);
         }
 
@@ -20,6 +20,6 @@ final class LogoutController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->to('/i/' . $instance->slug . '/login');
+        return redirect()->to('/i/' . $slug . '/login');
     }
 }

@@ -27,9 +27,7 @@ final class UserController extends Controller
             ->where('status', 'active')
             ->pluck('user_id');
 
-        $query = User::query()
-            ->on('system')
-            ->whereIn('id', $userIds);
+        $query = User::whereIn('id', $userIds);
 
         if ($search = $request->string('search')->toString()) {
             $query->where(function ($q) use ($search) {
@@ -59,7 +57,7 @@ final class UserController extends Controller
 
         $instance = CurrentInstance::get();
 
-        $user = User::query()->on('system')->create([
+        $user = User::create([
             'full_name' => $request->string('full_name')->toString(),
             'username' => $request->string('username')->toString() ?: null,
             'email' => $request->string('email')->toString(),
@@ -79,7 +77,7 @@ final class UserController extends Controller
 
         $instance = CurrentInstance::get();
 
-        $instances = \App\Instances\Instance::query()->on('system')->orderBy('slug')->get();
+        $instances = \App\Instances\Instance::orderBy('slug')->get();
 
         $memberships = DB::connection('system')
             ->table('instance_user')
@@ -116,7 +114,6 @@ final class UserController extends Controller
             $payload['password'] = $request->string('password')->toString();
         }
 
-        $user->setConnection('system');
         $user->update($payload);
 
         return back()->with('status', 'Utilisateur mis à jour.');
@@ -128,7 +125,6 @@ final class UserController extends Controller
 
         $instance = CurrentInstance::get();
 
-        $user->setConnection('system');
         $user->delete();
 
         return redirect()

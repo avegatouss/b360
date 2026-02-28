@@ -14,9 +14,10 @@ class User extends Authenticatable
 
     /*
     |--------------------------------------------------------------------------
-    | Table
+    | Connection & Table
     |--------------------------------------------------------------------------
     */
+    protected $connection = 'system';
     protected $table = 'users';
 
     /*

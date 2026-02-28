@@ -6,6 +6,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Modules\Core\Modules\ModuleManager;
 use Modules\Core\Support\CurrentInstance;
 use Modules\ModuleManager\Services\ModuleInstaller;
@@ -16,7 +17,7 @@ final class ModuleController extends Controller
     use AuthorizesRequests;
 
     protected const PROTECTED_MODULES = [
-        'Core', 'Auth', 'Dashboard', 'Installer', 'ModuleManager',
+        'Core', 'Auth', 'Dashboard', 'Installer', 'ModuleManager', 'Instances', 'Settings',
     ];
 
     public function index(string $slug)
@@ -67,7 +68,13 @@ final class ModuleController extends Controller
             ->where('name', $name)
             ->first();
 
-        return view('module-manager::show', compact('instance', 'mod', 'json', 'isProtected', 'dbRecord'));
+        $readme = null;
+        $readmePath = $mod->getPath() . '/README.md';
+        if (file_exists($readmePath)) {
+            $readme = Str::markdown(file_get_contents($readmePath));
+        }
+
+        return view('module-manager::show', compact('instance', 'mod', 'json', 'isProtected', 'dbRecord', 'readme'));
     }
 
     public function toggle(string $slug, string $name)

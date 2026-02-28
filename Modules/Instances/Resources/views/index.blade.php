@@ -13,9 +13,11 @@
     <div class="card mb-0">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="card-title mb-0">Instances</h5>
-            <a class="btn btn-primary btn-sm" href="{{ route('instances.create', $currentInstance->slug) }}">
-                <i class="ti ti-plus me-1"></i>Nouvelle instance
-            </a>
+            @if(setting('instances.allow_creation', true))
+                <a class="btn btn-primary btn-sm" href="{{ route('instances.create', $currentInstance->slug) }}">
+                    <i class="ti ti-plus me-1"></i>Nouvelle instance
+                </a>
+            @endif
         </div>
         <div class="card-body">
             <form method="GET" action="{{ route('instances.index', $currentInstance->slug) }}" class="mb-3">

@@ -197,54 +197,10 @@
         <div class="sidebar-inner slimscroll">
             <div id="sidebar-menu" class="sidebar-menu">
                 <ul>
+                    {{-- Dynamic menu from hooks --}}
+                    <x-dashboard::sidebar :instance="$instance ?? null" />
 
-                    {{-- Instance navigation --}}
-                    @if(isset($instance))
-                    <li class="submenu-open">
-                        <h6 class="submenu-hdr">{{ $instance->name ?? $instance->slug }}</h6>
-                        <ul>
-                            <li>
-                                <a href="{{ route('dashboard.instance', $instance->slug) }}"
-                                   class="{{ request()->routeIs('dashboard.*') ? 'active' : '' }}">
-                                    <i class="ti ti-layout-grid fs-16 me-2"></i>
-                                    <span>Tableau de bord</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ route('users.index', $instance->slug) }}"
-                                   class="{{ request()->routeIs('users.*') ? 'active' : '' }}">
-                                    <i class="ti ti-users fs-16 me-2"></i>
-                                    <span>Utilisateurs</span>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-
-                    {{-- Administration (ROOT + super-admin uniquement) --}}
-                    @if($instance->isRoot() && auth()->user()?->hasRole('super-admin'))
-                    <li class="submenu-open">
-                        <h6 class="submenu-hdr">Administration</h6>
-                        <ul>
-                            <li>
-                                <a href="{{ route('instances.index', $instance->slug) }}"
-                                   class="{{ request()->routeIs('instances.*') ? 'active' : '' }}">
-                                    <i class="ti ti-building fs-16 me-2"></i>
-                                    <span>Instances</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ route('modules.index', $instance->slug) }}"
-                                   class="{{ request()->routeIs('modules.*') ? 'active' : '' }}">
-                                    <i class="ti ti-puzzle fs-16 me-2"></i>
-                                    <span>Modules</span>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    @endif
-                    @endif
-
-                    {{-- Account section --}}
+                    {{-- Account section (always visible) --}}
                     <li class="submenu-open">
                         <h6 class="submenu-hdr">Compte</h6>
                         <ul>
@@ -262,7 +218,6 @@
                             </li>
                         </ul>
                     </li>
-
                 </ul>
             </div>
         </div>

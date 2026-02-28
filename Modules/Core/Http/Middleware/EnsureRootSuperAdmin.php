@@ -5,6 +5,7 @@ namespace Modules\Core\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Modules\Core\Support\CurrentInstance;
+use Modules\Core\Support\TeamContext;
 
 final class EnsureRootSuperAdmin
 {
@@ -16,7 +17,7 @@ final class EnsureRootSuperAdmin
             abort(403, 'Accès réservé à l\'instance root.');
         }
 
-        if (!$request->user() || !$request->user()->hasRole('super-admin')) {
+        if (!TeamContext::isSuperAdmin($request->user())) {
             abort(403, 'Accès réservé aux super-administrateurs.');
         }
 

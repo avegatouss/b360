@@ -20,7 +20,7 @@ final class InstanceController extends Controller
     {
         $currentInstance = CurrentInstance::get();
 
-        $query = Instance::query()->on('system')->orderBy('name');
+        $query = Instance::orderBy('name');
 
         if ($search = $request->string('search')->toString()) {
             $query->where(function ($q) use ($search) {
@@ -45,14 +45,24 @@ final class InstanceController extends Controller
 
     public function create(string $slug)
     {
-        $currentInstance = CurrentInstance::get();
-        $defaultDbStrategy = config('app.instance_db_strategy', 'shared');
+        if (!setting('instances.allow_creation', true)) {
+            abort(403, 'La création de nouvelles instances est désactivée.');
+        }
 
-        return view('instances::create', compact('currentInstance', 'defaultDbStrategy'));
+        $currentInstance = CurrentInstance::get();
+        $dbStrategy = config('app.instance_db_strategy', 'shared');
+        $dbPrefix = config('app.instance_db_prefix', '');
+        $dbSuffix = config('app.instance_db_suffix', '');
+
+        return view('instances::create', compact('currentInstance', 'dbStrategy', 'dbPrefix', 'dbSuffix'));
     }
 
     public function store(InstanceStoreRequest $request, string $slug, InstanceProvisioner $provisioner)
     {
+        if (!setting('instances.allow_creation', true)) {
+            abort(403, 'La création de nouvelles instances est désactivée.');
+        }
+
         $currentInstance = CurrentInstance::get();
 
         $instance = $provisioner->provision([
@@ -60,7 +70,6 @@ final class InstanceController extends Controller
             'slug' => $request->string('slug')->toString(),
             'domain' => $request->string('domain')->toString() ?: null,
             'subdomain' => $request->string('subdomain')->toString() ?: null,
-            'db_mode' => $request->string('db_mode')->toString(),
             'database' => $request->string('database')->toString() ?: null,
             'is_active' => $request->boolean('is_active', true),
         ]);
@@ -99,7 +108,6 @@ final class InstanceController extends Controller
     {
         $currentInstance = CurrentInstance::get();
 
-        $instance->setConnection('system');
         $instance->update([
             'name' => $request->string('name')->toString(),
             'domain' => $request->string('domain')->toString() ?: null,
@@ -132,7 +140,6 @@ final class InstanceController extends Controller
             ->delete();
 
         $instanceName = $instance->name;
-        $instance->setConnection('system');
         $instance->delete();
 
         return redirect()
@@ -148,7 +155,6 @@ final class InstanceController extends Controller
 
         $currentInstance = CurrentInstance::get();
 
-        $instance->setConnection('system');
         $instance->update(['is_active' => !$instance->is_active]);
 
         $status = $instance->is_active ? 'activée' : 'désactivée';

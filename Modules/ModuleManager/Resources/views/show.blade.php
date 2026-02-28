@@ -74,6 +74,74 @@
         </div>
     </div>
 
+    {{-- Documentation --}}
+    @if(!empty($json['docs']))
+    <div class="card mb-3">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Documentation</h5>
+        </div>
+        <div class="card-body">
+            @if(!empty($json['docs']['summary']))
+                <p>{{ $json['docs']['summary'] }}</p>
+            @endif
+
+            @if(!empty($json['docs']['features']))
+                <h6>Fonctionnalités</h6>
+                <ul>
+                    @foreach($json['docs']['features'] as $feature)
+                        <li>{{ $feature }}</li>
+                    @endforeach
+                </ul>
+            @endif
+
+            @if(!empty($json['docs']['hooks']))
+                <h6>Hooks enregistrés</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered mb-0">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>ID</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($json['docs']['hooks'] as $hook)
+                                <tr>
+                                    <td><span class="badge bg-secondary">{{ $hook['type'] }}</span></td>
+                                    <td><code>{{ $hook['id'] }}</code></td>
+                                    <td>{{ $hook['description'] ?? '—' }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+
+            @if(!empty($json['docs']['permissions']))
+                <h6 class="mt-3">Permissions</h6>
+                <div class="d-flex gap-1 flex-wrap">
+                    @foreach($json['docs']['permissions'] as $perm)
+                        <span class="badge bg-light text-dark border">{{ $perm }}</span>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+    </div>
+    @endif
+
+    {{-- README --}}
+    @if(!empty($readme))
+    <div class="card mb-3">
+        <div class="card-header">
+            <h5 class="card-title mb-0">README</h5>
+        </div>
+        <div class="card-body">
+            <div class="readme-content">{!! $readme !!}</div>
+        </div>
+    </div>
+    @endif
+
     {{-- Actions --}}
     @if(!$isProtected)
     <div class="d-flex gap-2 mb-3">

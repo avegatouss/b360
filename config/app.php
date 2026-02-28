@@ -137,5 +137,7 @@ return [
     'instance_mode' => env('INSTANCE_MODE', 'single'),
     'instance_resolution' => env('INSTANCE_RESOLUTION', 'path'),
     'instance_db_strategy' => env('INSTANCE_DB_STRATEGY', 'shared'),
+    'instance_db_prefix' => env('DB_PREFIX', ''),
+    'instance_db_suffix' => env('DB_SUFFIX', ''),
 
 ];

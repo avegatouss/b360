@@ -79,7 +79,7 @@ Route::middleware(['web', 'core.redirect.not_installed', 'auth'])->group(functio
     | Logout scopé instance
     |----------------------------------------------------------------------
     */
-    Route::post('/i/{slug}/logout', LogoutController::class)
+    Route::match(['get', 'post'], '/i/{slug}/logout', LogoutController::class)
         ->name('instance.logout');
 
     /*
@@ -87,7 +87,7 @@ Route::middleware(['web', 'core.redirect.not_installed', 'auth'])->group(functio
     | Logout global (fallback)
     |----------------------------------------------------------------------
     */
-    Route::post('/logout', function (\Illuminate\Http\Request $request) {
+    Route::match(['get', 'post'], '/logout', function (\Illuminate\Http\Request $request) {
         \Illuminate\Support\Facades\Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

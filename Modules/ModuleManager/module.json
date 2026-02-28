@@ -7,5 +7,20 @@
     "providers": [
         "Modules\\ModuleManager\\Providers\\ModuleManagerServiceProvider"
     ],
-    "files": []
+    "files": [],
+    "docs": {
+        "summary": "Module protege de gestion des modules B360. Permet de visualiser, activer/desactiver, installer (ZIP) et supprimer des modules. Affiche la documentation et le README de chaque module.",
+        "features": [
+            "Liste de tous les modules avec statut",
+            "Activation/desactivation des modules non proteges",
+            "Installation de modules via upload ZIP",
+            "Suppression de modules non proteges",
+            "Affichage de la documentation (docs dans module.json)",
+            "Rendu du README.md de chaque module"
+        ],
+        "hooks": [
+            {"type": "menu", "id": "modules", "description": "Menu item Modules dans la sidebar Administration"}
+        ],
+        "permissions": []
+    }
 }

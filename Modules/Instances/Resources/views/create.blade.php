@@ -53,34 +53,39 @@
 
                 <h6 class="mb-3">Base de données</h6>
 
+                @php
+                    $isDedicated = $dbStrategy === 'database-per-instance';
+                @endphp
+
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <div class="form-check mb-2">
-                            <input class="form-check-input" type="radio" name="db_mode" value="shared"
-                                   id="dbShared" {{ old('db_mode', $defaultDbStrategy === 'shared' ? 'shared' : '') === 'shared' ? 'checked' : '' }}>
-                            <label class="form-check-label" for="dbShared">
-                                Base partagée
-                                <small class="d-block text-muted">Toutes les instances utilisent la même base. Isolation via instance_id.</small>
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="db_mode" value="dedicated"
-                                   id="dbDedicated" {{ old('db_mode') === 'dedicated' ? 'checked' : '' }}>
-                            <label class="form-check-label" for="dbDedicated">
-                                Base dédiée
-                                <small class="d-block text-muted">Une base MySQL séparée sera créée pour cette instance.</small>
-                            </label>
-                        </div>
+                        @if($isDedicated)
+                            <div class="alert alert-info mb-0 py-2">
+                                <i class="ti ti-database me-1"></i>
+                                Stratégie configurée : <strong>base dédiée par instance</strong>.
+                                Une base MySQL séparée sera automatiquement créée.
+                            </div>
+                        @else
+                            <div class="alert alert-info mb-0 py-2">
+                                <i class="ti ti-database me-1"></i>
+                                Stratégie configurée : <strong>base partagée</strong>.
+                                Toutes les instances partagent la même base avec isolation via instance_id.
+                            </div>
+                        @endif
                     </div>
 
-                    <div class="col-md-6 mb-3" id="dbNameGroup" style="{{ old('db_mode') === 'dedicated' ? '' : 'display:none;' }}">
-                        <label class="form-label">Nom de la base de données</label>
+                    @if($isDedicated)
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Nom de la base de données <small class="text-muted">(optionnel)</small></label>
                         <input name="database" class="form-control @error('database') is-invalid @enderror"
                                value="{{ old('database') }}" id="dbName"
-                               placeholder="b360_mon_entreprise" pattern="[a-zA-Z0-9_]+">
+                               placeholder="{{ $dbPrefix }}mon_entreprise{{ $dbSuffix }}" pattern="[a-zA-Z0-9_]+">
                         @error('database') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        <small class="text-muted">Lettres, chiffres et underscores uniquement (max 64 caractères).</small>
+                        <small class="text-muted">
+                            Laissez vide pour auto-générer : <code>{{ $dbPrefix }}<em>{slug}</em>{{ $dbSuffix }}</code>
+                        </small>
                     </div>
+                    @endif
                 </div>
 
                 <hr class="my-3">
@@ -106,17 +111,16 @@
         </div>
     </div>
 
+    @if($isDedicated)
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         const nameInput = document.getElementById('instanceName');
         const slugInput = document.getElementById('instanceSlug');
         const dbNameInput = document.getElementById('dbName');
-        const dbShared = document.getElementById('dbShared');
-        const dbDedicated = document.getElementById('dbDedicated');
-        const dbNameGroup = document.getElementById('dbNameGroup');
+        const prefix = @json($dbPrefix);
+        const suffix = @json($dbSuffix);
         let slugManuallyEdited = false;
 
-        // Auto-slugify
         slugInput.addEventListener('input', function() { slugManuallyEdited = true; });
         nameInput.addEventListener('input', function() {
             if (!slugManuallyEdited) {
@@ -126,22 +130,17 @@
                     .replace(/[^a-z0-9]+/g, '-')
                     .replace(/^-|-$/g, '');
                 slugInput.value = slug;
-                if (dbDedicated.checked) {
-                    dbNameInput.value = 'b360_' + slug.replace(/-/g, '_');
+                if (!dbNameInput.dataset.manual) {
+                    dbNameInput.value = prefix + slug.replace(/-/g, '_') + suffix;
                 }
             }
         });
 
-        // Toggle DB name field
-        function toggleDbName() {
-            dbNameGroup.style.display = dbDedicated.checked ? '' : 'none';
-            if (dbDedicated.checked && !dbNameInput.value) {
-                dbNameInput.value = 'b360_' + slugInput.value.replace(/-/g, '_');
-            }
-        }
-        dbShared.addEventListener('change', toggleDbName);
-        dbDedicated.addEventListener('change', toggleDbName);
+        dbNameInput.addEventListener('input', function() {
+            this.dataset.manual = this.value ? '1' : '';
+        });
     });
     </script>
+    @endif
 
 </x-dashboard::layouts.master>
