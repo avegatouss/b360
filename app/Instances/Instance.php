@@ -3,7 +3,9 @@
 namespace App\Instances;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * Instance B360
@@ -15,6 +17,18 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Instance extends Model
 {
+    use HasUuids;
+
+    public function uniqueIds(): array
+    {
+        return ['uuid'];
+    }
+
+    public function getRouteKeyName(): string
+    {
+        return 'uuid';
+    }
+
     protected $connection = 'system';
 
     protected $table = 'instances';
@@ -33,9 +47,9 @@ class Instance extends Model
     ];
 
     protected $casts = [
-        'is_active'    => 'boolean',
+        'is_active' => 'boolean',
         'installed_at' => 'datetime',
-        'meta'         => 'array',
+        'meta' => 'array',
     ];
 
     /* -----------------------------------------------------------------
@@ -71,6 +85,20 @@ class Instance extends Model
         return $this->hasDedicatedDatabase()
             ? 'instance'
             : 'system';
+    }
+
+    /* -----------------------------------------------------------------
+     |  Relations
+     |-----------------------------------------------------------------*/
+
+    public function subscription(): HasOne
+    {
+        return $this->hasOne(\Modules\Billing\Models\Subscription::class)->latestOfMany();
+    }
+
+    public function license(): HasOne
+    {
+        return $this->hasOne(\Modules\Core\Models\License::class);
     }
 
     /* -----------------------------------------------------------------

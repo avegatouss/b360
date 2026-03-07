@@ -37,6 +37,7 @@ final class CoreRbacSeeder extends Seeder
                 'users.view', 'users.manage',
                 'modules.view', 'modules.manage',
                 'settings.view', 'settings.manage',
+                'billing.view', 'billing.manage',
             ];
 
             foreach ($permissions as $perm) {
@@ -53,6 +54,7 @@ final class CoreRbacSeeder extends Seeder
                 'users.view', 'users.manage',
                 'modules.view',
                 'settings.view', 'settings.manage',
+                'billing.view', 'billing.manage',
             ]);
 
             $user->syncPermissions([

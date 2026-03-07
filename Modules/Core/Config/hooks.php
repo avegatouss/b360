@@ -12,5 +12,6 @@ return [
         \Modules\Instances\Providers\InstancesHooksProvider::class,
         \Modules\ModuleManager\Providers\ModuleManagerHooksProvider::class,
         \Modules\Settings\Providers\SettingsHooksProvider::class,
+        \Modules\Billing\Providers\BillingHooksProvider::class,
     ],
 ];

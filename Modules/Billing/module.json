@@ -1,0 +1,26 @@
+{
+    "name": "Billing",
+    "alias": "billing",
+    "description": "Gestion des abonnements, factures, paiements et plans tarifaires",
+    "keywords": ["billing", "subscriptions", "invoices", "payments", "plans"],
+    "priority": 0,
+    "providers": [
+        "Modules\\Billing\\Providers\\BillingServiceProvider"
+    ],
+    "files": [],
+    "docs": {
+        "summary": "Module de facturation SaaS gerant les plans tarifaires, abonnements avec periodes d'essai configurables, facturation et suivi des paiements.",
+        "features": [
+            "CRUD plans tarifaires (mensuel/annuel)",
+            "Gestion abonnements avec trial configurable par instance",
+            "Generation de factures avec numerotation sequentielle",
+            "Enregistrement des paiements (manuel, virement, carte, etc.)",
+            "Integration Settings pour configuration globale/instance"
+        ],
+        "hooks": [
+            {"type": "menu", "id": "billing", "description": "Menu item Facturation dans la sidebar administration"},
+            {"type": "settings_group", "id": "billing", "description": "Groupe de parametres Facturation"}
+        ],
+        "permissions": ["billing.view", "billing.manage"]
+    }
+}

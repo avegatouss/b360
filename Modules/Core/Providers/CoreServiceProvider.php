@@ -31,6 +31,7 @@ final class CoreServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
+        $this->loadRoutesFrom(__DIR__ . '/../Routes/api.php');
 
         // Migrations Core : instance_user + modules tables
         $this->loadMigrationsFrom(__DIR__ . '/../Database/Migrations');

@@ -1,25 +1,50 @@
 <?php
 
-namespace Tests\Feature\Installer;
+namespace Modules\Installer\Tests\Feature\Installer;
 
-use Tests\TestCase;
+use Modules\Installer\Tests\TestCase;
 
-class InstallerValidationTest extends TestCase
+final class InstallerValidationTest extends TestCase
 {
-    /** @test */
-    public function installer_requires_mandatory_fields(): void
+    public function test_database_test_requires_step1(): void
     {
-        config(['app.installed' => false]);
+        $this->postJson('/install/database/test', [])
+            ->assertStatus(422)
+            ->assertJsonFragment(['ok' => false]);
+    }
 
-        $response = $this->post('/install', []);
+    public function test_database_test_validation_fails_with_missing_fields(): void
+    {
+        $this->withSession(['installer.steps' => [1 => true]]);
 
-        $response->assertSessionHasErrors([
-            'app_name',
-            'app_url',
-            'db_host',
-            'db_database',
-            'admin_username',
-            'admin_password',
+        $this->postJson('/install/database/test', [])
+            ->assertStatus(422)
+            ->assertJsonFragment(['ok' => false])
+            ->assertJsonStructure(['errors']);
+    }
+
+    public function test_configuration_requires_steps_1_and_2(): void
+    {
+        $this->postJson('/install/configuration/validate', [])
+            ->assertStatus(422);
+
+        $this->withSession(['installer.steps' => [1 => true]]);
+
+        $this->postJson('/install/configuration/validate', [])
+            ->assertStatus(422);
+    }
+
+    public function test_admin_requires_steps_1_2_3(): void
+    {
+        $this->postJson('/install/admin/validate', [])
+            ->assertStatus(422);
+
+        $this->withSession([
+            'installer.steps' => [1 => true, 2 => true, 3 => true],
+            'installer' => ['db_confirmed' => false, 'config_confirmed' => false],
         ]);
+
+        $this->postJson('/install/admin/validate', [])
+            ->assertStatus(422);
     }
 }

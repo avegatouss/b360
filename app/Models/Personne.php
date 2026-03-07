@@ -9,10 +9,21 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class Personne extends Model implements HasMedia
 {
-    use SoftDeletes, HasFactory, InteractsWithMedia;
+    use SoftDeletes, HasFactory, InteractsWithMedia, HasUuids;
+
+    public function uniqueIds(): array
+    {
+        return ['uuid'];
+    }
+
+    public function getRouteKeyName(): string
+    {
+        return 'uuid';
+    }
 
     protected $fillable = [
         'type',
@@ -49,14 +60,14 @@ class Personne extends Model implements HasMedia
 
     public function user()
     {
-        return $this->hasOne(User::class, 'personne_id');
+        return $this->hasOne(User::class , 'personne_id');
     }
 
     public function representatives()
     {
         return $this->hasManyThrough(
-            Representant::class,
-            PersonneMorale::class,
+            Representant::class ,
+            PersonneMorale::class ,
             'personne_id',
             'personne_morale_id'
         );
@@ -99,8 +110,8 @@ class Personne extends Model implements HasMedia
         return static::query()
             ->where('type', 'physique')
             ->whereHas('personnePhysique', function ($q) {
-                $q->whereDoesntHave('representations');
-            });
+            $q->whereDoesntHave('representations');
+        });
     }
 
     public function scopeOrdered($query)
@@ -188,10 +199,12 @@ class Personne extends Model implements HasMedia
                 return true;
             }
             $pm = $this->relationLoaded('personneMorale') ? $this->personneMorale : $this->personneMorale()->first();
-            if (!$pm) return false;
+            if (!$pm)
+                return false;
 
             $rep = $pm->representantPrincipal();
-            if (!$rep || !$rep->representant) return false;
+            if (!$rep || !$rep->representant)
+                return false;
 
             $repPersonne = $rep->representant->personne;
             return $repPersonne && (filled($repPersonne->email) || filled($repPersonne->telephone));
@@ -214,8 +227,8 @@ class Personne extends Model implements HasMedia
             if ($pp) {
                 $payload['personne_physique_id'] = $pp->id;
                 $payload['first_name'] = $payload['first_name'] ?? ($pp->prenom ?? null);
-                $payload['last_name']  = $payload['last_name']  ?? ($pp->nom ?? null);
-                $payload['full_name']  = $payload['full_name']  ?? trim(($payload['first_name'] ?? '') . ' ' . ($payload['last_name'] ?? ''));
+                $payload['last_name'] = $payload['last_name'] ?? ($pp->nom ?? null);
+                $payload['full_name'] = $payload['full_name'] ?? trim(($payload['first_name'] ?? '') . ' ' . ($payload['last_name'] ?? ''));
             }
         }
 

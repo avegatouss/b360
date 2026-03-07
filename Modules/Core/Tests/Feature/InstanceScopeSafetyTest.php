@@ -28,6 +28,9 @@ final class InstanceScopeSafetyTest extends TestCase
 
     public function test_no_instance_blocks_all_rows(): void
     {
+        config(['app.instance_mode' => 'multi']);
+        config(['app.instance_db_strategy' => 'shared']);
+
         $model = new class extends Model {
             use BelongsToInstance;
             protected $connection = 'system';
@@ -40,6 +43,9 @@ final class InstanceScopeSafetyTest extends TestCase
 
     public function test_instance_scope_filters_and_autofills(): void
     {
+        config(['app.instance_mode' => 'multi']);
+        config(['app.instance_db_strategy' => 'shared']);
+
         $i1 = $this->makeInstance('a');
         $i2 = $this->makeInstance('b');
 

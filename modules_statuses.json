@@ -6,5 +6,6 @@
     "Dashboard": true,
     "ModuleManager": true,
     "Instances": true,
-    "Settings": true
+    "Settings": true,
+    "Billing": true
 }

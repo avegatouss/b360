@@ -12,9 +12,13 @@ trait CreatesInstanceContext
 {
     protected function makeInstance(string $slug = 'acme'): Instance
     {
+        $meta = $slug === 'root' ? ['is_root' => true] : [];
+
         return Instance::create([
+            'name' => ucfirst($slug),
             'slug' => $slug,
             'is_active' => true,
+            'meta' => $meta,
         ]);
     }
 

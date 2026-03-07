@@ -38,19 +38,27 @@ final class SettingsManager
             $value = $value ? '1' : '0';
         }
 
-        DB::connection('system')->table('settings')->updateOrInsert(
-            [
-                'instance_id' => $instanceId,
-                'group' => $group,
-                'key' => $settingKey,
-            ],
-            [
-                'value' => (string) $value,
-                'type' => $type,
-                'updated_at' => now(),
-                'created_at' => DB::raw('COALESCE(created_at, NOW())'),
-            ]
-        );
+        $attributes = [
+            'instance_id' => $instanceId,
+            'group' => $group,
+            'key' => $settingKey,
+        ];
+
+        $values = [
+            'value' => (string) $value,
+            'type' => $type,
+            'updated_at' => now(),
+        ];
+
+        $exists = DB::connection('system')->table('settings')->where($attributes)->exists();
+
+        if ($exists) {
+            DB::connection('system')->table('settings')->where($attributes)->update($values);
+        } else {
+            DB::connection('system')->table('settings')->insert(
+                array_merge($attributes, $values, ['created_at' => now()])
+            );
+        }
 
         $this->clearCache($instanceId, $group);
     }

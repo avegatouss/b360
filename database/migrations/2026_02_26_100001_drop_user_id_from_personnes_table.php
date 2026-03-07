@@ -12,12 +12,21 @@ return new class extends Migration
         // Migrer les associations existantes vers users.personne_id
         // avant de supprimer la colonne redondante
         if (Schema::hasColumn('personnes', 'user_id') && Schema::hasColumn('users', 'personne_id')) {
-            DB::statement('
-                UPDATE users u
-                INNER JOIN personnes p ON p.user_id = u.id
-                SET u.personne_id = p.id
-                WHERE u.personne_id IS NULL
-            ');
+            if (DB::getDriverName() === 'sqlite') {
+                DB::statement('
+                    UPDATE users
+                    SET personne_id = (SELECT p.id FROM personnes p WHERE p.user_id = users.id)
+                    WHERE personne_id IS NULL
+                      AND EXISTS (SELECT 1 FROM personnes p WHERE p.user_id = users.id)
+                ');
+            } else {
+                DB::statement('
+                    UPDATE users u
+                    INNER JOIN personnes p ON p.user_id = u.id
+                    SET u.personne_id = p.id
+                    WHERE u.personne_id IS NULL
+                ');
+            }
         }
 
         Schema::table('personnes', function (Blueprint $table) {

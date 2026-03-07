@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Nwidart\Modules\Facades\Module;
 
-final class ModuleManager
+class ModuleManager
 {
     public function isEnabled(string $name): bool
     {

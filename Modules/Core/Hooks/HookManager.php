@@ -32,7 +32,7 @@ final class HookManager
             }
 
             // Anti-piège: si quelqu'un met un Laravel ServiceProvider ici, on skip
-            if (is_subclass_of($class, ServiceProvider::class)) {
+            if ($class === ServiceProvider::class || is_subclass_of($class, ServiceProvider::class)) {
                 continue;
             }
 

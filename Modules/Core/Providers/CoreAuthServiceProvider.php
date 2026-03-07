@@ -40,6 +40,7 @@ final class CoreAuthServiceProvider extends ServiceProvider
             } finally {
                 // Toujours restaurer — même en cas d'exception
                 $registrar->setPermissionsTeamId($previousTeamId);
+                $user->unsetRelation('roles')->unsetRelation('permissions');
             }
 
             return $isSuperAdmin ? true : null;

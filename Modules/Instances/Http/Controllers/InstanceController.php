@@ -45,7 +45,7 @@ final class InstanceController extends Controller
 
     public function create(string $slug)
     {
-        if (!setting('instances.allow_creation', true)) {
+        if (!setting('instances.allow_creation', false)) {
             abort(403, 'La création de nouvelles instances est désactivée.');
         }
 
@@ -59,7 +59,7 @@ final class InstanceController extends Controller
 
     public function store(InstanceStoreRequest $request, string $slug, InstanceProvisioner $provisioner)
     {
-        if (!setting('instances.allow_creation', true)) {
+        if (!setting('instances.allow_creation', false)) {
             abort(403, 'La création de nouvelles instances est désactivée.');
         }
 
