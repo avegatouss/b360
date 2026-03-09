@@ -2,8 +2,15 @@
     ? 'Connexion — ' . ($instance->name ?? $instance->slug ?? 'Instance')
     : 'Connexion — ' . config('app.name', 'B360')">
 
+    @php
+        $loginLogo = setting('branding.login_logo') ?: setting('branding.logo');
+        $loginLogoDark = setting('branding.logo_dark');
+        $loginCover = setting('branding.login_cover');
+        $brandName = setting('branding.platform_name', config('app.name', 'B360'));
+    @endphp
+
     <div class="account-content">
-        <div class="login-wrapper bg-img">
+        <div class="login-wrapper bg-img" @if($loginCover) style="background-image: url('{{ asset('storage/' . $loginCover) }}');" @endif>
             <div class="login-content authent-content">
 
                 <form method="POST"
@@ -16,10 +23,10 @@
 
                         {{-- Logo --}}
                         <div class="login-logo logo-normal">
-                            <img src="{{ asset('build/img/logo.svg') }}" alt="{{ config('app.name', 'B360') }}">
+                            <img src="{{ $loginLogo ? asset('storage/' . $loginLogo) : asset('build/img/logo.svg') }}" alt="{{ $brandName }}">
                         </div>
                         <a href="{{ url('/') }}" class="login-logo logo-white">
-                            <img src="{{ asset('build/img/logo-white.svg') }}" alt="{{ config('app.name', 'B360') }}">
+                            <img src="{{ $loginLogoDark ? asset('storage/' . $loginLogoDark) : asset('build/img/logo-white.svg') }}" alt="{{ $brandName }}">
                         </a>
 
                         {{-- Heading --}}
@@ -108,7 +115,7 @@
 
                         {{-- Footer copyright --}}
                         <div class="my-4 d-flex justify-content-center align-items-center copyright-text">
-                            <p>Copyright &copy; {{ date('Y') }} {{ config('app.name', 'B360') }}</p>
+                            <p>Copyright &copy; {{ date('Y') }} {{ $brandName }}</p>
                         </div>
 
                     </div>

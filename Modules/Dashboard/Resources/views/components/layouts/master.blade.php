@@ -7,7 +7,8 @@
     <title>{{ $title ?? config('app.name', 'B360') }}</title>
 
     <!-- Favicon -->
-    <link rel="shortcut icon" type="image/x-icon" href="{{ asset('build/img/favicon.png') }}">
+    @php $brandFavicon = setting('branding.favicon'); @endphp
+    <link rel="shortcut icon" type="image/x-icon" href="{{ $brandFavicon ? asset('storage/' . $brandFavicon) : asset('build/img/favicon.png') }}">
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="{{ asset('build/css/bootstrap.min.css') }}">
@@ -36,18 +37,23 @@
         <div class="main-header">
 
             <!-- Logo -->
+            @php
+                $brandLogo = setting('branding.logo');
+                $brandLogoDark = setting('branding.logo_dark');
+                $brandName = setting('branding.platform_name', config('app.name', 'B360'));
+            @endphp
             <div class="header-left active">
                 <a href="{{ isset($instance) ? route('dashboard.instance', $instance->slug) : '/' }}"
                    class="logo logo-normal">
-                    <img src="{{ asset('build/img/logo.svg') }}" alt="{{ config('app.name', 'B360') }}">
+                    <img src="{{ $brandLogo ? asset('storage/' . $brandLogo) : asset('build/img/logo.svg') }}" alt="{{ $brandName }}">
                 </a>
                 <a href="{{ isset($instance) ? route('dashboard.instance', $instance->slug) : '/' }}"
                    class="logo logo-white">
-                    <img src="{{ asset('build/img/logo-white.svg') }}" alt="{{ config('app.name', 'B360') }}">
+                    <img src="{{ $brandLogoDark ? asset('storage/' . $brandLogoDark) : asset('build/img/logo-white.svg') }}" alt="{{ $brandName }}">
                 </a>
                 <a href="{{ isset($instance) ? route('dashboard.instance', $instance->slug) : '/' }}"
                    class="logo-small">
-                    <img src="{{ asset('build/img/logo-small.png') }}" alt="{{ config('app.name', 'B360') }}">
+                    <img src="{{ $brandLogo ? asset('storage/' . $brandLogo) : asset('build/img/logo-small.png') }}" alt="{{ $brandName }}">
                 </a>
             </div>
             <!-- /Logo -->
@@ -63,9 +69,36 @@
             <!-- Header Menu -->
             <ul class="nav user-menu">
 
-                {{-- Instance badge --}}
+                {{-- Instance badge / switcher --}}
                 @if(isset($instance))
+                @php
+                    $isSuperAdmin = \Modules\Core\Support\TeamContext::isSuperAdmin(auth()->user());
+                    $switchableInstances = $isSuperAdmin
+                        ? \App\Instances\Instance::on('system')->where('is_active', true)->orderBy('name')->get()
+                        : collect();
+                @endphp
                 <li class="nav-item dropdown has-arrow main-drop select-store-dropdown">
+                    @if($isSuperAdmin && $switchableInstances->count() > 1)
+                    <a href="javascript:void(0);" class="nav-link select-store dropdown-toggle" data-bs-toggle="dropdown">
+                        <span class="user-info">
+                            <span class="user-detail">
+                                <span class="user-name">{{ $instance->name ?? $instance->slug }}</span>
+                            </span>
+                            <span class="ms-1"><i class="ti ti-chevron-down fs-12"></i></span>
+                        </span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end" style="max-height: 300px; overflow-y: auto;">
+                        @foreach($switchableInstances as $inst)
+                        <a href="{{ route('dashboard.instance', $inst->slug) }}"
+                           class="dropdown-item {{ $inst->id === $instance->id ? 'active' : '' }}">
+                            <i class="ti ti-building me-2"></i>{{ $inst->name ?? $inst->slug }}
+                            @if($inst->slug === 'root')
+                                <span class="badge bg-danger ms-2">Root</span>
+                            @endif
+                        </a>
+                        @endforeach
+                    </div>
+                    @else
                     <a href="javascript:void(0);" class="nav-link select-store">
                         <span class="user-info">
                             <span class="user-detail">
@@ -73,6 +106,7 @@
                             </span>
                         </span>
                     </a>
+                    @endif
                 </li>
                 @endif
 
@@ -157,15 +191,15 @@
         <div class="sidebar-logo active">
             <a href="{{ isset($instance) ? route('dashboard.instance', $instance->slug) : '/' }}"
                class="logo logo-normal">
-                <img src="{{ asset('build/img/logo.svg') }}" alt="{{ config('app.name', 'B360') }}">
+                <img src="{{ $brandLogo ? asset('storage/' . $brandLogo) : asset('build/img/logo.svg') }}" alt="{{ $brandName }}">
             </a>
             <a href="{{ isset($instance) ? route('dashboard.instance', $instance->slug) : '/' }}"
                class="logo logo-white">
-                <img src="{{ asset('build/img/logo-white.svg') }}" alt="{{ config('app.name', 'B360') }}">
+                <img src="{{ $brandLogoDark ? asset('storage/' . $brandLogoDark) : asset('build/img/logo-white.svg') }}" alt="{{ $brandName }}">
             </a>
             <a href="{{ isset($instance) ? route('dashboard.instance', $instance->slug) : '/' }}"
                class="logo-small">
-                <img src="{{ asset('build/img/logo-small.png') }}" alt="{{ config('app.name', 'B360') }}">
+                <img src="{{ $brandLogo ? asset('storage/' . $brandLogo) : asset('build/img/logo-small.png') }}" alt="{{ $brandName }}">
             </a>
             <a id="toggle_btn" href="javascript:void(0);">
                 <i data-feather="chevrons-left" class="feather-16"></i>

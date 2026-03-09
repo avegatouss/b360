@@ -7,7 +7,8 @@
     <title>{{ $title ?? config('app.name', 'B360') }}</title>
 
     <!-- Favicon -->
-    <link rel="shortcut icon" type="image/x-icon" href="{{ asset('build/img/favicon.png') }}">
+    @php $brandFavicon = setting('branding.favicon'); @endphp
+    <link rel="shortcut icon" type="image/x-icon" href="{{ $brandFavicon ? asset('storage/' . $brandFavicon) : asset('build/img/favicon.png') }}">
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="{{ asset('build/css/bootstrap.min.css') }}">

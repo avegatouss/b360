@@ -35,5 +35,12 @@ final class SettingsHooksProvider implements RegistersHooks
             priority: 1000,
             view: 'settings::partials.general',
         ));
+
+        $registry->addSettingsGroup(new SettingsGroup(
+            id: 'branding',
+            label: 'Apparence',
+            priority: 900,
+            view: 'settings::partials.branding',
+        ));
     }
 }

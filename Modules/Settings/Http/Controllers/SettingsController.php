@@ -59,6 +59,16 @@ final class SettingsController extends Controller
             $settings->set("{$group}.{$key}", $value, 0, $type);
         }
 
+        // Handle file uploads (e.g., branding images)
+        if ($request->hasFile('files')) {
+            foreach ($request->file('files') as $key => $file) {
+                if ($file && $file->isValid()) {
+                    $path = $file->store("branding/{$group}", 'public');
+                    $settings->set("{$group}.{$key}", $path, 0, 'string');
+                }
+            }
+        }
+
         return redirect()
             ->route('settings.group', [$instance->slug, $group])
             ->with('status', 'Parametres mis a jour.');

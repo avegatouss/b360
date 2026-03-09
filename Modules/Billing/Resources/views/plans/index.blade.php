@@ -25,6 +25,7 @@
                         <th>Prix mensuel</th>
                         <th>Prix annuel</th>
                         <th>Essai (jours)</th>
+                        <th>Visibilite</th>
                         <th>Statut</th>
                         <th></th>
                     </tr>
@@ -39,6 +40,13 @@
                         <td>{{ number_format($plan->price_monthly, 2) }} EUR</td>
                         <td>{{ $plan->price_yearly ? number_format($plan->price_yearly, 2) . ' EUR' : '-' }}</td>
                         <td>{{ $plan->trial_days }}</td>
+                        <td>
+                            @if($plan->visibility === 'all')
+                                <span class="badge bg-info">Toutes</span>
+                            @else
+                                <span class="badge bg-warning">{{ $plan->instances->count() }} instance(s)</span>
+                            @endif
+                        </td>
                         <td>
                             @if($plan->is_active)
                                 <span class="badge bg-success">Actif</span>
@@ -61,7 +69,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="text-center text-muted py-4">Aucun plan configure.</td>
+                        <td colspan="7" class="text-center text-muted py-4">Aucun plan configure.</td>
                     </tr>
                     @endforelse
                 </tbody>
