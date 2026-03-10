@@ -1,0 +1,11 @@
+{
+    "name": "Lang",
+    "alias": "lang",
+    "description": "Module multi-langue pour B360 (fr, en)",
+    "keywords": ["lang", "i18n", "multilang"],
+    "priority": 0,
+    "providers": [
+        "Modules\\Lang\\Providers\\LangServiceProvider"
+    ],
+    "files": []
+}

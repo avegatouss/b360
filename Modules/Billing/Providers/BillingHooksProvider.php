@@ -4,6 +4,7 @@ namespace Modules\Billing\Providers;
 
 use Modules\Core\Hooks\Contracts\RegistersHooks;
 use Modules\Core\Hooks\DTO\MenuItem;
+use Modules\Core\Hooks\DTO\PermissionGroup;
 use Modules\Core\Hooks\DTO\SettingsGroup;
 use Modules\Core\Hooks\Registry\HookRegistry;
 use Modules\Core\Support\TeamContext;
@@ -48,6 +49,17 @@ final class BillingHooksProvider implements RegistersHooks
             label: 'Facturation',
             view: 'billing::settings',
             priority: 600,
+        ));
+
+        $registry->addPermissionGroup(new PermissionGroup(
+            id: 'billing',
+            label: 'Facturation',
+            permissions: [
+                'billing.view' => 'Voir les abonnements et factures',
+                'billing.manage' => 'Gerer les plans et paiements',
+            ],
+            priority: 700,
+            module: 'Billing',
         ));
     }
 }

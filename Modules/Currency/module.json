@@ -1,0 +1,11 @@
+{
+    "name": "Currency",
+    "alias": "currency",
+    "description": "Module multi-devise pour B360 avec conversion automatique",
+    "keywords": ["currency", "multi-currency", "conversion"],
+    "priority": 0,
+    "providers": [
+        "Modules\\Currency\\Providers\\CurrencyServiceProvider"
+    ],
+    "files": []
+}

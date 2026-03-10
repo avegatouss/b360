@@ -4,6 +4,7 @@ namespace Modules\Instances\Providers;
 
 use Modules\Core\Hooks\Contracts\RegistersHooks;
 use Modules\Core\Hooks\DTO\MenuItem;
+use Modules\Core\Hooks\DTO\PermissionGroup;
 use Modules\Core\Hooks\DTO\SettingsGroup;
 use Modules\Core\Hooks\Registry\HookRegistry;
 use Modules\Core\Support\TeamContext;
@@ -37,6 +38,17 @@ final class InstancesHooksProvider implements RegistersHooks
             view: 'instances::settings',
             visibleWhen: fn ($user, $instance) =>
                 $instance?->isRoot() && TeamContext::isSuperAdmin($user),
+        ));
+
+        $registry->addPermissionGroup(new PermissionGroup(
+            id: 'instances',
+            label: 'Instances',
+            permissions: [
+                'instances.view' => 'Voir les instances',
+                'instances.manage' => 'Gerer les instances',
+            ],
+            priority: 800,
+            module: 'Instances',
         ));
     }
 }

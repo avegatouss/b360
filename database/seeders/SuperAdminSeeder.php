@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use RuntimeException;
 use Spatie\Permission\PermissionRegistrar;
 
@@ -36,19 +37,25 @@ class SuperAdminSeeder extends Seeder
         */
         $exists = DB::table('users')->where('email', $admin['email'])->exists();
 
+        $data = [
+            'username'   => $admin['username'],
+            'password'   => Hash::make($admin['password']),
+            'first_name' => $admin['first_name'] ?? null,
+            'last_name'  => $admin['last_name']  ?? null,
+            'full_name'  => $fullName ?: null,
+            'is_active'  => true,
+            'is_blocked' => false,
+            'updated_at' => $now,
+            'created_at' => $exists ? DB::raw('created_at') : $now,
+        ];
+
+        if (!$exists) {
+            $data['uuid'] = Str::uuid()->toString();
+        }
+
         DB::table('users')->updateOrInsert(
             ['email' => $admin['email']],
-            [
-                'username'   => $admin['username'],
-                'password'   => Hash::make($admin['password']),
-                'first_name' => $admin['first_name'] ?? null,
-                'last_name'  => $admin['last_name']  ?? null,
-                'full_name'  => $fullName ?: null,
-                'is_active'  => true,
-                'is_blocked' => false,
-                'updated_at' => $now,
-                'created_at' => $exists ? DB::raw('created_at') : $now,
-            ]
+            $data
         );
 
         $user = User::where('email', $admin['email'])->firstOrFail();

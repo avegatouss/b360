@@ -7,5 +7,7 @@
     "ModuleManager": true,
     "Instances": true,
     "Settings": true,
-    "Billing": true
+    "Billing": true,
+    "Lang": true,
+    "Currency": true
 }

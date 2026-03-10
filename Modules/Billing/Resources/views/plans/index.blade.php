@@ -37,8 +37,8 @@
                             <strong>{{ $plan->name }}</strong>
                             <br><small class="text-muted">{{ $plan->slug }}</small>
                         </td>
-                        <td>{{ number_format($plan->price_monthly, 2) }} EUR</td>
-                        <td>{{ $plan->price_yearly ? number_format($plan->price_yearly, 2) . ' EUR' : '-' }}</td>
+                        <td>{{ number_format($plan->price_monthly, 2) }} {{ currency() }}</td>
+                        <td>{{ $plan->price_yearly ? number_format($plan->price_yearly, 2) . ' ' . currency() : '-' }}</td>
                         <td>{{ $plan->trial_days }}</td>
                         <td>
                             @if($plan->visibility === 'all')

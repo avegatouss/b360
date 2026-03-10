@@ -28,11 +28,11 @@
 
                 <div class="row">
                     <div class="col-md-4 mb-3">
-                        <label class="form-label">Prix mensuel (EUR)</label>
+                        <label class="form-label">Prix mensuel ({{ currency() }})</label>
                         <input type="number" name="price_monthly" class="form-control" step="0.01" min="0" value="{{ old('price_monthly', $plan?->price_monthly ?? '0.00') }}" required>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label class="form-label">Prix annuel (EUR)</label>
+                        <label class="form-label">Prix annuel ({{ currency() }})</label>
                         <input type="number" name="price_yearly" class="form-control" step="0.01" min="0" value="{{ old('price_yearly', $plan?->price_yearly) }}">
                     </div>
                     <div class="col-md-4 mb-3">

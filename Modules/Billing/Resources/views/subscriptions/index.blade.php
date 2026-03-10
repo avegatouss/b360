@@ -80,11 +80,11 @@
                                 @endif
                                 <div class="mb-3">
                                     <span class="h3">{{ number_format($plan->price_monthly, 2) }}</span>
-                                    <span class="text-muted">EUR/mois</span>
+                                    <span class="text-muted">{{ currency() }}/mois</span>
                                 </div>
                                 @if($plan->price_yearly)
                                     <p class="text-muted small mb-2">
-                                        ou {{ number_format($plan->price_yearly, 2) }} EUR/an
+                                        ou {{ number_format($plan->price_yearly, 2) }} {{ currency() }}/an
                                     </p>
                                 @endif
                                 @if($plan->trial_days > 0)
