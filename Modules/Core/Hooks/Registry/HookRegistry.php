@@ -5,6 +5,7 @@ namespace Modules\Core\Hooks\Registry;
 use Illuminate\Support\Collection;
 use Modules\Core\Hooks\DTO\MenuItem;
 use Modules\Core\Hooks\DTO\DashboardWidget;
+use Modules\Core\Hooks\DTO\PermissionGroup;
 use Modules\Core\Hooks\DTO\SettingsGroup;
 
 final class HookRegistry
@@ -31,6 +32,12 @@ final class HookRegistry
     public function addWidget(DashboardWidget $item): void { $this->put('widgets', $item->id, $item); }
     public function addSettingsGroup(SettingsGroup $item): void { $this->put('settings_groups', $item->id, $item); }
 
+    public function addPermissionGroup(PermissionGroup $group): void
+    {
+        $this->put('permissions', $group->id, $group);
+    }
+
+    /** @deprecated Use addPermissionGroup() instead */
     public function addPermission(string $id, string $name, int $priority = 0): void
     {
         $this->put('permissions', $id, (object)[
@@ -67,7 +74,7 @@ final class HookRegistry
     /** @return Collection<int, SettingsGroup> */
     public function settingsGroups(): Collection { return $this->sorted('settings_groups'); }
 
-    /** @return Collection<int, object> */
+    /** @return Collection<int, PermissionGroup|object> */
     public function permissions(): Collection { return $this->sorted('permissions'); }
 
     /** @return Collection<int, object> */

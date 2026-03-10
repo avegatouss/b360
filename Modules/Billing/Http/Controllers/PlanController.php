@@ -6,6 +6,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\View\View;
+use App\Instances\Instance;
 use Modules\Billing\Models\Plan;
 use Modules\Billing\Services\PlanManager;
 use Modules\Core\Support\CurrentInstance;
@@ -19,7 +20,7 @@ final class PlanController extends Controller
     public function index(string $slug): View
     {
         $instance = CurrentInstance::get();
-        $plans = $this->planManager->all(activeOnly: false);
+        $plans = $this->planManager->all(activeOnly: false)->load('instances');
 
         return view('billing::plans.index', compact('instance', 'plans'));
     }
@@ -27,8 +28,9 @@ final class PlanController extends Controller
     public function create(string $slug): View
     {
         $instance = CurrentInstance::get();
+        $allInstances = Instance::on('system')->where('slug', '!=', 'root')->get();
 
-        return view('billing::plans.form', ['instance' => $instance, 'plan' => null]);
+        return view('billing::plans.form', ['instance' => $instance, 'plan' => null, 'allInstances' => $allInstances]);
     }
 
     public function store(Request $request, string $slug): RedirectResponse
@@ -44,9 +46,19 @@ final class PlanController extends Controller
             'trial_days' => 'required|integer|min:0',
             'is_active' => 'boolean',
             'sort_order' => 'integer|min:0',
+            'visibility' => 'required|in:all,specific',
+            'instance_ids' => 'array',
+            'instance_ids.*' => 'integer|exists:system.instances,id',
         ]);
 
-        $this->planManager->create($validated);
+        $instanceIds = $validated['instance_ids'] ?? [];
+        unset($validated['instance_ids']);
+
+        $plan = $this->planManager->create($validated);
+
+        if ($validated['visibility'] === 'specific') {
+            $plan->instances()->sync($instanceIds);
+        }
 
         return redirect()->route('billing.plans.index', $instance->slug)
             ->with('success', 'Plan cree avec succes.');
@@ -57,8 +69,9 @@ final class PlanController extends Controller
         $instance = CurrentInstance::get();
         $plan = $this->planManager->find((int) $plan);
         abort_unless($plan, 404);
+        $allInstances = Instance::on('system')->where('slug', '!=', 'root')->get();
 
-        return view('billing::plans.form', compact('instance', 'plan'));
+        return view('billing::plans.form', compact('instance', 'plan', 'allInstances'));
     }
 
     public function update(Request $request, string $slug, string $id): RedirectResponse
@@ -75,9 +88,21 @@ final class PlanController extends Controller
             'trial_days' => 'required|integer|min:0',
             'is_active' => 'boolean',
             'sort_order' => 'integer|min:0',
+            'visibility' => 'required|in:all,specific',
+            'instance_ids' => 'array',
+            'instance_ids.*' => 'integer|exists:system.instances,id',
         ]);
 
+        $instanceIds = $validated['instance_ids'] ?? [];
+        unset($validated['instance_ids']);
+
         $this->planManager->update($plan, $validated);
+
+        if ($validated['visibility'] === 'specific') {
+            $plan->instances()->sync($instanceIds);
+        } else {
+            $plan->instances()->detach();
+        }
 
         return redirect()->route('billing.plans.index', $instance->slug)
             ->with('success', 'Plan mis a jour.');

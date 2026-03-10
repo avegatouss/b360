@@ -4,6 +4,7 @@ namespace Modules\Billing\Providers;
 
 use Modules\Core\Hooks\Contracts\RegistersHooks;
 use Modules\Core\Hooks\DTO\MenuItem;
+use Modules\Core\Hooks\DTO\PermissionGroup;
 use Modules\Core\Hooks\DTO\SettingsGroup;
 use Modules\Core\Hooks\Registry\HookRegistry;
 use Modules\Core\Support\TeamContext;
@@ -17,6 +18,7 @@ final class BillingHooksProvider implements RegistersHooks
 
     public function registerHooks(HookRegistry $registry): void
     {
+        // Menu visible pour toutes les instances (abonnement, factures)
         $registry->addMenu(new MenuItem(
             id: 'billing',
             label: 'Facturation',
@@ -24,6 +26,18 @@ final class BillingHooksProvider implements RegistersHooks
             icon: 'ti ti-receipt',
             priority: 700,
             requiredPermission: 'billing.view',
+            requiredModule: 'Billing',
+            group: 'admin',
+        ));
+
+        // Menu gestion des plans (super-admin root uniquement)
+        $registry->addMenu(new MenuItem(
+            id: 'billing-plans',
+            label: 'Plans tarifaires',
+            route: 'billing.plans.index',
+            icon: 'ti ti-list-details',
+            priority: 710,
+            requiredPermission: 'billing.manage',
             requiredModule: 'Billing',
             group: 'admin',
             visibleWhen: fn ($user, $instance) =>
@@ -35,6 +49,17 @@ final class BillingHooksProvider implements RegistersHooks
             label: 'Facturation',
             view: 'billing::settings',
             priority: 600,
+        ));
+
+        $registry->addPermissionGroup(new PermissionGroup(
+            id: 'billing',
+            label: 'Facturation',
+            permissions: [
+                'billing.view' => 'Voir les abonnements et factures',
+                'billing.manage' => 'Gerer les plans et paiements',
+            ],
+            priority: 700,
+            module: 'Billing',
         ));
     }
 }

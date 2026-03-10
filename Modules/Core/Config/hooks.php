@@ -13,5 +13,7 @@ return [
         \Modules\ModuleManager\Providers\ModuleManagerHooksProvider::class,
         \Modules\Settings\Providers\SettingsHooksProvider::class,
         \Modules\Billing\Providers\BillingHooksProvider::class,
+        \Modules\Lang\Providers\LangHooksProvider::class,
+        \Modules\Currency\Providers\CurrencyHooksProvider::class,
     ],
 ];

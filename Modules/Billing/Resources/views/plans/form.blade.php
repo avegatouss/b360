@@ -28,11 +28,11 @@
 
                 <div class="row">
                     <div class="col-md-4 mb-3">
-                        <label class="form-label">Prix mensuel (EUR)</label>
+                        <label class="form-label">Prix mensuel ({{ currency() }})</label>
                         <input type="number" name="price_monthly" class="form-control" step="0.01" min="0" value="{{ old('price_monthly', $plan?->price_monthly ?? '0.00') }}" required>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label class="form-label">Prix annuel (EUR)</label>
+                        <label class="form-label">Prix annuel ({{ currency() }})</label>
                         <input type="number" name="price_yearly" class="form-control" step="0.01" min="0" value="{{ old('price_yearly', $plan?->price_yearly) }}">
                     </div>
                     <div class="col-md-4 mb-3">
@@ -42,16 +42,39 @@
                 </div>
 
                 <div class="row">
-                    <div class="col-md-6 mb-3">
+                    <div class="col-md-4 mb-3">
                         <label class="form-label">Ordre d'affichage</label>
                         <input type="number" name="sort_order" class="form-control" min="0" value="{{ old('sort_order', $plan?->sort_order ?? 0) }}">
                     </div>
-                    <div class="col-md-6 mb-3 d-flex align-items-end">
+                    <div class="col-md-4 mb-3 d-flex align-items-end">
                         <div class="form-check form-switch">
                             <input type="hidden" name="is_active" value="0">
                             <input type="checkbox" name="is_active" value="1" class="form-check-input" {{ old('is_active', $plan?->is_active ?? true) ? 'checked' : '' }}>
                             <label class="form-check-label">Actif</label>
                         </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Visibilite</label>
+                        <select name="visibility" class="form-select" id="visibilitySelect">
+                            <option value="all" {{ old('visibility', $plan?->visibility ?? 'all') === 'all' ? 'selected' : '' }}>Toutes les instances</option>
+                            <option value="specific" {{ old('visibility', $plan?->visibility) === 'specific' ? 'selected' : '' }}>Instances specifiques</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-3" id="instancesSection" style="{{ old('visibility', $plan?->visibility ?? 'all') === 'specific' ? '' : 'display:none' }}">
+                    <label class="form-label">Instances autorisees</label>
+                    <div class="row">
+                        @php $selectedInstances = old('instance_ids', $plan?->instances->pluck('id')->toArray() ?? []) @endphp
+                        @foreach($allInstances as $inst)
+                            <div class="col-md-4 mb-2">
+                                <div class="form-check">
+                                    <input type="checkbox" name="instance_ids[]" value="{{ $inst->id }}" class="form-check-input"
+                                        {{ in_array($inst->id, (array) $selectedInstances) ? 'checked' : '' }}>
+                                    <label class="form-check-label">{{ $inst->name ?? $inst->slug }}</label>
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
                 </div>
 
@@ -65,4 +88,9 @@
         </div>
     </div>
 
+    <script>
+        document.getElementById('visibilitySelect').addEventListener('change', function() {
+            document.getElementById('instancesSection').style.display = this.value === 'specific' ? '' : 'none';
+        });
+    </script>
 </x-dashboard::layouts.master>

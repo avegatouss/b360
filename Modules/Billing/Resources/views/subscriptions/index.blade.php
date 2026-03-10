@@ -59,6 +59,55 @@
         </div>
     </div>
 
+    {{-- Available plans (when no active subscription) --}}
+    @if(!$subscription || !$subscription->isActive())
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Plans disponibles</h5>
+        </div>
+        <div class="card-body">
+            @if($availablePlans->isEmpty())
+                <p class="text-muted mb-0">Aucun plan disponible pour le moment.</p>
+            @else
+                <div class="row">
+                    @foreach($availablePlans as $plan)
+                    <div class="col-md-4 mb-3">
+                        <div class="card border h-100">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">{{ $plan->name }}</h5>
+                                @if($plan->description)
+                                    <p class="text-muted small">{{ $plan->description }}</p>
+                                @endif
+                                <div class="mb-3">
+                                    <span class="h3">{{ number_format($plan->price_monthly, 2) }}</span>
+                                    <span class="text-muted">{{ currency() }}/mois</span>
+                                </div>
+                                @if($plan->price_yearly)
+                                    <p class="text-muted small mb-2">
+                                        ou {{ number_format($plan->price_yearly, 2) }} {{ currency() }}/an
+                                    </p>
+                                @endif
+                                @if($plan->trial_days > 0)
+                                    <p class="text-info small mb-3">
+                                        <i class="ti ti-clock me-1"></i>{{ $plan->trial_days }} jours d'essai gratuit
+                                    </p>
+                                @endif
+                                <form action="{{ route('billing.subscribe', [$instance->slug, $plan->id]) }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="ti ti-check me-1"></i>Choisir ce plan
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+    </div>
+    @endif
+
     {{-- Recent invoices --}}
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">

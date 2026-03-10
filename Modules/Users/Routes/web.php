@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Modules\Users\Http\Controllers\RoleController;
 use Modules\Users\Http\Controllers\UserController;
 use Modules\Users\Http\Controllers\UserMembershipController;
 
@@ -50,4 +51,29 @@ Route::middleware([
     Route::put('/users/{user}/memberships', [UserMembershipController::class, 'sync'])
         ->middleware('can:users.manage')
         ->name('users.memberships.sync');
+
+    // ─── Roles & Permissions ─────────────────────────────────
+    Route::get('/roles', [RoleController::class, 'index'])
+        ->middleware('can:users.manage')
+        ->name('roles.index');
+
+    Route::get('/roles/create', [RoleController::class, 'create'])
+        ->middleware('can:users.manage')
+        ->name('roles.create');
+
+    Route::post('/roles', [RoleController::class, 'store'])
+        ->middleware('can:users.manage')
+        ->name('roles.store');
+
+    Route::get('/roles/{role}/edit', [RoleController::class, 'edit'])
+        ->middleware('can:users.manage')
+        ->name('roles.edit');
+
+    Route::put('/roles/{role}', [RoleController::class, 'update'])
+        ->middleware('can:users.manage')
+        ->name('roles.update');
+
+    Route::delete('/roles/{role}', [RoleController::class, 'destroy'])
+        ->middleware('can:users.manage')
+        ->name('roles.destroy');
 });

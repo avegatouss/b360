@@ -19,6 +19,16 @@ final class PlanManager
         return $query->get();
     }
 
+    public function forInstance(int $instanceId): Collection
+    {
+        return Plan::query()
+            ->where('is_active', true)
+            ->visibleTo($instanceId)
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get();
+    }
+
     public function find(int $id): ?Plan
     {
         return Plan::find($id);

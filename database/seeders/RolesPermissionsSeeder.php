@@ -48,6 +48,12 @@ class RolesPermissionsSeeder extends Seeder
             'users.manage',
             'instances.view',
             'instances.manage',
+            'modules.view',
+            'modules.manage',
+            'settings.view',
+            'settings.manage',
+            'billing.view',
+            'billing.manage',
         ];
 
         foreach ($permissions as $name) {
@@ -74,6 +80,10 @@ class RolesPermissionsSeeder extends Seeder
             'users.view',
             'users.manage',
             'instances.view',
+            'billing.view',
+            'billing.manage',
+            'settings.view',
+            'settings.manage',
         ]);
 
         $manager = Role::firstOrCreate(['name' => 'manager', 'guard_name' => 'web']);

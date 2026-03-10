@@ -42,25 +42,50 @@ final class SettingsController extends Controller
             abort(404, 'Groupe de parametres introuvable.');
         }
 
-        $values = $settings->group($group, 0);
+        $scopeId = $this->settingsScope($instance);
 
-        return view('settings::index', compact('instance', 'groups', 'currentGroup', 'values'));
+        // Instance settings merged over global (cascade)
+        $globalValues = $settings->group($group, 0);
+        $instanceValues = $scopeId > 0 ? $settings->group($group, $scopeId) : [];
+        $values = array_merge($globalValues, $instanceValues);
+
+        return view('settings::index', compact('instance', 'groups', 'currentGroup', 'values', 'scopeId'));
     }
 
     public function updateGroup(Request $request, string $slug, string $group, SettingsManager $settings)
     {
         $instance = CurrentInstance::get();
+        $scopeId = $this->settingsScope($instance);
 
         $settingsData = $request->input('settings', []);
         $types = $request->input('types', []);
 
         foreach ($settingsData as $key => $value) {
             $type = $types[$key] ?? 'string';
-            $settings->set("{$group}.{$key}", $value, 0, $type);
+            $settings->set("{$group}.{$key}", $value, $scopeId, $type);
+        }
+
+        // Handle file uploads (e.g., branding images)
+        if ($request->hasFile('files')) {
+            foreach ($request->file('files') as $key => $file) {
+                if ($file && $file->isValid()) {
+                    $path = $file->store("branding/{$group}", 'public');
+                    $settings->set("{$group}.{$key}", $path, $scopeId, 'string');
+                }
+            }
         }
 
         return redirect()
             ->route('settings.group', [$instance->slug, $group])
             ->with('status', 'Parametres mis a jour.');
+    }
+
+    /**
+     * Determine settings scope: root = 0 (global), non-root = instance_id.
+     * Root settings affect all instances. Instance settings only affect that instance.
+     */
+    private function settingsScope($instance): int
+    {
+        return $instance->isRoot() ? 0 : (int) $instance->id;
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Modules\Billing\Tests\Unit;
 
+use App\Instances\Instance;
 use Modules\Billing\Models\Plan;
 use Modules\Billing\Models\Subscription;
 use Modules\Billing\Services\PlanManager;
@@ -109,5 +110,63 @@ final class PlanManagerTest extends TestCase
         $this->manager->delete($plan);
 
         $this->assertDatabaseHas('plans', ['name' => 'InUse', 'is_active' => false]);
+    }
+
+    public function test_for_instance_returns_plans_visible_to_all(): void
+    {
+        $instance = $this->makeRootInstance();
+
+        $this->manager->create(['name' => 'Global Plan', 'price_monthly' => 10, 'trial_days' => 0, 'visibility' => 'all']);
+        $this->manager->create(['name' => 'Restricted', 'price_monthly' => 20, 'trial_days' => 0, 'visibility' => 'specific']);
+
+        $plans = $this->manager->forInstance($instance->id);
+
+        $this->assertCount(1, $plans);
+        $this->assertSame('Global Plan', $plans->first()->name);
+    }
+
+    public function test_for_instance_returns_specific_plans_for_assigned_instance(): void
+    {
+        $instance = Instance::create([
+            'name' => 'Client A',
+            'slug' => 'client-a',
+            'is_active' => true,
+        ]);
+
+        $plan = $this->manager->create(['name' => 'VIP Plan', 'price_monthly' => 50, 'trial_days' => 0, 'visibility' => 'specific']);
+        $plan->instances()->attach($instance->id);
+
+        $plans = $this->manager->forInstance($instance->id);
+
+        $this->assertCount(1, $plans);
+        $this->assertSame('VIP Plan', $plans->first()->name);
+    }
+
+    public function test_for_instance_excludes_specific_plans_not_assigned(): void
+    {
+        $instanceA = Instance::create(['name' => 'A', 'slug' => 'a', 'is_active' => true]);
+        $instanceB = Instance::create(['name' => 'B', 'slug' => 'b', 'is_active' => true]);
+
+        $plan = $this->manager->create(['name' => 'Only A', 'price_monthly' => 30, 'trial_days' => 0, 'visibility' => 'specific']);
+        $plan->instances()->attach($instanceA->id);
+
+        $plansB = $this->manager->forInstance($instanceB->id);
+        $this->assertCount(0, $plansB);
+
+        $plansA = $this->manager->forInstance($instanceA->id);
+        $this->assertCount(1, $plansA);
+    }
+
+    public function test_for_instance_excludes_inactive_plans(): void
+    {
+        $instance = $this->makeRootInstance();
+
+        $this->manager->create(['name' => 'Active', 'price_monthly' => 10, 'trial_days' => 0, 'visibility' => 'all', 'is_active' => true]);
+        $this->manager->create(['name' => 'Inactive', 'price_monthly' => 10, 'trial_days' => 0, 'visibility' => 'all', 'is_active' => false]);
+
+        $plans = $this->manager->forInstance($instance->id);
+
+        $this->assertCount(1, $plans);
+        $this->assertSame('Active', $plans->first()->name);
     }
 }

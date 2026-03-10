@@ -30,7 +30,7 @@
         {{-- Right panel: settings form --}}
         <div class="col-md-9">
             @if(isset($currentGroup))
-                <form method="POST" action="{{ route('settings.group.update', [$instance->slug, $currentGroup->id]) }}">
+                <form method="POST" action="{{ route('settings.group.update', [$instance->slug, $currentGroup->id]) }}" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
 
