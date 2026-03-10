@@ -12,15 +12,19 @@ trait CreatesInstanceContext
 {
     protected function makeInstance(string $slug = 'acme'): Instance
     {
-        return Instance::query()->on('system')->create([
+        $meta = $slug === 'root' ? ['is_root' => true] : [];
+
+        return Instance::create([
+            'name' => ucfirst($slug),
             'slug' => $slug,
             'is_active' => true,
+            'meta' => $meta,
         ]);
     }
 
     protected function makeUser(string $email = 'u@example.com'): User
     {
-        return User::query()->on('system')->create([
+        return User::create([
             'name' => 'User',
             'email' => $email,
             'password' => bcrypt('password'),

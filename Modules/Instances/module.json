@@ -1,0 +1,29 @@
+{
+    "name": "Instances",
+    "alias": "instances",
+    "description": "Gestion des instances SaaS B360 : création, édition, activation, suppression",
+    "keywords": ["instances", "saas", "admin"],
+    "priority": 0,
+    "providers": [
+        "Modules\\Instances\\Providers\\InstancesServiceProvider"
+    ],
+    "files": [],
+    "docs": {
+        "summary": "Module protege de gestion des instances multi-tenant. Permet de creer, editer, activer/desactiver et supprimer des instances. La creation peut etre desactivee via le parametre instances.allow_creation.",
+        "features": [
+            "CRUD complet des instances",
+            "Provisioning automatique (shared ou database-per-instance)",
+            "Activation/desactivation des instances",
+            "Recherche par nom, slug ou domaine",
+            "Comptage des membres par instance"
+        ],
+        "hooks": [
+            {"type": "menu", "id": "instances", "description": "Menu item Instances dans la sidebar Administration"},
+            {"type": "settings_group", "id": "instances", "description": "Groupe de parametres : allow_creation, max_instances"}
+        ],
+        "permissions": [
+            "instances.view",
+            "instances.manage"
+        ]
+    }
+}

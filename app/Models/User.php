@@ -6,24 +6,37 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes, HasRoles, HasUuids;
+
+    public function uniqueIds(): array
+    {
+        return ['uuid'];
+    }
+
+    public function getRouteKeyName(): string
+    {
+        return 'uuid';
+    }
 
     /*
-    |--------------------------------------------------------------------------
-    | Table
-    |--------------------------------------------------------------------------
-    */
+     |--------------------------------------------------------------------------
+     | Connection & Table
+     |--------------------------------------------------------------------------
+     */
+    protected $connection = 'system';
     protected $table = 'users';
 
     /*
-    |--------------------------------------------------------------------------
-    | Mass Assignment
-    |--------------------------------------------------------------------------
-    | ⚠️ Toujours explicite pour éviter les failles
-    */
+     |--------------------------------------------------------------------------
+     | Mass Assignment
+     |--------------------------------------------------------------------------
+     | ⚠️ Toujours explicite pour éviter les failles
+     */
     protected $fillable = [
         'username',
         'email',
@@ -47,36 +60,36 @@ class User extends Authenticatable
     ];
 
     /*
-    |--------------------------------------------------------------------------
-    | Hidden attributes (sécurité API / JSON)
-    |--------------------------------------------------------------------------
-    */
+     |--------------------------------------------------------------------------
+     | Hidden attributes (sécurité API / JSON)
+     |--------------------------------------------------------------------------
+     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
     /*
-    |--------------------------------------------------------------------------
-    | Attribute Casting
-    |--------------------------------------------------------------------------
-    */
+     |--------------------------------------------------------------------------
+     | Attribute Casting
+     |--------------------------------------------------------------------------
+     */
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'last_login_at'     => 'datetime',
+        'last_login_at' => 'datetime',
 
-        'is_active'   => 'boolean',
-        'is_blocked'  => 'boolean',
+        'is_active' => 'boolean',
+        'is_blocked' => 'boolean',
 
         'notification_preferences' => 'array',
-        'settings'                 => 'array',
+        'settings' => 'array',
     ];
 
     /*
-    |--------------------------------------------------------------------------
-    | Accessors / Mutators
-    |--------------------------------------------------------------------------
-    */
+     |--------------------------------------------------------------------------
+     | Accessors / Mutators
+     |--------------------------------------------------------------------------
+     */
 
     /**
      * Toujours stocker le mot de passe hashé
@@ -101,10 +114,10 @@ class User extends Authenticatable
     }
 
     /*
-    |--------------------------------------------------------------------------
-    | Relations
-    |--------------------------------------------------------------------------
-    */
+     |--------------------------------------------------------------------------
+     | Relations
+     |--------------------------------------------------------------------------
+     */
 
     /**
      * Personne morale (ex: entreprise, organisation)
@@ -123,10 +136,10 @@ class User extends Authenticatable
     }
 
     /*
-    |--------------------------------------------------------------------------
-    | Scopes
-    |--------------------------------------------------------------------------
-    */
+     |--------------------------------------------------------------------------
+     | Scopes
+     |--------------------------------------------------------------------------
+     */
 
     /**
      * Utilisateurs actifs uniquement
@@ -146,10 +159,10 @@ class User extends Authenticatable
         return $query->where('is_blocked', true);
     }
     /*
-    |--------------------------------------------------------------------------
-    | Alias name ⇄ full_name
-    |--------------------------------------------------------------------------
-    */
+     |--------------------------------------------------------------------------
+     | Alias name ⇄ full_name
+     |--------------------------------------------------------------------------
+     */
 
     // Lire $user->name
     public function getNameAttribute(): ?string
@@ -163,10 +176,10 @@ class User extends Authenticatable
         $this->attributes['full_name'] = $value;
     }
     /*
-    |--------------------------------------------------------------------------
-    | Helpers métier
-    |--------------------------------------------------------------------------
-    */
+     |--------------------------------------------------------------------------
+     | Helpers métier
+     |--------------------------------------------------------------------------
+     */
 
     public function block(): void
     {

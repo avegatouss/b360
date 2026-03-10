@@ -43,7 +43,7 @@ class InstallerServiceProvider extends ServiceProvider
         | Routes Installer
         |--------------------------------------------------------------------------
         */
-        $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
+        $this->loadRoutesFrom(__DIR__ . '/../Routes/web.php');
 
         /*
         |--------------------------------------------------------------------------
@@ -51,7 +51,7 @@ class InstallerServiceProvider extends ServiceProvider
         |--------------------------------------------------------------------------
         */
         $this->loadViewsFrom(
-            __DIR__ . '/../resources/views',
+            __DIR__ . '/../Resources/views',
             'installer'
         );
 
@@ -61,18 +61,31 @@ class InstallerServiceProvider extends ServiceProvider
         |--------------------------------------------------------------------------
         */
         $this->mergeConfigFrom(
-            __DIR__ . '/../config/config.php',
+            __DIR__ . '/../Config/config.php',
             'installer'
         );
     }
 
     /**
      * Register services.
-     *
-     * Aucun binding global.
      */
     public function register(): void
     {
+        // Force le driver de session en "file" tant que l'app n'est pas installée.
         //
+        // Pourquoi : si SESSION_DRIVER=database est dans le .env (valeur par défaut
+        // recommandée post-install) et que la base cible n'existe pas encore
+        // (ou a été supprimée entre deux tentatives), le middleware StartSession
+        // lève SQLSTATE[HY000][1049] Unknown database '...' avant même d'atteindre
+        // les routes de l'installeur.
+        //
+        // register() s'exécute avant le binding du session store → c'est le seul
+        // endroit garanti pour surcharger ce driver sans race condition.
+        if (config('app.installed', false) !== true) {
+            config([
+                'session.driver' => 'file',
+                'cache.default'  => 'file',
+            ]);
+        }
     }
 }

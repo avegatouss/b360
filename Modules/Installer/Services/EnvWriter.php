@@ -78,6 +78,12 @@ class EnvWriter
         $updates['APP_LOCALE']    = $data['locale'] ?? 'fr';
         $updates['APP_INSTALLED'] = 'false';
 
+        // Session et cache en "file" pendant l'installation.
+        // Évite SQLSTATE[HY000][1049] si SESSION_DRIVER=database ou CACHE_STORE=database
+        // et que la DB cible n'existe pas encore (retentative après échec).
+        $updates['SESSION_DRIVER'] = 'file';
+        $updates['CACHE_STORE']    = 'file';
+
         // Instance (v1)
         $updates['INSTANCE_MODE'] = $data['instance_mode'] ?? 'single';
         $updates['INSTANCE_RESOLUTION'] = $data['instance_resolution'] ?? 'path';
@@ -160,6 +166,8 @@ class EnvWriter
             'APP_TIMEZONE=UTC',
             'APP_LOCALE=fr',
             'APP_INSTALLED=false',
+            'SESSION_DRIVER=file',
+            'CACHE_STORE=file',
             'INSTANCE_MODE=single',
             'INSTANCE_RESOLUTION=path',
             'INSTANCE_DB_STRATEGY=shared',
@@ -222,6 +230,9 @@ class EnvWriter
         File::put($tmpPath, $content);
         @chmod($tmpPath, 0640);
         // rename est atomique sur la plupart des FS
-        @rename($tmpPath, $path);
+        if (!rename($tmpPath, $path)) {
+            @unlink($tmpPath);
+            throw new RuntimeException("Échec d'écriture atomique vers {$path}");
+        }
     }
 }

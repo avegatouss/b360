@@ -1,4 +1,11 @@
 {
     "Installer": true,
-    "Core": true
+    "Core": true,
+    "Users": true,
+    "Auth": true,
+    "Dashboard": true,
+    "ModuleManager": true,
+    "Instances": true,
+    "Settings": true,
+    "Billing": true
 }

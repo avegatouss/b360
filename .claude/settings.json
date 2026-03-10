@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(php artisan:*)",
+      "Bash(php artisan route:list:*)",
+      "Bash(python3:*)",
+      "Bash(php -r:*)",
+      "Bash(php -l:*)",
+      "Bash(grep:*)",
+      "Bash(C:/laragon/bin/php/php-8.4.16-nts-Win32-vs17-x64/php.exe artisan route:list --name=instance.logout --verbose)",
+      "Bash(php vendor/bin/phpunit --filter=\"ModuleManagerDestroyTest|ModuleManagerToggleTest\")",
+      "Bash(php vendor/bin/phpunit --filter=InstallerFlowTest)"
+    ]
+  }
+}

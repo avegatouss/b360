@@ -1,29 +1,31 @@
 <?php
 
-namespace Tests\Feature\Installer;
+namespace Modules\Installer\Tests\Feature\Installer;
 
-use Tests\TestCase;
+use App\Installer\InstallLock;
+use Modules\Installer\Tests\TestCase;
 
-class InstallerAccessTest extends TestCase
+final class InstallerAccessTest extends TestCase
 {
-    /** @test */
-    public function installer_is_accessible_when_app_not_installed(): void
+    public function test_installer_is_accessible_when_not_installed(): void
     {
-        config(['app.installed' => false]);
-
-        $response = $this->get('/install');
-
-        $response->assertStatus(200);
-        $response->assertSee('Installation');
+        $this->get('/install')
+            ->assertOk();
     }
 
-    /** @test */
-    public function installer_is_blocked_when_app_is_installed(): void
+    public function test_installer_is_hidden_when_installed(): void
     {
         config(['app.installed' => true]);
 
-        $response = $this->get('/install');
+        $this->get('/install')
+            ->assertStatus(404);
+    }
 
-        $response->assertRedirect('/');
+    public function test_installer_returns_409_when_installing_lock_exists(): void
+    {
+        InstallLock::acquire('test-run');
+
+        $this->get('/install/requirements')
+            ->assertStatus(409);
     }
 }

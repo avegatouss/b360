@@ -32,8 +32,10 @@ final class RbacTeamsTest extends TestCase
         $i2 = $this->makeInstance('b');
         $u = $this->makeUser('ia@example.com');
 
-        // assign role within instance a
+        // Create role for this team, sync permissions, and assign
         TeamContext::set($i1->id);
+        $role = \Spatie\Permission\Models\Role::findOrCreate('instance-admin');
+        $role->syncPermissions(['instances.view', 'users.view', 'users.manage']);
         $u->assignRole('instance-admin');
 
         // In instance a -> allowed
