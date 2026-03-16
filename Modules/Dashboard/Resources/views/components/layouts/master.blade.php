@@ -13,6 +13,9 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="{{ asset('build/css/bootstrap.min.css') }}">
 
+    <!-- Select2 CSS -->
+    <link rel="stylesheet" href="{{ asset('build/plugins/select2/css/select2.min.css') }}">
+
     <!-- Tabler Icons CSS -->
     <link rel="stylesheet" href="{{ asset('build/plugins/tabler-icons/tabler-icons.min.css') }}">
 
@@ -115,6 +118,9 @@
                         <i class="ti ti-maximize"></i>
                     </a>
                 </li>
+
+                {{-- Language switcher --}}
+                @include('lang::components.language-switcher')
 
                 {{-- User dropdown --}}
                 <li class="nav-item dropdown has-arrow main-drop profile-nav">
@@ -296,6 +302,11 @@
 
 </div>
 <!-- /Main Wrapper -->
+@php
+    $scriptVersion = file_exists(public_path('build/js/script.js')) ? filemtime(public_path('build/js/script.js')) : time();
+    $themeColorpickerVersion = file_exists(public_path('build/js/theme-colorpicker.js')) ? filemtime(public_path('build/js/theme-colorpicker.js')) : $scriptVersion;
+    $select2Version = file_exists(public_path('build/plugins/select2/js/select2.min.js')) ? filemtime(public_path('build/plugins/select2/js/select2.min.js')) : $scriptVersion;
+@endphp
 
 <!-- jQuery -->
 <script src="{{ asset('build/js/jquery-3.7.1.min.js') }}"></script>
@@ -305,10 +316,13 @@
 <script src="{{ asset('build/js/jquery.slimscroll.min.js') }}"></script>
 <!-- Bootstrap Core JS -->
 <script src="{{ asset('build/js/bootstrap.bundle.min.js') }}"></script>
+<!-- Select2 JS -->
+<script src="{{ asset('build/plugins/select2/js/select2.min.js') }}?v={{ $select2Version }}"></script>
+@include('layout.partials.select2-config')
 <!-- Theme JS -->
-<script src="{{ asset('build/js/theme-colorpicker.js') }}"></script>
+<script src="{{ asset('build/js/theme-colorpicker.js') }}?v={{ $themeColorpickerVersion }}"></script>
 <!-- Custom JS -->
-<script src="{{ asset('build/js/script.js') }}"></script>
+<script src="{{ asset('build/js/script.js') }}?v={{ $scriptVersion }}"></script>
 
 </body>
 </html>

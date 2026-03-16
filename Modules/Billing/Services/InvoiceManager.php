@@ -17,10 +17,10 @@ final class InvoiceManager
             ->get();
     }
 
-    public function generate(Subscription $sub): Invoice
+    public function generate(Subscription $sub, string $billingPeriod = 'monthly'): Invoice
     {
         $plan = $sub->plan;
-        $amount = $plan->price_monthly;
+        $amount = $billingPeriod === 'yearly' ? $plan->price_yearly : $plan->price_monthly;
         $tax = 0;
         $total = $amount + $tax;
 
@@ -31,9 +31,10 @@ final class InvoiceManager
             'amount' => $amount,
             'tax' => $tax,
             'total' => $total,
-            'currency' => config('billing.currency', 'EUR'),
+            'currency' => function_exists('currency') ? currency($sub->instance_id) : config('billing.currency', 'EUR'),
             'status' => 'pending',
             'due_date' => now()->addDays(30),
+            'metadata' => ['billing_period' => $billingPeriod],
         ]);
     }
 

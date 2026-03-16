@@ -9,5 +9,7 @@
     "Settings": true,
     "Billing": true,
     "Lang": true,
-    "Currency": true
+    "Currency": true,
+    "Eshop360": true,
+    "Demo": true
 }

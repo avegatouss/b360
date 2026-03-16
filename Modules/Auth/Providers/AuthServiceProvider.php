@@ -5,6 +5,7 @@ namespace Modules\Auth\Providers;
 use App\Instances\Instance;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
@@ -17,6 +18,8 @@ final class AuthServiceProvider extends ServiceProvider
     {
         $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'authmod');
+        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'auth');
+        Blade::anonymousComponentPath(__DIR__ . '/../resources/views/components', 'auth');
 
         RateLimiter::for('login', function (Request $request) {
             $email = Str::lower((string) $request->input('email', ''));

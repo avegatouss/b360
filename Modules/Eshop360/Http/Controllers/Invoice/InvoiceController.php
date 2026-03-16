@@ -1,0 +1,272 @@
+<?php
+
+namespace Modules\Eshop360\Http\Controllers\Invoice;
+
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Modules\Core\Support\CurrentInstance;
+use Modules\Eshop360\Models\Customer;
+use Modules\Eshop360\Models\Invoice;
+use Modules\Eshop360\Models\Order;
+use Modules\Eshop360\Models\Product;
+use Modules\Eshop360\Services\EmailService;
+use Modules\Eshop360\Services\InvoiceService;
+use Modules\Eshop360\Services\PdfService;
+
+class InvoiceController extends Controller
+{
+    public function __construct(private readonly InvoiceService $invoiceService)
+    {
+    }
+
+    public function index(Request $request)
+    {
+        $invoices = Invoice::with(['customer', 'order'])
+            ->when($request->status, fn ($q, $s) => $q->where('status', $s))
+            ->when($request->search, fn ($q, $s) => $q->where('invoice_number', 'like', "%{$s}%")
+                ->orWhereHas('customer', fn ($cq) => $cq->where('name', 'like', "%{$s}%")))
+            ->when($request->customer_id, fn ($q, $c) => $q->where('customer_id', $c))
+            ->when($request->date_from, fn ($q, $d) => $q->whereDate('created_at', '>=', $d))
+            ->when($request->date_to, fn ($q, $d) => $q->whereDate('created_at', '<=', $d))
+            ->when($request->overdue, fn ($q) => $q->where('status', 'overdue')
+                ->orWhere(fn ($sq) => $sq->where('status', '!=', 'paid')->where('due_date', '<', now())))
+            ->latest()
+            ->paginate(20)
+            ->withQueryString();
+
+        return view('eshop360::invoices.index', compact('invoices'));
+    }
+
+    public function create(Request $request)
+    {
+        $instance = CurrentInstance::get();
+        $customers = Customer::where('is_active', true)->orderBy('name')->get();
+        $products = Product::active()->orderBy('name')->get();
+        $order = $request->order_id ? Order::with('items.product', 'customer')->find($request->order_id) : null;
+
+        $instanceId = $instance?->id ?? 0;
+        $settings = Cache::get("eshop_invoice_settings_{$instanceId}", $this->defaultInvoiceSettings());
+
+        return view('eshop360::invoices.create', compact('customers', 'products', 'order', 'settings'));
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $instance = CurrentInstance::get();
+        $validated = $request->validate([
+            'customer_id'            => 'nullable|exists:eshop_customers,id',
+            'order_id'               => 'nullable|exists:eshop_orders,id',
+            'due_date'               => 'nullable|date|after_or_equal:today',
+            'notes'                  => 'nullable|string|max:2000',
+            'terms'                  => 'nullable|string|max:2000',
+            'footer_text'            => 'nullable|string|max:1000',
+            'template'               => 'nullable|string|max:50',
+            'discount_amount'        => 'nullable|numeric|min:0',
+            'items'                  => 'required|array|min:1',
+            'items.*.product_id'     => 'nullable|exists:eshop_products,id',
+            'items.*.description'    => 'required|string|max:500',
+            'items.*.quantity'       => 'required|integer|min:1',
+            'items.*.unit_price'     => 'required|numeric|min:0',
+            'items.*.discount'       => 'nullable|numeric|min:0',
+            'items.*.tax'            => 'nullable|numeric|min:0',
+        ]);
+
+        $invoice = $this->invoiceService->createFromItems($validated['items'], [
+            'instance_id' => $instance?->id,
+            'order_id' => $validated['order_id'] ?? null,
+            'customer_id' => $validated['customer_id'] ?? null,
+            'status' => 'draft',
+            'due_date' => $validated['due_date'] ?? null,
+            'discount_amount' => (float) ($validated['discount_amount'] ?? 0),
+            'notes' => $validated['notes'] ?? null,
+            'terms' => $validated['terms'] ?? null,
+            'footer_text' => $validated['footer_text'] ?? null,
+            'template' => $validated['template'] ?? 'default',
+            'created_by' => auth()->id(),
+        ]);
+
+        return redirect()->route('eshop360.invoices.show', [
+            'slug' => $instance?->slug,
+            'invoice' => $invoice,
+        ])
+            ->with('success', __('Invoice :number created.', ['number' => $invoice->invoice_number]));
+    }
+
+    public function show(string $slug, Invoice $invoice)
+    {
+        $invoice->load(['customer', 'order', 'items.product', 'payments']);
+
+        return view('eshop360::invoices.show', compact('invoice'));
+    }
+
+    public function update(Request $request, string $slug, Invoice $invoice): RedirectResponse
+    {
+        $instance = CurrentInstance::get();
+        $validated = $request->validate([
+            'status'      => 'nullable|in:draft,sent,paid,unpaid,overdue,cancelled',
+            'due_date'    => 'nullable|date',
+            'paid_amount' => 'nullable|numeric|min:0',
+            'notes'       => 'nullable|string|max:2000',
+            'terms'       => 'nullable|string|max:2000',
+            'footer_text' => 'nullable|string|max:1000',
+            'template'    => 'nullable|string|max:50',
+        ]);
+
+        $updateData = array_filter($validated, fn ($v) => $v !== null);
+
+        if (isset($updateData['paid_amount'])) {
+            $method = $invoice->order?->payment_method ?? 'cash';
+            $this->invoiceService->syncPaidAmount(
+                $invoice,
+                (float) $updateData['paid_amount'],
+                $method,
+                'INV-UPD',
+                'Manual invoice payment update'
+            );
+            unset($updateData['paid_amount'], $updateData['status']);
+        }
+
+        $invoice->update($updateData);
+
+        return redirect()->route('eshop360.invoices.show', [
+            'slug' => $instance?->slug,
+            'invoice' => $invoice,
+        ])
+            ->with('success', __('Invoice updated successfully.'));
+    }
+
+    public function destroy(string $slug, Invoice $invoice): RedirectResponse
+    {
+        $instance = CurrentInstance::get();
+        $invoice->delete();
+
+        return redirect()->route('eshop360.invoices.index', ['slug' => $instance?->slug])
+            ->with('success', __('Invoice deleted successfully.'));
+    }
+
+    public function templates()
+    {
+        $templates = [
+            ['name' => 'default', 'label' => __('Default'), 'preview' => 'invoices/templates/default.png'],
+            ['name' => 'modern', 'label' => __('Modern'), 'preview' => 'invoices/templates/modern.png'],
+            ['name' => 'classic', 'label' => __('Classic'), 'preview' => 'invoices/templates/classic.png'],
+            ['name' => 'minimal', 'label' => __('Minimal'), 'preview' => 'invoices/templates/minimal.png'],
+        ];
+
+        return view('eshop360::invoices.templates', compact('templates'));
+    }
+
+    public function settings()
+    {
+        $instanceId = CurrentInstance::get()?->id ?? 0;
+        $settings = Cache::get("eshop_invoice_settings_{$instanceId}", $this->defaultInvoiceSettings());
+
+        return view('eshop360::invoices.settings', compact('settings'));
+    }
+
+    public function updateSettings(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'company_name'    => 'required|string|max:255',
+            'company_address' => 'nullable|string|max:500',
+            'company_phone'   => 'nullable|string|max:30',
+            'company_email'   => 'nullable|email|max:255',
+            'company_logo'    => 'nullable|image|max:1024',
+            'tax_number'      => 'nullable|string|max:100',
+            'default_terms'   => 'nullable|string|max:2000',
+            'default_footer'  => 'nullable|string|max:1000',
+            'default_due_days' => 'nullable|integer|min:0|max:365',
+            'default_template' => 'nullable|string|max:50',
+            'currency_symbol'  => 'nullable|string|max:10',
+            'currency_position' => 'nullable|in:before,after',
+        ]);
+
+        if ($request->hasFile('company_logo')) {
+            $validated['company_logo'] = $request->file('company_logo')->store('invoice_settings', 'public');
+        }
+
+        $instanceId = CurrentInstance::get()?->id ?? 0;
+        Cache::put("eshop_invoice_settings_{$instanceId}", $validated);
+
+        return redirect()->route('eshop360.invoices.settings')
+            ->with('success', __('Invoice settings updated successfully.'));
+    }
+
+    public function report(Request $request)
+    {
+        $dateFrom = $request->date_from ?? now()->startOfMonth()->toDateString();
+        $dateTo = $request->date_to ?? now()->toDateString();
+
+        $invoicesByStatus = Invoice::whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
+            ->select('status', DB::raw('COUNT(*) as count'), DB::raw('SUM(total) as total'))
+            ->groupBy('status')
+            ->get();
+
+        $monthlyInvoices = Invoice::whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
+            ->select(
+                DB::raw('YEAR(created_at) as year'),
+                DB::raw('MONTH(created_at) as month'),
+                DB::raw('SUM(total) as total'),
+                DB::raw('SUM(paid_amount) as paid'),
+                DB::raw('SUM(due_amount) as due'),
+                DB::raw('COUNT(*) as count')
+            )
+            ->groupBy('year', 'month')
+            ->orderBy('year')
+            ->orderBy('month')
+            ->get();
+
+        $totalInvoiced = Invoice::whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])->sum('total');
+        $totalPaid = Invoice::whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])->sum('paid_amount');
+        $totalDue = Invoice::whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])->sum('due_amount');
+        $overdueCount = Invoice::where('status', '!=', 'paid')
+            ->where('due_date', '<', now())
+            ->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
+            ->count();
+
+        return view('eshop360::invoices.report', compact(
+            'invoicesByStatus', 'monthlyInvoices',
+            'totalInvoiced', 'totalPaid', 'totalDue', 'overdueCount',
+            'dateFrom', 'dateTo'
+        ));
+    }
+
+    public function pdf(string $slug, Invoice $invoice)
+    {
+        $invoice->load('items.product', 'customer', 'order');
+        $html = app(\Modules\Eshop360\Services\PdfService::class)->invoice($invoice);
+        return app(\Modules\Eshop360\Services\PdfService::class)->download($html, "facture-{$invoice->invoice_number}.pdf");
+    }
+
+    public function sendEmail(string $slug, Invoice $invoice): RedirectResponse
+    {
+        $sent = app(\Modules\Eshop360\Services\EmailService::class)->sendInvoice($invoice);
+
+        if (!$sent) {
+            return redirect()->back()->with('error', 'Impossible d\'envoyer l\'email (client sans email ou erreur SMTP).');
+        }
+
+        return redirect()->back()->with('success', "Facture envoyée par email.");
+    }
+
+    private function defaultInvoiceSettings(): array
+    {
+        return [
+            'company_name'     => '',
+            'company_address'  => '',
+            'company_phone'    => '',
+            'company_email'    => '',
+            'company_logo'     => null,
+            'tax_number'       => '',
+            'default_terms'    => '',
+            'default_footer'   => '',
+            'default_due_days' => 30,
+            'default_template' => 'default',
+            'currency_symbol'  => '$',
+            'currency_position' => 'before',
+        ];
+    }
+}

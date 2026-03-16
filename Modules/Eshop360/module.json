@@ -1,0 +1,49 @@
+{
+    "name": "Eshop360",
+    "alias": "eshop360",
+    "description": "Module complet de vente, POS, gestion de produits, stocks, clients, factures et rapports",
+    "keywords": ["pos", "sales", "products", "inventory", "invoices", "eshop"],
+    "priority": 0,
+    "providers": [
+        "Modules\\Eshop360\\Providers\\Eshop360ServiceProvider"
+    ],
+    "files": [],
+    "docs": {
+        "summary": "Module e-commerce et POS complet. Terminal de vente, catalogue produits, gestion des stocks, commandes, factures, clients, achats fournisseurs, promotions et rapports.",
+        "features": [
+            "Terminal POS avec 5 variantes de layout",
+            "CRUD produits avec catégories, sous-catégories et marques",
+            "Gestion des stocks multi-entrepôts avec transferts",
+            "Commandes et ventes avec retours",
+            "Factures avec templates personnalisables",
+            "Gestion clients avec rapports",
+            "Achats fournisseurs",
+            "Coupons et plans de remise",
+            "Codes-barres et QR codes",
+            "Devis/Quotations",
+            "Rapports : ventes, stocks, produits, best-sellers, taxes"
+        ],
+        "hooks": [
+            {"type": "menu", "id": "eshop360", "description": "Menu group E-Shop dans la sidebar"},
+            {"type": "menu", "id": "eshop360.pos", "description": "Terminal POS"},
+            {"type": "menu", "id": "eshop360.products", "description": "Gestion produits"},
+            {"type": "menu", "id": "eshop360.inventory", "description": "Gestion stocks"},
+            {"type": "menu", "id": "eshop360.sales", "description": "Ventes et commandes"},
+            {"type": "menu", "id": "eshop360.customers", "description": "Gestion clients"},
+            {"type": "menu", "id": "eshop360.invoices", "description": "Factures"},
+            {"type": "menu", "id": "eshop360.reports", "description": "Rapports"}
+        ],
+        "permissions": [
+            "eshop.pos.access",
+            "eshop.products.view", "eshop.products.manage",
+            "eshop.inventory.view", "eshop.inventory.manage",
+            "eshop.sales.view", "eshop.sales.manage",
+            "eshop.customers.view", "eshop.customers.manage",
+            "eshop.purchases.view", "eshop.purchases.manage",
+            "eshop.invoices.view", "eshop.invoices.manage",
+            "eshop.promotions.manage",
+            "eshop.reports.view",
+            "eshop.settings.manage"
+        ]
+    }
+}

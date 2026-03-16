@@ -8,6 +8,9 @@ use Nwidart\Modules\Facades\Module;
 
 class ModuleManager
 {
+    /** @var array<int, string>|null */
+    private ?array $enabledModulesCache = null;
+
     public function isEnabled(string $name): bool
     {
         $enabled = $this->enabledModules();
@@ -22,9 +25,17 @@ class ModuleManager
      */
     public function enabledModules(): array
     {
+        if ($this->enabledModulesCache !== null && Cache::has('core.enabled_modules')) {
+            return $this->enabledModulesCache;
+        }
+
+        if (! Cache::has('core.enabled_modules')) {
+            $this->enabledModulesCache = null;
+        }
+
         $ttl = (int) config('core.cache.enabled_modules_ttl_seconds', 60);
 
-        return Cache::remember('core.enabled_modules', $ttl, function () {
+        $enabled = Cache::remember('core.enabled_modules', $ttl, function () {
             // 1. Modules explicitly tracked in DB
             $dbModules = collect();
             try {
@@ -58,10 +69,13 @@ class ModuleManager
 
             return $enabled;
         });
+
+        return $this->enabledModulesCache = $enabled;
     }
 
     public function clearCache(): void
     {
+        $this->enabledModulesCache = null;
         Cache::forget('core.enabled_modules');
     }
 }

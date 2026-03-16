@@ -17,13 +17,19 @@ class Payment extends Model
         'status',
         'reference',
         'gateway_id',
+        'gateway_slug',
+        'gateway_reference',
         'paid_at',
         'metadata',
+        'refunded_at',
+        'refund_amount',
     ];
 
     protected $casts = [
         'amount' => 'decimal:2',
+        'refund_amount' => 'decimal:2',
         'paid_at' => 'datetime',
+        'refunded_at' => 'datetime',
         'metadata' => 'array',
     ];
 

@@ -1,0 +1,41 @@
+<?php
+
+namespace Modules\Eshop360\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class ImportOrderItem extends Model
+{
+    use HasFactory;
+
+    protected $table = 'eshop_import_order_items';
+
+    protected $fillable = [
+        'import_order_id',
+        'product_id',
+        'quantity',
+        'unit_price_factory',
+        'total_factory',
+        'allocated_cost',
+        'cost_price_real',
+    ];
+
+    protected $casts = [
+        'unit_price_factory' => 'decimal:4',
+        'total_factory' => 'decimal:2',
+        'allocated_cost' => 'decimal:2',
+        'cost_price_real' => 'decimal:4',
+    ];
+
+    public function importOrder(): BelongsTo
+    {
+        return $this->belongsTo(ImportOrder::class);
+    }
+
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class);
+    }
+}

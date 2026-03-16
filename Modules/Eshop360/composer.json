@@ -1,0 +1,28 @@
+{
+    "name": "b360/eshop360",
+    "description": "Module e-commerce et POS pour B360",
+    "authors": [
+        {
+            "name": "B360 Core",
+            "email": "dev@b360.app"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {}
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Eshop360\\": "",
+            "Modules\\Eshop360\\Database\\Factories\\": "database/factories/",
+            "Modules\\Eshop360\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\Eshop360\\Tests\\": "tests/"
+        }
+    }
+}

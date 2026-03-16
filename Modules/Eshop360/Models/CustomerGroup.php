@@ -1,0 +1,30 @@
+<?php
+
+namespace Modules\Eshop360\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Modules\Core\Database\Traits\BelongsToInstance;
+
+class CustomerGroup extends Model
+{
+    use HasFactory, BelongsToInstance;
+
+    protected $table = 'eshop_customer_groups';
+
+    protected $fillable = [
+        'instance_id',
+        'name',
+        'discount_rate',
+    ];
+
+    protected $casts = [
+        'discount_rate' => 'decimal:2',
+    ];
+
+    public function customers(): HasMany
+    {
+        return $this->hasMany(Customer::class, 'group_id');
+    }
+}

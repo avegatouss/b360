@@ -9,6 +9,8 @@ use Modules\Core\Http\Middleware\EnsureRootSuperAdmin;
 use Modules\Core\Support\TeamContext;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 final class EnsureRootSuperAdminTest extends TestCase
 {
@@ -86,9 +88,13 @@ final class EnsureRootSuperAdminTest extends TestCase
         $this->bindInstance($root);
 
         $user = $this->makeUser('ia@test.com');
+        TeamContext::clear();
+        Permission::findOrCreate('instances.view');
+        $role = Role::findOrCreate('instance-admin');
+        $role->syncPermissions(['instances.view']);
+
         TeamContext::set($root->id);
-        \Spatie\Permission\Models\Role::findOrCreate('instance-admin');
-        $user->assignRole('instance-admin');
+        $user->assignRole($role);
 
         $this->assertSame(403, $this->runMiddleware($user));
     }
