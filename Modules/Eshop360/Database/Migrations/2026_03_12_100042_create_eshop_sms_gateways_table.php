@@ -10,11 +10,9 @@ return new class extends Migration {
         Schema::create('eshop_sms_gateways', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('instance_id')->index();
-            $table->enum('provider', [
-                'twilio', 'textlocal', 'clockwork', 'msg91',
-                'bulksms', 'nexmo', 'generic',
-            ]);
-            $table->json('config');
+            $table->string('driver', 50);
+            $table->string('display_name');
+            $table->json('config'); // encrypted at application level
             $table->boolean('is_default')->default(false);
             $table->boolean('is_active')->default(true);
             $table->timestamps();

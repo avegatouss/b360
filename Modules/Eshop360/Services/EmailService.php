@@ -9,44 +9,59 @@ use Modules\Core\Support\CurrentInstance;
 
 /**
  * Email sending service for Eshop360.
- * Uses Laravel's built-in Mail facade with template support.
+ * Uses Laravel's built-in Mail facade with configurable template support.
  */
 final class EmailService
 {
     /**
-     * Send an email using a template.
+     * Send an email using a named template.
+     *
+     * @param  string  $templateName  Template name (e.g. 'invoice', 'birthday')
+     * @param  string  $to            Recipient email address
+     * @param  array   $data          Variables to replace in the template
+     * @param  array   $attachments   Optional file paths to attach
+     * @return bool
      */
-    public function sendFromTemplate(string $templateSlug, string $to, array $variables = [], ?string $subject = null): bool
+    public function sendTemplate(string $templateName, string $to, array $data, array $attachments = []): bool
     {
-        $instance = CurrentInstance::get();
-        if (!$instance) return false;
-
-        $template = EmailTemplate::where('instance_id', $instance->id)
-            ->where('slug', $templateSlug)
-            ->where('is_active', true)
-            ->first();
+        $template = EmailTemplate::getTemplate($templateName);
 
         if (!$template) {
-            Log::warning("Email template not found: {$templateSlug}");
+            Log::warning("Email template not found or inactive: {$templateName}");
             return false;
         }
 
-        $body = $this->replaceVariables($template->body, $variables);
-        $emailSubject = $subject ?? $this->replaceVariables($template->subject, $variables);
+        if (!$template->is_active) {
+            Log::info("Email template '{$templateName}' is disabled, skipping send.");
+            return false;
+        }
 
-        return $this->send($to, $emailSubject, $body);
+        $subject = $template->renderSubject($data);
+        $body = $template->render($data);
+
+        return $this->send($to, $subject, $body, null, $attachments);
     }
 
     /**
      * Send a raw email.
+     *
+     * @param  string       $to           Recipient email address
+     * @param  string       $subject      Email subject
+     * @param  string       $body         HTML body
+     * @param  string|null  $from         Optional sender address
+     * @param  array        $attachments  Optional file paths to attach
+     * @return bool
      */
-    public function send(string $to, string $subject, string $body, ?string $from = null): bool
+    public function send(string $to, string $subject, string $body, ?string $from = null, array $attachments = []): bool
     {
         try {
-            Mail::html($body, function ($message) use ($to, $subject, $from) {
+            Mail::html($body, function ($message) use ($to, $subject, $from, $attachments) {
                 $message->to($to)->subject($subject);
                 if ($from) {
                     $message->from($from);
+                }
+                foreach ($attachments as $path) {
+                    $message->attach($path);
                 }
             });
 
@@ -62,28 +77,43 @@ final class EmailService
     }
 
     /**
-     * Send invoice email to customer.
+     * Send invoice email to customer using the 'invoice' template.
      */
-    public function sendInvoice($invoice, ?string $pdfHtml = null): bool
+    public function sendInvoice($invoice, ?string $to = null): bool
     {
         $customer = $invoice->customer;
-        if (!$customer || !$customer->email) return false;
+        $email = $to ?? ($customer?->email ?? null);
+        if (!$email) {
+            return false;
+        }
 
         $instance = CurrentInstance::get();
-        $subject = "Facture {$invoice->invoice_number} - {$instance->name}";
 
-        $body = "<h2>Facture {$invoice->invoice_number}</h2>";
-        $body .= "<p>Bonjour {$customer->name},</p>";
-        $body .= "<p>Veuillez trouver ci-dessous les détails de votre facture :</p>";
-        $body .= "<ul>";
-        $body .= "<li><strong>Référence :</strong> {$invoice->invoice_number}</li>";
-        $body .= "<li><strong>Date :</strong> " . ($invoice->created_at?->format('d/m/Y') ?? '') . "</li>";
-        $body .= "<li><strong>Échéance :</strong> " . ($invoice->due_date?->format('d/m/Y') ?? 'N/A') . "</li>";
-        $body .= "<li><strong>Total :</strong> " . number_format($invoice->total, 2) . "</li>";
-        $body .= "</ul>";
-        $body .= "<p>Cordialement,<br>{$instance->name}</p>";
+        return $this->sendTemplate('invoice', $email, [
+            'client_name' => $customer->name ?? 'Client',
+            'invoice_number' => $invoice->invoice_number ?? $invoice->reference ?? '',
+            'total' => number_format($invoice->total ?? 0, 0, ',', ' ') . ' XAF',
+            'due_date' => $invoice->due_date?->format('d/m/Y') ?? 'N/A',
+            'company_name' => $instance?->name ?? 'B360',
+        ]);
+    }
 
-        return $this->send($customer->email, $subject, $body);
+    /**
+     * Send birthday greeting to a customer using the 'birthday' template.
+     */
+    public function sendBirthdayGreeting($customer): bool
+    {
+        if (!$customer->email) {
+            return false;
+        }
+
+        $instance = CurrentInstance::get();
+
+        return $this->sendTemplate('birthday', $customer->email, [
+            'client_name' => $customer->name ?? 'Client',
+            'company_name' => $instance?->name ?? 'B360',
+            'discount_code' => 'ANNIV-' . now()->year,
+        ]);
     }
 
     /**
@@ -92,31 +122,63 @@ final class EmailService
     public function sendOrderConfirmation($order): bool
     {
         $customer = $order->customer;
-        if (!$customer || !$customer->email) return false;
+        if (!$customer || !$customer->email) {
+            return false;
+        }
 
         $instance = CurrentInstance::get();
-        $subject = "Confirmation de commande {$order->reference} - {$instance->name}";
+        $subject = "Confirmation de commande {$order->reference} - " . ($instance?->name ?? 'B360');
 
-        $body = "<h2>Commande confirmée</h2>";
+        $body = "<h2>Commande confirmee</h2>";
         $body .= "<p>Bonjour {$customer->name},</p>";
-        $body .= "<p>Votre commande <strong>{$order->reference}</strong> a bien été enregistrée.</p>";
+        $body .= "<p>Votre commande <strong>{$order->reference}</strong> a bien ete enregistree.</p>";
         $body .= "<ul>";
         $body .= "<li><strong>Total :</strong> " . number_format($order->total, 2) . "</li>";
         $body .= "<li><strong>Date :</strong> " . ($order->created_at?->format('d/m/Y H:i') ?? '') . "</li>";
         $body .= "</ul>";
-        $body .= "<p>Merci pour votre confiance !<br>{$instance->name}</p>";
+        $body .= "<p>Merci pour votre confiance !<br>" . ($instance?->name ?? 'B360') . "</p>";
 
         return $this->send($customer->email, $subject, $body);
     }
 
     /**
-     * Replace template variables like {{name}}, {{amount}}, etc.
+     * Send password reset email using the 'password_reset' template.
      */
-    private function replaceVariables(string $text, array $variables): string
+    public function sendPasswordReset(string $to, string $userName, string $resetLink, int $expiryMinutes = 60): bool
     {
-        foreach ($variables as $key => $value) {
-            $text = str_replace("{{" . $key . "}}", (string) $value, $text);
-        }
-        return $text;
+        return $this->sendTemplate('password_reset', $to, [
+            'user_name' => $userName,
+            'reset_link' => $resetLink,
+            'expiry_minutes' => (string) $expiryMinutes,
+        ]);
+    }
+
+    /**
+     * Send product list / catalogue email using the 'product_list' template.
+     */
+    public function sendProductList(string $to, string $clientName, string $productsTableHtml): bool
+    {
+        $instance = CurrentInstance::get();
+
+        return $this->sendTemplate('product_list', $to, [
+            'client_name' => $clientName,
+            'products_table' => $productsTableHtml,
+            'company_name' => $instance?->name ?? 'B360',
+        ]);
+    }
+
+    /**
+     * Send report email using the 'report' template.
+     */
+    public function sendReport(string $to, string $recipientName, string $reportName, string $period, array $attachments = []): bool
+    {
+        $instance = CurrentInstance::get();
+
+        return $this->sendTemplate('report', $to, [
+            'recipient_name' => $recipientName,
+            'report_name' => $reportName,
+            'period' => $period,
+            'company_name' => $instance?->name ?? 'B360',
+        ], $attachments);
     }
 }

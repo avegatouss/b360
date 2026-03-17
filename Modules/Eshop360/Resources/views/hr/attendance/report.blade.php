@@ -1,13 +1,13 @@
 <x-dashboard::layouts.master
-    :title="'Attendance Report — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Attendance Report') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Attendance Report">
+    :pageTitle="__('Attendance Report')">
 
 <div class="page-header">
     <div class="add-item d-flex">
         <div class="page-title">
-            <h4 class="fw-bold">Attendance Report</h4>
-            <h6>View attendance statistics by date range</h6>
+            <h4 class="fw-bold">{{ __('Attendance Report') }}</h4>
+            <h6>{{ __('View attendance statistics by date range') }}</h6>
         </div>
     </div>
     <div class="page-btn">
@@ -21,15 +21,15 @@
         <form action="{{ route('eshop360.hr.attendance.report', $instance->slug ?? '') }}" method="GET">
             <div class="row align-items-end">
                 <div class="col-md-4 mb-3">
-                    <label class="form-label">From</label>
+                    <label class="form-label">{{ __('From') }}</label>
                     <input type="date" name="from" class="form-control" value="{{ $from ?? now()->startOfMonth()->format('Y-m-d') }}">
                 </div>
                 <div class="col-md-4 mb-3">
-                    <label class="form-label">To</label>
+                    <label class="form-label">{{ __('To') }}</label>
                     <input type="date" name="to" class="form-control" value="{{ $to ?? now()->format('Y-m-d') }}">
                 </div>
                 <div class="col-md-4 mb-3">
-                    <button type="submit" class="btn btn-primary w-100"><i class="ti ti-filter me-1"></i>Filter</button>
+                    <button type="submit" class="btn btn-primary w-100"><i class="ti ti-filter me-1"></i>{{ __('Filter') }}</button>
                 </div>
             </div>
         </form>
@@ -43,13 +43,13 @@
             <table class="table">
                 <thead class="thead-light">
                     <tr>
-                        <th>Employee</th>
-                        <th>Total Days</th>
-                        <th>Present</th>
-                        <th>Late</th>
-                        <th>Absent</th>
-                        <th>Total Hours</th>
-                        <th>Avg Hours/Day</th>
+                        <th>{{ __('Employee') }}</th>
+                        <th>{{ __('Total Days') }}</th>
+                        <th>{{ __('Present') }}</th>
+                        <th>{{ __('Late') }}</th>
+                        <th>{{ __('Absent') }}</th>
+                        <th>{{ __('Total Hours') }}</th>
+                        <th>{{ __('Avg Hours/Day') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -65,7 +65,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="text-center">No data for the selected period.</td>
+                        <td colspan="7" class="text-center">{{ __('No data for the selected period.') }}</td>
                     </tr>
                     @endforelse
                 </tbody>

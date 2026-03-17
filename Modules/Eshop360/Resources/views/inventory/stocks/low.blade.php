@@ -1,12 +1,12 @@
 <x-dashboard::layouts.master
-    :title="'Low Stocks - ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Low Stocks') . ' -' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Low Stocks">
+    :pageTitle="__('Low Stocks')">
 
 <div class="page-header">
     <div class="page-title me-auto">
-        <h4 class="fw-bold">Low Stocks</h4>
-        <h6>Products at or below their alert threshold</h6>
+        <h4 class="fw-bold">{{ __('Low Stocks') }}</h4>
+        <h6>{{ __('Products at or below their alert threshold') }}</h6>
     </div>
     <div class="page-btn">
         <a href="{{ route('eshop360.stocks.index', $instance->slug ?? '') }}" class="btn btn-secondary">
@@ -19,19 +19,19 @@
     <div class="card-header">
         <form method="GET" action="{{ route('eshop360.stocks.low', $instance->slug ?? '') }}" class="row g-3">
             <div class="col-md-5">
-                <label for="search" class="form-label">Search</label>
+                <label for="search" class="form-label">{{ __('Search') }}</label>
                 <input
                     id="search"
                     type="text"
                     name="search"
                     value="{{ request('search') }}"
                     class="form-control"
-                    placeholder="Product name">
+                    placeholder="{{ __('Product name') }}">
             </div>
             <div class="col-md-4">
-                <label for="warehouse_id" class="form-label">Warehouse</label>
+                <label for="warehouse_id" class="form-label">{{ __('Warehouse') }}</label>
                 <select id="warehouse_id" name="warehouse_id" class="form-select">
-                    <option value="">All warehouses</option>
+                    <option value="">{{ __('All warehouses') }}</option>
                     @foreach($warehouses as $warehouse)
                         <option value="{{ $warehouse->id }}" @selected((string) request('warehouse_id') === (string) $warehouse->id)>
                             {{ $warehouse->name }}
@@ -40,7 +40,7 @@
                 </select>
             </div>
             <div class="col-md-3 d-flex align-items-end gap-2">
-                <button type="submit" class="btn btn-primary w-100">Filter</button>
+                <button type="submit" class="btn btn-primary w-100">{{ __('Filter') }}</button>
                 <a href="{{ route('eshop360.stocks.low', $instance->slug ?? '') }}" class="btn btn-light w-100">Reset</a>
             </div>
         </form>
@@ -50,11 +50,11 @@
             <table class="table">
                 <thead class="thead-light">
                     <tr>
-                        <th>Product</th>
-                        <th>SKU</th>
-                        <th>Warehouse stock</th>
-                        <th>Alert quantity</th>
-                        <th>Expiry date</th>
+                        <th>{{ __('Product') }}</th>
+                        <th>{{ __('SKU') }}</th>
+                        <th>{{ __('Warehouse stock') }}</th>
+                        <th>{{ __('Alert quantity') }}</th>
+                        <th>{{ __('Expiry date') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -84,7 +84,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="text-center text-muted py-4">No low stock products found.</td>
+                            <td colspan="5" class="text-center text-muted py-4">{{ __('No low stock products found.') }}</td>
                         </tr>
                     @endforelse
                 </tbody>

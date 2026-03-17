@@ -1,13 +1,13 @@
 <x-dashboard::layouts.master
-    :title="'Customers — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Customers') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Customers">
+    :pageTitle="__('Customers')">
 
 <div class="page-header">
             <div class="add-item d-flex">
                 <div class="page-title">
-                    <h4 class="fw-bold">Customers</h4>
-                    <h6>Manage your customers</h6>
+                    <h4 class="fw-bold">{{ __('Customers') }}</h4>
+                    <h6>{{ __('Manage your customers') }}</h6>
                 </div>
             </div>
             <ul class="table-top-head">
@@ -18,14 +18,14 @@
                     <a data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"><img src="{{URL::asset('build/img/icons/excel.svg')}}" alt="img"></a>
                 </li>
                 <li>
-                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="Refresh"><i class="ti ti-refresh"></i></a>
+                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Refresh') }}"><i class="ti ti-refresh"></i></a>
                 </li>
                 <li>
-                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="Collapse" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
+                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Collapse') }}" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
                 </li>
             </ul>
             <div class="page-btn">
-                <a href="#" class="btn btn-primary text-white" data-bs-toggle="modal" data-bs-target="#add-customer"><i class="ti ti-circle-plus me-1"></i>Add Customer</a>
+                <a href="#" class="btn btn-primary text-white" data-bs-toggle="modal" data-bs-target="#add-customer"><i class="ti ti-circle-plus me-1"></i>{{ __('Add Customer') }}</a>
             </div>
         </div>
         <!-- /product list -->
@@ -43,10 +43,10 @@
                         </a>
                         <ul class="dropdown-menu  dropdown-menu-end p-3">
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Active</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Active') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Inactive</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Inactive') }}</a>
                             </li>
                         </ul>
                     </div>
@@ -63,12 +63,12 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </th>
-                                <th>Code</th>
-                                <th>Customer</th>
-                                <th>Email</th>
-                                <th>Phone</th>
-                                <th>Country</th>
-                                <th>Status</th>
+                                <th>{{ __('Code') }}</th>
+                                <th>{{ __('Customer') }}</th>
+                                <th>{{ __('Email') }}</th>
+                                <th>{{ __('Phone') }}</th>
+                                <th>{{ __('Country') }}</th>
+                                <th>{{ __('Status') }}</th>
                                 <th class="no-sort"></th>
                             </tr>
                         </thead>
@@ -99,9 +99,9 @@
                                 <td>{{ $customer->country ?? '—' }}</td>
                                 <td>
                                     @if($customer->is_active ?? true)
-                                        <span class="d-inline-flex align-items-center p-1 pe-2 rounded-1 text-white bg-success fs-10"><i class="ti ti-point-filled me-1 fs-11"></i>Active</span>
+                                        <span class="d-inline-flex align-items-center p-1 pe-2 rounded-1 text-white bg-success fs-10"><i class="ti ti-point-filled me-1 fs-11"></i>{{ __('Active') }}</span>
                                     @else
-                                        <span class="d-inline-flex align-items-center p-1 pe-2 rounded-1 text-white bg-danger fs-10"><i class="ti ti-point-filled me-1 fs-11"></i>Inactive</span>
+                                        <span class="d-inline-flex align-items-center p-1 pe-2 rounded-1 text-white bg-danger fs-10"><i class="ti ti-point-filled me-1 fs-11"></i>{{ __('Inactive') }}</span>
                                     @endif
                                 </td>
                                 <td class="d-flex">
@@ -124,7 +124,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="8" class="text-center">No customers found.</td>
+                                <td colspan="8" class="text-center">{{ __('No customers found.') }}</td>
                             </tr>
                             @endforelse
                         </tbody>

@@ -42,7 +42,12 @@ class AdvancedReportController extends Controller
         $from = $request->get('from', now()->startOfMonth()->toDateString());
         $to = $request->get('to', now()->toDateString());
         $data = $this->financeService->profitAndLoss($instance->id, $from, $to);
-        return view('eshop360::reports.profit-loss', compact('data', 'from', 'to'));
+
+        // Include real-time charges data for the "Charges imputees" section
+        $chargesService = app(ChargesService::class);
+        $chargesData = $chargesService->getDashboardData($instance->id);
+
+        return view('eshop360::reports.profit-loss', compact('data', 'from', 'to', 'chargesData'));
     }
 
     public function salesByCategory(Request $request)

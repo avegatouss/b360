@@ -1,13 +1,13 @@
 <x-dashboard::layouts.master
-    :title="'Installment ' . ($plan->reference ?? '') . ' — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Installment') . ($plan->reference ?? '') . ' — ' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Installment Plan Detail">
+    :pageTitle="__('Installment Plan Detail')">
 
 <div class="page-header">
     <div class="add-item d-flex">
         <div class="page-title">
             <h4 class="fw-bold">{{ $plan->reference }}</h4>
-            <h6>Installment plan detail and schedule</h6>
+            <h6>{{ __('Installment plan detail and schedule') }}</h6>
         </div>
     </div>
     <div class="page-btn">
@@ -18,7 +18,7 @@
 <div class="row">
     <div class="col-md-4">
         <div class="card">
-            <div class="card-header"><h5>Plan Information</h5></div>
+            <div class="card-header"><h5>{{ __('Plan Information') }}</h5></div>
             <div class="card-body">
                 <table class="table table-borderless mb-0">
                     <tr><th>Reference</th><td>{{ $plan->reference }}</td></tr>
@@ -26,7 +26,7 @@
                     <tr><th>Customer</th><td>{{ $plan->customer->name ?? '—' }}</td></tr>
                     <tr><th>Created</th><td>{{ $plan->created_at->format('d/m/Y') }}</td></tr>
                     <tr>
-                        <th>Status</th>
+                        <th>{{ __('Status') }}</th>
                         <td>
                             @php
                                 $planStatusColors = ['active' => 'primary', 'completed' => 'success', 'overdue' => 'danger', 'cancelled' => 'secondary'];
@@ -42,7 +42,7 @@
         </div>
 
         <div class="card">
-            <div class="card-header"><h5>Payment Summary</h5></div>
+            <div class="card-header"><h5>{{ __('Payment Summary') }}</h5></div>
             <div class="card-body">
                 <table class="table table-borderless mb-0">
                     <tr class="fw-bold"><th>Total Amount</th><td class="text-end">{{ number_format($plan->total_amount, 2) }}</td></tr>
@@ -66,7 +66,7 @@
     <div class="col-md-8">
         <div class="card">
             <div class="card-header d-flex align-items-center justify-content-between">
-                <h5 class="mb-0">Payment Schedule</h5>
+                <h5 class="mb-0">{{ __('Payment Schedule') }}</h5>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -74,12 +74,12 @@
                         <thead class="thead-light">
                             <tr>
                                 <th>#</th>
-                                <th>Due Date</th>
-                                <th class="text-end">Amount Due</th>
-                                <th class="text-end">Amount Paid</th>
-                                <th>Paid Date</th>
-                                <th>Status</th>
-                                <th class="no-sort">Action</th>
+                                <th>{{ __('Due Date') }}</th>
+                                <th class="text-end">{{ __('Amount Due') }}</th>
+                                <th class="text-end">{{ __('Amount Paid') }}</th>
+                                <th>{{ __('Paid Date') }}</th>
+                                <th>{{ __('Status') }}</th>
+                                <th class="no-sort">{{ __('Action') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -100,7 +100,7 @@
                                     @if($installment->status !== 'paid')
                                     <form action="{{ route('eshop360.finance.installments.payment', [$instance->slug ?? '', $installment]) }}" method="POST" class="d-inline" onsubmit="return confirm('Record this payment?')">
                                         @csrf
-                                        <button type="submit" class="btn btn-sm btn-success"><i data-feather="check" class="me-1"></i>Pay</button>
+                                        <button type="submit" class="btn btn-sm btn-success"><i data-feather="check" class="me-1"></i>{{ __('Pay') }}</button>
                                     </form>
                                     @else
                                     <span class="text-success"><i data-feather="check-circle"></i></span>
@@ -108,7 +108,7 @@
                                 </td>
                             </tr>
                             @empty
-                            <tr><td colspan="7" class="text-center text-muted">No installments scheduled.</td></tr>
+                            <tr><td colspan="7" class="text-center text-muted">{{ __('No installments scheduled.') }}</td></tr>
                             @endforelse
                         </tbody>
                     </table>

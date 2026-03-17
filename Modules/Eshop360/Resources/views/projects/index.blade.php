@@ -1,23 +1,23 @@
 <x-dashboard::layouts.master
-    :title="'Projets — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Projets') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Projets">
+    :pageTitle="__('Projets')">
 
 <div class="page-header">
     <div class="add-item d-flex">
         <div class="page-title">
-            <h4 class="fw-bold">Projets</h4>
+            <h4 class="fw-bold">{{ __('Projets') }}</h4>
             <h6>{{ $instance->name }} &mdash; Gestion des projets</h6>
         </div>
     </div>
     <ul class="table-top-head">
         <li>
-            <a data-bs-toggle="tooltip" data-bs-placement="top" title="Rafraîchir">
+            <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Rafraîchir') }}">
                 <i class="ti ti-refresh"></i>
             </a>
         </li>
         <li>
-            <a data-bs-toggle="tooltip" data-bs-placement="top" title="Réduire" id="collapse-header">
+            <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Réduire') }}" id="collapse-header">
                 <i class="ti ti-chevron-up"></i>
             </a>
         </li>
@@ -39,7 +39,7 @@
                 </div>
                 <div>
                     <div class="fs-4 fw-bold">{{ $stats['total'] ?? $projects->total() }}</div>
-                    <div class="text-muted small">Total projets</div>
+                    <div class="text-muted small">{{ __('Total projets') }}</div>
                 </div>
             </div>
         </div>
@@ -52,7 +52,7 @@
                 </div>
                 <div>
                     <div class="fs-4 fw-bold">{{ $stats['active'] ?? 0 }}</div>
-                    <div class="text-muted small">Actifs</div>
+                    <div class="text-muted small">{{ __('Actifs') }}</div>
                 </div>
             </div>
         </div>
@@ -65,7 +65,7 @@
                 </div>
                 <div>
                     <div class="fs-4 fw-bold">{{ $stats['completed'] ?? 0 }}</div>
-                    <div class="text-muted small">Terminés</div>
+                    <div class="text-muted small">{{ __('Terminés') }}</div>
                 </div>
             </div>
         </div>
@@ -78,7 +78,7 @@
                 </div>
                 <div>
                     <div class="fs-4 fw-bold">{{ $stats['overdue'] ?? 0 }}</div>
-                    <div class="text-muted small">En retard</div>
+                    <div class="text-muted small">{{ __('En retard') }}</div>
                 </div>
             </div>
         </div>
@@ -90,16 +90,16 @@
     <div class="card-body py-3">
         <form method="GET" action="{{ route('eshop360.projects.index', $instance->slug ?? '') }}" class="row g-2 align-items-end">
             <div class="col-md-4">
-                <label class="form-label small text-muted mb-1">Recherche</label>
+                <label class="form-label small text-muted mb-1">{{ __('Recherche') }}</label>
                 <div class="input-group input-group-sm">
                     <span class="input-group-text"><i class="ti ti-search"></i></span>
                     <input type="text" name="search" class="form-control" placeholder="Nom du projet…" value="{{ request('search') }}">
                 </div>
             </div>
             <div class="col-md-3">
-                <label class="form-label small text-muted mb-1">Statut</label>
+                <label class="form-label small text-muted mb-1">{{ __('Statut') }}</label>
                 <select name="status" class="form-select form-select-sm">
-                    <option value="">Tous les statuts</option>
+                    <option value="">{{ __('Tous les statuts') }}</option>
                     <option value="planning" {{ request('status') === 'planning' ? 'selected' : '' }}>Planification</option>
                     <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Actif</option>
                     <option value="on_hold" {{ request('status') === 'on_hold' ? 'selected' : '' }}>En pause</option>
@@ -108,9 +108,9 @@
                 </select>
             </div>
             <div class="col-md-3">
-                <label class="form-label small text-muted mb-1">Priorité</label>
+                <label class="form-label small text-muted mb-1">{{ __('Priorité') }}</label>
                 <select name="priority" class="form-select form-select-sm">
-                    <option value="">Toutes priorités</option>
+                    <option value="">{{ __('Toutes priorités') }}</option>
                     <option value="low" {{ request('priority') === 'low' ? 'selected' : '' }}>Basse</option>
                     <option value="medium" {{ request('priority') === 'medium' ? 'selected' : '' }}>Moyenne</option>
                     <option value="high" {{ request('priority') === 'high' ? 'selected' : '' }}>Haute</option>
@@ -118,7 +118,7 @@
                 </select>
             </div>
             <div class="col-md-2 d-flex gap-2">
-                <button type="submit" class="btn btn-primary btn-sm w-100">Filtrer</button>
+                <button type="submit" class="btn btn-primary btn-sm w-100">{{ __('Filtrer') }}</button>
                 <a href="{{ route('eshop360.projects.index', $instance->slug ?? '') }}" class="btn btn-outline-secondary btn-sm" title="Réinitialiser">
                     <i class="ti ti-x"></i>
                 </a>
@@ -182,14 +182,14 @@
                 <div class="d-flex align-items-center justify-content-between">
                     <span class="badge {{ $statusConfig['class'] }}">{{ $statusConfig['label'] }}</span>
                     @if($isOverdue)
-                        <span class="badge bg-danger-subtle text-danger"><i class="ti ti-clock-exclamation me-1"></i>En retard</span>
+                        <span class="badge bg-danger-subtle text-danger"><i class="ti ti-clock-exclamation me-1"></i>{{ __('En retard') }}</span>
                     @endif
                 </div>
 
                 {{-- Progress bar --}}
                 <div>
                     <div class="d-flex justify-content-between align-items-center mb-1">
-                        <small class="text-muted">Avancement</small>
+                        <small class="text-muted">{{ __('Avancement') }}</small>
                         <small class="fw-semibold">{{ $progress }}%</small>
                     </div>
                     <div class="progress" style="height:8px;">
@@ -230,7 +230,7 @@
                     </a>
                     <form action="{{ route('eshop360.projects.destroy', [$instance->slug ?? '', $project]) }}"
                           method="POST" class="d-inline"
-                          onsubmit="return confirm('Supprimer ce projet ?')">
+                          onsubmit='return confirm(@js(__('Supprimer ce projet ?')))'>
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-sm btn-outline-danger">
@@ -247,7 +247,7 @@
 <div class="card border-0 shadow-sm">
     <div class="card-body text-center py-5">
         <i class="ti ti-folder-off fs-1 text-muted"></i>
-        <p class="text-muted mt-3 mb-3">Aucun projet trouvé.</p>
+        <p class="text-muted mt-3 mb-3">{{ __('Aucun projet trouvé.') }}</p>
         <a href="{{ route('eshop360.projects.create', $instance->slug ?? '') }}" class="btn btn-primary">
             <i class="ti ti-circle-plus me-1"></i>Créer un projet
         </a>

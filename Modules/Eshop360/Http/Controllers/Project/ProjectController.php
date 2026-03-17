@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\Core\Support\CurrentInstance;
 use Modules\Eshop360\Models\Customer;
+use Modules\Eshop360\Models\Invoice;
 use Modules\Eshop360\Models\Project;
 use Modules\Eshop360\Models\Task;
 
@@ -121,6 +122,22 @@ class ProjectController extends Controller
 
         return redirect()->route('eshop360.projects.index')
             ->with('success', "Projet supprimé.");
+    }
+
+    /**
+     * List invoices linked to this project.
+     */
+    public function invoices(Project $project)
+    {
+        $instance = CurrentInstance::get();
+        $project->load('customer');
+
+        $invoices = Invoice::where('project_id', $project->id)
+            ->with('customer')
+            ->latest()
+            ->paginate(20);
+
+        return view('eshop360::projects.invoices', compact('project', 'invoices'));
     }
 
     /**

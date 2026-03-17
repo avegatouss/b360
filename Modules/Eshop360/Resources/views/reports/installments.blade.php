@@ -1,15 +1,15 @@
 <x-dashboard::layouts.master
-    :title="'Echeancier — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Echeancier') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Echeancier">
+    :pageTitle="__('Echeancier')">
 
     <div class="page-wrapper">
         <div class="content">
             <div class="page-header">
                 <div class="add-item d-flex">
                     <div class="page-title">
-                        <h4>Echeancier</h4>
-                        <h6>Vue d'ensemble des paiements echelonnes</h6>
+                        <h4>{{ __('Echeancier') }}</h4>
+                        <h6>{{ __('Vue d\'ensemble des paiements echelonnes') }}</h6>
                     </div>
                 </div>
                 <ul class="table-top-head">
@@ -27,7 +27,7 @@
                 <div class="col-md-3">
                     <div class="card">
                         <div class="card-body text-center">
-                            <h5 class="text-muted">Plans actifs</h5>
+                            <h5 class="text-muted">{{ __('Plans actifs') }}</h5>
                             <h4 class="fw-bold">{{ collect($plans)->where('status', 'active')->count() }}</h4>
                         </div>
                     </div>
@@ -35,7 +35,7 @@
                 <div class="col-md-3">
                     <div class="card">
                         <div class="card-body text-center">
-                            <h5 class="text-muted">Total du</h5>
+                            <h5 class="text-muted">{{ __('Total du') }}</h5>
                             <h4 class="fw-bold text-danger">{{ number_format(collect($plans)->sum('remaining'), 2) }}</h4>
                         </div>
                     </div>
@@ -43,7 +43,7 @@
                 <div class="col-md-3">
                     <div class="card">
                         <div class="card-body text-center">
-                            <h5 class="text-muted">Total paye</h5>
+                            <h5 class="text-muted">{{ __('Total paye') }}</h5>
                             <h4 class="fw-bold text-success">{{ number_format(collect($plans)->sum('paid'), 2) }}</h4>
                         </div>
                     </div>
@@ -51,7 +51,7 @@
                 <div class="col-md-3">
                     <div class="card">
                         <div class="card-body text-center">
-                            <h5 class="text-muted">En retard</h5>
+                            <h5 class="text-muted">{{ __('En retard') }}</h5>
                             <h4 class="fw-bold text-warning">{{ collect($plans)->where('status', 'overdue')->count() }}</h4>
                         </div>
                     </div>
@@ -64,14 +64,14 @@
                         <table class="table datatable">
                             <thead class="thead-light">
                                 <tr>
-                                    <th>Reference</th>
-                                    <th>Client</th>
-                                    <th>Total</th>
-                                    <th>Paye</th>
-                                    <th>Restant</th>
-                                    <th>Echeances</th>
-                                    <th>Prochaine echeance</th>
-                                    <th>Statut</th>
+                                    <th>{{ __('Reference') }}</th>
+                                    <th>{{ __('Client') }}</th>
+                                    <th>{{ __('Total') }}</th>
+                                    <th>{{ __('Paye') }}</th>
+                                    <th>{{ __('Restant') }}</th>
+                                    <th>{{ __('Echeances') }}</th>
+                                    <th>{{ __('Prochaine echeance') }}</th>
+                                    <th>{{ __('Statut') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -99,7 +99,7 @@
                                     </td>
                                 </tr>
                                 @empty
-                                <tr><td colspan="8" class="text-center text-muted">Aucun echeancier</td></tr>
+                                <tr><td colspan="8" class="text-center text-muted">{{ __('Aucun echeancier') }}</td></tr>
                                 @endforelse
                             </tbody>
                         </table>

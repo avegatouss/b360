@@ -1,7 +1,7 @@
 <x-dashboard::layouts.master
-    :title="'Revenus mensuels ' . ($year ?? date('Y')) . ' — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Revenus mensuels') . ($year ?? date('Y')) . ' — ' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Revenus mensuels">
+    :pageTitle="__('Revenus mensuels')">
 
     <div class="page-wrapper">
         <div class="content">
@@ -9,7 +9,7 @@
                 <div class="add-item d-flex">
                     <div class="page-title">
                         <h4>Revenus mensuels — {{ $year ?? date('Y') }}</h4>
-                        <h6>Evolution mensuelle du chiffre d'affaires</h6>
+                        <h6>{{ __('Evolution mensuelle du chiffre d\'affaires') }}</h6>
                     </div>
                 </div>
                 <div class="d-flex align-items-center gap-2">
@@ -29,10 +29,10 @@
                         <table class="table datatable">
                             <thead class="thead-light">
                                 <tr>
-                                    <th>Mois</th>
-                                    <th>Nombre de ventes</th>
-                                    <th>Chiffre d'affaires</th>
-                                    <th>Variation</th>
+                                    <th>{{ __('Mois') }}</th>
+                                    <th>{{ __('Nombre de ventes') }}</th>
+                                    <th>{{ __('Chiffre d\'affaires') }}</th>
+                                    <th>{{ __('Variation') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -67,7 +67,7 @@
                             </tbody>
                             <tfoot>
                                 <tr class="fw-bold">
-                                    <td>Total annuel</td>
+                                    <td>{{ __('Total annuel') }}</td>
                                     <td>{{ collect($data)->sum(fn($r) => $r['count'] ?? $r['orders'] ?? 0) }}</td>
                                     <td>{{ number_format(collect($data)->sum(fn($r) => $r['revenue'] ?? $r['total'] ?? 0), 2) }}</td>
                                     <td></td>

@@ -1,13 +1,13 @@
 <x-dashboard::layouts.master
-    :title="'Manage Stocks — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Manage Stocks') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Manage Stocks">
+    :pageTitle="__('Manage Stocks')">
 
 <div class="page-header">
             <div class="add-item d-flex">
                 <div class="page-title">
-                    <h4>Manage Stock</h4>
-                    <h6>Manage your stock</h6>
+                    <h4>{{ __('Manage Stock') }}</h4>
+                    <h6>{{ __('Manage your stock') }}</h6>
                 </div>
             </div>
             <ul class="table-top-head">
@@ -18,14 +18,14 @@
                     <a data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"><img src="{{URL::asset('build/img/icons/excel.svg')}}" alt="img"></a>
                 </li>
                 <li>
-                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="Refresh"><i class="ti ti-refresh"></i></a>
+                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Refresh') }}"><i class="ti ti-refresh"></i></a>
                 </li>
                 <li>
-                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="Collapse" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
+                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Collapse') }}" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
                 </li>
             </ul>
             <div class="page-btn">
-                <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-stock"><i class="ti ti-circle-plus me-1"></i>Add Stock</a>
+                <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-stock"><i class="ti ti-circle-plus me-1"></i>{{ __('Add Stock') }}</a>
             </div>
         </div>
         <!-- /product list -->
@@ -62,10 +62,10 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </th>
-                                <th>Warehouse</th>
-                                <th>Product</th>
-                                <th>Date</th>
-                                <th>Qty</th>
+                                <th>{{ __('Warehouse') }}</th>
+                                <th>{{ __('Product') }}</th>
+                                <th>{{ __('Date') }}</th>
+                                <th>{{ __('Qty') }}</th>
                                 <th class="no-sort"></th>
                             </tr>
                         </thead>
@@ -110,7 +110,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="6" class="text-center">No stock entries found.</td>
+                                <td colspan="6" class="text-center">{{ __('No stock entries found.') }}</td>
                             </tr>
                             @endforelse
                         </tbody>

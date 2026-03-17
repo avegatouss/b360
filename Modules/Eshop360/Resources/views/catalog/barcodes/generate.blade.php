@@ -1,5 +1,5 @@
 <x-dashboard::layouts.master
-    :title="'Impression ' . ucfirst($type) . 's — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Impression') . ucfirst($type) . 's — ' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
     pageTitle="Impression {{ ucfirst($type) }}s">
 
@@ -12,7 +12,7 @@
     </div>
     <div class="page-btn">
         <a href="{{ route('eshop360.barcodes.index', $instance->slug ?? '') }}" class="btn btn-secondary me-2"><i class="ti ti-arrow-left me-1"></i>Retour</a>
-        <button onclick="window.print()" class="btn btn-primary"><i class="ti ti-printer me-1"></i>Imprimer</button>
+        <button onclick="window.print()" class="btn btn-primary"><i class="ti ti-printer me-1"></i>{{ __('Imprimer') }}</button>
     </div>
 </div>
 

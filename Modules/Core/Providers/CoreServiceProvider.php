@@ -33,6 +33,9 @@ final class CoreServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
         $this->loadRoutesFrom(__DIR__ . '/../Routes/api.php');
 
+        // Views Core
+        $this->loadViewsFrom(__DIR__ . '/../Resources/views', 'core');
+
         // Migrations Core : instance_user + modules tables
         $this->loadMigrationsFrom(__DIR__ . '/../Database/Migrations');
 

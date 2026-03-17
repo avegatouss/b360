@@ -10,12 +10,12 @@ return new class extends Migration {
         Schema::create('eshop_sms_logs', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('instance_id')->index();
+            $table->foreignId('gateway_id')->nullable()->constrained('eshop_sms_gateways')->nullOnDelete();
             $table->string('to');
             $table->text('message');
-            $table->foreignId('gateway_id')->nullable()->constrained('eshop_sms_gateways')->nullOnDelete();
             $table->enum('status', ['pending', 'sent', 'failed'])->default('pending');
-            $table->datetime('sent_at')->nullable();
             $table->text('error')->nullable();
+            $table->datetime('sent_at')->nullable();
             $table->timestamps();
         });
     }

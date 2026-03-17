@@ -1,13 +1,13 @@
 <x-dashboard::layouts.master
-    :title="'Categories — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Categories') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Categories">
+    :pageTitle="__('Categories')">
 
 <div class="page-header">
 						<div class="add-item d-flex">
 							<div class="page-title">
-								<h4 class="fw-bold">Category</h4>
-								<h6>Manage your categories</h6>
+								<h4 class="fw-bold">{{ __('Category') }}</h4>
+								<h6>{{ __('Manage your categories') }}</h6>
 							</div>
 						</div>
 						<ul class="table-top-head">
@@ -18,14 +18,14 @@
 								<a data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"><img src="{{URL::asset('build/img/icons/excel.svg')}}" alt="img"></a>
 							</li>
 							<li>
-								<a data-bs-toggle="tooltip" data-bs-placement="top" title="Refresh"><i class="ti ti-refresh"></i></a>
+								<a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Refresh') }}"><i class="ti ti-refresh"></i></a>
 							</li>
 							<li>
-								<a data-bs-toggle="tooltip" data-bs-placement="top" title="Collapse" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
+								<a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Collapse') }}" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
 							</li>
 						</ul>
 						<div class="page-btn">
-							<a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-category"><i class="ti ti-circle-plus me-1"></i>Add Category</a>
+							<a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-category"><i class="ti ti-circle-plus me-1"></i>{{ __('Add Category') }}</a>
 						</div>
 					</div>
 					<!-- /product list -->
@@ -43,10 +43,10 @@
 									</a>
 									<ul class="dropdown-menu  dropdown-menu-end p-3">
 										<li>
-											<a href="javascript:void(0);" class="dropdown-item rounded-1">Active</a>
+											<a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Active') }}</a>
 										</li>
 										<li>
-											<a href="javascript:void(0);" class="dropdown-item rounded-1">Inactive</a>
+											<a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Inactive') }}</a>
 										</li>
 									</ul>
 								</div>
@@ -64,11 +64,11 @@
 													<span class="checkmarks"></span>
 												</label>
 											</th>
-											<th>Category</th>
-											<th>Category slug</th>
-											<th>Parent</th>
-											<th>Created On</th>
-											<th>Status</th>
+											<th>{{ __('Category') }}</th>
+											<th>{{ __('Category slug') }}</th>
+											<th>{{ __('Parent') }}</th>
+											<th>{{ __('Created On') }}</th>
+											<th>{{ __('Status') }}</th>
 											<th class="no-sort"></th>
 										</tr>
 									</thead>
@@ -87,9 +87,9 @@
 											<td>{{ $category->created_at->format('d M Y') }}</td>
 											<td>
 												@if($category->is_active ?? true)
-													<span class="badge bg-success fw-medium fs-10">Active</span>
+													<span class="badge bg-success fw-medium fs-10">{{ __('Active') }}</span>
 												@else
-													<span class="badge bg-danger fw-medium fs-10">Inactive</span>
+													<span class="badge bg-danger fw-medium fs-10">{{ __('Inactive') }}</span>
 												@endif
 											</td>
 											<td class="action-table-data">
@@ -109,7 +109,7 @@
 										</tr>
 										@empty
 										<tr>
-											<td colspan="7" class="text-center">No categories found.</td>
+											<td colspan="7" class="text-center">{{ __('No categories found.') }}</td>
 										</tr>
 										@endforelse
 									</tbody>

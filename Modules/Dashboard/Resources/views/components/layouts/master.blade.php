@@ -28,6 +28,24 @@
 
     <!-- Main CSS -->
     <link rel="stylesheet" href="{{ asset('build/css/style.css') }}">
+
+    <!-- Theme CSS -->
+    @php
+        $activeTheme = session('theme', 'default');
+        if ($activeTheme === 'default') {
+            $activeTheme = null; // no extra CSS needed for default
+        }
+        if (auth()->check() && function_exists('setting') && !session()->has('theme')) {
+            $userTheme = setting('user.theme_' . auth()->id());
+            if ($userTheme && $userTheme !== 'default') {
+                $activeTheme = $userTheme;
+                session(['theme' => $userTheme]);
+            }
+        }
+    @endphp
+    @if($activeTheme && file_exists(resource_path("css/themes/{$activeTheme}.css")))
+        <style>{!! file_get_contents(resource_path("css/themes/{$activeTheme}.css")) !!}</style>
+    @endif
 </head>
 <body>
 
@@ -119,6 +137,73 @@
                     </a>
                 </li>
 
+                {{-- Notification bell --}}
+                @auth
+                @if(isset($instance))
+                @php
+                    $unreadCount = auth()->user()->unreadNotifications()->count();
+                    $latestNotifications = auth()->user()->notifications()->latest()->take(5)->get();
+                @endphp
+                <li class="nav-item dropdown nav-item-box">
+                    <a href="javascript:void(0);" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="ti ti-bell"></i>
+                        <span class="badge rounded-pill bg-danger badge-notification" id="notification-count"
+                              style="{{ $unreadCount > 0 ? '' : 'display:none' }}">{{ $unreadCount }}</span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end notification-dropdown" style="width:360px;max-height:450px;overflow-y:auto;">
+                        <div class="d-flex align-items-center justify-content-between p-3 pb-2 border-bottom">
+                            <h6 class="fw-semibold mb-0">Notifications</h6>
+                            @if($unreadCount > 0)
+                            <form method="POST" action="{{ route('eshop360.notifications.mark-all-read', $instance->slug) }}" id="mark-all-read-form">
+                                @csrf
+                                <a href="javascript:void(0);" class="text-primary fs-12" onclick="document.getElementById('mark-all-read-form').submit();">
+                                    Tout marquer comme lu
+                                </a>
+                            </form>
+                            @endif
+                        </div>
+                        <div class="p-0">
+                            @forelse($latestNotifications as $notif)
+                            @php
+                                $nd = $notif->data;
+                                $isUnread = is_null($notif->read_at);
+                                $typeBorder = match($nd['type'] ?? 'info') {
+                                    'danger'  => 'border-danger',
+                                    'warning' => 'border-warning',
+                                    'success' => 'border-success',
+                                    default   => 'border-info',
+                                };
+                            @endphp
+                            <form method="POST" action="{{ route('eshop360.notifications.mark-read', [$instance->slug, $notif->id]) }}">
+                                @csrf
+                                <button type="submit" class="dropdown-item d-flex align-items-start p-3 {{ $isUnread ? 'bg-light border-start border-3 ' . $typeBorder : '' }}" style="white-space:normal;">
+                                    <span class="flex-shrink-0 me-2">
+                                        <i class="{{ $nd['icon'] ?? 'ti ti-bell' }} fs-20"></i>
+                                    </span>
+                                    <span class="flex-grow-1">
+                                        <span class="d-block fw-semibold fs-13">{{ $nd['title'] ?? 'Notification' }}</span>
+                                        <span class="d-block text-muted fs-12 text-truncate" style="max-width:250px;">{{ $nd['message'] ?? '' }}</span>
+                                        <span class="d-block text-muted fs-11 mt-1">{{ $notif->created_at->diffForHumans() }}</span>
+                                    </span>
+                                </button>
+                            </form>
+                            @empty
+                            <div class="text-center py-4">
+                                <i class="ti ti-bell-off fs-24 text-muted"></i>
+                                <p class="text-muted fs-12 mb-0 mt-1">Aucune notification</p>
+                            </div>
+                            @endforelse
+                        </div>
+                        <div class="border-top p-2 text-center">
+                            <a href="{{ route('eshop360.notifications.index', $instance->slug) }}" class="text-primary fs-12">
+                                Voir toutes les notifications
+                            </a>
+                        </div>
+                    </div>
+                </li>
+                @endif
+                @endauth
+
                 {{-- Language switcher --}}
                 @include('lang::components.language-switcher')
 
@@ -145,12 +230,19 @@
                             </div>
                         </div>
                         <hr class="my-2">
+                        <form method="POST" action="{{ route('lockscreen.lock') }}" class="d-inline">
+                            @csrf
+                            <button type="submit"
+                                    class="dropdown-item w-100 text-start border-0 bg-transparent">
+                                <i class="ti ti-lock me-2"></i>Verrouiller l'ecran
+                            </button>
+                        </form>
                         <form method="POST"
                               action="{{ isset($instance) ? route('instance.logout', $instance->slug) : route('logout') }}">
                             @csrf
                             <button type="submit"
                                     class="dropdown-item logout pb-0 w-100 text-start border-0 bg-transparent">
-                                <i class="ti ti-logout me-2"></i>Se déconnecter
+                                <i class="ti ti-logout me-2"></i>Se deconnecter
                             </button>
                         </form>
                         @endauth
@@ -246,6 +338,18 @@
                         <ul>
                             <li>
                                 <form method="POST"
+                                      action="{{ route('lockscreen.lock') }}"
+                                      id="sidebar-lock-form">
+                                    @csrf
+                                    <a href="javascript:void(0);"
+                                       onclick="document.getElementById('sidebar-lock-form').submit();">
+                                        <i class="ti ti-lock fs-16 me-2"></i>
+                                        <span>Verrouiller</span>
+                                    </a>
+                                </form>
+                            </li>
+                            <li>
+                                <form method="POST"
                                       action="{{ isset($instance) ? route('instance.logout', $instance->slug) : route('logout') }}"
                                       id="sidebar-logout-form">
                                     @csrf
@@ -323,6 +427,63 @@
 <script src="{{ asset('build/js/theme-colorpicker.js') }}?v={{ $themeColorpickerVersion }}"></script>
 <!-- Custom JS -->
 <script src="{{ asset('build/js/script.js') }}?v={{ $scriptVersion }}"></script>
+
+<!-- Notification polling -->
+@auth
+@if(isset($instance))
+<script>
+(function() {
+    setInterval(function() {
+        fetch('/i/{{ $instance->slug }}/notifications/unread-count', {
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            var badge = document.getElementById('notification-count');
+            if (badge) {
+                badge.textContent = data.count;
+                badge.style.display = data.count > 0 ? '' : 'none';
+            }
+        })
+        .catch(function() {});
+    }, 30000);
+})();
+</script>
+@endif
+@endauth
+
+<!-- Auto-lock after inactivity -->
+@auth
+<script>
+(function() {
+    let lockTimeout;
+    const LOCK_MINUTES = {{ config('auth.auto_lock_minutes', 30) }};
+    function resetLockTimer() {
+        clearTimeout(lockTimeout);
+        if (LOCK_MINUTES > 0) {
+            lockTimeout = setTimeout(function() {
+                fetch('/lockscreen/lock', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                }).then(function() {
+                    window.location.href = '/lockscreen';
+                });
+            }, LOCK_MINUTES * 60 * 1000);
+        }
+    }
+    ['mousemove', 'keypress', 'click', 'scroll'].forEach(function(e) {
+        document.addEventListener(e, resetLockTimer);
+    });
+    resetLockTimer();
+})();
+</script>
+@endauth
 
 </body>
 </html>

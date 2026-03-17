@@ -1,13 +1,13 @@
 <x-dashboard::layouts.master
-    :title="'Employees — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Employees') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Employees">
+    :pageTitle="__('Employees')">
 
 <div class="page-header">
     <div class="add-item d-flex">
         <div class="page-title">
-            <h4 class="fw-bold">Employees</h4>
-            <h6>Manage your employees</h6>
+            <h4 class="fw-bold">{{ __('Employees') }}</h4>
+            <h6>{{ __('Manage your employees') }}</h6>
         </div>
     </div>
     <ul class="table-top-head">
@@ -18,7 +18,7 @@
             <a data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"><img src="{{URL::asset('build/img/icons/excel.svg')}}" alt="img"></a>
         </li>
         <li>
-            <a data-bs-toggle="tooltip" data-bs-placement="top" title="Refresh"><i class="ti ti-refresh"></i></a>
+            <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Refresh') }}"><i class="ti ti-refresh"></i></a>
         </li>
     </ul>
     <div class="page-btn">
@@ -38,11 +38,11 @@
                                 <span class="checkmarks"></span>
                             </label>
                         </th>
-                        <th>Name</th>
-                        <th>Position</th>
-                        <th>Department</th>
-                        <th>Salary</th>
-                        <th>Status</th>
+                        <th>{{ __('Name') }}</th>
+                        <th>{{ __('Position') }}</th>
+                        <th>{{ __('Department') }}</th>
+                        <th>{{ __('Salary') }}</th>
+                        <th>{{ __('Status') }}</th>
                         <th class="no-sort"></th>
                     </tr>
                 </thead>
@@ -72,9 +72,9 @@
                         <td>{{ number_format($employee->salary ?? 0, 0, ',', ' ') }} XAF</td>
                         <td>
                             @if($employee->is_active ?? true)
-                                <span class="d-inline-flex align-items-center p-1 pe-2 rounded-1 text-white bg-success fs-10"><i class="ti ti-point-filled me-1 fs-11"></i>Active</span>
+                                <span class="d-inline-flex align-items-center p-1 pe-2 rounded-1 text-white bg-success fs-10"><i class="ti ti-point-filled me-1 fs-11"></i>{{ __('Active') }}</span>
                             @else
-                                <span class="d-inline-flex align-items-center p-1 pe-2 rounded-1 text-white bg-danger fs-10"><i class="ti ti-point-filled me-1 fs-11"></i>Inactive</span>
+                                <span class="d-inline-flex align-items-center p-1 pe-2 rounded-1 text-white bg-danger fs-10"><i class="ti ti-point-filled me-1 fs-11"></i>{{ __('Inactive') }}</span>
                             @endif
                         </td>
                         <td class="d-flex">
@@ -97,7 +97,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="text-center">No employees found.</td>
+                        <td colspan="7" class="text-center">{{ __('No employees found.') }}</td>
                     </tr>
                     @endforelse
                 </tbody>

@@ -11,7 +11,14 @@ class EventServiceProvider extends ServiceProvider
      *
      * @var array<string, array<int, string>>
      */
-    protected $listen = [];
+    protected $listen = [
+        \Illuminate\Auth\Events\Login::class => [
+            \Modules\Auth\Listeners\LogSuccessfulLogin::class,
+        ],
+        \Illuminate\Auth\Events\Failed::class => [
+            \Modules\Auth\Listeners\LogFailedLogin::class,
+        ],
+    ];
 
     /**
      * Indicates if events should be discovered.

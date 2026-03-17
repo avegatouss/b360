@@ -1,21 +1,21 @@
 <x-dashboard::layouts.master
-    :title="'POS Settings — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('POS Settings') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="POS Settings">
+    :pageTitle="__('POS Settings')">
 
 <div class="page-header settings-pg-header">
                 <div class="add-item d-flex">
                     <div class="page-title">
-                        <h4>Settings</h4>
-                        <h6>Manage your settings on portal</h6>
+                        <h4>{{ __('Settings') }}</h4>
+                        <h6>{{ __('Manage your settings on portal') }}</h6>
                     </div>
                 </div>
                 <ul class="table-top-head">
                     <li>
-                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="Refresh"><i class="ti ti-refresh"></i></a>
+                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Refresh') }}"><i class="ti ti-refresh"></i></a>
                     </li>
                     <li>
-                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="Collapse" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
+                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Collapse') }}" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
                     </li>
                 </ul>
             </div>
@@ -25,14 +25,14 @@
                         <div class="settings-sidebar" id="sidebar2">
                             <div class="sidebar-inner slimscroll">
                                 <div id="sidebar-menu5" class="sidebar-menu">
-                                    <h4 class="fw-bold fs-18 mb-2 pb-2">Settings</h4>
+                                    <h4 class="fw-bold fs-18 mb-2 pb-2">{{ __('Settings') }}</h4>
                                     <ul>
                                         <li class="submenu-open">
                                             <ul>
                                                 <li class="submenu">
                                                     <a href="javascript:void(0);">
                                                         <i class="ti ti-settings fs-18"></i>
-                                                        <span class="fs-14 fw-medium ms-2">General Settings</span>
+                                                        <span class="fs-14 fw-medium ms-2">{{ __('General Settings') }}</span>
                                                         <span class="menu-arrow"></span>
                                                     </a>
                                                     <ul>
@@ -45,7 +45,7 @@
                                                 <li class="submenu">
                                                     <a href="javascript:void(0);">
                                                         <i class="ti ti-world fs-18"></i>
-                                                        <span class="fs-14 fw-medium ms-2">Website Settings</span>
+                                                        <span class="fs-14 fw-medium ms-2">{{ __('Website Settings') }}</span>
                                                         <span class="menu-arrow"></span>
                                                     </a>
                                                     <ul>
@@ -62,7 +62,7 @@
                                                 <li class="submenu">
                                                     <a href="javascript:void(0);" class="active subdrop">
                                                         <i class="ti ti-device-mobile fs-18"></i>
-                                                        <span class="fs-14 fw-medium ms-2">App Settings</span>
+                                                        <span class="fs-14 fw-medium ms-2">{{ __('App Settings') }}</span>
                                                         <span class="menu-arrow"></span>
                                                     </a>
                                                     <ul>
@@ -77,17 +77,17 @@
                                                 <li class="submenu">
                                                     <a href="javascript:void(0);">
                                                         <i class="ti ti-device-desktop fs-18"></i>
-                                                        <span class="fs-14 fw-medium ms-2">System Settings</span>
+                                                        <span class="fs-14 fw-medium ms-2">{{ __('System Settings') }}</span>
                                                         <span class="menu-arrow"></span>
                                                     </a>
                                                     <ul>
-                                                        <li class="submenu submenu-two"><a href="javascript:void(0);">Email<span class="menu-arrow inside-submenu"></span></a>
+                                                        <li class="submenu submenu-two"><a href="javascript:void(0);">{{ __('Email') }}<span class="menu-arrow inside-submenu"></span></a>
                                                             <ul>
                                                                 <li><a href="{{url('email-settings')}}">Email Settings</a></li>
                                                                 <li><a href="{{url('email-templates')}}">Email Templates</a></li>
                                                             </ul>
                                                         </li>
-                                                        <li class="submenu submenu-two"><a href="javascript:void(0);">SMS<span class="menu-arrow inside-submenu"></span></a>
+                                                        <li class="submenu submenu-two"><a href="javascript:void(0);">{{ __('SMS') }}<span class="menu-arrow inside-submenu"></span></a>
                                                             <ul>
                                                                 <li><a href="{{url('sms-settings')}}">SMS Settings</a></li>
                                                                 <li><a href="{{url('sms-templates')}}">SMS Templates</a></li>
@@ -101,7 +101,7 @@
                                                 <li class="submenu">
                                                     <a href="javascript:void(0);">
                                                         <i class="ti ti-settings-dollar fs-18"></i>
-                                                        <span class="fs-14 fw-medium ms-2">Financial Settings</span>
+                                                        <span class="fs-14 fw-medium ms-2">{{ __('Financial Settings') }}</span>
                                                         <span class="menu-arrow"></span>
                                                     </a>
                                                     <ul>
@@ -114,7 +114,7 @@
                                                 <li class="submenu">
                                                     <a href="javascript:void(0);">
                                                         <i class="ti ti-settings-2 fs-18"></i>
-                                                        <span class="fs-14 fw-medium ms-2">Other Settings</span>
+                                                        <span class="fs-14 fw-medium ms-2">{{ __('Other Settings') }}</span>
                                                         <span class="menu-arrow"></span>
                                                     </a>
                                                     <ul>
@@ -131,22 +131,22 @@
                         <div class="card flex-fill mb-0">
                             <form action="{{url('pos-settings')}}">
                                 <div class="card-header">
-                                    <h4>POS Settings</h4>
+                                    <h4>{{ __('POS Settings') }}</h4>
                                 </div>
                                 <div class="card-body">
                                     <div class="localization-info">
                                         <div class="row align-items-center">
                                             <div class="col-sm-4">
                                                 <div class="setting-info">
-                                                    <h6>POS Printer</h6>
+                                                    <h6>{{ __('POS Printer') }}</h6>
                                                 </div>
                                             </div>
                                             <div class="col-sm-4">
                                                 <div class="localization-select">
                                                     <select class="select">
-                                                        <option>A4</option>
-                                                        <option>A4</option>
-                                                        <option>A4</option>
+                                                        <option>{{ __('A4') }}</option>
+                                                        <option>{{ __('A4') }}</option>
+                                                        <option>{{ __('A4') }}</option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -154,7 +154,7 @@
                                         <div class="row align-items-center">
                                             <div class="col-sm-4">
                                                 <div class="setting-info">
-                                                    <h6>Payment Method</h6>
+                                                    <h6>{{ __('Payment Method') }}</h6>
                                                 </div>
                                             </div>
                                             <div class="col-sm-8">
@@ -201,7 +201,7 @@
                                         <div class="row align-items-center">
                                             <div class="col-sm-4">
                                                 <div class="setting-info">
-                                                    <h6>Enable Sound Effect </h6>
+                                                    <h6>{{ __('Enable Sound Effect') }}</h6>
                                                 </div>
                                             </div>
                                             <div class="col-sm-4">
@@ -215,8 +215,8 @@
                                         </div>									
                                     </div>
                                     <div class="d-flex align-items-center justify-content-end">
-                                        <button type="button" class="btn btn-cancel me-2" data-bs-dismiss="modal">Cancel</button>
-                                        <button type="submit" class="btn btn-submit">Save Changes</button>
+                                        <button type="button" class="btn btn-cancel me-2" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                                        <button type="submit" class="btn btn-submit">{{ __('Save Changes') }}</button>
                                     </div>
                                 </div>
                             </form>

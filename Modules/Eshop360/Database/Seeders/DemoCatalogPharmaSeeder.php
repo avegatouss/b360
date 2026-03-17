@@ -5,11 +5,13 @@ namespace Modules\Eshop360\Database\Seeders;
 use Illuminate\Support\Str;
 use Modules\Eshop360\Models\Brand;
 use Modules\Eshop360\Models\Category;
+use Modules\Eshop360\Models\ChannelProductPrice;
+use Modules\Eshop360\Models\DistributionChannel;
 use Modules\Eshop360\Models\Product;
 
 /**
  * Seeds pharmaceutical demo data: categories, brands, and 100 products.
- * Designed for West African pharmaceutical wholesale (SAPHIR/CODIFARM context).
+ * Designed for West African pharmaceutical wholesale (SAPHIR context with distribution channels).
  *
  * Called by the Demo module via HookRegistry::addDemoProvider().
  */
@@ -136,6 +138,12 @@ final class DemoCatalogPharmaSeeder
         $products = $this->getPharmaceuticalProducts();
         $brandNames = array_keys($brands);
 
+        // Find or create a demo distribution channel for channel-specific pricing
+        $channel = DistributionChannel::withoutGlobalScopes()
+            ->where('instance_id', $instanceId)
+            ->where('slug', 'demo-wholesale')
+            ->first();
+
         foreach ($products as $i => $p) {
             $sku = sprintf('PHARMA-%04d', $i + 1);
             $catModel = $categories[$p['category']] ?? null;
@@ -146,9 +154,9 @@ final class DemoCatalogPharmaSeeder
             $provisionalPrice = $factoryPrice * 1.35;
             $pght = round($provisionalPrice * 1.13, 2);
             $salePrice = round($pght * 1.10, 2);
-            $codifarmPrice = round($pght * 1.20, 2);
+            $channelPrice = round($pght * 1.20, 2);
 
-            Product::withoutGlobalScopes()->updateOrCreate(
+            $product = Product::withoutGlobalScopes()->updateOrCreate(
                 ['instance_id' => $instanceId, 'sku' => $sku],
                 [
                     'category_id' => $catModel?->id,
@@ -163,7 +171,6 @@ final class DemoCatalogPharmaSeeder
                     'purchase_price_provisional' => $provisionalPrice,
                     'pght' => $pght,
                     'cost_price_real' => $factoryPrice * 1.40,
-                    'sale_price_codifarm' => $codifarmPrice,
                     'tax_rate' => 0,
                     'min_quantity' => 1,
                     'alert_quantity' => $p['alert'] ?? 20,
@@ -173,6 +180,14 @@ final class DemoCatalogPharmaSeeder
                     'is_active' => true,
                 ],
             );
+
+            // Seed channel-specific pricing if a demo channel exists
+            if ($channel) {
+                ChannelProductPrice::updateOrCreate(
+                    ['channel_id' => $channel->id, 'product_id' => $product->id],
+                    ['sale_price' => $channelPrice, 'is_manual_override' => false],
+                );
+            }
         }
     }
 

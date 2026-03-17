@@ -149,7 +149,6 @@ final class PosOperationsTest extends TestCase
                 'eshop_cart' => $cart,
                 'eshop_cart_context' => [
                     'channel_id' => 12,
-                    'is_codifarm' => false,
                 ],
                 'eshop_cart_coupon' => [
                     'id' => $coupon->id,
@@ -160,7 +159,6 @@ final class PosOperationsTest extends TestCase
                 'eshop_cart_instance_' . $instance->id => $cart,
                 'eshop_cart_context_instance_' . $instance->id => [
                     'channel_id' => 12,
-                    'is_codifarm' => false,
                 ],
                 'eshop_cart_coupon_instance_' . $instance->id => [
                     'id' => $coupon->id,

@@ -63,7 +63,7 @@
                                                 default => 'bg-secondary',
                                             };
                                         @endphp
-                                        <span class="badge {{ $statusClass }}">{{ ucfirst($order->status ?? 'pending') }}</span>
+                                        <span class="badge {{ $statusClass }}">{{ \Modules\Eshop360\Support\UiLabel::enum($order->status ?? 'pending') }}</span>
                                     </td>
                                     <td>
                                         <div class="edit-delete-action d-flex align-items-center">

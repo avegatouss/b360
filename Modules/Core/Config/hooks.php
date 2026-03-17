@@ -7,6 +7,7 @@ return [
      * HookManager will auto-skip providers whose module is disabled.
      */
     'providers' => [
+        \Modules\Core\Providers\CoreHooksProvider::class,
         \Modules\Dashboard\Providers\DashboardHooksProvider::class,
         \Modules\Users\Providers\UsersHooksProvider::class,
         \Modules\Instances\Providers\InstancesHooksProvider::class,

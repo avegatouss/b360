@@ -1,15 +1,15 @@
 <x-dashboard::layouts.master
-    :title="'Livre de caisse — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Livre de caisse') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Livre de caisse">
+    :pageTitle="__('Livre de caisse')">
 
     <div class="page-wrapper">
         <div class="content">
             <div class="page-header">
                 <div class="add-item d-flex">
                     <div class="page-title">
-                        <h4>Livre de caisse</h4>
-                        <h6>Paiements par methode</h6>
+                        <h4>{{ __('Livre de caisse') }}</h4>
+                        <h6>{{ __('Paiements par methode') }}</h6>
                     </div>
                 </div>
                 <ul class="table-top-head">
@@ -42,13 +42,13 @@
                         <table class="table datatable">
                             <thead class="thead-light">
                                 <tr>
-                                    <th>Date</th>
-                                    <th>Reference</th>
-                                    <th>Description</th>
-                                    <th>Methode</th>
-                                    <th>Entrees</th>
-                                    <th>Sorties</th>
-                                    <th>Solde</th>
+                                    <th>{{ __('Date') }}</th>
+                                    <th>{{ __('Reference') }}</th>
+                                    <th>{{ __('Description') }}</th>
+                                    <th>{{ __('Methode') }}</th>
+                                    <th>{{ __('Entrees') }}</th>
+                                    <th>{{ __('Sorties') }}</th>
+                                    <th>{{ __('Solde') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -63,13 +63,13 @@
                                     <td class="fw-bold">{{ number_format($entry['balance'] ?? 0, 2) }}</td>
                                 </tr>
                                 @empty
-                                <tr><td colspan="7" class="text-center text-muted">Aucune donnee</td></tr>
+                                <tr><td colspan="7" class="text-center text-muted">{{ __('Aucune donnee') }}</td></tr>
                                 @endforelse
                             </tbody>
                             @if(!empty($data['entries']))
                             <tfoot>
                                 <tr class="fw-bold">
-                                    <td colspan="4">Total</td>
+                                    <td colspan="4">{{ __('Total') }}</td>
                                     <td class="text-success">{{ number_format($data['total_credit'] ?? 0, 2) }}</td>
                                     <td class="text-danger">{{ number_format($data['total_debit'] ?? 0, 2) }}</td>
                                     <td>{{ number_format($data['closing_balance'] ?? 0, 2) }}</td>

@@ -147,7 +147,7 @@
                 @if($topCustomers->total() > 0)
                 <tfoot>
                     <tr class="bg-light fw-bold">
-                        <td colspan="4">Total</td>
+                        <td colspan="4">{{ __('Total') }}</td>
                         <td class="text-end">{{ number_format($topCustomers->sum('order_count')) }}</td>
                         <td></td>
                         <td class="text-end text-success">{{ number_format($topCustomers->sum('total_spent'), 0, ',', ' ') }}</td>

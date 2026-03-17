@@ -1,13 +1,13 @@
 <x-dashboard::layouts.master
-    :title="'Quotations — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Quotations') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Quotations">
+    :pageTitle="__('Quotations')">
 
 <div class="page-header">
             <div class="add-item d-flex">
                 <div class="page-title">
-                    <h4>Quotation List</h4>
-                    <h6>Manage Your Quotation</h6>
+                    <h4>{{ __('Quotation List') }}</h4>
+                    <h6>{{ __('Manage Your Quotation') }}</h6>
                 </div>
             </div>
             <ul class="table-top-head">
@@ -18,14 +18,14 @@
                     <a data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"><img src="{{URL::asset('build/img/icons/excel.svg')}}" alt="img"></a>
                 </li>
                 <li>
-                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="Refresh"><i class="ti ti-refresh"></i></a>
+                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Refresh') }}"><i class="ti ti-refresh"></i></a>
                 </li>
                 <li>
-                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="Collapse" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
+                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Collapse') }}" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
                 </li>
             </ul>
             <div class="page-btn">
-                <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-quotation"><i class="ti ti-circle-plus me-1"></i>Add Quotation</a>
+                <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-quotation"><i class="ti ti-circle-plus me-1"></i>{{ __('Add Quotation') }}</a>
             </div>
         </div>
 
@@ -44,16 +44,16 @@
                         </a>
                         <ul class="dropdown-menu  dropdown-menu-end p-3">
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Lenovo IdeaPad 3</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Lenovo IdeaPad 3') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Beats Pro</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Beats Pro') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Nike Jordan</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Nike Jordan') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Apple Series 5 Watch</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Apple Series 5 Watch') }}</a>
                             </li>
                         </ul>
                     </div>
@@ -63,16 +63,16 @@
                         </a>
                         <ul class="dropdown-menu  dropdown-menu-end p-3">
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Carl Evans</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Carl Evans') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Minerva Rameriz</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Minerva Rameriz') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Robert Lamon</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Robert Lamon') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Patricia Lewis</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Patricia Lewis') }}</a>
                             </li>
                         </ul>
                     </div>
@@ -82,13 +82,13 @@
                         </a>
                         <ul class="dropdown-menu  dropdown-menu-end p-3">
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Sent</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Sent') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Pending</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Pending') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Ordered</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Ordered') }}</a>
                             </li>
                         </ul>
                     </div>
@@ -98,19 +98,19 @@
                         </a>
                         <ul class="dropdown-menu  dropdown-menu-end p-3">
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Recently Added</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Recently Added') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Ascending</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Ascending') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Desending</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Desending') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Last Month</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Last Month') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Last 7 Days</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Last 7 Days') }}</a>
                             </li>
                         </ul>
                     </div>
@@ -127,10 +127,10 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </th>
-                                <th>Product Name</th>
-                                <th>Custmer Name</th>
-                                <th>Status</th>
-                                <th>Total</th>
+                                <th>{{ __('Product Name') }}</th>
+                                <th>{{ __('Custmer Name') }}</th>
+                                <th>{{ __('Status') }}</th>
+                                <th>{{ __('Total') }}</th>
                                 <th class="no-sort"></th>
                             </tr>
                         </thead>
@@ -147,7 +147,7 @@
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/products/stock-img-01.png')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Lenovo 3rd Generation</a>
+                                        <a href="javascript:void(0);">{{ __('Lenovo 3rd Generation') }}</a>
                                     </div>
                                 </td>
                                 <td>
@@ -155,10 +155,10 @@
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/users/user-27.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Carl Evans</a>
+                                        <a href="javascript:void(0);">{{ __('Carl Evans') }}</a>
                                     </div>
                                 </td>
-                                <td><span class="badge badge-success">Sent</span></td>
+                                <td><span class="badge badge-success">{{ __('Sent') }}</span></td>
                                 <td>$550</td>
                                 <td>
                                     <div class="edit-delete-action d-flex align-items-center">
@@ -186,7 +186,7 @@
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/products/stock-img-06.png')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Bold V3.2</a>
+                                        <a href="javascript:void(0);">{{ __('Bold V3.2') }}</a>
                                     </div>
                                 </td>
                                 <td>
@@ -194,10 +194,10 @@
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/users/user-02.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Minerva Rameriz</a>
+                                        <a href="javascript:void(0);">{{ __('Minerva Rameriz') }}</a>
                                     </div>
                                 </td>
-                                <td><span class="badge badge-success">Sent</span></td>
+                                <td><span class="badge badge-success">{{ __('Sent') }}</span></td>
                                 <td>$430</td>
                                 <td>
                                     <div class="edit-delete-action d-flex align-items-center">
@@ -225,7 +225,7 @@
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/products/stock-img-02.png')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Nike Jordan</a>
+                                        <a href="javascript:void(0);">{{ __('Nike Jordan') }}</a>
                                     </div>
                                 </td>
                                 <td>
@@ -233,10 +233,10 @@
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/users/user-05.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Robert Lamon</a>
+                                        <a href="javascript:void(0);">{{ __('Robert Lamon') }}</a>
                                     </div>
                                 </td>
-                                <td><span class="badge badge-warning">Ordered</span></td>
+                                <td><span class="badge badge-warning">{{ __('Ordered') }}</span></td>
                                 <td>$260</td>
                                 <td>
                                     <div class="edit-delete-action d-flex align-items-center">
@@ -264,7 +264,7 @@
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/products/stock-img-03.png')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Apple Series 5 Watch</a>
+                                        <a href="javascript:void(0);">{{ __('Apple Series 5 Watch') }}</a>
                                     </div>
                                 </td>
                                 <td>
@@ -272,10 +272,10 @@
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/users/user-03.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Mark Joslyn</a>
+                                        <a href="javascript:void(0);">{{ __('Mark Joslyn') }}</a>
                                     </div>
                                 </td>
-                                <td><span class="badge badge-success">sent</span></td>
+                                <td><span class="badge badge-success">{{ __('sent') }}</span></td>
                                 <td>$470</td>
                                 <td>
                                     <div class="edit-delete-action d-flex align-items-center">
@@ -303,7 +303,7 @@
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/products/stock-img-04.png')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Amazon Echo Dot</a>
+                                        <a href="javascript:void(0);">{{ __('Amazon Echo Dot') }}</a>
                                     </div>
                                 </td>
                                 <td>
@@ -311,10 +311,10 @@
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/users/user-22.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Patricia Lewis</a>
+                                        <a href="javascript:void(0);">{{ __('Patricia Lewis') }}</a>
                                     </div>
                                 </td>
-                                <td><span class="badge badge-cyan">Pending</span></td>
+                                <td><span class="badge badge-cyan">{{ __('Pending') }}</span></td>
                                 <td>$380</td>
                                 <td>
                                     <div class="edit-delete-action d-flex align-items-center">
@@ -342,7 +342,7 @@
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/products/stock-img-05.png')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Lobar Handy</a>
+                                        <a href="javascript:void(0);">{{ __('Lobar Handy') }}</a>
                                     </div>
                                 </td>
                                 <td>
@@ -350,10 +350,10 @@
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/users/user-12.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Marsha Betts</a>
+                                        <a href="javascript:void(0);">{{ __('Marsha Betts') }}</a>
                                     </div>
                                 </td>
-                                <td><span class="badge badge-success">Sent</span></td>
+                                <td><span class="badge badge-success">{{ __('Sent') }}</span></td>
                                 <td>$190</td>
                                 <td>
                                     <div class="edit-delete-action d-flex align-items-center">
@@ -381,7 +381,7 @@
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/products/expire-product-01.png')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Red Premium Handy</a>
+                                        <a href="javascript:void(0);">{{ __('Red Premium Handy') }}</a>
                                     </div>
                                 </td>
                                 <td>
@@ -389,10 +389,10 @@
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/users/user-06.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Daniel Jude</a>
+                                        <a href="javascript:void(0);">{{ __('Daniel Jude') }}</a>
                                     </div>
                                 </td>
-                                <td><span class="badge badge-cyan">Pending</span></td>
+                                <td><span class="badge badge-cyan">{{ __('Pending') }}</span></td>
                                 <td>$540</td>
                                 <td>
                                     <div class="edit-delete-action d-flex align-items-center">
@@ -420,7 +420,7 @@
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/products/expire-product-02.png')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Iphone 14 Pro</a>
+                                        <a href="javascript:void(0);">{{ __('Iphone 14 Pro') }}</a>
                                     </div>
                                 </td>
                                 <td>
@@ -428,10 +428,10 @@
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/users/user-21.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Emma Bates</a>
+                                        <a href="javascript:void(0);">{{ __('Emma Bates') }}</a>
                                     </div>
                                 </td>
-                                <td><span class="badge badge-warning">Ordered</span></td>
+                                <td><span class="badge badge-warning">{{ __('Ordered') }}</span></td>
                                 <td>$610</td>
                                 <td>
                                     <div class="edit-delete-action d-flex align-items-center">
@@ -459,7 +459,7 @@
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/products/expire-product-03.png')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Black Slim 200</a>
+                                        <a href="javascript:void(0);">{{ __('Black Slim 200') }}</a>
                                     </div>
                                 </td>
                                 <td>
@@ -467,10 +467,10 @@
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/users/user-16.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Richard Fralick</a>
+                                        <a href="javascript:void(0);">{{ __('Richard Fralick') }}</a>
                                     </div>
                                 </td>
-                                <td><span class="badge badge-cyan">Pending</span></td>
+                                <td><span class="badge badge-cyan">{{ __('Pending') }}</span></td>
                                 <td>$220</td>
                                 <td>
                                     <div class="edit-delete-action d-flex align-items-center">
@@ -498,7 +498,7 @@
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/products/expire-product-04.png')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Woodcraft Sandal</a>
+                                        <a href="javascript:void(0);">{{ __('Woodcraft Sandal') }}</a>
                                     </div>
                                 </td>
                                 <td>
@@ -506,10 +506,10 @@
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/users/user-26.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Michelle Robison</a>
+                                        <a href="javascript:void(0);">{{ __('Michelle Robison') }}</a>
                                     </div>
                                 </td>
-                                <td><span class="badge badge-success">Sent</span></td>
+                                <td><span class="badge badge-success">{{ __('Sent') }}</span></td>
                                 <td>$460</td>
                                 <td>
                                     <div class="edit-delete-action d-flex align-items-center">
@@ -537,7 +537,7 @@
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/products/expire-product-01.png')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Lobar Handy</a>
+                                        <a href="javascript:void(0);">{{ __('Lobar Handy') }}</a>
                                     </div>
                                 </td>
                                 <td>
@@ -545,10 +545,10 @@
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/users/user-03.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Mark Joslyn</a>
+                                        <a href="javascript:void(0);">{{ __('Mark Joslyn') }}</a>
                                     </div>
                                 </td>
-                                <td><span class="badge badge-cyan">Pending</span></td>
+                                <td><span class="badge badge-cyan">{{ __('Pending') }}</span></td>
                                 <td>$250</td>
                                 <td>
                                     <div class="edit-delete-action d-flex align-items-center">
@@ -576,7 +576,7 @@
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/products/expire-product-02.png')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Iphone 15 Pro</a>
+                                        <a href="javascript:void(0);">{{ __('Iphone 15 Pro') }}</a>
                                     </div>
                                 </td>
                                 <td>
@@ -584,10 +584,10 @@
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/users/user-05.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Robert Lamon</a>
+                                        <a href="javascript:void(0);">{{ __('Robert Lamon') }}</a>
                                     </div>
                                 </td>
-                                <td><span class="badge badge-success">Sent</span></td>
+                                <td><span class="badge badge-success">{{ __('Sent') }}</span></td>
                                 <td>$550</td>
                                 <td>
                                     <div class="edit-delete-action d-flex align-items-center">

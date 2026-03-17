@@ -1,7 +1,7 @@
 <x-dashboard::layouts.master
-    :title="'Transfert ' . ($stockTransfer->reference_number ?? '') . ' — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Transfert') . ($stockTransfer->reference_number ?? '') . ' — ' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Detail Transfert">
+    :pageTitle="__('Detail Transfert')">
 
 <div class="page-header">
     <div class="add-item d-flex">
@@ -18,14 +18,14 @@
 <div class="row">
     <div class="col-md-4">
         <div class="card">
-            <div class="card-header"><h5>Informations</h5></div>
+            <div class="card-header"><h5>{{ __('Informations') }}</h5></div>
             <div class="card-body">
                 <table class="table table-borderless">
                     <tr><th>Reference</th><td>{{ $stockTransfer->reference_number }}</td></tr>
                     <tr><th>Depot source</th><td>{{ $stockTransfer->fromWarehouse->name ?? '-' }}</td></tr>
                     <tr><th>Depot destination</th><td>{{ $stockTransfer->toWarehouse->name ?? '-' }}</td></tr>
                     <tr>
-                        <th>Statut</th>
+                        <th>{{ __('Statut') }}</th>
                         <td>
                             <span class="badge bg-{{ $stockTransfer->status === 'completed' ? 'success' : ($stockTransfer->status === 'cancelled' ? 'danger' : 'warning') }}">
                                 {{ ucfirst(str_replace('_', ' ', $stockTransfer->status)) }}
@@ -49,7 +49,7 @@
                 <form action="{{ route('eshop360.stock-transfers.complete', [$instance->slug ?? '', $stockTransfer]) }}" method="POST" class="d-inline">
                     @csrf
                     @method('PUT')
-                    <button type="submit" class="btn btn-success" onclick="return confirm('Confirmer la completion du transfert ?')">
+                    <button type="submit" class="btn btn-success" onclick='return confirm(@js(__('Confirmer la completion du transfert ?')))'>
                         <i class="ti ti-check me-1"></i>Completer
                     </button>
                 </form>
@@ -67,11 +67,11 @@
 
     <div class="col-md-8">
         <div class="card">
-            <div class="card-header"><h5>Articles transferes</h5></div>
+            <div class="card-header"><h5>{{ __('Articles transferes') }}</h5></div>
             <div class="card-body">
                 <table class="table">
                     <thead>
-                        <tr><th>Produit</th><th>SKU</th><th>Quantite</th></tr>
+                        <tr><th>{{ __('Produit') }}</th><th>{{ __('SKU') }}</th><th>{{ __('Quantite') }}</th></tr>
                     </thead>
                     <tbody>
                         @forelse($stockTransfer->items as $item)
@@ -81,7 +81,7 @@
                             <td>{{ $item->quantity }}</td>
                         </tr>
                         @empty
-                        <tr><td colspan="3" class="text-center text-muted">Aucun article</td></tr>
+                        <tr><td colspan="3" class="text-center text-muted">{{ __('Aucun article') }}</td></tr>
                         @endforelse
                     </tbody>
                 </table>

@@ -1,13 +1,13 @@
 <x-dashboard::layouts.master
-    :title="'Canaux de distribution — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Canaux de distribution') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Canaux de distribution">
+    :pageTitle="__('Canaux de distribution')">
 
 <div class="page-header">
     <div class="add-item d-flex">
         <div class="page-title">
-            <h4 class="fw-bold">Canaux de distribution</h4>
-            <h6>Gestion des canaux de vente et distribution</h6>
+            <h4 class="fw-bold">{{ __('Canaux de distribution') }}</h4>
+            <h6>{{ __('Gestion des canaux de vente et distribution') }}</h6>
         </div>
     </div>
     <ul class="table-top-head">
@@ -18,7 +18,7 @@
             <a data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"><img src="{{ URL::asset('build/img/icons/excel.svg') }}" alt="img"></a>
         </li>
         <li>
-            <a data-bs-toggle="tooltip" data-bs-placement="top" title="Refresh"><i data-feather="rotate-ccw" class="feather-rotate-ccw"></i></a>
+            <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Refresh') }}"><i data-feather="rotate-ccw" class="feather-rotate-ccw"></i></a>
         </li>
     </ul>
     <div class="page-btn">
@@ -32,13 +32,13 @@
             <table class="table datatable">
                 <thead class="thead-light">
                     <tr>
-                        <th>Nom</th>
-                        <th>Code</th>
-                        <th>Statut</th>
-                        <th>Taux marge</th>
-                        <th>Taux achat</th>
-                        <th>Commandes</th>
-                        <th class="no-sort">Actions</th>
+                        <th>{{ __('Nom') }}</th>
+                        <th>{{ __('Code') }}</th>
+                        <th>{{ __('Statut') }}</th>
+                        <th>{{ __('Taux marge') }}</th>
+                        <th>{{ __('Taux achat') }}</th>
+                        <th>{{ __('Commandes') }}</th>
+                        <th class="no-sort">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -50,9 +50,9 @@
                         <td>{{ $channel->code ?? '—' }}</td>
                         <td>
                             @if($channel->is_active)
-                                <span class="badge bg-success">Actif</span>
+                                <span class="badge bg-success">{{ __('Actif') }}</span>
                             @else
-                                <span class="badge bg-danger">Inactif</span>
+                                <span class="badge bg-danger">{{ __('Inactif') }}</span>
                             @endif
                         </td>
                         <td>{{ number_format($channel->margin_rate * 100, 2) }}%</td>
@@ -74,7 +74,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="7" class="text-center text-muted">Aucun canal de distribution.</td></tr>
+                    <tr><td colspan="7" class="text-center text-muted">{{ __('Aucun canal de distribution.') }}</td></tr>
                     @endforelse
                 </tbody>
             </table>

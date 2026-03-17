@@ -1,7 +1,7 @@
 <x-dashboard::layouts.master
-    :title="'Ticket ' . ($ticket->reference ?? '#' . $ticket->id) . ' — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Ticket') . ($ticket->reference ?? '#' . $ticket->id) . ' — ' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Detail ticket">
+    :pageTitle="__('Detail ticket')">
 
     <div class="page-wrapper">
         <div class="content">
@@ -53,7 +53,7 @@
                     </div>
                     @if($ticket->description ?? $ticket->body ?? null)
                     <div class="mt-3 pt-3 border-top">
-                        <strong>Description :</strong>
+                        <strong>{{ __('Description :') }}</strong>
                         <div class="mt-2">{!! nl2br(e($ticket->description ?? $ticket->body ?? '')) !!}</div>
                     </div>
                     @endif
@@ -63,7 +63,7 @@
             {{-- Messages Thread --}}
             <div class="card mb-3">
                 <div class="card-header">
-                    <h5>Conversation</h5>
+                    <h5>{{ __('Conversation') }}</h5>
                 </div>
                 <div class="card-body">
                     @forelse($ticket->messages as $msg)
@@ -82,7 +82,7 @@
                         </div>
                     </div>
                     @empty
-                    <p class="text-center text-muted">Aucun message dans ce ticket.</p>
+                    <p class="text-center text-muted">{{ __('Aucun message dans ce ticket.') }}</p>
                     @endforelse
                 </div>
             </div>
@@ -91,7 +91,7 @@
             @if(!in_array($ticket->status, ['closed', 'resolved']))
             <div class="card table-list-card">
                 <div class="card-header">
-                    <h5>Repondre</h5>
+                    <h5>{{ __('Repondre') }}</h5>
                 </div>
                 <div class="card-body">
                     <form method="POST" action="{{ route('eshop360.tickets.reply', [$instance->slug ?? '', $ticket]) }}">

@@ -1,13 +1,13 @@
 <x-dashboard::layouts.master
-    :title="'Salaries — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Salaries') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Salaries">
+    :pageTitle="__('Salaries')">
 
 <div class="page-header">
     <div class="add-item d-flex">
         <div class="page-title">
-            <h4 class="fw-bold">Salaries</h4>
-            <h6>Process and manage employee salaries</h6>
+            <h4 class="fw-bold">{{ __('Salaries') }}</h4>
+            <h6>{{ __('Process and manage employee salaries') }}</h6>
         </div>
     </div>
 </div>
@@ -15,16 +15,16 @@
 {{-- Process Salary Form --}}
 <div class="card mb-4">
     <div class="card-header">
-        <h5 class="card-title mb-0">Process Salary</h5>
+        <h5 class="card-title mb-0">{{ __('Process Salary') }}</h5>
     </div>
     <div class="card-body">
         <form action="{{ route('eshop360.hr.salaries.process', $instance->slug ?? '') }}" method="POST">
             @csrf
             <div class="row">
                 <div class="col-md-4 mb-3">
-                    <label class="form-label">Employee <span class="text-danger">*</span></label>
+                    <label class="form-label">{{ __('Employee') }}<span class="text-danger">*</span></label>
                     <select name="employee_id" class="form-select @error('employee_id') is-invalid @enderror" required>
-                        <option value="">-- Select Employee --</option>
+                        <option value="">{{ __('-- Select Employee --') }}</option>
                         @foreach($employees as $employee)
                             <option value="{{ $employee->id }}" {{ old('employee_id') == $employee->id ? 'selected' : '' }}>
                                 {{ $employee->name }} ({{ $employee->position ?? '—' }})
@@ -34,26 +34,26 @@
                     @error('employee_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 <div class="col-md-4 mb-3">
-                    <label class="form-label">Period <span class="text-danger">*</span></label>
+                    <label class="form-label">{{ __('Period') }}<span class="text-danger">*</span></label>
                     <input type="month" name="period" class="form-control @error('period') is-invalid @enderror" value="{{ old('period', now()->format('Y-m')) }}" required>
                     @error('period')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 <div class="col-md-4 mb-3">
-                    <label class="form-label">Bonuses</label>
+                    <label class="form-label">{{ __('Bonuses') }}</label>
                     <input type="number" step="1" name="bonuses" class="form-control @error('bonuses') is-invalid @enderror" value="{{ old('bonuses', 0) }}">
                     @error('bonuses')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 <div class="col-md-4 mb-3">
-                    <label class="form-label">Deductions</label>
+                    <label class="form-label">{{ __('Deductions') }}</label>
                     <input type="number" step="1" name="deductions" class="form-control @error('deductions') is-invalid @enderror" value="{{ old('deductions', 0) }}">
                     @error('deductions')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 <div class="col-md-4 mb-3">
-                    <label class="form-label">Notes</label>
+                    <label class="form-label">{{ __('Notes') }}</label>
                     <input type="text" name="notes" class="form-control" value="{{ old('notes') }}">
                 </div>
                 <div class="col-md-4 mb-3 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary w-100">Process Salary</button>
+                    <button type="submit" class="btn btn-primary w-100">{{ __('Process Salary') }}</button>
                 </div>
             </div>
         </form>
@@ -63,21 +63,21 @@
 {{-- Salaries List --}}
 <div class="card table-list-card">
     <div class="card-header d-flex align-items-center justify-content-between">
-        <h5 class="card-title mb-0">Salary History</h5>
+        <h5 class="card-title mb-0">{{ __('Salary History') }}</h5>
     </div>
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table datatable">
                 <thead class="thead-light">
                     <tr>
-                        <th>Employee</th>
-                        <th>Period</th>
-                        <th>Base Salary</th>
-                        <th>Bonuses</th>
-                        <th>Deductions</th>
-                        <th>Net Pay</th>
-                        <th>Status</th>
-                        <th>Paid At</th>
+                        <th>{{ __('Employee') }}</th>
+                        <th>{{ __('Period') }}</th>
+                        <th>{{ __('Base Salary') }}</th>
+                        <th>{{ __('Bonuses') }}</th>
+                        <th>{{ __('Deductions') }}</th>
+                        <th>{{ __('Net Pay') }}</th>
+                        <th>{{ __('Status') }}</th>
+                        <th>{{ __('Paid At') }}</th>
                         <th class="no-sort"></th>
                     </tr>
                 </thead>
@@ -92,9 +92,9 @@
                         <td class="fw-bold">{{ number_format($salary->net_pay ?? 0, 0, ',', ' ') }} XAF</td>
                         <td>
                             @if(($salary->status ?? '') === 'paid')
-                                <span class="badge bg-success">Paid</span>
+                                <span class="badge bg-success">{{ __('Paid') }}</span>
                             @else
-                                <span class="badge bg-warning">Pending</span>
+                                <span class="badge bg-warning">{{ __('Pending') }}</span>
                             @endif
                         </td>
                         <td>{{ $salary->paid_at ? \Carbon\Carbon::parse($salary->paid_at)->format('d/m/Y') : '—' }}</td>
@@ -104,7 +104,7 @@
                                 <form action="{{ route('eshop360.hr.salaries.pay', [$instance->slug ?? '', $salary]) }}" method="POST" class="d-inline">
                                     @csrf
                                     @method('PATCH')
-                                    <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Mark as paid?')">
+                                    <button type="submit" class="btn btn-sm btn-success" onclick='return confirm(@js(__('Mark as paid?')))'>
                                         <i class="ti ti-check me-1"></i>Pay
                                     </button>
                                 </form>
@@ -114,7 +114,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="9" class="text-center">No salary records found.</td>
+                        <td colspan="9" class="text-center">{{ __('No salary records found.') }}</td>
                     </tr>
                     @endforelse
                 </tbody>

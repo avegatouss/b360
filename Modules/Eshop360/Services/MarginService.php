@@ -4,8 +4,6 @@ namespace Modules\Eshop360\Services;
 
 use Illuminate\Support\Facades\DB;
 use Modules\Eshop360\Models\ChannelMarginLog;
-use Modules\Eshop360\Models\CodifarmMarginConfig;
-use Modules\Eshop360\Models\CodifarmMarginLog;
 use Modules\Eshop360\Models\DistributionChannel;
 use Modules\Eshop360\Models\Order;
 
@@ -19,12 +17,6 @@ class MarginService
             $this->syncTripartiteMargin($order, $order->channel);
         } else {
             $order->channelMarginLogs()->delete();
-        }
-
-        if ($order->is_codifarm) {
-            $this->syncCodifarmMargin($order);
-        } else {
-            $order->codifarmMarginLog()->delete();
         }
     }
 
@@ -63,37 +55,6 @@ class MarginService
         $order->channelMarginLogs()->delete();
 
         return $this->calculateTripartiteMargin($order, $channel);
-    }
-
-    public function syncCodifarmMargin(Order $order): ?CodifarmMarginLog
-    {
-        $order->codifarmMarginLog()->delete();
-
-        $totalMargin = $this->calculateTotalMargin($order);
-
-        if ($totalMargin <= 0) {
-            return null;
-        }
-
-        $config = CodifarmMarginConfig::firstOrCreate(
-            ['instance_id' => $order->instance_id],
-            [
-                'saphir_margin_rate' => 0.13,
-                'codifarm_buy_rate' => 0.20,
-                'debt_share' => 0.3333,
-                'codifarm_share' => 0.3333,
-                'saphir_share' => 0.3334,
-            ],
-        );
-
-        return CodifarmMarginLog::create([
-            'instance_id' => $order->instance_id,
-            'order_id' => $order->id,
-            'total_margin' => $totalMargin,
-            'debt_part' => round($totalMargin * $config->debt_share, 2),
-            'codifarm_part' => round($totalMargin * $config->codifarm_share, 2),
-            'saphir_part' => round($totalMargin * $config->saphir_share, 2),
-        ]);
     }
 
     /**

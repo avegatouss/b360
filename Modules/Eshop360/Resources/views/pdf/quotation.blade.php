@@ -113,7 +113,7 @@
 
     {{-- Document title --}}
     <div class="doc-title">
-        <h1>DEVIS</h1>
+        <h1>{{ __('DEVIS') }}</h1>
         <div class="reference">Réf. : {{ $quotation->reference }}</div>
         @if($quotation->valid_until)
             <div class="validity-badge">Valable jusqu'au {{ $quotation->valid_until->format('d/m/Y') }}</div>
@@ -123,7 +123,7 @@
     {{-- Info blocks --}}
     <div class="info-section">
         <div class="info-block">
-            <h4>Établi pour</h4>
+            <h4>{{ __('Établi pour') }}</h4>
             <strong>{{ $quotation->customer->name ?? 'Client' }}</strong><br>
             @if($quotation->customer?->address)
                 {{ $quotation->customer->address }}<br>
@@ -139,19 +139,19 @@
             @endif
         </div>
         <div class="info-block">
-            <h4>Détails du devis</h4>
+            <h4>{{ __('Détails du devis') }}</h4>
             <table style="width:100%;border:none;margin:0;">
                 <tr>
-                    <td style="padding:3px 0;color:#7c3aed;">N° Devis :</td>
+                    <td style="padding:3px 0;color:#7c3aed;">{{ __('N° Devis :') }}</td>
                     <td style="padding:3px 0;text-align:right;font-weight:600;">{{ $quotation->reference }}</td>
                 </tr>
                 <tr>
-                    <td style="padding:3px 0;color:#7c3aed;">Date émission :</td>
+                    <td style="padding:3px 0;color:#7c3aed;">{{ __('Date émission :') }}</td>
                     <td style="padding:3px 0;text-align:right;">{{ $quotation->created_at?->format('d/m/Y') }}</td>
                 </tr>
                 @if($quotation->valid_until)
                 <tr>
-                    <td style="padding:3px 0;color:#7c3aed;">Date validité :</td>
+                    <td style="padding:3px 0;color:#7c3aed;">{{ __('Date validité :') }}</td>
                     <td style="padding:3px 0;text-align:right;font-weight:600;color:{{ $quotation->valid_until->isPast() ? '#dc2626' : '#166534' }};">
                         {{ $quotation->valid_until->format('d/m/Y') }}
                         @if($quotation->valid_until->isPast()) <small>(Expiré)</small> @endif
@@ -159,7 +159,7 @@
                 </tr>
                 @endif
                 <tr>
-                    <td style="padding:3px 0;color:#7c3aed;">Statut :</td>
+                    <td style="padding:3px 0;color:#7c3aed;">{{ __('Statut :') }}</td>
                     <td style="padding:3px 0;text-align:right;">
                         @php
                             $statusClass = match($quotation->status ?? 'draft') {
@@ -175,7 +175,7 @@
                 </tr>
                 @if(!empty($quotation->salesperson))
                 <tr>
-                    <td style="padding:3px 0;color:#7c3aed;">Commercial :</td>
+                    <td style="padding:3px 0;color:#7c3aed;">{{ __('Commercial :') }}</td>
                     <td style="padding:3px 0;text-align:right;">{{ $quotation->salesperson->name ?? $quotation->salesperson }}</td>
                 </tr>
                 @endif
@@ -188,12 +188,12 @@
         <thead>
             <tr>
                 <th style="width:30px;">#</th>
-                <th>Désignation</th>
-                <th class="text-center" style="width:60px;">Qté</th>
-                <th class="text-right" style="width:100px;">Prix Unit.</th>
-                <th class="text-right" style="width:60px;">TVA</th>
-                <th class="text-right" style="width:100px;">Remise</th>
-                <th class="text-right" style="width:110px;">Total HT</th>
+                <th>{{ __('Désignation') }}</th>
+                <th class="text-center" style="width:60px;">{{ __('Qté') }}</th>
+                <th class="text-right" style="width:100px;">{{ __('Prix Unit.') }}</th>
+                <th class="text-right" style="width:60px;">{{ __('TVA') }}</th>
+                <th class="text-right" style="width:100px;">{{ __('Remise') }}</th>
+                <th class="text-right" style="width:110px;">{{ __('Total HT') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -220,29 +220,29 @@
             </tr>
             @empty
             <tr>
-                <td colspan="7" class="text-center" style="color:#64748b;padding:20px;">Aucun article</td>
+                <td colspan="7" class="text-center" style="color:#64748b;padding:20px;">{{ __('Aucun article') }}</td>
             </tr>
             @endforelse
         </tbody>
         <tfoot>
             <tr style="background:#faf5ff;">
-                <td colspan="6" class="text-right" style="padding:8px 12px;"><strong>Sous-total HT</strong></td>
+                <td colspan="6" class="text-right" style="padding:8px 12px;"><strong>{{ __('Sous-total HT') }}</strong></td>
                 <td class="text-right" style="padding:8px 12px;">{{ number_format($quotation->subtotal, 2, ',', ' ') }}</td>
             </tr>
             @if(($quotation->tax_amount ?? 0) > 0)
             <tr style="background:#fef9c3;">
-                <td colspan="6" class="text-right" style="padding:7px 12px;"><strong>TVA</strong></td>
+                <td colspan="6" class="text-right" style="padding:7px 12px;"><strong>{{ __('TVA') }}</strong></td>
                 <td class="text-right" style="padding:7px 12px;">{{ number_format($quotation->tax_amount, 2, ',', ' ') }}</td>
             </tr>
             @endif
             @if(($quotation->discount_amount ?? 0) > 0)
             <tr style="background:#fef2f2;">
-                <td colspan="6" class="text-right" style="padding:7px 12px;color:#dc2626;"><strong>Remise globale</strong></td>
+                <td colspan="6" class="text-right" style="padding:7px 12px;color:#dc2626;"><strong>{{ __('Remise globale') }}</strong></td>
                 <td class="text-right" style="padding:7px 12px;color:#dc2626;">-{{ number_format($quotation->discount_amount, 2, ',', ' ') }}</td>
             </tr>
             @endif
             <tr class="total-row">
-                <td colspan="6" class="text-right">TOTAL TTC</td>
+                <td colspan="6" class="text-right">{{ __('TOTAL TTC') }}</td>
                 <td class="text-right">{{ number_format($quotation->total, 2, ',', ' ') }} {{ $instance->settings['currency'] ?? 'FCFA' }}</td>
             </tr>
         </tfoot>
@@ -251,14 +251,14 @@
     {{-- Notes --}}
     @if(!empty($quotation->notes))
     <div class="notes-section">
-        <h4>Notes</h4>
+        <h4>{{ __('Notes') }}</h4>
         <p>{{ $quotation->notes }}</p>
     </div>
     @endif
 
     {{-- Validity & conditions --}}
     <div class="validity-notice">
-        <h4>Conditions de ce devis</h4>
+        <h4>{{ __('Conditions de ce devis') }}</h4>
         <p>
             Ce devis est valable
             @if($quotation->valid_until)
@@ -272,16 +272,16 @@
 
     {{-- Acceptance block --}}
     <div class="acceptance-section">
-        <h4>Bon pour accord</h4>
+        <h4>{{ __('Bon pour accord') }}</h4>
         <div class="sig-row">
             <div class="sig-block">
                 <br><br><br>
-                <p>Signature et cachet du client</p>
+                <p>{{ __('Signature et cachet du client') }}</p>
                 <p style="margin-top:4px;">{{ $quotation->customer->name ?? 'Le client' }}</p>
             </div>
             <div class="sig-block">
                 <br><br><br>
-                <p>Signature du vendeur</p>
+                <p>{{ __('Signature du vendeur') }}</p>
                 <p style="margin-top:4px;">{{ $instance->name }}</p>
             </div>
         </div>

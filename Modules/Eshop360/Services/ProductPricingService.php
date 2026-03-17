@@ -2,7 +2,6 @@
 
 namespace Modules\Eshop360\Services;
 
-use Modules\Eshop360\Models\CodifarmMarginConfig;
 use Modules\Eshop360\Models\DistributionChannel;
 use Modules\Eshop360\Models\Product;
 
@@ -13,40 +12,15 @@ class ProductPricingService
      *     unit_price: float,
      *     original_price: float,
      *     channel_id: int|null,
-     *     is_codifarm: bool,
      *     price_source: string
      * }
      */
     public function resolve(
         Product $product,
         ?int $channelId = null,
-        bool $isCodifarm = false,
         bool $applyProductDiscount = false,
     ): array {
         $originalPrice = round((float) ($product->price ?? 0), 2);
-
-        if ($isCodifarm) {
-            $codifarmPrice = (float) ($product->sale_price_codifarm ?? 0);
-
-            if ($codifarmPrice <= 0) {
-                $codifarmConfig = CodifarmMarginConfig::query()
-                    ->where('instance_id', $product->instance_id)
-                    ->first();
-
-                $pght = (float) ($product->pght ?? 0);
-                $codifarmPrice = $codifarmConfig && $pght > 0
-                    ? round($pght * (1 + (float) $codifarmConfig->codifarm_buy_rate), 2)
-                    : $originalPrice;
-            }
-
-            return [
-                'unit_price' => round($codifarmPrice, 2),
-                'original_price' => $originalPrice,
-                'channel_id' => null,
-                'is_codifarm' => true,
-                'price_source' => 'codifarm',
-            ];
-        }
 
         if ($channelId !== null) {
             $channel = DistributionChannel::query()
@@ -70,7 +44,6 @@ class ProductPricingService
                     'unit_price' => round($channelPrice, 2),
                     'original_price' => $originalPrice,
                     'channel_id' => $channel->id,
-                    'is_codifarm' => false,
                     'price_source' => 'channel',
                 ];
             }
@@ -82,7 +55,6 @@ class ProductPricingService
                 : $originalPrice,
             'original_price' => $originalPrice,
             'channel_id' => null,
-            'is_codifarm' => false,
             'price_source' => 'default',
         ];
     }

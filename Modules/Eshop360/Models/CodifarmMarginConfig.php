@@ -1,5 +1,7 @@
 <?php
 
+// DEPRECATED: Use DistributionChannel and ChannelMarginLog instead. Will be deleted after migration.
+
 namespace Modules\Eshop360\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;

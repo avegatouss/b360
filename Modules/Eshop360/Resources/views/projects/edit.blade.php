@@ -1,24 +1,24 @@
 <x-dashboard::layouts.master
-    :title="'Modifier : ' . $project->name . ' — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Modifier') . ':' . $project->name . ' — ' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Modifier le projet">
+    :pageTitle="__('Modifier le projet')">
 
 <div class="page-header">
     <div class="add-item d-flex">
         <div class="page-title">
-            <h4 class="fw-bold">Modifier le projet</h4>
+            <h4 class="fw-bold">{{ __('Modifier le projet') }}</h4>
             <h6>{{ $instance->name }} &mdash; {{ $project->name }}</h6>
         </div>
     </div>
     <ul class="table-top-head">
         <li>
-            <a data-bs-toggle="tooltip" data-bs-placement="top" title="Voir le tableau"
+            <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Voir le tableau') }}"
                href="{{ route('eshop360.projects.show', [$instance->slug ?? '', $project]) }}">
                 <i class="ti ti-layout-kanban"></i>
             </a>
         </li>
         <li>
-            <a data-bs-toggle="tooltip" data-bs-placement="top" title="Réduire" id="collapse-header">
+            <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Réduire') }}" id="collapse-header">
                 <i class="ti ti-chevron-up"></i>
             </a>
         </li>
@@ -56,14 +56,14 @@
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <label class="form-label">Nom du projet <span class="text-danger">*</span></label>
+                        <label class="form-label">{{ __('Nom du projet') }}<span class="text-danger">*</span></label>
                         <input type="text" name="name" class="form-control @error('name') is-invalid @enderror"
                                value="{{ old('name', $project->name) }}" required autofocus>
                         @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Description</label>
+                        <label class="form-label">{{ __('Description') }}</label>
                         <textarea name="description" class="form-control @error('description') is-invalid @enderror"
                                   rows="4">{{ old('description', $project->description) }}</textarea>
                         @error('description') <div class="invalid-feedback">{{ $message }}</div> @enderror
@@ -71,7 +71,7 @@
 
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label">Statut <span class="text-danger">*</span></label>
+                            <label class="form-label">{{ __('Statut') }}<span class="text-danger">*</span></label>
                             <select name="status" class="form-select @error('status') is-invalid @enderror">
                                 @foreach(['planning' => 'Planification', 'active' => 'Actif', 'on_hold' => 'En pause', 'completed' => 'Terminé', 'cancelled' => 'Annulé'] as $val => $label)
                                 <option value="{{ $val }}" {{ old('status', $project->status) === $val ? 'selected' : '' }}>{{ $label }}</option>
@@ -80,7 +80,7 @@
                             @error('status') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Priorité <span class="text-danger">*</span></label>
+                            <label class="form-label">{{ __('Priorité') }}<span class="text-danger">*</span></label>
                             <select name="priority" class="form-select @error('priority') is-invalid @enderror">
                                 @foreach(['low' => 'Basse', 'medium' => 'Moyenne', 'high' => 'Haute', 'critical' => 'Critique'] as $val => $label)
                                 <option value="{{ $val }}" {{ old('priority', $project->priority) === $val ? 'selected' : '' }}>{{ $label }}</option>
@@ -110,19 +110,19 @@
                 <div class="card-body">
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label">Date de début</label>
+                            <label class="form-label">{{ __('Date de début') }}</label>
                             <input type="date" name="start_date" class="form-control @error('start_date') is-invalid @enderror"
                                    value="{{ old('start_date', $project->start_date?->format('Y-m-d')) }}">
                             @error('start_date') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Date de fin prévue</label>
+                            <label class="form-label">{{ __('Date de fin prévue') }}</label>
                             <input type="date" name="end_date" class="form-control @error('end_date') is-invalid @enderror"
                                    value="{{ old('end_date', $project->end_date?->format('Y-m-d')) }}">
                             @error('end_date') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Budget</label>
+                            <label class="form-label">{{ __('Budget') }}</label>
                             <div class="input-group">
                                 <input type="number" name="budget" step="0.01" min="0"
                                        class="form-control @error('budget') is-invalid @enderror"
@@ -145,9 +145,9 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <label class="form-label">Client associé</label>
+                    <label class="form-label">{{ __('Client associé') }}</label>
                     <select name="customer_id" class="form-select @error('customer_id') is-invalid @enderror">
-                        <option value="">— Aucun client —</option>
+                        <option value="">{{ __('— Aucun client —') }}</option>
                         @foreach($customers as $customer)
                             <option value="{{ $customer->id }}"
                                 {{ old('customer_id', $project->customer_id) == $customer->id ? 'selected' : '' }}>
@@ -162,9 +162,9 @@
             {{-- Project meta --}}
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-body">
-                    <p class="text-muted small mb-1">Créé le</p>
+                    <p class="text-muted small mb-1">{{ __('Créé le') }}</p>
                     <p class="fw-semibold mb-3">{{ $project->created_at?->format('d/m/Y H:i') }}</p>
-                    <p class="text-muted small mb-1">Dernière modification</p>
+                    <p class="text-muted small mb-1">{{ __('Dernière modification') }}</p>
                     <p class="fw-semibold mb-0">{{ $project->updated_at?->format('d/m/Y H:i') }}</p>
                 </div>
             </div>

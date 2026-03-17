@@ -212,10 +212,15 @@ class ApiController extends Controller
     public function reportProfitLoss(Request $request): JsonResponse
     {
         $request->validate(['instance_id' => 'required|integer']);
-        $service = app(\Modules\Eshop360\Services\FinanceService::class);
+        $financeService = app(\Modules\Eshop360\Services\FinanceService::class);
+        $chargesService = app(ChargesService::class);
         $from = $request->get('from', now()->startOfMonth()->toDateString());
         $to = $request->get('to', now()->toDateString());
-        return response()->json($service->profitAndLoss($request->instance_id, $from, $to));
+
+        $pnl = $financeService->profitAndLoss($request->instance_id, $from, $to);
+        $pnl['charges_imputees'] = $chargesService->getDashboardData($request->instance_id);
+
+        return response()->json($pnl);
     }
 
     public function reportStock(Request $request): JsonResponse
@@ -245,7 +250,6 @@ class ApiController extends Controller
             'instance_id' => 'required|integer',
             'customer_id' => 'required|exists:eshop_customers,id',
             'channel_id' => 'nullable|exists:eshop_distribution_channels,id',
-            'is_codifarm' => 'nullable|boolean',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:eshop_products,id',
             'items.*.quantity' => 'required|integer|min:1',
@@ -261,7 +265,6 @@ class ApiController extends Controller
             $validated['delivery_address'] ?? null,
             $validated['notes'] ?? null,
             $validated['channel_id'] ?? null,
-            (bool) ($validated['is_codifarm'] ?? false),
         );
 
         return response()->json($order, 201);

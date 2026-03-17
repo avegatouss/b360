@@ -10,6 +10,7 @@ final class CoreConsoleServiceProvider extends ServiceProvider
     {
         $this->commands([
             \Modules\Core\Console\ClearCoreCacheCommand::class,
+            \Modules\Core\Console\Commands\DatabaseBackup::class,
         ]);
     }
 }

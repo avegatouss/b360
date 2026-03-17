@@ -19,12 +19,12 @@ class CostCalculatorService
     }
 
     /**
-     * Calculate channel sale price from PGHT.
+     * Calculate channel sale price from PGHT using the channel's buy_rate.
      * channel_price = PGHT × (1 + buy_rate)
      */
-    public function calculateChannelPrice(float $pght, float $buyRate): float
+    public function calculateChannelPrice(float $pght, DistributionChannel $channel): float
     {
-        return round($pght * (1 + $buyRate), 4);
+        return $channel->calculateSalePrice($pght);
     }
 
     /**
@@ -45,7 +45,7 @@ class CostCalculatorService
             ->get();
 
         foreach ($channels as $channel) {
-            $channelPrice = $this->calculateChannelPrice($pght, $channel->buy_rate);
+            $channelPrice = $this->calculateChannelPrice($pght, $channel);
 
             ChannelProductPrice::updateOrCreate(
                 ['channel_id' => $channel->id, 'product_id' => $product->id],

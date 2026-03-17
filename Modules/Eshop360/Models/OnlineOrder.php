@@ -18,7 +18,6 @@ class OnlineOrder extends Model
         'instance_id',
         'customer_id',
         'channel_id',
-        'is_codifarm',
         'reference',
         'status',
         'subtotal',
@@ -36,11 +35,18 @@ class OnlineOrder extends Model
         'subtotal' => 'decimal:2',
         'tax_amount' => 'decimal:2',
         'total' => 'decimal:2',
-        'is_codifarm' => 'boolean',
         'confirmed_at' => 'datetime',
         'delivered_at' => 'datetime',
         'received_at' => 'datetime',
     ];
+
+    /**
+     * Check if this order is associated with a distribution channel.
+     */
+    public function isChannelOrder(): bool
+    {
+        return $this->channel_id !== null;
+    }
 
     public function customer(): BelongsTo
     {

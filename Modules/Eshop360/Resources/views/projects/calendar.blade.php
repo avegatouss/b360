@@ -1,7 +1,7 @@
 <x-dashboard::layouts.master
-    :title="'Calendrier — ' . $project->name . ' — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Calendrier') . ' —' . $project->name . ' — ' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Calendrier du projet">
+    :pageTitle="__('Calendrier du projet')">
 
 {{-- FullCalendar CDN --}}
 @push('styles')
@@ -41,12 +41,12 @@
     <ul class="table-top-head">
         <li>
             <a href="{{ route('eshop360.projects.show', [$instance->slug ?? '', $project]) }}"
-               data-bs-toggle="tooltip" data-bs-placement="top" title="Tableau Kanban">
+               data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Tableau Kanban') }}">
                 <i class="ti ti-layout-kanban"></i>
             </a>
         </li>
         <li>
-            <a data-bs-toggle="tooltip" data-bs-placement="top" title="Réduire" id="collapse-header">
+            <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Réduire') }}" id="collapse-header">
                 <i class="ti ti-chevron-up"></i>
             </a>
         </li>
@@ -67,12 +67,12 @@
         <div class="card border-0 shadow-sm">
             <div class="card-body py-2">
                 <div class="d-flex flex-wrap gap-3 align-items-center">
-                    <span class="text-muted small fw-semibold me-1">Priorité :</span>
-                    <div class="legend-item"><div class="legend-dot bg-secondary"></div><span>Basse</span></div>
-                    <div class="legend-item"><div class="legend-dot bg-primary"></div><span>Moyenne</span></div>
-                    <div class="legend-item"><div class="legend-dot bg-warning"></div><span>Haute</span></div>
-                    <div class="legend-item"><div class="legend-dot bg-danger"></div><span>Critique</span></div>
-                    <span class="text-muted small ms-3">Les tâches terminées apparaissent en transparence.</span>
+                    <span class="text-muted small fw-semibold me-1">{{ __('Priorité :') }}</span>
+                    <div class="legend-item"><div class="legend-dot bg-secondary"></div><span>{{ __('Basse') }}</span></div>
+                    <div class="legend-item"><div class="legend-dot bg-primary"></div><span>{{ __('Moyenne') }}</span></div>
+                    <div class="legend-item"><div class="legend-dot bg-warning"></div><span>{{ __('Haute') }}</span></div>
+                    <div class="legend-item"><div class="legend-dot bg-danger"></div><span>{{ __('Critique') }}</span></div>
+                    <span class="text-muted small ms-3">{{ __('Les tâches terminées apparaissent en transparence.') }}</span>
                 </div>
             </div>
         </div>
@@ -87,15 +87,15 @@
                 @endphp
                 <div>
                     <div class="fw-bold">{{ $totalTasks }}</div>
-                    <div class="text-muted" style="font-size:11px;">Tâches</div>
+                    <div class="text-muted" style="font-size:11px;">{{ __('Tâches') }}</div>
                 </div>
                 <div class="border-start border-end px-3">
                     <div class="fw-bold text-success">{{ $doneTasks }}</div>
-                    <div class="text-muted" style="font-size:11px;">Terminées</div>
+                    <div class="text-muted" style="font-size:11px;">{{ __('Terminées') }}</div>
                 </div>
                 <div>
                     <div class="fw-bold text-danger">{{ $overdueTasks }}</div>
-                    <div class="text-muted" style="font-size:11px;">En retard</div>
+                    <div class="text-muted" style="font-size:11px;">{{ __('En retard') }}</div>
                 </div>
             </div>
         </div>
@@ -114,22 +114,22 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="taskModalLabel">Détail de la tâche</h5>
+                <h5 class="modal-title" id="taskModalLabel">{{ __('Détail de la tâche') }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body" id="taskModalBody">
                 <table class="table table-sm table-borderless mb-0">
-                    <tr><td class="text-muted" style="width:120px;">Titre</td><td id="modal-title" class="fw-semibold"></td></tr>
-                    <tr><td class="text-muted">Statut</td><td id="modal-status"></td></tr>
-                    <tr><td class="text-muted">Priorité</td><td id="modal-priority"></td></tr>
-                    <tr><td class="text-muted">Échéance</td><td id="modal-due"></td></tr>
-                    <tr><td class="text-muted">Assigné à</td><td id="modal-assignee"></td></tr>
-                    <tr id="modal-desc-row"><td class="text-muted">Description</td><td id="modal-desc"></td></tr>
+                    <tr><td class="text-muted" style="width:120px;">{{ __('Titre') }}</td><td id="modal-title" class="fw-semibold"></td></tr>
+                    <tr><td class="text-muted">{{ __('Statut') }}</td><td id="modal-status"></td></tr>
+                    <tr><td class="text-muted">{{ __('Priorité') }}</td><td id="modal-priority"></td></tr>
+                    <tr><td class="text-muted">{{ __('Échéance') }}</td><td id="modal-due"></td></tr>
+                    <tr><td class="text-muted">{{ __('Assigné à') }}</td><td id="modal-assignee"></td></tr>
+                    <tr id="modal-desc-row"><td class="text-muted">{{ __('Description') }}</td><td id="modal-desc"></td></tr>
                 </table>
             </div>
             <div class="modal-footer">
-                <a id="modal-edit-link" href="#" class="btn btn-primary btn-sm">Modifier</a>
-                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fermer</button>
+                <a id="modal-edit-link" href="#" class="btn btn-primary btn-sm">{{ __('Modifier') }}</a>
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">{{ __('Fermer') }}</button>
             </div>
         </div>
     </div>
@@ -149,16 +149,16 @@ document.addEventListener('DOMContentLoaded', function () {
             'critical' => '#ef4444',
         ];
         $statusLabels = [
-            'todo'        => 'À faire',
-            'in_progress' => 'En cours',
-            'review'      => 'Révision',
-            'done'        => 'Terminé',
+            'todo'        => __('A faire'),
+            'in_progress' => __('En cours'),
+            'review'      => __('Revision'),
+            'done'        => __('Termine'),
         ];
         $priorityLabels = [
-            'low'      => 'Basse',
-            'medium'   => 'Moyenne',
-            'high'     => 'Haute',
-            'critical' => 'Critique',
+            'low'      => __('Basse'),
+            'medium'   => __('Moyenne'),
+            'high'     => __('Haute'),
+            'critical' => __('Critique'),
         ];
         return [
             'id'          => $task->id,
@@ -171,7 +171,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 'status'   => $statusLabels[$task->status ?? 'todo'] ?? $task->status,
                 'priority' => $priorityLabels[$task->priority ?? 'medium'] ?? $task->priority,
                 'assignee' => $task->assignee?->name ?? '—',
-                'due'      => $task->due_date?->format('d/m/Y') ?? 'N/A',
+                'due'      => $task->due_date?->format('d/m/Y') ?? __('N/A'),
                 'desc'     => $task->description ?? '',
                 'editUrl'  => route('eshop360.tasks.edit', [$instance->slug ?? '', $task]),
             ],
@@ -179,8 +179,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }));
 
     // Project date range background event
-    const projectStart = "{{ $project->start_date?->format('Y-m-d') ?? '' }}";
-    const projectEnd   = "{{ $project->end_date?->format('Y-m-d') ?? '' }}";
+    const projectStart = "__BLADE_BLOCK_13__";
+    const projectEnd   = "__BLADE_BLOCK_14__";
 
     const backgroundEvents = [];
     if (projectStart && projectEnd) {
@@ -195,17 +195,17 @@ document.addEventListener('DOMContentLoaded', function () {
     const calendarEl = document.getElementById('project-calendar');
     const calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
-        locale: 'fr',
+        locale: @json(app()->getLocale()),
         headerToolbar: {
             left: 'prev,next today',
             center: 'title',
             right: 'dayGridMonth,dayGridWeek,listMonth',
         },
         buttonText: {
-            today: "Aujourd'hui",
-            month: 'Mois',
-            week:  'Semaine',
-            list:  'Liste',
+            today: @json(__('Aujourd\'hui')),
+            month: @json(__('Mois')),
+            week:  @json(__('Semaine')),
+            list:  @json(__('Liste')),
         },
         events: [...tasksData, ...backgroundEvents],
         eventClick: function(info) {
@@ -229,9 +229,9 @@ document.addEventListener('DOMContentLoaded', function () {
         firstDay: 1, // Monday
         weekNumbers: true,
         weekNumberFormat: { week: 'numeric' },
-        weekText: 'S',
+        weekText: @json(__('S')),
         dayMaxEvents: 4,
-        moreLinkText: function(n) { return '+' + n + ' autres'; },
+        moreLinkText: function(n) { return '+' + n + ' ' + @json(__('autres')); },
     });
 
     calendar.render();

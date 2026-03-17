@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Modules\Users\Http\Controllers\RoleController;
 use Modules\Users\Http\Controllers\UserController;
 use Modules\Users\Http\Controllers\UserMembershipController;
+use Modules\Users\Http\Controllers\UserPreferenceController;
 
 /*
 |--------------------------------------------------------------------------
@@ -76,4 +77,11 @@ Route::middleware([
     Route::delete('/roles/{role}', [RoleController::class, 'destroy'])
         ->middleware('can:users.manage')
         ->name('roles.destroy');
+
+    // ─── User Preferences ──────────────────────────────────
+    Route::get('/profile/preferences', [UserPreferenceController::class, 'edit'])
+        ->name('users.preferences.edit');
+
+    Route::put('/profile/preferences', [UserPreferenceController::class, 'update'])
+        ->name('users.preferences.update');
 });

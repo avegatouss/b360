@@ -1,13 +1,13 @@
 <x-dashboard::layouts.master
-    :title="'Rapport Canaux de distribution — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Rapport Canaux de distribution') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Rapport Canaux de distribution">
+    :pageTitle="__('Rapport Canaux de distribution')">
 
 <div class="page-header">
     <div class="add-item d-flex">
         <div class="page-title">
-            <h4 class="fw-bold">Rapport Canaux de distribution</h4>
-            <h6>Synth&egrave;se des marges et r&eacute;partitions par canal</h6>
+            <h4 class="fw-bold">{{ __('Rapport Canaux de distribution') }}</h4>
+            <h6>{{ __('Synthèse des marges et répartitions par canal') }}</h6>
         </div>
     </div>
     <ul class="table-top-head">
@@ -26,15 +26,15 @@
         <form action="{{ route('eshop360.reports.channels', $instance->slug ?? '') }}" method="GET">
             <div class="row align-items-end">
                 <div class="col-md-4 mb-3">
-                    <label class="form-label">Du</label>
+                    <label class="form-label">{{ __('Du') }}</label>
                     <input type="date" name="from" class="form-control" value="{{ $from ?? now()->startOfMonth()->format('Y-m-d') }}">
                 </div>
                 <div class="col-md-4 mb-3">
-                    <label class="form-label">Au</label>
+                    <label class="form-label">{{ __('Au') }}</label>
                     <input type="date" name="to" class="form-control" value="{{ $to ?? now()->format('Y-m-d') }}">
                 </div>
                 <div class="col-md-4 mb-3">
-                    <button type="submit" class="btn btn-primary w-100"><i class="ti ti-filter me-1"></i>Filtrer</button>
+                    <button type="submit" class="btn btn-primary w-100"><i class="ti ti-filter me-1"></i>{{ __('Filtrer') }}</button>
                 </div>
             </div>
         </form>
@@ -46,7 +46,7 @@
     <div class="col-md-3">
         <div class="card">
             <div class="card-body text-center">
-                <h6 class="text-muted">Marge totale</h6>
+                <h6 class="text-muted">{{ __('Marge totale') }}</h6>
                 <h3 class="fw-bold text-primary mb-0">{{ number_format($totals['total_margin'] ?? 0, 0, ',', ' ') }} XAF</h3>
             </div>
         </div>
@@ -54,7 +54,7 @@
     <div class="col-md-3">
         <div class="card">
             <div class="card-body text-center">
-                <h6 class="text-muted">Part dette totale</h6>
+                <h6 class="text-muted">{{ __('Part dette totale') }}</h6>
                 <h3 class="fw-bold text-danger mb-0">{{ number_format($totals['total_debt'] ?? 0, 0, ',', ' ') }} XAF</h3>
             </div>
         </div>
@@ -62,7 +62,7 @@
     <div class="col-md-3">
         <div class="card">
             <div class="card-body text-center">
-                <h6 class="text-muted">Part canaux</h6>
+                <h6 class="text-muted">{{ __('Part canaux') }}</h6>
                 <h3 class="fw-bold text-success mb-0">{{ number_format($totals['total_channel'] ?? 0, 0, ',', ' ') }} XAF</h3>
             </div>
         </div>
@@ -70,7 +70,7 @@
     <div class="col-md-3">
         <div class="card">
             <div class="card-body text-center">
-                <h6 class="text-muted">Part propri&eacute;taire</h6>
+                <h6 class="text-muted">{{ __('Part propriétaire') }}</h6>
                 <h3 class="fw-bold text-info mb-0">{{ number_format($totals['total_owner'] ?? 0, 0, ',', ' ') }} XAF</h3>
             </div>
         </div>
@@ -80,19 +80,19 @@
 {{-- Per-Channel Breakdown Table --}}
 <div class="card table-list-card">
     <div class="card-header">
-        <h5 class="card-title mb-0">D&eacute;tail par canal</h5>
+        <h5 class="card-title mb-0">{{ __('Détail par canal') }}</h5>
     </div>
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table datatable">
                 <thead class="thead-light">
                     <tr>
-                        <th>Canal</th>
-                        <th>Marge totale</th>
-                        <th>Part dette</th>
-                        <th>Part canal</th>
-                        <th>Part propri&eacute;taire</th>
-                        <th>Nb transactions</th>
+                        <th>{{ __('Canal') }}</th>
+                        <th>{{ __('Marge totale') }}</th>
+                        <th>{{ __('Part dette') }}</th>
+                        <th>{{ __('Part canal') }}</th>
+                        <th>{{ __('Part propriétaire') }}</th>
+                        <th>{{ __('Nb transactions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -108,7 +108,7 @@
                         <td>{{ $row['summary']['transactions_count'] ?? $row['summary']['count'] ?? 0 }}</td>
                     </tr>
                     @empty
-                    <tr><td colspan="6" class="text-center text-muted">Aucune donn&eacute;e pour cette p&eacute;riode.</td></tr>
+                    <tr><td colspan="6" class="text-center text-muted">{{ __('Aucune donnée pour cette période.') }}</td></tr>
                     @endforelse
                 </tbody>
             </table>

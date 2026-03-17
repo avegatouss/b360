@@ -95,7 +95,6 @@ class SaleController extends Controller
         $validated = $request->validate([
             'customer_id'       => 'nullable|exists:eshop_customers,id',
             'channel_id'        => 'nullable|exists:eshop_distribution_channels,id',
-            'is_codifarm'       => 'nullable|boolean',
             'payment_method'    => 'required|string|in:cash,card,cheque,paypal,bank_transfer,points,deposit,gift_card,external',
             'paid_amount'       => 'required|numeric|min:0',
             'discount_amount'   => 'nullable|numeric|min:0',
@@ -126,7 +125,6 @@ class SaleController extends Controller
             'biller_id' => auth()->id(),
             'number_prefix' => 'SAL',
             'channel_id' => $validated['channel_id'] ?? null,
-            'is_codifarm' => (bool) ($validated['is_codifarm'] ?? false),
         ];
 
         if (($validated['source'] ?? 'manual') === 'pos') {

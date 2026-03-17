@@ -1,13 +1,13 @@
 <x-dashboard::layouts.master
-    :title="'Retours fournisseurs — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Retours fournisseurs') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Retours fournisseurs">
+    :pageTitle="__('Retours fournisseurs')">
 
 <div class="page-header">
     <div class="add-item d-flex">
         <div class="page-title">
-            <h4 class="fw-bold">Retours fournisseurs</h4>
-            <h6>Suivi des avoirs et des retours envoyes aux fournisseurs</h6>
+            <h4 class="fw-bold">{{ __('Retours fournisseurs') }}</h4>
+            <h6>{{ __('Suivi des avoirs et des retours envoyes aux fournisseurs') }}</h6>
         </div>
     </div>
 </div>
@@ -18,16 +18,16 @@
             <table class="table">
                 <thead class="thead-light">
                     <tr>
-                        <th>Reference</th>
-                        <th>Achat d'origine</th>
-                        <th>Fournisseur</th>
-                        <th>Entrepot</th>
-                        <th>Date</th>
-                        <th>Statut</th>
-                        <th class="text-end">Total</th>
-                        <th class="text-end">Rembourse</th>
-                        <th class="text-end">Reste</th>
-                        <th class="text-end">Articles</th>
+                        <th>{{ __('Reference') }}</th>
+                        <th>{{ __('Achat d\'origine') }}</th>
+                        <th>{{ __('Fournisseur') }}</th>
+                        <th>{{ __('Entrepot') }}</th>
+                        <th>{{ __('Date') }}</th>
+                        <th>{{ __('Statut') }}</th>
+                        <th class="text-end">{{ __('Total') }}</th>
+                        <th class="text-end">{{ __('Rembourse') }}</th>
+                        <th class="text-end">{{ __('Reste') }}</th>
+                        <th class="text-end">{{ __('Articles') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -55,7 +55,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="10" class="text-center text-muted">Aucun retour fournisseur enregistre.</td>
+                        <td colspan="10" class="text-center text-muted">{{ __('Aucun retour fournisseur enregistre.') }}</td>
                     </tr>
                     @endforelse
                 </tbody>

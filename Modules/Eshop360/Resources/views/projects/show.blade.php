@@ -1,7 +1,7 @@
 <x-dashboard::layouts.master
     :title="$project->name . ' — ' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Tableau de projet">
+    :pageTitle="__('Tableau de projet')">
 
 <style>
     .kanban-board { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 16px; align-items: flex-start; }
@@ -31,12 +31,12 @@
     <ul class="table-top-head">
         <li>
             <a href="{{ route('eshop360.projects.calendar', [$instance->slug ?? '', $project]) }}"
-               data-bs-toggle="tooltip" data-bs-placement="top" title="Calendrier">
+               data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Calendrier') }}">
                 <i class="ti ti-calendar"></i>
             </a>
         </li>
         <li>
-            <a data-bs-toggle="tooltip" data-bs-placement="top" title="Réduire" id="collapse-header">
+            <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Réduire') }}" id="collapse-header">
                 <i class="ti ti-chevron-up"></i>
             </a>
         </li>
@@ -91,7 +91,7 @@
             </div>
             <div class="col-md-4">
                 <div class="d-flex justify-content-between mb-1">
-                    <small class="text-muted">Avancement global</small>
+                    <small class="text-muted">{{ __('Avancement global') }}</small>
                     <small class="fw-bold progress-label">{{ $project->progress ?? 0 }}%</small>
                 </div>
                 <div class="progress" style="height:10px;">
@@ -111,7 +111,7 @@
             </div>
             <div class="col-md-3 text-md-end">
                 @if($project->budget)
-                    <div class="text-muted small">Budget</div>
+                    <div class="text-muted small">{{ __('Budget') }}</div>
                     <div class="fs-5 fw-bold">{{ number_format($project->budget, 0, ',', ' ') }} {{ $instance->settings['currency'] ?? 'FCFA' }}</div>
                 @endif
                 <div class="text-muted small mt-1">
@@ -158,7 +158,7 @@
                 <div class="d-flex flex-wrap gap-1 mb-2">
                     <span class="badge {{ $taskPrio[1] }}" style="font-size:10px;">{{ $taskPrio[0] }}</span>
                     @if($isTaskOverdue)
-                        <span class="badge bg-danger-subtle text-danger" style="font-size:10px;">En retard</span>
+                        <span class="badge bg-danger-subtle text-danger" style="font-size:10px;">{{ __('En retard') }}</span>
                     @endif
                 </div>
 
@@ -184,7 +184,7 @@
                         @csrf @method('PATCH')
                         <input type="hidden" name="status" value="{{ $prevKey }}">
                         <button type="submit" class="btn btn-xs btn-outline-secondary" style="font-size:10px;padding:2px 6px;"
-                                title="Reculer">
+                                title="{{ __('Reculer') }}">
                             <i class="ti ti-arrow-left"></i>
                         </button>
                     </form>
@@ -202,7 +202,7 @@
                         @csrf @method('PATCH')
                         <input type="hidden" name="status" value="{{ $nextKey }}">
                         <button type="submit" class="btn btn-xs btn-outline-primary" style="font-size:10px;padding:2px 6px;"
-                                title="Avancer">
+                                title="{{ __('Avancer') }}">
                             <i class="ti ti-arrow-right"></i>
                         </button>
                     </form>
@@ -224,9 +224,9 @@
                     <input type="hidden" name="project_id" value="{{ $project->id }}">
                     <div class="input-group input-group-sm">
                         <input type="text" name="title" class="form-control form-control-sm"
-                               placeholder="Ajouter une tâche…" required
+                               placeholder="{{ __('Ajouter une tâche…') }}" required
                                style="font-size:12px;">
-                        <button type="submit" class="btn btn-sm btn-outline-secondary" title="Ajouter">
+                        <button type="submit" class="btn btn-sm btn-outline-secondary" title="{{ __('Ajouter') }}">
                             <i class="ti ti-plus" style="font-size:12px;"></i>
                         </button>
                     </div>

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Modules\Auth\Rules\RecaptchaV3;
 use Modules\Auth\Services\LoginRedirector;
 use Modules\Core\Support\CurrentInstance;
 
@@ -34,10 +35,17 @@ final class LoginController extends Controller
 
     public function loginGlobal(Request $request)
     {
-        $credentials = $request->validate([
+        $rules = [
             'email'    => ['required', 'email'],
             'password' => ['required', 'string'],
-        ]);
+        ];
+
+        if (config('recaptcha.enabled')) {
+            $rules['recaptcha_token'] = ['required', 'string', new RecaptchaV3()];
+        }
+
+        $credentials = $request->validate($rules);
+        unset($credentials['recaptcha_token']);
 
         if (!Auth::attempt($credentials, $request->boolean('remember'))) {
             return back()
@@ -82,10 +90,17 @@ final class LoginController extends Controller
             abort(404, 'Instance introuvable ou inactive.');
         }
 
-        $credentials = $request->validate([
+        $rules = [
             'email'    => ['required', 'email'],
             'password' => ['required', 'string'],
-        ]);
+        ];
+
+        if (config('recaptcha.enabled')) {
+            $rules['recaptcha_token'] = ['required', 'string', new RecaptchaV3()];
+        }
+
+        $credentials = $request->validate($rules);
+        unset($credentials['recaptcha_token']);
 
         if (!Auth::attempt($credentials, $request->boolean('remember'))) {
             return back()

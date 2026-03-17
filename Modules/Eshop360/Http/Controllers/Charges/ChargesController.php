@@ -59,4 +59,31 @@ class ChargesController extends Controller
         $instance = CurrentInstance::get();
         return response()->json($this->chargesService->getDashboardData($instance->id));
     }
+
+    /**
+     * Real-time data endpoint — structured for the charges widget.
+     * Returns total_per_second, accumulated_this_month, breakdown array.
+     */
+    public function realtimeData()
+    {
+        $instance = CurrentInstance::get();
+        $data = $this->chargesService->getDashboardData($instance->id);
+
+        // Reshape breakdown into flat array for the widget
+        $breakdown = [];
+        foreach ($data['breakdown'] ?? [] as $category => $info) {
+            $breakdown[] = [
+                'category' => ucfirst($category),
+                'monthly' => $info['monthly_total'],
+                'per_second' => $info['cost_per_second'],
+                'accumulated' => $info['accumulated'],
+            ];
+        }
+
+        return response()->json([
+            'total_per_second' => $data['cost_per_second'],
+            'accumulated_this_month' => $data['accumulated_since_month_start'],
+            'breakdown' => $breakdown,
+        ]);
+    }
 }

@@ -1,13 +1,13 @@
 <x-dashboard::layouts.master
-    :title="'Purchase Transactions — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Purchase Transactions') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Purchase Transactions">
+    :pageTitle="__('Purchase Transactions')">
 
 <div class="page-header">
                 <div class="add-item d-flex">
                     <div class="page-title">
-                        <h4>Purchase Transaction</h4>
-                        <h6>Manage your purchase transaction</h6>
+                        <h4>{{ __('Purchase Transaction') }}</h4>
+                        <h6>{{ __('Manage your purchase transaction') }}</h6>
                     </div>
                 </div>
                 <ul class="table-top-head">
@@ -18,10 +18,10 @@
                         <a data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"><img src="{{URL::asset('build/img/icons/excel.svg')}}" alt="img"></a>
                     </li>
                     <li>
-                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="Refresh"><i class="ti ti-refresh"></i></a>
+                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Refresh') }}"><i class="ti ti-refresh"></i></a>
                     </li>
                     <li>
-                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="Collapse" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
+                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Collapse') }}" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
                     </li>
                 </ul>
             </div>
@@ -42,13 +42,13 @@
                             </a>
                             <ul class="dropdown-menu  dropdown-menu-end p-3">
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Credit card</a>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Credit card') }}</a>
                                 </li>
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Paypal</a>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Paypal') }}</a>
                                 </li>
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Debit Card</a>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Debit Card') }}</a>
                                 </li>
                             </ul>
                         </div>
@@ -58,10 +58,10 @@
                             </a>
                             <ul class="dropdown-menu  dropdown-menu-end p-3">
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Paid</a>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Paid') }}</a>
                                 </li>
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Unpaid</a>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Unpaid') }}</a>
                                 </li>
                             </ul>
                         </div>
@@ -71,19 +71,19 @@
                             </a>
                             <ul class="dropdown-menu  dropdown-menu-end p-3">
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Recently Added</a>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Recently Added') }}</a>
                                 </li>
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Ascending</a>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Ascending') }}</a>
                                 </li>
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Desending</a>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Desending') }}</a>
                                 </li>
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Last Month</a>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Last Month') }}</a>
                                 </li>
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Last 7 Days</a>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Last 7 Days') }}</a>
                                 </li>
                             </ul>
                         </div>
@@ -99,13 +99,13 @@
                                             <input class="form-check-input" type="checkbox" id="select-all">
                                         </div>
                                     </th>
-                                    <th>Invoice ID</th>
-                                    <th>Customer</th>
-                                    <th>Email</th>
-                                    <th>Created Date</th>
-                                    <th>Amount</th>
-                                    <th>Payment Method</th>
-                                    <th>Status</th>
+                                    <th>{{ __('Invoice ID') }}</th>
+                                    <th>{{ __('Customer') }}</th>
+                                    <th>{{ __('Email') }}</th>
+                                    <th>{{ __('Created Date') }}</th>
+                                    <th>{{ __('Amount') }}</th>
+                                    <th>{{ __('Payment Method') }}</th>
+                                    <th>{{ __('Status') }}</th>
                                     <th></th>
                                 </tr>
                             </thead>
@@ -116,21 +116,21 @@
                                             <input class="form-check-input" type="checkbox">
                                         </div>
                                     </td>
-                                    <td><a href="javascript:void(0);" class="link-default">INV001</a></td>
+                                    <td><a href="javascript:void(0);" class="link-default">{{ __('INV001') }}</a></td>
                                     <td>
                                         <div class="d-flex align-items-center file-name-icon">
                                             <a href="#" class="avatar avatar-md border rounded-circle">
                                                 <img src="{{URL::asset('build/img/company/company-01.svg')}}" class="img-fluid" alt="img">
                                             </a>
                                             <div class="ms-2">
-                                                <h6 class="fw-medium"><a href="#">BrightWave Innovations</a></h6>
+                                                <h6 class="fw-medium"><a href="#">{{ __('BrightWave Innovations') }}</a></h6>
                                             </div>
                                         </div>
                                     </td>
                                     <td>michael@example.com</td>
-                                    <td>12 Sep 2024</td>
+                                    <td>{{ __('12 Sep 2024') }}</td>
                                     <td>$200</td>
-                                    <td>Credit Card</td>
+                                    <td>{{ __('Credit Card') }}</td>
                                     <td>
                                         <span class="badge badge-success d-flex align-items-center badge-xs">
                                             <i class="ti ti-point-filled me-1"></i>Paid
@@ -150,21 +150,21 @@
                                             <input class="form-check-input" type="checkbox">
                                         </div>
                                     </td>
-                                    <td><a href="javascript:void(0);" class="link-default">INV002</a></td>
+                                    <td><a href="javascript:void(0);" class="link-default">{{ __('INV002') }}</a></td>
                                     <td>
                                         <div class="d-flex align-items-center file-name-icon">
                                             <a href="#" class="avatar avatar-md border rounded-circle">
                                                 <img src="{{URL::asset('build/img/company/company-02.svg')}}" class="img-fluid" alt="img">
                                             </a>
                                             <div class="ms-2">
-                                                <h6 class="fw-medium"><a href="#">Stellar Dynamics</a></h6>
+                                                <h6 class="fw-medium"><a href="#">{{ __('Stellar Dynamics') }}</a></h6>
                                             </div>
                                         </div>
                                     </td>
                                     <td>sophie@example.com</td>
-                                    <td>24 Oct 2024</td>
+                                    <td>{{ __('24 Oct 2024') }}</td>
                                     <td>$600</td>
-                                    <td>Paypal</td>
+                                    <td>{{ __('Paypal') }}</td>
                                     <td>
                                         <span class="badge badge-success d-flex align-items-center badge-xs">
                                             <i class="ti ti-point-filled me-1"></i>Paid
@@ -184,21 +184,21 @@
                                             <input class="form-check-input" type="checkbox">
                                         </div>
                                     </td>
-                                    <td><a href="javascript:void(0);" class="link-default">INV003</a></td>
+                                    <td><a href="javascript:void(0);" class="link-default">{{ __('INV003') }}</a></td>
                                     <td>
                                         <div class="d-flex align-items-center file-name-icon">
                                             <a href="#" class="avatar avatar-md border rounded-circle">
                                                 <img src="{{URL::asset('build/img/company/company-03.svg')}}" class="img-fluid" alt="img">
                                             </a>
                                             <div class="ms-2">
-                                                <h6 class="fw-medium"><a href="#">Quantum Nexus</a></h6>
+                                                <h6 class="fw-medium"><a href="#">{{ __('Quantum Nexus') }}</a></h6>
                                             </div>
                                         </div>
                                     </td>
                                     <td>cameron@example.com</td>
-                                    <td>18 Feb 2024</td>
+                                    <td>{{ __('18 Feb 2024') }}</td>
                                     <td>$200</td>
-                                    <td>Debit Card</td>
+                                    <td>{{ __('Debit Card') }}</td>
                                     <td>
                                         <span class="badge badge-success d-flex align-items-center badge-xs">
                                             <i class="ti ti-point-filled me-1"></i>Paid
@@ -218,21 +218,21 @@
                                             <input class="form-check-input" type="checkbox">
                                         </div>
                                     </td>
-                                    <td><a href="javascript:void(0);" class="link-default">INV004</a></td>
+                                    <td><a href="javascript:void(0);" class="link-default">{{ __('INV004') }}</a></td>
                                     <td>
                                         <div class="d-flex align-items-center file-name-icon">
                                             <a href="#" class="avatar avatar-md border rounded-circle">
                                                 <img src="{{URL::asset('build/img/company/company-04.svg')}}" class="img-fluid" alt="img">
                                             </a>
                                             <div class="ms-2">
-                                                <h6 class="fw-medium"><a href="#">EcoVision Enterprises</a></h6>
+                                                <h6 class="fw-medium"><a href="#">{{ __('EcoVision Enterprises') }}</a></h6>
                                             </div>
                                         </div>
                                     </td>
                                     <td>doris@example.com</td>
-                                    <td>17 Oct 2024</td>
+                                    <td>{{ __('17 Oct 2024') }}</td>
                                     <td>$200</td>
-                                    <td>Paypal</td>
+                                    <td>{{ __('Paypal') }}</td>
                                     <td>
                                         <span class="badge badge-success d-flex align-items-center badge-xs">
                                             <i class="ti ti-point-filled me-1"></i>Paid
@@ -252,21 +252,21 @@
                                             <input class="form-check-input" type="checkbox">
                                         </div>
                                     </td>
-                                    <td><a href="javascript:void(0);" class="link-default">INV005</a></td>
+                                    <td><a href="javascript:void(0);" class="link-default">{{ __('INV005') }}</a></td>
                                     <td>
                                         <div class="d-flex align-items-center file-name-icon">
                                             <a href="#" class="avatar avatar-md border rounded-circle">
                                                 <img src="{{URL::asset('build/img/company/company-05.svg')}}" class="img-fluid" alt="img">
                                             </a>
                                             <div class="ms-2">
-                                                <h6 class="fw-medium"><a href="#">Aurora Technologies</a></h6>
+                                                <h6 class="fw-medium"><a href="#">{{ __('Aurora Technologies') }}</a></h6>
                                             </div>
                                         </div>
                                     </td>
                                     <td>thomas@example.com</td>
-                                    <td>20 Jul 2024</td>
+                                    <td>{{ __('20 Jul 2024') }}</td>
                                     <td>$400</td>
-                                    <td>Credit Card</td>
+                                    <td>{{ __('Credit Card') }}</td>
                                     <td>
                                         <span class="badge badge-success d-flex align-items-center badge-xs">
                                             <i class="ti ti-point-filled me-1"></i>Paid
@@ -286,21 +286,21 @@
                                             <input class="form-check-input" type="checkbox">
                                         </div>
                                     </td>
-                                    <td><a href="javascript:void(0);" class="link-default">INV006</a></td>
+                                    <td><a href="javascript:void(0);" class="link-default">{{ __('INV006') }}</a></td>
                                     <td>
                                         <div class="d-flex align-items-center file-name-icon">
                                             <a href="#" class="avatar avatar-md border rounded-circle">
                                                 <img src="{{URL::asset('build/img/company/company-06.svg')}}" class="img-fluid" alt="img">
                                             </a>
                                             <div class="ms-2">
-                                                <h6 class="fw-medium"><a href="#">BlueSky Ventures</a></h6>
+                                                <h6 class="fw-medium"><a href="#">{{ __('BlueSky Ventures') }}</a></h6>
                                             </div>
                                         </div>
                                     </td>
                                     <td>kathleen@example.com</td>
-                                    <td>10 Apr 2024</td>
+                                    <td>{{ __('10 Apr 2024') }}</td>
                                     <td>$200</td>
-                                    <td>Paypal</td>
+                                    <td>{{ __('Paypal') }}</td>
                                     <td>
                                         <span class="badge badge-success d-flex align-items-center badge-xs">
                                             <i class="ti ti-point-filled me-1"></i>Paid
@@ -320,21 +320,21 @@
                                             <input class="form-check-input" type="checkbox">
                                         </div>
                                     </td>
-                                    <td><a href="javascript:void(0);" class="link-default">INV007</a></td>
+                                    <td><a href="javascript:void(0);" class="link-default">{{ __('INV007') }}</a></td>
                                     <td>
                                         <div class="d-flex align-items-center file-name-icon">
                                             <a href="#" class="avatar avatar-md border rounded-circle">
                                                 <img src="{{URL::asset('build/img/company/company-07.svg')}}" class="img-fluid" alt="img">
                                             </a>
                                             <div class="ms-2">
-                                                <h6 class="fw-medium"><a href="#">TerraFusion Energy</a></h6>
+                                                <h6 class="fw-medium"><a href="#">{{ __('TerraFusion Energy') }}</a></h6>
                                             </div>
                                         </div>
                                     </td>
                                     <td>bruce@example.com</td>
-                                    <td>29 Aug 2024</td>
+                                    <td>{{ __('29 Aug 2024') }}</td>
                                     <td>$4800</td>
-                                    <td>Credit Card</td>
+                                    <td>{{ __('Credit Card') }}</td>
                                     <td>
                                         <span class="badge badge-success d-flex align-items-center badge-xs">
                                             <i class="ti ti-point-filled me-1"></i>Paid
@@ -354,21 +354,21 @@
                                             <input class="form-check-input" type="checkbox">
                                         </div>
                                     </td>
-                                    <td><a href="javascript:void(0);" class="link-default">INV008</a></td>
+                                    <td><a href="javascript:void(0);" class="link-default">{{ __('INV008') }}</a></td>
                                     <td>
                                         <div class="d-flex align-items-center file-name-icon">
                                             <a href="#" class="avatar avatar-md border rounded-circle">
                                                 <img src="{{URL::asset('build/img/company/company-08.svg')}}" class="img-fluid" alt="img">
                                             </a>
                                             <div class="ms-2">
-                                                <h6 class="fw-medium"><a href="#">UrbanPulse Design</a></h6>
+                                                <h6 class="fw-medium"><a href="#">{{ __('UrbanPulse Design') }}</a></h6>
                                             </div>
                                         </div>
                                     </td>
                                     <td>estelle@example.com</td>
-                                    <td>22 Feb 2024</td>
+                                    <td>{{ __('22 Feb 2024') }}</td>
                                     <td>$50</td>
-                                    <td>Credit Card</td>
+                                    <td>{{ __('Credit Card') }}</td>
                                     <td>
                                         <span class="badge badge-danger d-flex align-items-center badge-xs">
                                             <i class="ti ti-point-filled me-1"></i>Unpaid
@@ -388,21 +388,21 @@
                                             <input class="form-check-input" type="checkbox">
                                         </div>
                                     </td>
-                                    <td><a href="javascript:void(0);" class="link-default">INV009</a></td>
+                                    <td><a href="javascript:void(0);" class="link-default">{{ __('INV009') }}</a></td>
                                     <td>
                                         <div class="d-flex align-items-center file-name-icon">
                                             <a href="#" class="avatar avatar-md border rounded-circle">
                                                 <img src="{{URL::asset('build/img/company/company-09.svg')}}" class="img-fluid" alt="img">
                                             </a>
                                             <div class="ms-2">
-                                                <h6 class="fw-medium"><a href="#">Nimbus Networks</a></h6>
+                                                <h6 class="fw-medium"><a href="#">{{ __('Nimbus Networks') }}</a></h6>
                                             </div>
                                         </div>
                                     </td>
                                     <td>stephen@example.com</td>
-                                    <td>03 Nov 2024</td>
+                                    <td>{{ __('03 Nov 2024') }}</td>
                                     <td>$600</td>
-                                    <td>Paypal</td>
+                                    <td>{{ __('Paypal') }}</td>
                                     <td>
                                         <span class="badge badge-success d-flex align-items-center badge-xs">
                                             <i class="ti ti-point-filled me-1"></i>Paid
@@ -422,21 +422,21 @@
                                             <input class="form-check-input" type="checkbox">
                                         </div>
                                     </td>
-                                    <td><a href="javascript:void(0);" class="link-default">INV010</a></td>
+                                    <td><a href="javascript:void(0);" class="link-default">{{ __('INV010') }}</a></td>
                                     <td>
                                         <div class="d-flex align-items-center file-name-icon">
                                             <a href="#" class="avatar avatar-md border rounded-circle">
                                                 <img src="{{URL::asset('build/img/company/company-10.svg')}}" class="img-fluid" alt="img">
                                             </a>
                                             <div class="ms-2">
-                                                <h6 class="fw-medium"><a href="#">Epicurean Delights</a></h6>
+                                                <h6 class="fw-medium"><a href="#">{{ __('Epicurean Delights') }}</a></h6>
                                             </div>
                                         </div>
                                     </td>
                                     <td>angela@example.com</td>
-                                    <td>17 Dec 2024</td>
+                                    <td>{{ __('17 Dec 2024') }}</td>
                                     <td>$200</td>
-                                    <td>Credit Card</td>
+                                    <td>{{ __('Credit Card') }}</td>
                                     <td>
                                         <span class="badge badge-success d-flex align-items-center badge-xs">
                                             <i class="ti ti-point-filled me-1"></i>Paid

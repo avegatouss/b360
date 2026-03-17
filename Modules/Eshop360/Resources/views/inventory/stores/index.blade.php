@@ -1,13 +1,13 @@
 <x-dashboard::layouts.master
-    :title="'Stores — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Stores') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Stores">
+    :pageTitle="__('Stores')">
 
 <div class="page-header">
             <div class="add-item d-flex">
                 <div class="page-title">
-                    <h4>Stores</h4>
-                    <h6>Manage your Store</h6>
+                    <h4>{{ __('Stores') }}</h4>
+                    <h6>{{ __('Manage your Store') }}</h6>
                 </div>
             </div>
             <ul class="table-top-head">
@@ -18,17 +18,17 @@
                     <a data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"><img src="{{URL::asset('build/img/icons/excel.svg')}}" alt="img"></a>
                 </li>
                 <li>
-                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="Print"><i data-feather="printer" class="feather-rotate-ccw"></i></a>
+                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Print') }}"><i data-feather="printer" class="feather-rotate-ccw"></i></a>
                 </li>
                 <li>
-                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="Refresh"><i class="ti ti-refresh"></i></a>
+                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Refresh') }}"><i class="ti ti-refresh"></i></a>
                 </li>
                 <li>
-                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="Collapse" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
+                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Collapse') }}" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
                 </li>
             </ul>
             <div class="page-btn">
-                <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-store"><i class="ti ti-circle-plus me-1"></i>Add Store</a>
+                <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-store"><i class="ti ti-circle-plus me-1"></i>{{ __('Add Store') }}</a>
             </div>
         </div>
         <!-- /product list -->
@@ -46,10 +46,10 @@
                         </a>
                         <ul class="dropdown-menu  dropdown-menu-end p-3">
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Active</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Active') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Inactive</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Inactive') }}</a>
                             </li>
                         </ul>
                     </div>
@@ -66,11 +66,11 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </th>
-                                <th>Store</th>
-                                <th>User Name</th>
-                                <th>Email</th>
-                                <th>Phone</th>
-                                <th>Status</th>
+                                <th>{{ __('Store') }}</th>
+                                <th>{{ __('User Name') }}</th>
+                                <th>{{ __('Email') }}</th>
+                                <th>{{ __('Phone') }}</th>
+                                <th>{{ __('Status') }}</th>
                                 <th class="no-sort"></th>
                             </tr>
                         </thead>
@@ -82,7 +82,7 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </td>
-                                <td class="text-gray-9">Electro Mart</td>
+                                <td class="text-gray-9">{{ __('Electro Mart') }}</td>
                                 <td>
                                     johnsmith
                                 </td>
@@ -116,7 +116,7 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </td>
-                                <td class="text-gray-9">Quantum Gadgets</td>
+                                <td class="text-gray-9">{{ __('Quantum Gadgets') }}</td>
                                 <td>
                                     janedoe
                                 </td>
@@ -150,7 +150,7 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </td>
-                                <td class="text-gray-9">Prime Bazaar</td>
+                                <td class="text-gray-9">{{ __('Prime Bazaar') }}</td>
                                 <td>
                                     sarahlee
                                 </td>											
@@ -185,7 +185,7 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </td>
-                                <td class="text-gray-9">Gadget World</td>
+                                <td class="text-gray-9">{{ __('Gadget World') }}</td>
                                 <td>
                                     alexbrown
                                 </td>										
@@ -220,7 +220,7 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </td>
-                                <td class="text-gray-9">Volt Vault</td>
+                                <td class="text-gray-9">{{ __('Volt Vault') }}</td>
                                 <td>
                                     jesswhite
                                 </td>											
@@ -254,7 +254,7 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </td>
-                                <td class="text-gray-9">Elite Retail</td>
+                                <td class="text-gray-9">{{ __('Elite Retail') }}</td>
                                 <td>
                                     emilydavis
                                 </td>
@@ -289,7 +289,7 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </td>
-                                <td class="text-gray-9">Prime Mart</td>
+                                <td class="text-gray-9">{{ __('Prime Mart') }}</td>
                                 <td>
                                     tomharris
                                 </td>											
@@ -323,7 +323,7 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </td>
-                                <td class="text-gray-9">NeoTech Store</td>
+                                <td class="text-gray-9">{{ __('NeoTech Store') }}</td>
                                 <td>
                                     sarahjohnson
                                 </td>										
@@ -357,7 +357,7 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </td>
-                                <td class="text-gray-9">Urban Mart</td>
+                                <td class="text-gray-9">{{ __('Urban Mart') }}</td>
                                 <td>
                                     laurawilson
                                 </td>
@@ -392,7 +392,7 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </td>
-                                <td class="text-gray-9">Travel Mart</td>
+                                <td class="text-gray-9">{{ __('Travel Mart') }}</td>
                                 <td>
                                     robertwhite
                                 </td>

@@ -1,7 +1,7 @@
 <x-dashboard::layouts.master
-    :title="'Vente ' . ($sale->order_number ?? '') . ' — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Vente') . ($sale->order_number ?? '') . ' — ' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Detail Vente">
+    :pageTitle="__('Detail Vente')">
 
 <div class="page-header">
     <div class="add-item d-flex">
@@ -13,31 +13,31 @@
     <div class="page-btn d-flex gap-2">
         @if(($sale->source ?? '') === 'pos')
             <a href="{{ route('eshop360.orders.receipt', [$instance->slug ?? '', $sale]) }}" class="btn btn-white border">
-                <i class="ti ti-printer me-1"></i>Recu
+                <i class="ti ti-printer me-1"></i>{{ __('Recu') }}
             </a>
         @endif
-        <a href="{{ route('eshop360.sales.index', $instance->slug ?? '') }}" class="btn btn-secondary"><i class="ti ti-arrow-left me-1"></i>Retour</a>
+        <a href="{{ route('eshop360.sales.index', $instance->slug ?? '') }}" class="btn btn-secondary"><i class="ti ti-arrow-left me-1"></i>{{ __('Retour') }}</a>
     </div>
 </div>
 
 <div class="row">
     <div class="col-md-4">
         <div class="card">
-            <div class="card-header"><h5>Informations</h5></div>
+            <div class="card-header"><h5>{{ __('Informations') }}</h5></div>
             <div class="card-body">
                 <table class="table table-borderless">
                     <tr><th>Numero</th><td>{{ $sale->order_number }}</td></tr>
                     <tr><th>Client</th><td>{{ $sale->customer->name ?? 'Client anonyme' }}</td></tr>
-                    <tr><th>Source</th><td><span class="badge bg-info">{{ ucfirst($sale->source) }}</span></td></tr>
+                    <tr><th>{{ __('Source') }}</th><td><span class="badge bg-info">{{ \Modules\Eshop360\Support\UiLabel::enum($sale->source) }}</span></td></tr>
                     <tr>
-                        <th>Statut</th>
-                        <td><span class="badge bg-{{ $sale->status === 'completed' ? 'success' : ($sale->status === 'cancelled' ? 'danger' : 'warning') }}">{{ ucfirst($sale->status) }}</span></td>
+                        <th>{{ __('Statut') }}</th>
+                        <td><span class="badge bg-{{ $sale->status === 'completed' ? 'success' : ($sale->status === 'cancelled' ? 'danger' : 'warning') }}">{{ \Modules\Eshop360\Support\UiLabel::enum($sale->status) }}</span></td>
                     </tr>
                     <tr>
-                        <th>Paiement</th>
-                        <td><span class="badge bg-{{ $sale->payment_status === 'paid' ? 'success' : ($sale->payment_status === 'overdue' ? 'danger' : 'warning') }}">{{ ucfirst($sale->payment_status) }}</span></td>
+                        <th>{{ __('Paiement') }}</th>
+                        <td><span class="badge bg-{{ $sale->payment_status === 'paid' ? 'success' : ($sale->payment_status === 'overdue' ? 'danger' : 'warning') }}">{{ \Modules\Eshop360\Support\UiLabel::enum($sale->payment_status) }}</span></td>
                     </tr>
-                    <tr><th>Methode</th><td>{{ ucfirst(str_replace('_', ' ', $sale->payment_method)) }}</td></tr>
+                    <tr><th>{{ __('Methode') }}</th><td>{{ \Modules\Eshop360\Support\UiLabel::enum($sale->payment_method) }}</td></tr>
                     @if($sale->cashRegister)
                     <tr><th>Caisse</th><td>#{{ $sale->cashRegister->id }}{{ $sale->store ? ' · ' . $sale->store->name : '' }}</td></tr>
                     @endif
@@ -52,7 +52,7 @@
         </div>
 
         <div class="card">
-            <div class="card-header"><h5>Totaux</h5></div>
+            <div class="card-header"><h5>{{ __('Totaux') }}</h5></div>
             <div class="card-body">
                 <table class="table table-borderless">
                     <tr><th>Sous-total</th><td class="text-end">{{ number_format($sale->subtotal, 2) }}</td></tr>
@@ -73,22 +73,22 @@
         </div>
 
         <div class="card">
-            <div class="card-header"><h5>Paiements</h5></div>
+            <div class="card-header"><h5>{{ __('Paiements') }}</h5></div>
             <div class="card-body">
                 @forelse($sale->payments as $payment)
                     <div class="border rounded p-2 mb-2">
                         <div class="d-flex justify-content-between">
-                            <strong>{{ ucfirst(str_replace('_', ' ', $payment->method)) }}</strong>
+                            <strong>{{ \Modules\Eshop360\Support\UiLabel::enum($payment->method) }}</strong>
                             <span class="{{ $payment->amount < 0 ? 'text-danger' : 'text-success' }}">
                                 {{ number_format($payment->amount, 2) }}
                             </span>
                         </div>
                         <div class="small text-muted">
-                            {{ $payment->reference ?? 'Sans reference' }} · {{ ucfirst($payment->status ?? 'completed') }}
+                            {{ $payment->reference ?? __('Sans reference') }} · {{ \Modules\Eshop360\Support\UiLabel::enum($payment->status ?? 'completed') }}
                         </div>
                     </div>
                 @empty
-                    <p class="text-muted mb-0">Aucun paiement enregistre.</p>
+                    <p class="text-muted mb-0">{{ __('Aucun paiement enregistre.') }}</p>
                 @endforelse
             </div>
         </div>
@@ -96,11 +96,11 @@
 
     <div class="col-md-8">
         <div class="card">
-            <div class="card-header"><h5>Articles</h5></div>
+            <div class="card-header"><h5>{{ __('Articles') }}</h5></div>
             <div class="card-body">
                 <table class="table">
                     <thead>
-                        <tr><th>Produit</th><th>SKU</th><th>Prix unit.</th><th>Qte</th><th>Remise</th><th>Taxe</th><th>Total</th></tr>
+                        <tr><th>{{ __('Produit') }}</th><th>{{ __('SKU') }}</th><th>{{ __('Prix unit.') }}</th><th>{{ __('Qte') }}</th><th>{{ __('Remise') }}</th><th>{{ __('Taxe') }}</th><th>{{ __('Total') }}</th></tr>
                     </thead>
                     <tbody>
                         @forelse($sale->items as $item)
@@ -114,7 +114,7 @@
                             <td class="fw-bold">{{ number_format($item->total, 2) }}</td>
                         </tr>
                         @empty
-                        <tr><td colspan="7" class="text-center text-muted">Aucun article</td></tr>
+                        <tr><td colspan="7" class="text-center text-muted">{{ __('Aucun article') }}</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -123,7 +123,7 @@
 
         @if($sale->status !== 'refunded' && $sale->items->where('quantity', '>', 0)->isNotEmpty())
             <div class="card">
-                <div class="card-header"><h5>Traiter un retour</h5></div>
+                <div class="card-header"><h5>{{ __('Traiter un retour') }}</h5></div>
                 <div class="card-body">
                     <form method="POST" action="{{ route('eshop360.sales.returns.store', $instance->slug ?? '') }}">
                         @csrf
@@ -133,10 +133,10 @@
                             <table class="table">
                                 <thead>
                                     <tr>
-                                        <th>Produit</th>
-                                        <th>Qté vendue</th>
-                                        <th>Qté retour</th>
-                                        <th>Motif</th>
+                                        <th>{{ __('Produit') }}</th>
+                                        <th>{{ __('Qté vendue') }}</th>
+                                        <th>{{ __('Qté retour') }}</th>
+                                        <th>{{ __('Motif') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -161,12 +161,12 @@
 
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label">Montant rembourse</label>
+                                <label class="form-label">{{ __('Montant rembourse') }}</label>
                                 <input type="number" name="refund_amount" class="form-control" min="0" step="0.01" value="{{ number_format($sale->total, 2, '.', '') }}" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Notes</label>
-                                <input type="text" name="notes" class="form-control" placeholder="Notes retour">
+                                <label class="form-label">{{ __('Notes') }}</label>
+                                <input type="text" name="notes" class="form-control" placeholder="{{ __('Notes retour') }}">
                             </div>
                         </div>
 

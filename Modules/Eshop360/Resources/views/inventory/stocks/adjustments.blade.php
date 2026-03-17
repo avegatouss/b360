@@ -1,13 +1,13 @@
 <x-dashboard::layouts.master
-    :title="'Stock Adjustment — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Stock Adjustment') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Stock Adjustment">
+    :pageTitle="__('Stock Adjustment')">
 
 <div class="page-header">
             <div class="add-item d-flex">
                 <div class="page-title">
-                    <h4>Stock Adjustment</h4>
-                    <h6>Manage your stock adjustment</h6>
+                    <h4>{{ __('Stock Adjustment') }}</h4>
+                    <h6>{{ __('Manage your stock adjustment') }}</h6>
                 </div>							
             </div>
             <ul class="table-top-head">
@@ -18,14 +18,14 @@
                     <a data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"><img src="{{URL::asset('build/img/icons/excel.svg')}}" alt="img"></a>
                 </li>
                 <li>
-                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="Refresh"><i class="ti ti-refresh"></i></a>
+                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Refresh') }}"><i class="ti ti-refresh"></i></a>
                 </li>
                 <li>
-                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="Collapse" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
+                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Collapse') }}" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
                 </li>
             </ul>
             <div class="page-btn">
-                <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-stock-adjustment"><i class="ti ti-circle-plus me-1"></i>Add Adjustment</a>
+                <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-stock-adjustment"><i class="ti ti-circle-plus me-1"></i>{{ __('Add Adjustment') }}</a>
             </div>
         </div>
         
@@ -43,13 +43,13 @@
                         </a>
                         <ul class="dropdown-menu  dropdown-menu-end p-3">
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Lavish Warehouse</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Lavish Warehouse') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Quaint Warehouse </a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Quaint Warehouse') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Cool Warehouse</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Cool Warehouse') }}</a>
                             </li>
                         </ul>
                     </div>
@@ -59,19 +59,19 @@
                         </a>
                         <ul class="dropdown-menu  dropdown-menu-end p-3">
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Recently Added</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Recently Added') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Ascending</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Ascending') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Desending</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Desending') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Last Month</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Last Month') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Last 7 Days</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Last 7 Days') }}</a>
                             </li>
                         </ul>
                     </div>
@@ -88,12 +88,12 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </th>
-                                <th>Warehouse</th>
-                                <th>Store</th>
-                                <th>Product</th>
-                                <th>Date</th>
-                                <th>Person</th>
-                                <th>Qty</th>
+                                <th>{{ __('Warehouse') }}</th>
+                                <th>{{ __('Store') }}</th>
+                                <th>{{ __('Product') }}</th>
+                                <th>{{ __('Date') }}</th>
+                                <th>{{ __('Person') }}</th>
+                                <th>{{ __('Qty') }}</th>
                                 <th class="no-sort"></th>
                             </tr>
                         </thead>
@@ -105,23 +105,23 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </td>
-                                <td>Lavish Warehouse </td>
-                                <td>Electro Mart </td>
+                                <td>{{ __('Lavish Warehouse') }}</td>
+                                <td>{{ __('Electro Mart') }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/products/stock-img-01.png')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Lenovo IdeaPad 3</a>
+                                        <a href="javascript:void(0);">{{ __('Lenovo IdeaPad 3') }}</a>
                                     </div>												
                                 </td>
-                                <td>24 Dec 2024</td>
+                                <td>{{ __('24 Dec 2024') }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/users/user-30.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">James Kirwin</a>
+                                        <a href="javascript:void(0);">{{ __('James Kirwin') }}</a>
                                     </div>
                                 </td>
                                 <td>100</td>
@@ -147,23 +147,23 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </td>
-                                <td>Quaint Warehouse </td>
-                                <td>Quantum Gadgets</td>
+                                <td>{{ __('Quaint Warehouse') }}</td>
+                                <td>{{ __('Quantum Gadgets') }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/products/stock-img-06.png')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Beats Pro</a>
+                                        <a href="javascript:void(0);">{{ __('Beats Pro') }}</a>
                                     </div>												
                                 </td>
-                                <td>10 Dec 2024</td>
+                                <td>{{ __('10 Dec 2024') }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/users/user-13.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Francis Chang</a>
+                                        <a href="javascript:void(0);">{{ __('Francis Chang') }}</a>
                                     </div>
                                 </td>
                                 <td>140</td>
@@ -189,23 +189,23 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </td>
-                                <td>Overflow Warehouse</td>
-                                <td>Prime Bazaar</td>
+                                <td>{{ __('Overflow Warehouse') }}</td>
+                                <td>{{ __('Prime Bazaar') }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/products/stock-img-02.png')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Nike Jordan</a>
+                                        <a href="javascript:void(0);">{{ __('Nike Jordan') }}</a>
                                     </div>												
                                 </td>
-                                <td>25 Jul 2023</td>
+                                <td>{{ __('25 Jul 2023') }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/users/user-08.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Antonio Engle</a>
+                                        <a href="javascript:void(0);">{{ __('Antonio Engle') }}</a>
                                     </div>
                                 </td>
                                 <td>120</td>
@@ -231,23 +231,23 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </td>
-                                <td>Quaint Warehouse </td>
-                                <td>Gadget World</td>
+                                <td>{{ __('Quaint Warehouse') }}</td>
+                                <td>{{ __('Gadget World') }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/products/stock-img-03.png')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Apple Series 5 Watch</a>
+                                        <a href="javascript:void(0);">{{ __('Apple Series 5 Watch') }}</a>
                                     </div>												
                                 </td>
-                                <td>28 Jul 2023</td>
+                                <td>{{ __('28 Jul 2023') }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/users/user-04.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Leo Kelly</a>
+                                        <a href="javascript:void(0);">{{ __('Leo Kelly') }}</a>
                                     </div>
                                 </td>
                                 <td>130</td>
@@ -273,23 +273,23 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </td>
-                                <td>Traditional Warehouse </td>
-                                <td>Volt Vault</td>
+                                <td>{{ __('Traditional Warehouse') }}</td>
+                                <td>{{ __('Volt Vault') }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/products/stock-img-04.png')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Amazon Echo Dot</a>
+                                        <a href="javascript:void(0);">{{ __('Amazon Echo Dot') }}</a>
                                     </div>												
                                 </td>
-                                <td>24 Jul 2023</td>
+                                <td>{{ __('24 Jul 2023') }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/users/user-09.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Annette Walker</a>
+                                        <a href="javascript:void(0);">{{ __('Annette Walker') }}</a>
                                     </div>
                                 </td>
                                 <td>140</td>
@@ -315,23 +315,23 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </td>
-                                <td>Cool Warehouse </td>
-                                <td>Elite Retail</td>
+                                <td>{{ __('Cool Warehouse') }}</td>
+                                <td>{{ __('Elite Retail') }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/products/stock-img-05.png')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Lobar Handy</a>
+                                        <a href="javascript:void(0);">{{ __('Lobar Handy') }}</a>
                                     </div>												
                                 </td>
-                                <td>15 Jul 2023</td>
+                                <td>{{ __('15 Jul 2023') }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/users/user-10.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">John Weaver</a>
+                                        <a href="javascript:void(0);">{{ __('John Weaver') }}</a>
                                     </div>
                                 </td>
                                 <td>150</td>
@@ -357,23 +357,23 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </td>
-                                <td>Retail Supply Hub </td>
-                                <td>Prime Mart</td>
+                                <td>{{ __('Retail Supply Hub') }}</td>
+                                <td>{{ __('Prime Mart') }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/products/expire-product-01.png')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Red Premium Satchel</a>
+                                        <a href="javascript:void(0);">{{ __('Red Premium Satchel') }}</a>
                                     </div>												
                                 </td>
-                                <td>14 Oct 2024</td>
+                                <td>{{ __('14 Oct 2024') }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/users/user-08.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Gary Hennessy</a>
+                                        <a href="javascript:void(0);">{{ __('Gary Hennessy') }}</a>
                                     </div>
                                 </td>
                                 <td>700</td>
@@ -399,23 +399,23 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </td>
-                                <td>EdgeWare Solutions </td>
-                                <td>NeoTech Store</td>
+                                <td>{{ __('EdgeWare Solutions') }}</td>
+                                <td>{{ __('NeoTech Store') }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/products/expire-product-02.png')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Iphone 14 Pro</a>
+                                        <a href="javascript:void(0);">{{ __('Iphone 14 Pro') }}</a>
                                     </div>												
                                 </td>
-                                <td>03 Oct 2024</td>
+                                <td>{{ __('03 Oct 2024') }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/users/user-04.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Eleanor Panek</a>
+                                        <a href="javascript:void(0);">{{ __('Eleanor Panek') }}</a>
                                     </div>
                                 </td>
                                 <td>630</td>
@@ -440,23 +440,23 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </td>
-                                <td>North Zone Warehouse </td>
-                                <td>Urban Mart</td>
+                                <td>{{ __('North Zone Warehouse') }}</td>
+                                <td>{{ __('Urban Mart') }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/products/expire-product-03.png')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Gaming Chair</a>
+                                        <a href="javascript:void(0);">{{ __('Gaming Chair') }}</a>
                                     </div>												
                                 </td>
-                                <td>20 Sep 2024</td>
+                                <td>{{ __('20 Sep 2024') }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/users/user-13.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">William Levy</a>
+                                        <a href="javascript:void(0);">{{ __('William Levy') }}</a>
                                     </div>
                                 </td>
                                 <td>410</td>
@@ -481,23 +481,23 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </td>
-                                <td>Fulfillment Hub </td>
-                                <td>Travel Mart</td>
+                                <td>{{ __('Fulfillment Hub') }}</td>
+                                <td>{{ __('Travel Mart') }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/products/expire-product-04.png')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Borealis Backpack</a>
+                                        <a href="javascript:void(0);">{{ __('Borealis Backpack') }}</a>
                                     </div>												
                                 </td>
-                                <td>10 Sep 2024</td>
+                                <td>{{ __('10 Sep 2024') }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/users/user-16.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Charlotte Klotz</a>
+                                        <a href="javascript:void(0);">{{ __('Charlotte Klotz') }}</a>
                                     </div>
                                 </td>
                                 <td>550</td>

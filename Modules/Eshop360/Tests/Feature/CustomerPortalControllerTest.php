@@ -5,6 +5,7 @@ namespace Modules\Eshop360\Tests\Feature;
 use Illuminate\Support\Facades\DB;
 use Modules\Core\Support\CurrentInstance;
 use Modules\Core\Support\TeamContext;
+use Modules\Eshop360\Models\ChannelProductPrice;
 use Modules\Eshop360\Models\Customer;
 use Modules\Eshop360\Models\DistributionChannel;
 use Modules\Eshop360\Models\OnlineOrder;
@@ -13,7 +14,7 @@ use Modules\Eshop360\Tests\TestCase;
 
 final class CustomerPortalControllerTest extends TestCase
 {
-    public function test_customer_portal_can_submit_codifarm_online_order(): void
+    public function test_customer_portal_can_submit_channel_online_order(): void
     {
         $instance = $this->makeRootInstance();
         CurrentInstance::set($instance);
@@ -32,13 +33,32 @@ final class CustomerPortalControllerTest extends TestCase
             'is_active' => true,
         ]);
 
+        $channel = DistributionChannel::create([
+            'instance_id' => $instance->id,
+            'name' => 'Canal Portail',
+            'slug' => 'canal-portail',
+            'code' => 'CH-PORTAL',
+            'buy_rate' => 0.20,
+            'margin_rate' => 0.13,
+            'debt_share' => 0.20,
+            'channel_share' => 0.30,
+            'owner_share' => 0.50,
+            'is_active' => true,
+        ]);
+
         $product = $this->makeProduct($instance->id, [
             'name' => 'Paracetamol Portal',
             'slug' => 'paracetamol-portal',
             'sku' => 'PORTAL-001',
             'price' => 120,
             'pght' => 80,
-            'sale_price_codifarm' => 96,
+        ]);
+
+        ChannelProductPrice::create([
+            'channel_id' => $channel->id,
+            'product_id' => $product->id,
+            'sale_price' => 96,
+            'is_manual_override' => true,
         ]);
 
         $this->actingAs($user)
@@ -50,14 +70,13 @@ final class CustomerPortalControllerTest extends TestCase
             ->post(route('eshop360.portal.cart.add', ['slug' => $instance->slug]), [
                 'product_id' => $product->id,
                 'quantity' => 2,
-                'is_codifarm' => 1,
+                'channel_id' => $channel->id,
             ])
             ->assertRedirect();
 
         $this->actingAs($user)
             ->get(route('eshop360.portal.cart', ['slug' => $instance->slug]))
             ->assertOk()
-            ->assertSee('Mode CODIFARM')
             ->assertSee('Paracetamol Portal');
 
         $response = $this->actingAs($user)
@@ -72,15 +91,15 @@ final class CustomerPortalControllerTest extends TestCase
 
         $this->assertNotNull($onlineOrder);
         $this->assertSame($customer->id, $onlineOrder->customer_id);
-        $this->assertTrue((bool) $onlineOrder->is_codifarm);
+        $this->assertSame($channel->id, $onlineOrder->channel_id);
+        $this->assertTrue($onlineOrder->isChannelOrder());
         $this->assertSame('pending_validation', $onlineOrder->status);
         $this->assertEquals(192.00, (float) $onlineOrder->total);
 
         $this->actingAs($user)
             ->get(route('eshop360.portal.orders.show', ['slug' => $instance->slug, 'onlineOrder' => $onlineOrder]))
             ->assertOk()
-            ->assertSee($onlineOrder->reference)
-            ->assertSee('CODIFARM');
+            ->assertSee($onlineOrder->reference);
     }
 
     public function test_customer_portal_can_submit_channel_order_and_confirm_reception(): void
@@ -141,7 +160,7 @@ final class CustomerPortalControllerTest extends TestCase
 
         $this->assertSame($customer->id, $onlineOrder->customer_id);
         $this->assertSame($channel->id, $onlineOrder->channel_id);
-        $this->assertFalse((bool) $onlineOrder->is_codifarm);
+        $this->assertTrue($onlineOrder->isChannelOrder());
         $this->assertEquals(375.00, (float) $onlineOrder->total);
 
         $onlineOrder->update([

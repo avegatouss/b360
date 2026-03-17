@@ -1,7 +1,7 @@
 <x-dashboard::layouts.master
     :title="($message->subject ?? 'Message') . ' — ' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Detail message">
+    :pageTitle="__('Detail message')">
 
     <div class="page-wrapper">
         <div class="content">
@@ -38,7 +38,7 @@
 
                         @if($message->attachments && $message->attachments->count())
                         <div class="mt-4 pt-3 border-top">
-                            <h6 class="mb-2"><i class="ti ti-paperclip me-1"></i>Pieces jointes</h6>
+                            <h6 class="mb-2"><i class="ti ti-paperclip me-1"></i>{{ __('Pieces jointes') }}</h6>
                             <div class="d-flex flex-wrap gap-2">
                                 @foreach($message->attachments as $attachment)
                                 <a href="{{ $attachment->url ?? '#' }}" class="btn btn-outline-primary btn-sm" target="_blank">

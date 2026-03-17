@@ -1,13 +1,13 @@
 <x-dashboard::layouts.master
-    :title="'Commandes — ' . ($channel->name ?? '') . ' — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Commandes') . ' —' . ($channel->name ?? '') . ' — ' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    :pageTitle="'Commandes — ' . ($channel->name ?? '')">
+    ::pageTitle="__('\'Commandes — \' . ($channel->name ?? \'\')')">
 
 <div class="page-header">
     <div class="add-item d-flex">
         <div class="page-title">
             <h4 class="fw-bold">Commandes &mdash; {{ $channel->name }}</h4>
-            <h6>Liste des commandes pass&eacute;es via ce canal</h6>
+            <h6>{{ __('Liste des commandes passées via ce canal') }}</h6>
         </div>
     </div>
     <div class="page-btn">
@@ -21,12 +21,12 @@
             <table class="table datatable">
                 <thead class="thead-light">
                     <tr>
-                        <th>R&eacute;f&eacute;rence</th>
-                        <th>Date</th>
-                        <th>Client</th>
-                        <th>Total</th>
-                        <th>Statut</th>
-                        <th class="no-sort">Actions</th>
+                        <th>{{ __('Référence') }}</th>
+                        <th>{{ __('Date') }}</th>
+                        <th>{{ __('Client') }}</th>
+                        <th>{{ __('Total') }}</th>
+                        <th>{{ __('Statut') }}</th>
+                        <th class="no-sort">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -39,13 +39,13 @@
                         <td>
                             @switch($order->status ?? '')
                                 @case('completed')
-                                    <span class="badge bg-success">Termin&eacute;e</span>
+                                    <span class="badge bg-success">{{ __('Terminée') }}</span>
                                     @break
                                 @case('pending')
-                                    <span class="badge bg-warning">En attente</span>
+                                    <span class="badge bg-warning">{{ __('En attente') }}</span>
                                     @break
                                 @case('cancelled')
-                                    <span class="badge bg-danger">Annul&eacute;e</span>
+                                    <span class="badge bg-danger">{{ __('Annulée') }}</span>
                                     @break
                                 @default
                                     <span class="badge bg-secondary">{{ ucfirst($order->status ?? '—') }}</span>
@@ -60,7 +60,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="6" class="text-center text-muted">Aucune commande pour ce canal.</td></tr>
+                    <tr><td colspan="6" class="text-center text-muted">{{ __('Aucune commande pour ce canal.') }}</td></tr>
                     @endforelse
                 </tbody>
             </table>

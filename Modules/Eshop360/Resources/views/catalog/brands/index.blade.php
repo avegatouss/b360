@@ -1,13 +1,13 @@
 <x-dashboard::layouts.master
-    :title="'Brands — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Brands') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Brands">
+    :pageTitle="__('Brands')">
 
 <div class="page-header">
                 <div class="add-item d-flex">
                     <div class="page-title">
-                        <h4 class="fw-bold">Brand</h4>
-                        <h6>Manage your brands</h6>
+                        <h4 class="fw-bold">{{ __('Brand') }}</h4>
+                        <h6>{{ __('Manage your brands') }}</h6>
                     </div>
                 </div>
                 <ul class="table-top-head">
@@ -18,14 +18,14 @@
                         <a data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"><img src="{{URL::asset('build/img/icons/excel.svg')}}" alt="img"></a>
                     </li>
                     <li>
-                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="Refresh"><i class="ti ti-refresh"></i></a>
+                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Refresh') }}"><i class="ti ti-refresh"></i></a>
                     </li>
                     <li>
-                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="Collapse" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
+                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Collapse') }}" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
                     </li>
                 </ul>
                 <div class="page-btn">
-                    <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-brand"><i class="ti ti-circle-plus me-1"></i>Add Brand</a>
+                    <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-brand"><i class="ti ti-circle-plus me-1"></i>{{ __('Add Brand') }}</a>
                 </div>
             </div>
             <!-- /product list -->
@@ -43,10 +43,10 @@
                             </a>
                             <ul class="dropdown-menu  dropdown-menu-end p-3">
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Active</a>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Active') }}</a>
                                 </li>
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Inactive</a>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Inactive') }}</a>
                                 </li>
                             </ul>
                         </div>
@@ -56,13 +56,13 @@
                             </a>
                             <ul class="dropdown-menu  dropdown-menu-end p-3">
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Latest</a>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Latest') }}</a>
                                 </li>
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Ascending</a>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Ascending') }}</a>
                                 </li>
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Desending</a>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Desending') }}</a>
                                 </li>
                             </ul>
                         </div>
@@ -79,10 +79,10 @@
                                             <span class="checkmarks"></span>
                                         </label>
                                     </th>
-                                    <th>Brand</th>
-                                    <th>Products Count</th>
-                                    <th>Created Date</th>
-                                    <th>Status</th>
+                                    <th>{{ __('Brand') }}</th>
+                                    <th>{{ __('Products Count') }}</th>
+                                    <th>{{ __('Created Date') }}</th>
+                                    <th>{{ __('Status') }}</th>
                                     <th class="no-sort"></th>
                                 </tr>
                             </thead>
@@ -109,7 +109,7 @@
                                     </td>
                                     <td>{{ $brand->products_count ?? 0 }}</td>
                                     <td>{{ $brand->created_at->format('d M Y') }}</td>
-                                    <td><span class="badge table-badge bg-success fw-medium fs-10">Active</span></td>
+                                    <td><span class="badge table-badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
                                     <td class="action-table-data">
                                         <div class="edit-delete-action">
                                             <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-brand-{{ $brand->id }}">
@@ -127,7 +127,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="6" class="text-center">No brands found.</td>
+                                    <td colspan="6" class="text-center">{{ __('No brands found.') }}</td>
                                 </tr>
                                 @endforelse
                             </tbody>

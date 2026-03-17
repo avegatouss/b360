@@ -1,13 +1,13 @@
 <x-dashboard::layouts.master
-    :title="'Discount Plans — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Discount Plans') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Discount Plans">
+    :pageTitle="__('Discount Plans')">
 
 <div class="page-header">
             <div class="add-item d-flex">
                 <div class="page-title">
-                    <h4 class="fw-bold">Discount Plan</h4>
-                    <h6>Manage your discount plans</h6>
+                    <h4 class="fw-bold">{{ __('Discount Plan') }}</h4>
+                    <h6>{{ __('Manage your discount plans') }}</h6>
                 </div>
             </div>
             <ul class="table-top-head">
@@ -18,14 +18,14 @@
                     <a data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"><img src="{{URL::asset('build/img/icons/excel.svg')}}" alt="img"></a>
                 </li>
                 <li>
-                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="Refresh"><i class="ti ti-refresh"></i></a>
+                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Refresh') }}"><i class="ti ti-refresh"></i></a>
                 </li>
                 <li>
-                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="Collapse" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
+                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Collapse') }}" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
                 </li>
             </ul>
             <div class="page-btn">
-                <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-discount-plan"><i class="ti ti-circle-plus me-1"></i>Add Discount Plan</a>
+                <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-discount-plan"><i class="ti ti-circle-plus me-1"></i>{{ __('Add Discount Plan') }}</a>
             </div>
         </div>
         <!-- /product list -->
@@ -43,16 +43,16 @@
                         </a>
                         <ul class="dropdown-menu  dropdown-menu-end p-3">
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">All Customers</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('All Customers') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Members Only</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Members Only') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">High-Spending Customers</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('High-Spending Customers') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Online Customers</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Online Customers') }}</a>
                             </li>
                         </ul>
                     </div>	
@@ -62,10 +62,10 @@
                         </a>
                         <ul class="dropdown-menu  dropdown-menu-end p-3">
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Active</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Active') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Inactive</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Inactive') }}</a>
                             </li>
                         </ul>
                     </div>
@@ -82,9 +82,9 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </th>
-                                <th>Plan Name</th>
-                                <th>Customers</th>
-                                <th>Status</th>
+                                <th>{{ __('Plan Name') }}</th>
+                                <th>{{ __('Customers') }}</th>
+                                <th>{{ __('Status') }}</th>
                                 <th class="no-sort"></th>
                             </tr>
                         </thead>
@@ -96,9 +96,9 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </td>
-                                <td class="text-gray-9">Standard Plan</td>											
-                                <td>All Customers</td>								
-                                <td><span class="badge table-badge bg-success fw-medium fs-10">Active</span></td>
+                                <td class="text-gray-9">{{ __('Standard Plan') }}</td>											
+                                <td>{{ __('All Customers') }}</td>								
+                                <td><span class="badge table-badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
                                 <td class="action-table-data">
                                     <div class="edit-delete-action">										
                                         <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-discount-plan">
@@ -117,9 +117,9 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </td>
-                                <td class="text-gray-9">Membership Plan</td>											
-                                <td>Members Only</td>								
-                                <td><span class="badge table-badge bg-success fw-medium fs-10">Active</span></td>
+                                <td class="text-gray-9">{{ __('Membership Plan') }}</td>											
+                                <td>{{ __('Members Only') }}</td>								
+                                <td><span class="badge table-badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
                                 <td class="action-table-data">
                                     <div class="edit-delete-action">										
                                         <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-discount-plan">
@@ -138,9 +138,9 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </td>
-                                <td class="text-gray-9">Premium Plan</td>											
-                                <td>High-Spending Customers</td>								
-                                <td><span class="badge table-badge bg-success fw-medium fs-10">Active</span></td>
+                                <td class="text-gray-9">{{ __('Premium Plan') }}</td>											
+                                <td>{{ __('High-Spending Customers') }}</td>								
+                                <td><span class="badge table-badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
                                 <td class="action-table-data">
                                     <div class="edit-delete-action">										
                                         <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-discount-plan">
@@ -159,9 +159,9 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </td>
-                                <td class="text-gray-9">Seasonal Plan</td>											
-                                <td>All Customers</td>								
-                                <td><span class="badge table-badge bg-success fw-medium fs-10">Active</span></td>
+                                <td class="text-gray-9">{{ __('Seasonal Plan') }}</td>											
+                                <td>{{ __('All Customers') }}</td>								
+                                <td><span class="badge table-badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
                                 <td class="action-table-data">
                                     <div class="edit-delete-action">										
                                         <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-discount-plan">
@@ -180,9 +180,9 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </td>
-                                <td class="text-gray-9">Student Plan</td>											
-                                <td>Students</td>								
-                                <td><span class="badge table-badge bg-success fw-medium fs-10">Active</span></td>
+                                <td class="text-gray-9">{{ __('Student Plan') }}</td>											
+                                <td>{{ __('Students') }}</td>								
+                                <td><span class="badge table-badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
                                 <td class="action-table-data">
                                     <div class="edit-delete-action">										
                                         <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-discount-plan">
@@ -201,9 +201,9 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </td>
-                                <td class="text-gray-9">Free Shipping Plan</td>											
-                                <td>Online Customers</td>								
-                                <td><span class="badge table-badge bg-success fw-medium fs-10">Active</span></td>
+                                <td class="text-gray-9">{{ __('Free Shipping Plan') }}</td>											
+                                <td>{{ __('Online Customers') }}</td>								
+                                <td><span class="badge table-badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
                                 <td class="action-table-data">
                                     <div class="edit-delete-action">										
                                         <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-discount-plan">
@@ -222,9 +222,9 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </td>
-                                <td class="text-gray-9">Celebration Plan</td>											
-                                <td>All Customers</td>								
-                                <td><span class="badge table-badge bg-success fw-medium fs-10">Active</span></td>
+                                <td class="text-gray-9">{{ __('Celebration Plan') }}</td>											
+                                <td>{{ __('All Customers') }}</td>								
+                                <td><span class="badge table-badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
                                 <td class="action-table-data">
                                     <div class="edit-delete-action">										
                                         <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-discount-plan">

@@ -1,13 +1,13 @@
 <x-dashboard::layouts.master
-    :title="'Products — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Products') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Products">
+    :pageTitle="__('Products')">
 
 <div class="page-header">
                 <div class="add-item d-flex">
                     <div class="page-title">
-                        <h4 class="fw-bold">Products</h4>
-                        <h6>Manage your products</h6>
+                        <h4 class="fw-bold">{{ __('Products') }}</h4>
+                        <h6>{{ __('Manage your products') }}</h6>
                     </div>
                 </div>
                 <ul class="table-top-head">
@@ -18,10 +18,10 @@
                         <a data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"><img src="{{URL::asset('build/img/icons/excel.svg')}}" alt="img"></a>
                     </li>
                     <li>
-                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="Refresh"><i class="ti ti-refresh"></i></a>
+                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Refresh') }}"><i class="ti ti-refresh"></i></a>
                     </li>
                     <li>
-                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="Collapse" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
+                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Collapse') }}" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
                     </li>
                 </ul>
                 <div class="page-btn">
@@ -29,7 +29,7 @@
                 </div>
                 <div class="page-btn import">
                     <a href="#" class="btn btn-primary color" data-bs-toggle="modal" data-bs-target="#view-notes"><i
-                        data-feather="download" class="me-2"></i>Import Product</a>
+                        data-feather="download" class="me-2"></i>{{ __('Import Product') }}</a>
                 </div>
             </div>
 
@@ -71,19 +71,19 @@
                             </a>
                             <ul class="dropdown-menu  dropdown-menu-end p-3">
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Recently Added</a>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Recently Added') }}</a>
                                 </li>
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Ascending</a>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Ascending') }}</a>
                                 </li>
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Desending</a>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Desending') }}</a>
                                 </li>
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Last Month</a>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Last Month') }}</a>
                                 </li>
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Last 7 Days</a>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Last 7 Days') }}</a>
                                 </li>
                             </ul>
                         </div>
@@ -100,14 +100,14 @@
                                             <span class="checkmarks"></span>
                                         </label>
                                     </th>
-                                    <th>SKU</th>
-                                    <th>Product</th>
-                                    <th>Category</th>
-                                    <th>Brand</th>
-                                    <th>Price</th>
-                                    <th>Unit</th>
-                                    <th>Qty</th>
-                                    <th>Created By</th>
+                                    <th>{{ __('SKU') }}</th>
+                                    <th>{{ __('Product') }}</th>
+                                    <th>{{ __('Category') }}</th>
+                                    <th>{{ __('Brand') }}</th>
+                                    <th>{{ __('Price') }}</th>
+                                    <th>{{ __('Unit') }}</th>
+                                    <th>{{ __('Qty') }}</th>
+                                    <th>{{ __('Created By') }}</th>
                                     <th class="no-sort"></th>
                                 </tr>
                             </thead>
@@ -163,7 +163,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="10" class="text-center">No products found.</td>
+                                    <td colspan="10" class="text-center">{{ __('No products found.') }}</td>
                                 </tr>
                                 @endforelse
                             </tbody>

@@ -1,17 +1,17 @@
 <x-dashboard::layouts.master
-    :title="'Installment Plans — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Installment Plans') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Installment Plans">
+    :pageTitle="__('Installment Plans')">
 
 <div class="page-header">
     <div class="add-item d-flex">
         <div class="page-title">
-            <h4 class="fw-bold">Installment Plans</h4>
-            <h6>Manage payment installment plans</h6>
+            <h4 class="fw-bold">{{ __('Installment Plans') }}</h4>
+            <h6>{{ __('Manage payment installment plans') }}</h6>
         </div>
     </div>
     <div class="page-btn">
-        <a href="javascript:void(0);" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPlanModal"><i data-feather="plus-circle" class="me-1"></i>New Plan</a>
+        <a href="javascript:void(0);" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPlanModal"><i data-feather="plus-circle" class="me-1"></i>{{ __('New Plan') }}</a>
     </div>
 </div>
 
@@ -24,13 +24,13 @@
         </div>
         <div class="d-flex table-dropdown my-xl-auto right-content align-items-center flex-wrap row-gap-3">
             <div class="dropdown">
-                <a href="javascript:void(0);" class="dropdown-toggle btn btn-white btn-md d-inline-flex align-items-center" data-bs-toggle="dropdown">Status</a>
+                <a href="javascript:void(0);" class="dropdown-toggle btn btn-white btn-md d-inline-flex align-items-center" data-bs-toggle="dropdown">{{ __('Status') }}</a>
                 <ul class="dropdown-menu dropdown-menu-end p-3">
-                    <li><a href="javascript:void(0);" class="dropdown-item rounded-1">All</a></li>
-                    <li><a href="javascript:void(0);" class="dropdown-item rounded-1">Active</a></li>
-                    <li><a href="javascript:void(0);" class="dropdown-item rounded-1">Completed</a></li>
-                    <li><a href="javascript:void(0);" class="dropdown-item rounded-1">Overdue</a></li>
-                    <li><a href="javascript:void(0);" class="dropdown-item rounded-1">Cancelled</a></li>
+                    <li><a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('All') }}</a></li>
+                    <li><a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Active') }}</a></li>
+                    <li><a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Completed') }}</a></li>
+                    <li><a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Overdue') }}</a></li>
+                    <li><a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Cancelled') }}</a></li>
                 </ul>
             </div>
         </div>
@@ -40,16 +40,16 @@
             <table class="table datatable">
                 <thead class="thead-light">
                     <tr>
-                        <th>Reference</th>
-                        <th>Order</th>
-                        <th>Customer</th>
-                        <th class="text-end">Total Amount</th>
-                        <th class="text-end">Paid</th>
-                        <th class="text-end">Remaining</th>
-                        <th class="text-center">Installments</th>
-                        <th>Next Due</th>
-                        <th>Status</th>
-                        <th class="no-sort">Actions</th>
+                        <th>{{ __('Reference') }}</th>
+                        <th>{{ __('Order') }}</th>
+                        <th>{{ __('Customer') }}</th>
+                        <th class="text-end">{{ __('Total Amount') }}</th>
+                        <th class="text-end">{{ __('Paid') }}</th>
+                        <th class="text-end">{{ __('Remaining') }}</th>
+                        <th class="text-center">{{ __('Installments') }}</th>
+                        <th>{{ __('Next Due') }}</th>
+                        <th>{{ __('Status') }}</th>
+                        <th class="no-sort">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -80,7 +80,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="10" class="text-center text-muted">No installment plans found.</td></tr>
+                    <tr><td colspan="10" class="text-center text-muted">{{ __('No installment plans found.') }}</td></tr>
                     @endforelse
                 </tbody>
             </table>

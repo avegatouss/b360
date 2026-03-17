@@ -44,16 +44,21 @@ class EshopSettingsController extends Controller
 
     public function printer()
     {
-        $instanceId = CurrentInstance::get()?->id ?? 0;
+        $instance = CurrentInstance::get();
+        $instanceId = $instance?->id ?? 0;
         $settings = Cache::get("eshop_printer_settings_{$instanceId}", $this->defaultPrinterSettings());
 
-        return view('eshop360::settings.printer', compact('settings'));
+        return view('eshop360::settings.printer', compact('settings', 'instance'));
     }
 
     public function updatePrinter(Request $request): RedirectResponse
     {
         $validated = $request->validate([
+            'printer_type'         => 'nullable|string|in:network,windows,cups,usb',
             'receipt_printer'      => 'nullable|string|max:255',
+            'printer_host'         => 'nullable|string|max:255',
+            'printer_port'         => 'nullable|integer|min:1|max:65535',
+            'printer_share'        => 'nullable|string|max:255',
             'receipt_width'        => 'nullable|integer|in:58,80',
             'receipt_header'       => 'nullable|string|max:500',
             'receipt_footer'       => 'nullable|string|max:500',

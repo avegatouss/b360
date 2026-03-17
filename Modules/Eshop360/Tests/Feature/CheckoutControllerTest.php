@@ -214,12 +214,10 @@ final class CheckoutControllerTest extends TestCase
                         'quantity' => 1,
                         'total' => 125,
                         'channel_id' => $channel->id,
-                        'is_codifarm' => false,
                     ],
                 ],
                 'eshop_cart_context' => [
                     'channel_id' => $channel->id,
-                    'is_codifarm' => false,
                 ],
                 'eshop_cart_instance_' . $instance->id => [
                     (string) $product->id => [
@@ -232,12 +230,10 @@ final class CheckoutControllerTest extends TestCase
                         'quantity' => 1,
                         'total' => 125,
                         'channel_id' => $channel->id,
-                        'is_codifarm' => false,
                     ],
                 ],
                 'eshop_cart_context_instance_' . $instance->id => [
                     'channel_id' => $channel->id,
-                    'is_codifarm' => false,
                 ],
             ])
             ->post(route('eshop360.checkout.process', [

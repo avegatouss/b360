@@ -1,7 +1,7 @@
 <x-dashboard::layouts.master
     :title="($channel->name ?? 'Canal') . ' — ' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    :pageTitle="$channel->name">
+    ::pageTitle="__('$channel->name')">
 
 <div class="page-header">
     <div class="add-item d-flex">
@@ -23,7 +23,7 @@
     <div class="col-md-3">
         <div class="card">
             <div class="card-body text-center">
-                <h6 class="text-muted">Marge totale</h6>
+                <h6 class="text-muted">{{ __('Marge totale') }}</h6>
                 <h3 class="fw-bold text-primary mb-0">{{ number_format($summary['total_margin'] ?? 0, 0, ',', ' ') }} XAF</h3>
             </div>
         </div>
@@ -31,7 +31,7 @@
     <div class="col-md-3">
         <div class="card">
             <div class="card-body text-center">
-                <h6 class="text-muted">Part dette</h6>
+                <h6 class="text-muted">{{ __('Part dette') }}</h6>
                 <h3 class="fw-bold text-danger mb-0">{{ number_format($summary['total_debt'] ?? 0, 0, ',', ' ') }} XAF</h3>
             </div>
         </div>
@@ -47,7 +47,7 @@
     <div class="col-md-3">
         <div class="card">
             <div class="card-body text-center">
-                <h6 class="text-muted">Part propri&eacute;taire</h6>
+                <h6 class="text-muted">{{ __('Part propriétaire') }}</h6>
                 <h3 class="fw-bold text-info mb-0">{{ number_format($summary['total_owner'] ?? 0, 0, ',', ' ') }} XAF</h3>
             </div>
         </div>
@@ -57,7 +57,7 @@
 {{-- Recent Margin Logs --}}
 <div class="card table-list-card">
     <div class="card-header d-flex align-items-center justify-content-between">
-        <h5 class="card-title mb-0">Derniers mouvements de marge</h5>
+        <h5 class="card-title mb-0">{{ __('Derniers mouvements de marge') }}</h5>
         <a href="{{ route('eshop360.channels.margins', [$instance->slug ?? '', $channel]) }}" class="btn btn-sm btn-outline-primary">Voir tout</a>
     </div>
     <div class="card-body p-0">
@@ -65,11 +65,11 @@
             <table class="table">
                 <thead class="thead-light">
                     <tr>
-                        <th>Date</th>
-                        <th>Commande</th>
-                        <th>Marge</th>
-                        <th>Part canal</th>
-                        <th>Part propri&eacute;taire</th>
+                        <th>{{ __('Date') }}</th>
+                        <th>{{ __('Commande') }}</th>
+                        <th>{{ __('Marge') }}</th>
+                        <th>{{ __('Part canal') }}</th>
+                        <th>{{ __('Part propriétaire') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -82,7 +82,7 @@
                         <td>{{ number_format($log->owner_part ?? 0, 0, ',', ' ') }} XAF</td>
                     </tr>
                     @empty
-                    <tr><td colspan="5" class="text-center text-muted">Aucun mouvement de marge.</td></tr>
+                    <tr><td colspan="5" class="text-center text-muted">{{ __('Aucun mouvement de marge.') }}</td></tr>
                     @endforelse
                 </tbody>
             </table>

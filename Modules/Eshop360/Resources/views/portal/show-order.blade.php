@@ -51,7 +51,7 @@
             <div class="card-body">
                 <table class="table table-borderless mb-0">
                     <tr><th>{{ __('eshop360::eshop.customer') }}</th><td>{{ $customer->name }}</td></tr>
-                    <tr><th>{{ __('eshop360::eshop.status') }}</th><td>{{ ucfirst(str_replace('_', ' ', $onlineOrder->status)) }}</td></tr>
+                    <tr><th>{{ __('eshop360::eshop.status') }}</th><td>{{ \Modules\Eshop360\Support\UiLabel::enum($onlineOrder->status) }}</td></tr>
                     <tr>
                         <th>{{ __('eshop360::eshop.portal_context') }}</th>
                         <td>
@@ -98,17 +98,17 @@
 
     <div class="col-lg-8">
         <div class="card">
-            <div class="card-header"><h5 class="mb-0">Items</h5></div>
+            <div class="card-header"><h5 class="mb-0">{{ __('Items') }}</h5></div>
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table mb-0">
                         <thead class="thead-light">
                             <tr>
-                                <th>Product</th>
-                                <th>SKU</th>
-                                <th>Unit price</th>
-                                <th>Quantity</th>
-                                <th>Total</th>
+                                <th>{{ __('Product') }}</th>
+                                <th>{{ __('SKU') }}</th>
+                                <th>{{ __('Unit price') }}</th>
+                                <th>{{ __('Quantity') }}</th>
+                                <th>{{ __('Total') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -122,7 +122,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="text-center text-muted py-5">No items found for this order.</td>
+                                    <td colspan="5" class="text-center text-muted py-5">{{ __('No items found for this order.') }}</td>
                                 </tr>
                             @endforelse
                         </tbody>

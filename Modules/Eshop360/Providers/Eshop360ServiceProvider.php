@@ -13,6 +13,9 @@ use Modules\Eshop360\Console\ExpireSubscriptionsCommand;
 use Modules\Eshop360\Console\InstallmentReminderCommand;
 use Modules\Eshop360\Console\RecurringInvoiceCommand;
 use Modules\Eshop360\Console\StockAlertCommand;
+use Modules\Eshop360\Console\Commands\CheckLowStock;
+use Modules\Eshop360\Console\Commands\CheckExpiringProducts;
+use Modules\Eshop360\Console\Commands\GenerateRecurringInvoices;
 use Modules\Eshop360\Http\Middleware\EnsurePaidFeature;
 use Modules\Eshop360\Services\AuditService;
 use Modules\Eshop360\Services\CartService;
@@ -82,6 +85,7 @@ final class Eshop360ServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(__DIR__ . '/../Routes/api.php');
         $this->loadViewsFrom(__DIR__ . '/../Resources/views', 'eshop360');
         $this->loadTranslationsFrom(__DIR__ . '/../Resources/lang', 'eshop360');
+        $this->loadJsonTranslationsFrom(__DIR__ . '/../Resources/lang');
         // Backward-compatibility: some views still reference the old translation namespace.
         $this->loadTranslationsFrom(__DIR__ . '/../Resources/lang', 'eshop');
         $this->loadMigrationsFrom(__DIR__ . '/../Database/Migrations');
@@ -102,6 +106,13 @@ final class Eshop360ServiceProvider extends ServiceProvider
         // Register API instance auth middleware
         $router->aliasMiddleware('eshop360.api.auth', \Modules\Eshop360\Http\Middleware\ApiInstanceAuth::class);
 
+        // API request logger
+        $router->aliasMiddleware('eshop360.api.log', \Modules\Eshop360\Http\Middleware\ApiLogger::class);
+
+        // Channel portal middlewares
+        $router->aliasMiddleware('eshop.channel.resolve', \Modules\Eshop360\Http\Middleware\ResolveChannel::class);
+        $router->aliasMiddleware('eshop.channel.member', \Modules\Eshop360\Http\Middleware\ChannelMember::class);
+
         // Register console commands
         if ($this->app->runningInConsole()) {
             $this->commands([
@@ -111,6 +122,9 @@ final class Eshop360ServiceProvider extends ServiceProvider
                 RecurringInvoiceCommand::class,
                 BirthdayAlertCommand::class,
                 ExpireSubscriptionsCommand::class,
+                CheckLowStock::class,
+                CheckExpiringProducts::class,
+                GenerateRecurringInvoices::class,
             ]);
         }
 
@@ -122,7 +136,10 @@ final class Eshop360ServiceProvider extends ServiceProvider
             $schedule->command('eshop360:installment-reminders')->dailyAt('08:00');
             $schedule->command('eshop360:birthday-alerts')->dailyAt('09:00');
             $schedule->command('eshop360:recurring-invoices')->dailyAt('06:00');
+            $schedule->command('eshop:generate-recurring-invoices')->dailyAt('07:00');
             $schedule->command('eshop360:expire-subscriptions')->hourly();
+            $schedule->command('eshop:check-low-stock')->hourly();
+            $schedule->command('eshop:check-expiry')->dailyAt('06:00');
         });
 
         // Share $instance with all eshop360 views automatically

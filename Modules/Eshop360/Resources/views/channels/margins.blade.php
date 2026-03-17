@@ -1,13 +1,13 @@
 <x-dashboard::layouts.master
-    :title="'Marges — ' . ($channel->name ?? '') . ' — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Marges') . ' —' . ($channel->name ?? '') . ' — ' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    :pageTitle="'Marges — ' . ($channel->name ?? '')">
+    ::pageTitle="__('\'Marges — \' . ($channel->name ?? \'\')')">
 
 <div class="page-header">
     <div class="add-item d-flex">
         <div class="page-title">
             <h4 class="fw-bold">Marges &mdash; {{ $channel->name }}</h4>
-            <h6>D&eacute;tail des marges et r&eacute;partition des revenus</h6>
+            <h6>{{ __('Détail des marges et répartition des revenus') }}</h6>
         </div>
     </div>
     <div class="page-btn">
@@ -21,15 +21,15 @@
         <form action="{{ route('eshop360.channels.margins', [$instance->slug ?? '', $channel]) }}" method="GET">
             <div class="row align-items-end">
                 <div class="col-md-4 mb-3">
-                    <label class="form-label">Du</label>
+                    <label class="form-label">{{ __('Du') }}</label>
                     <input type="date" name="from" class="form-control" value="{{ $from ?? now()->startOfMonth()->format('Y-m-d') }}">
                 </div>
                 <div class="col-md-4 mb-3">
-                    <label class="form-label">Au</label>
+                    <label class="form-label">{{ __('Au') }}</label>
                     <input type="date" name="to" class="form-control" value="{{ $to ?? now()->format('Y-m-d') }}">
                 </div>
                 <div class="col-md-4 mb-3">
-                    <button type="submit" class="btn btn-primary w-100"><i class="ti ti-filter me-1"></i>Filtrer</button>
+                    <button type="submit" class="btn btn-primary w-100"><i class="ti ti-filter me-1"></i>{{ __('Filtrer') }}</button>
                 </div>
             </div>
         </form>
@@ -41,7 +41,7 @@
     <div class="col-md-3">
         <div class="card">
             <div class="card-body text-center">
-                <h6 class="text-muted">Marge totale</h6>
+                <h6 class="text-muted">{{ __('Marge totale') }}</h6>
                 <h3 class="fw-bold text-primary mb-0">{{ number_format($summary['total_margin'] ?? 0, 0, ',', ' ') }} XAF</h3>
             </div>
         </div>
@@ -49,7 +49,7 @@
     <div class="col-md-3">
         <div class="card">
             <div class="card-body text-center">
-                <h6 class="text-muted">Part dette</h6>
+                <h6 class="text-muted">{{ __('Part dette') }}</h6>
                 <h3 class="fw-bold text-danger mb-0">{{ number_format($summary['total_debt'] ?? 0, 0, ',', ' ') }} XAF</h3>
             </div>
         </div>
@@ -65,7 +65,7 @@
     <div class="col-md-3">
         <div class="card">
             <div class="card-body text-center">
-                <h6 class="text-muted">Part propri&eacute;taire</h6>
+                <h6 class="text-muted">{{ __('Part propriétaire') }}</h6>
                 <h3 class="fw-bold text-info mb-0">{{ number_format($summary['total_owner'] ?? 0, 0, ',', ' ') }} XAF</h3>
             </div>
         </div>
@@ -75,20 +75,20 @@
 {{-- Logs Table --}}
 <div class="card table-list-card">
     <div class="card-header">
-        <h5 class="card-title mb-0">Journal des marges</h5>
+        <h5 class="card-title mb-0">{{ __('Journal des marges') }}</h5>
     </div>
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table datatable">
                 <thead class="thead-light">
                     <tr>
-                        <th>Date</th>
-                        <th>Description</th>
-                        <th>R&eacute;f. commande</th>
-                        <th>Marge totale</th>
-                        <th>Part canal</th>
-                        <th>Part propri&eacute;taire</th>
-                        <th>Type</th>
+                        <th>{{ __('Date') }}</th>
+                        <th>{{ __('Description') }}</th>
+                        <th>{{ __('Réf. commande') }}</th>
+                        <th>{{ __('Marge totale') }}</th>
+                        <th>{{ __('Part canal') }}</th>
+                        <th>{{ __('Part propriétaire') }}</th>
+                        <th>{{ __('Type') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -103,7 +103,7 @@
                         <td><span class="badge bg-secondary">{{ $log->type ?? '—' }}</span></td>
                     </tr>
                     @empty
-                    <tr><td colspan="7" class="text-center text-muted">Aucun mouvement de marge pour cette p&eacute;riode.</td></tr>
+                    <tr><td colspan="7" class="text-center text-muted">{{ __('Aucun mouvement de marge pour cette période.') }}</td></tr>
                     @endforelse
                 </tbody>
             </table>

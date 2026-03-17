@@ -1,7 +1,7 @@
 <x-dashboard::layouts.master
-    :title="'Commande ' . ($onlineOrder->reference ?? $onlineOrder->id) . ' — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Commande') . ($onlineOrder->reference ?? $onlineOrder->id) . ' — ' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Detail commande en ligne">
+    :pageTitle="__('Detail commande en ligne')">
 
     <div class="page-wrapper">
         <div class="content">
@@ -33,7 +33,7 @@
                                 <div class="rounded-circle d-inline-flex align-items-center justify-content-center {{ $i <= $currentIndex && !$isCancelled ? 'bg-success' : 'bg-light' }}" style="width:40px;height:40px;">
                                     <i class="ti ti-check text-white"></i>
                                 </div>
-                                <div class="mt-1 small {{ $i <= $currentIndex && !$isCancelled ? 'fw-bold' : 'text-muted' }}">{{ ucfirst($step) }}</div>
+                                <div class="mt-1 small {{ $i <= $currentIndex && !$isCancelled ? 'fw-bold' : 'text-muted' }}">{{ \Modules\Eshop360\Support\UiLabel::enum($step) }}</div>
                             </div>
                             @if(!$loop->last)
                                 <div class="flex-grow-1 border-top {{ $i < $currentIndex && !$isCancelled ? 'border-success' : '' }}" style="margin-top:-20px;"></div>
@@ -44,7 +44,7 @@
                                 <div class="rounded-circle d-inline-flex align-items-center justify-content-center bg-danger" style="width:40px;height:40px;">
                                     <i class="ti ti-x text-white"></i>
                                 </div>
-                                <div class="mt-1 small fw-bold text-danger">{{ ucfirst($onlineOrder->status) }}</div>
+                                <div class="mt-1 small fw-bold text-danger">{{ \Modules\Eshop360\Support\UiLabel::enum($onlineOrder->status) }}</div>
                             </div>
                         @endif
                     </div>
@@ -64,11 +64,11 @@
                         @method('PATCH')
                         <input type="hidden" name="status" value="{{ $nextStatus }}">
                         <button type="submit" class="btn btn-primary">
-                            <i class="ti ti-arrow-right me-1"></i>Passer a {{ ucfirst($nextStatus) }}
+                            <i class="ti ti-arrow-right me-1"></i>{{ __('Passer a') }} {{ \Modules\Eshop360\Support\UiLabel::enum($nextStatus) }}
                         </button>
                     </form>
                     @endif
-                    <form method="POST" action="{{ route('eshop360.online-orders.status', [$instance->slug ?? '', $onlineOrder]) }}" onsubmit="return confirm('Annuler cette commande ?')">
+                    <form method="POST" action="{{ route('eshop360.online-orders.status', [$instance->slug ?? '', $onlineOrder]) }}" onsubmit='return confirm(@js(__("Annuler cette commande ?")))'>
                         @csrf
                         @method('PATCH')
                         <input type="hidden" name="status" value="cancelled">
@@ -84,7 +84,7 @@
                 {{-- Order Info --}}
                 <div class="col-md-4">
                     <div class="card">
-                        <div class="card-header"><h5>Informations</h5></div>
+                        <div class="card-header"><h5>{{ __('Informations') }}</h5></div>
                         <div class="card-body">
                             <table class="table table-borderless">
                                 <tr><th>Reference</th><td>{{ $onlineOrder->reference ?? $onlineOrder->order_number ?? $onlineOrder->id }}</td></tr>
@@ -92,7 +92,7 @@
                                 <tr><th>Email</th><td>{{ $onlineOrder->customer->email ?? $onlineOrder->customer_email ?? '---' }}</td></tr>
                                 <tr><th>Telephone</th><td>{{ $onlineOrder->customer->phone ?? $onlineOrder->customer_phone ?? '---' }}</td></tr>
                                 <tr>
-                                    <th>Statut</th>
+                                    <th>{{ __('Statut') }}</th>
                                     <td>
                                         @php
                                             $badgeClass = match($onlineOrder->status) {
@@ -104,10 +104,10 @@
                                                 default => 'bg-secondary',
                                             };
                                         @endphp
-                                        <span class="badge {{ $badgeClass }}">{{ ucfirst($onlineOrder->status) }}</span>
+                                        <span class="badge {{ $badgeClass }}">{{ \Modules\Eshop360\Support\UiLabel::enum($onlineOrder->status) }}</span>
                                     </td>
                                 </tr>
-                                <tr><th>Paiement</th><td>{{ ucfirst(str_replace('_', ' ', $onlineOrder->payment_method ?? '---')) }}</td></tr>
+                                <tr><th>{{ __('Paiement') }}</th><td>{{ \Modules\Eshop360\Support\UiLabel::enum($onlineOrder->payment_method, '---') }}</td></tr>
                                 @if($onlineOrder->shipping_address)
                                 <tr><th>Adresse</th><td>{{ $onlineOrder->shipping_address }}</td></tr>
                                 @endif
@@ -119,7 +119,7 @@
                     </div>
 
                     <div class="card">
-                        <div class="card-header"><h5>Totaux</h5></div>
+                        <div class="card-header"><h5>{{ __('Totaux') }}</h5></div>
                         <div class="card-body">
                             <table class="table table-borderless">
                                 <tr><th>Sous-total</th><td class="text-end">{{ number_format($onlineOrder->subtotal ?? 0, 2) }}</td></tr>
@@ -139,18 +139,18 @@
                 {{-- Items --}}
                 <div class="col-md-8">
                     <div class="card">
-                        <div class="card-header"><h5>Articles</h5></div>
+                        <div class="card-header"><h5>{{ __('Articles') }}</h5></div>
                         <div class="card-body">
                             <div class="table-responsive">
                                 <table class="table">
                                     <thead>
                                         <tr>
-                                            <th>Produit</th>
-                                            <th>SKU</th>
-                                            <th>Prix unit.</th>
-                                            <th>Qte</th>
-                                            <th>Remise</th>
-                                            <th>Total</th>
+                                            <th>{{ __('Produit') }}</th>
+                                            <th>{{ __('SKU') }}</th>
+                                            <th>{{ __('Prix unit.') }}</th>
+                                            <th>{{ __('Qte') }}</th>
+                                            <th>{{ __('Remise') }}</th>
+                                            <th>{{ __('Total') }}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -164,7 +164,7 @@
                                             <td class="fw-bold">{{ number_format($item->total ?? 0, 2) }}</td>
                                         </tr>
                                         @empty
-                                        <tr><td colspan="6" class="text-center text-muted">Aucun article</td></tr>
+                                        <tr><td colspan="6" class="text-center text-muted">{{ __('Aucun article') }}</td></tr>
                                         @endforelse
                                     </tbody>
                                 </table>

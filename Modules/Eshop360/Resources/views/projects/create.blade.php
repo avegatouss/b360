@@ -1,18 +1,18 @@
 <x-dashboard::layouts.master
-    :title="'Nouveau projet — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Nouveau projet') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Nouveau projet">
+    :pageTitle="__('Nouveau projet')">
 
 <div class="page-header">
     <div class="add-item d-flex">
         <div class="page-title">
-            <h4 class="fw-bold">Nouveau projet</h4>
+            <h4 class="fw-bold">{{ __('Nouveau projet') }}</h4>
             <h6>{{ $instance->name }} &mdash; Créer un projet</h6>
         </div>
     </div>
     <ul class="table-top-head">
         <li>
-            <a data-bs-toggle="tooltip" data-bs-placement="top" title="Réduire" id="collapse-header">
+            <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Réduire') }}" id="collapse-header">
                 <i class="ti ti-chevron-up"></i>
             </a>
         </li>
@@ -49,14 +49,14 @@
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <label class="form-label">Nom du projet <span class="text-danger">*</span></label>
+                        <label class="form-label">{{ __('Nom du projet') }}<span class="text-danger">*</span></label>
                         <input type="text" name="name" class="form-control @error('name') is-invalid @enderror"
                                value="{{ old('name') }}" placeholder="Ex: Refonte site web client X" required autofocus>
                         @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Description</label>
+                        <label class="form-label">{{ __('Description') }}</label>
                         <textarea name="description" class="form-control @error('description') is-invalid @enderror"
                                   rows="4" placeholder="Description détaillée du projet…">{{ old('description') }}</textarea>
                         @error('description') <div class="invalid-feedback">{{ $message }}</div> @enderror
@@ -64,7 +64,7 @@
 
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label">Statut <span class="text-danger">*</span></label>
+                            <label class="form-label">{{ __('Statut') }}<span class="text-danger">*</span></label>
                             <select name="status" class="form-select @error('status') is-invalid @enderror">
                                 <option value="planning"  {{ old('status', 'planning') === 'planning'  ? 'selected' : '' }}>Planification</option>
                                 <option value="active"    {{ old('status') === 'active'    ? 'selected' : '' }}>Actif</option>
@@ -75,7 +75,7 @@
                             @error('status') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Priorité <span class="text-danger">*</span></label>
+                            <label class="form-label">{{ __('Priorité') }}<span class="text-danger">*</span></label>
                             <select name="priority" class="form-select @error('priority') is-invalid @enderror">
                                 <option value="low"      {{ old('priority', 'medium') === 'low'      ? 'selected' : '' }}>Basse</option>
                                 <option value="medium"   {{ old('priority', 'medium') === 'medium'   ? 'selected' : '' }}>Moyenne</option>
@@ -98,19 +98,19 @@
                 <div class="card-body">
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label">Date de début</label>
+                            <label class="form-label">{{ __('Date de début') }}</label>
                             <input type="date" name="start_date" class="form-control @error('start_date') is-invalid @enderror"
                                    value="{{ old('start_date') }}">
                             @error('start_date') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Date de fin prévue</label>
+                            <label class="form-label">{{ __('Date de fin prévue') }}</label>
                             <input type="date" name="end_date" class="form-control @error('end_date') is-invalid @enderror"
                                    value="{{ old('end_date') }}">
                             @error('end_date') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Budget</label>
+                            <label class="form-label">{{ __('Budget') }}</label>
                             <div class="input-group">
                                 <input type="number" name="budget" step="0.01" min="0"
                                        class="form-control @error('budget') is-invalid @enderror"
@@ -133,9 +133,9 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <label class="form-label">Client associé</label>
+                    <label class="form-label">{{ __('Client associé') }}</label>
                     <select name="customer_id" class="form-select @error('customer_id') is-invalid @enderror">
-                        <option value="">— Aucun client —</option>
+                        <option value="">{{ __('— Aucun client —') }}</option>
                         @foreach($customers as $customer)
                             <option value="{{ $customer->id }}" {{ old('customer_id') == $customer->id ? 'selected' : '' }}>
                                 {{ $customer->name }}

@@ -1,17 +1,17 @@
 <x-dashboard::layouts.master
-    :title="'Expense Categories — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Expense Categories') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Expense Categories">
+    :pageTitle="__('Expense Categories')">
 
 <div class="page-header">
     <div class="add-item d-flex">
         <div class="page-title">
-            <h4 class="fw-bold">Expense Categories</h4>
-            <h6>Manage expense categories</h6>
+            <h4 class="fw-bold">{{ __('Expense Categories') }}</h4>
+            <h6>{{ __('Manage expense categories') }}</h6>
         </div>
     </div>
     <div class="page-btn">
-        <a href="javascript:void(0);" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCategoryModal"><i data-feather="plus-circle" class="me-1"></i>New Category</a>
+        <a href="javascript:void(0);" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCategoryModal"><i data-feather="plus-circle" class="me-1"></i>{{ __('New Category') }}</a>
     </div>
 </div>
 
@@ -21,11 +21,11 @@
             <table class="table datatable">
                 <thead class="thead-light">
                     <tr>
-                        <th>Name</th>
-                        <th>Description</th>
-                        <th class="text-center">Expenses Count</th>
-                        <th class="text-end">Total Amount</th>
-                        <th class="no-sort">Actions</th>
+                        <th>{{ __('Name') }}</th>
+                        <th>{{ __('Description') }}</th>
+                        <th class="text-center">{{ __('Expenses Count') }}</th>
+                        <th class="text-end">{{ __('Total Amount') }}</th>
+                        <th class="no-sort">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -53,29 +53,29 @@
                                 <form action="{{ route('eshop360.finance.expenses.categories.update', [$instance->slug ?? '', $category]) }}" method="POST">
                                     @csrf @method('PUT')
                                     <div class="modal-header">
-                                        <h5 class="modal-title">Edit Category</h5>
+                                        <h5 class="modal-title">{{ __('Edit Category') }}</h5>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                     </div>
                                     <div class="modal-body">
                                         <div class="mb-3">
-                                            <label class="form-label">Name <span class="text-danger">*</span></label>
+                                            <label class="form-label">{{ __('Name') }}<span class="text-danger">*</span></label>
                                             <input type="text" name="name" class="form-control" value="{{ $category->name }}" required>
                                         </div>
                                         <div class="mb-3">
-                                            <label class="form-label">Description</label>
+                                            <label class="form-label">{{ __('Description') }}</label>
                                             <textarea name="description" class="form-control" rows="2">{{ $category->description }}</textarea>
                                         </div>
                                     </div>
                                     <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                        <button type="submit" class="btn btn-primary">Update</button>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                                        <button type="submit" class="btn btn-primary">{{ __('Update') }}</button>
                                     </div>
                                 </form>
                             </div>
                         </div>
                     </div>
                     @empty
-                    <tr><td colspan="5" class="text-center text-muted">No categories found.</td></tr>
+                    <tr><td colspan="5" class="text-center text-muted">{{ __('No categories found.') }}</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -90,22 +90,22 @@
             <form action="{{ route('eshop360.finance.expenses.categories.store', $instance->slug ?? '') }}" method="POST">
                 @csrf
                 <div class="modal-header">
-                    <h5 class="modal-title">New Category</h5>
+                    <h5 class="modal-title">{{ __('New Category') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Name <span class="text-danger">*</span></label>
+                        <label class="form-label">{{ __('Name') }}<span class="text-danger">*</span></label>
                         <input type="text" name="name" class="form-control" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Description</label>
+                        <label class="form-label">{{ __('Description') }}</label>
                         <textarea name="description" class="form-control" rows="2"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Create Category</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ __('Create Category') }}</button>
                 </div>
             </form>
         </div>

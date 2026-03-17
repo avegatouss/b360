@@ -21,10 +21,9 @@ class OnlineOrderService
         ?string $deliveryAddress = null,
         ?string $notes = null,
         ?int $channelId = null,
-        bool $isCodifarm = false,
     ): OnlineOrder
     {
-        return DB::transaction(function () use ($instanceId, $customerId, $items, $deliveryAddress, $notes, $channelId, $isCodifarm) {
+        return DB::transaction(function () use ($instanceId, $customerId, $items, $deliveryAddress, $notes, $channelId) {
             $subtotal = 0;
             $taxAmount = 0;
             $pricingService = app(ProductPricingService::class);
@@ -32,7 +31,7 @@ class OnlineOrderService
             $orderItems = [];
             foreach ($items as $item) {
                 $product = Product::findOrFail($item['product_id']);
-                $pricing = $pricingService->resolve($product, $channelId, $isCodifarm);
+                $pricing = $pricingService->resolve($product, $channelId);
                 $unitPrice = round((float) ($item['unit_price'] ?? $pricing['unit_price']), 2);
                 $total = $unitPrice * $item['quantity'];
                 $tax = $total * ($product->tax_rate / 100);
@@ -49,8 +48,7 @@ class OnlineOrderService
             $order = OnlineOrder::create([
                 'instance_id' => $instanceId,
                 'customer_id' => $customerId,
-                'channel_id' => $isCodifarm ? null : $channelId,
-                'is_codifarm' => $isCodifarm,
+                'channel_id' => $channelId,
                 'reference' => 'ONL-' . strtoupper(Str::random(8)),
                 'status' => 'pending_validation',
                 'subtotal' => $subtotal,
@@ -125,7 +123,6 @@ class OnlineOrderService
                     'instance_id' => $onlineOrder->instance_id,
                     'customer_id' => $onlineOrder->customer_id,
                     'channel_id' => $onlineOrder->channel_id,
-                    'is_codifarm' => (bool) $onlineOrder->is_codifarm,
                     'status' => 'completed',
                     'source' => 'online',
                     'notes' => 'From online order #' . $onlineOrder->reference,

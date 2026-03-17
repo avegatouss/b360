@@ -1,13 +1,13 @@
 <x-dashboard::layouts.master
-    :title="'Stock Transfer — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Stock Transfer') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Stock Transfer">
+    :pageTitle="__('Stock Transfer')">
 
 <div class="page-header">
                 <div class="add-item d-flex">
                     <div class="page-title">
-                        <h4>Stock Transfer</h4>
-                        <h6>Manage your stock transfer</h6>
+                        <h4>{{ __('Stock Transfer') }}</h4>
+                        <h6>{{ __('Manage your stock transfer') }}</h6>
                     </div>							
                 </div>
                 <ul class="table-top-head">
@@ -18,18 +18,18 @@
                         <a data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"><img src="{{URL::asset('build/img/icons/excel.svg')}}" alt="img"></a>
                     </li>
                     <li>
-                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="Refresh"><i class="ti ti-refresh"></i></a>
+                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Refresh') }}"><i class="ti ti-refresh"></i></a>
                     </li>
                     <li>
-                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="Collapse" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
+                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Collapse') }}" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
                     </li>
                 </ul>
                 <div class="page-btn">
-                    <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-stock-transfer"><i class="ti ti-circle-plus me-1"></i>Add New</a>
+                    <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-stock-transfer"><i class="ti ti-circle-plus me-1"></i>{{ __('Add New') }}</a>
                 </div>
                 <div class="page-btn import">
                     <a href="#" class="btn btn-secondary color" data-bs-toggle="modal" data-bs-target="#view-notes"><i
-                        data-feather="download" class="me-1"></i>Import Transfer</a>
+                        data-feather="download" class="me-1"></i>{{ __('Import Transfer') }}</a>
                 </div>
             </div>
             <!-- /product list -->
@@ -47,16 +47,16 @@
                             </a>
                             <ul class="dropdown-menu  dropdown-menu-end p-3">
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Lavish Warehouse</a>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Lavish Warehouse') }}</a>
                                 </li>
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Quaint Warehouse</a>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Quaint Warehouse') }}</a>
                                 </li>
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Traditional Warehouse</a>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Traditional Warehouse') }}</a>
                                 </li>
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Cool Warehouse</a>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Cool Warehouse') }}</a>
                                 </li>
                             </ul>
                         </div>
@@ -66,16 +66,16 @@
                             </a>
                             <ul class="dropdown-menu  dropdown-menu-end p-3">
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">North Zone Warehouse</a>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('North Zone Warehouse') }}</a>
                                 </li>
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Nova Storage Hub</a>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Nova Storage Hub') }}</a>
                                 </li>
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Cool Warehouse</a>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Cool Warehouse') }}</a>
                                 </li>
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Retail Supply Hub</a>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Retail Supply Hub') }}</a>
                                 </li>
                             </ul>
                         </div>
@@ -85,19 +85,19 @@
                             </a>
                             <ul class="dropdown-menu  dropdown-menu-end p-3">
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Recently Added</a>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Recently Added') }}</a>
                                 </li>
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Ascending</a>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Ascending') }}</a>
                                 </li>
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Desending</a>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Desending') }}</a>
                                 </li>
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Last Month</a>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Last Month') }}</a>
                                 </li>
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Last 7 Days</a>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Last 7 Days') }}</a>
                                 </li>
                             </ul>
                         </div>
@@ -114,12 +114,12 @@
                                             <span class="checkmarks"></span>
                                         </label>
                                     </th>
-                                    <th>From Warehouse</th>
-                                    <th>To Warehouse</th>
-                                    <th>No of Products</th>
-                                    <th>Quantity Transfered</th>
-                                    <th>Ref Number</th>
-                                    <th>Date</th>
+                                    <th>{{ __('From Warehouse') }}</th>
+                                    <th>{{ __('To Warehouse') }}</th>
+                                    <th>{{ __('No of Products') }}</th>
+                                    <th>{{ __('Quantity Transfered') }}</th>
+                                    <th>{{ __('Ref Number') }}</th>
+                                    <th>{{ __('Date') }}</th>
                                     <th class="no-sort"></th>
                                 </tr>
                             </thead>
@@ -131,8 +131,8 @@
                                             <span class="checkmarks"></span>
                                         </label>
                                     </td>
-                                    <td>Lavish Warehouse </td>
-                                    <td>North Zone Warehouse </td>
+                                    <td>{{ __('Lavish Warehouse') }}</td>
+                                    <td>{{ __('North Zone Warehouse') }}</td>
                                     <td>
                                         20												
                                     </td>
@@ -140,7 +140,7 @@
                                         15
                                     </td>
                                     <td>#458924</td>
-                                    <td>24 Dec 2024</td>
+                                    <td>{{ __('24 Dec 2024') }}</td>
                                     <td class="d-flex">
                                         <div class="edit-delete-action d-flex align-items-center justify-content-center">
                                             <a class="me-2 p-2 d-flex align-items-center justify-content-between border rounded" href="#" data-bs-toggle="modal" data-bs-target="#edit-stock-transfer">
@@ -160,8 +160,8 @@
                                             <span class="checkmarks"></span>
                                         </label>
                                     </td>
-                                    <td>Lobar Handy </td>
-                                    <td>Nova Storage Hub</td>
+                                    <td>{{ __('Lobar Handy') }}</td>
+                                    <td>{{ __('Nova Storage Hub') }}</td>
                                     <td>
                                         04												
                                     </td>
@@ -169,7 +169,7 @@
                                         14
                                     </td>
                                     <td>#145445</td>
-                                    <td>25 Jul 2023</td>
+                                    <td>{{ __('25 Jul 2023') }}</td>
                                     <td class="d-flex">
                                         <div class="edit-delete-action d-flex align-items-center justify-content-center">
                                             <a class="me-2 p-2 d-flex align-items-center justify-content-between border rounded" href="#" data-bs-toggle="modal" data-bs-target="#edit-stock-transfer">
@@ -189,8 +189,8 @@
                                             <span class="checkmarks"></span>
                                         </label>
                                     </td>
-                                    <td>Quaint Warehouse </td>
-                                    <td>Cool Warehouse</td>
+                                    <td>{{ __('Quaint Warehouse') }}</td>
+                                    <td>{{ __('Cool Warehouse') }}</td>
                                     <td>
                                         21										
                                     </td>
@@ -198,7 +198,7 @@
                                         10
                                     </td>
                                     <td>#135478</td>
-                                    <td>28 Jul 2023</td>
+                                    <td>{{ __('28 Jul 2023') }}</td>
                                     <td class="d-flex">
                                         <div class="edit-delete-action d-flex align-items-center justify-content-center">
                                             <a class="me-2 p-2 d-flex align-items-center justify-content-between border rounded" href="#" data-bs-toggle="modal" data-bs-target="#edit-stock-transfer">
@@ -218,8 +218,8 @@
                                             <span class="checkmarks"></span>
                                         </label>
                                     </td>
-                                    <td>Traditional Warehouse </td>
-                                    <td>Retail Supply Hub</td>
+                                    <td>{{ __('Traditional Warehouse') }}</td>
+                                    <td>{{ __('Retail Supply Hub') }}</td>
                                     <td>
                                         15											
                                     </td>
@@ -227,7 +227,7 @@
                                         14
                                     </td>
                                     <td>#145124</td>
-                                    <td>24 Jul 2023</td>
+                                    <td>{{ __('24 Jul 2023') }}</td>
                                     <td class="d-flex">
                                         <div class="edit-delete-action d-flex align-items-center justify-content-center">
                                             <a class="me-2 p-2 d-flex align-items-center justify-content-between border rounded" href="#" data-bs-toggle="modal" data-bs-target="#edit-stock-transfer">
@@ -247,8 +247,8 @@
                                             <span class="checkmarks"></span>
                                         </label>
                                     </td>
-                                    <td>Cool Warehouse </td>
-                                    <td>EdgeWare Solutions</td>
+                                    <td>{{ __('Cool Warehouse') }}</td>
+                                    <td>{{ __('EdgeWare Solutions') }}</td>
                                     <td>
                                         14												
                                     </td>
@@ -256,7 +256,7 @@
                                         74
                                     </td>
                                     <td>#474541</td>
-                                    <td>15 Jul 2023</td>
+                                    <td>{{ __('15 Jul 2023') }}</td>
                                     <td class="d-flex">
                                         <div class="edit-delete-action d-flex align-items-center justify-content-center">
                                             <a class="me-2 p-2 d-flex align-items-center justify-content-between border rounded" href="#" data-bs-toggle="modal" data-bs-target="#edit-stock-transfer">
@@ -276,8 +276,8 @@
                                             <span class="checkmarks"></span>
                                         </label>
                                     </td>
-                                    <td>Overflow Warehouse</td>
-                                    <td>Quaint Warehouse</td>
+                                    <td>{{ __('Overflow Warehouse') }}</td>
+                                    <td>{{ __('Quaint Warehouse') }}</td>
                                     <td>
                                         30												
                                     </td>
@@ -285,7 +285,7 @@
                                         20
                                     </td>
                                     <td>#366713</td>
-                                    <td>06 Nov 2024</td>
+                                    <td>{{ __('06 Nov 2024') }}</td>
                                     <td class="d-flex">
                                         <div class="edit-delete-action d-flex align-items-center justify-content-center">
                                             <a class="me-2 p-2 d-flex align-items-center justify-content-between border rounded" href="#" data-bs-toggle="modal" data-bs-target="#edit-stock-transfer">
@@ -305,8 +305,8 @@
                                             <span class="checkmarks"></span>
                                         </label>
                                     </td>
-                                    <td>Nova Storage Hub</td>
-                                    <td>Traditional Warehouse</td>
+                                    <td>{{ __('Nova Storage Hub') }}</td>
+                                    <td>{{ __('Traditional Warehouse') }}</td>
                                     <td>
                                         10												
                                     </td>
@@ -314,7 +314,7 @@
                                         06
                                     </td>
                                     <td>#327814</td>
-                                    <td>25 Oct 2024</td>
+                                    <td>{{ __('25 Oct 2024') }}</td>
                                     <td class="d-flex">
                                         <div class="edit-delete-action d-flex align-items-center justify-content-center">
                                             <a class="me-2 p-2 d-flex align-items-center justify-content-between border rounded" href="#" data-bs-toggle="modal" data-bs-target="#edit-stock-transfer">
@@ -334,8 +334,8 @@
                                             <span class="checkmarks"></span>
                                         </label>
                                     </td>
-                                    <td>Retail Supply Hub</td>
-                                    <td>Overflow Warehouse</td>
+                                    <td>{{ __('Retail Supply Hub') }}</td>
+                                    <td>{{ __('Overflow Warehouse') }}</td>
                                     <td>
                                         70												
                                     </td>
@@ -343,7 +343,7 @@
                                         60
                                     </td>
                                     <td>#274509</td>
-                                    <td>14 Oct 2024</td>
+                                    <td>{{ __('14 Oct 2024') }}</td>
                                     <td class="d-flex">
                                         <div class="edit-delete-action d-flex align-items-center justify-content-center">
                                             <a class="me-2 p-2 d-flex align-items-center justify-content-between border rounded" href="#" data-bs-toggle="modal" data-bs-target="#edit-stock-transfer">
@@ -363,8 +363,8 @@
                                             <span class="checkmarks"></span>
                                         </label>
                                     </td>
-                                    <td>EdgeWare Solutions</td>
-                                    <td>Lavish Warehouse</td>
+                                    <td>{{ __('EdgeWare Solutions') }}</td>
+                                    <td>{{ __('Lavish Warehouse') }}</td>
                                     <td>
                                         35												
                                     </td>
@@ -372,7 +372,7 @@
                                         30
                                     </td>
                                     <td>#239073</td>
-                                    <td>03 Oct 2024</td>
+                                    <td>{{ __('03 Oct 2024') }}</td>
                                     <td class="d-flex">
                                         <div class="edit-delete-action d-flex align-items-center justify-content-center">
                                             <a class="me-2 p-2 d-flex align-items-center justify-content-between border rounded" href="#" data-bs-toggle="modal" data-bs-target="#edit-stock-transfer">
@@ -392,8 +392,8 @@
                                             <span class="checkmarks"></span>
                                         </label>
                                     </td>
-                                    <td>North Zone Warehouse</td>
-                                    <td>Fulfillment Hub</td>
+                                    <td>{{ __('North Zone Warehouse') }}</td>
+                                    <td>{{ __('Fulfillment Hub') }}</td>
                                     <td>
                                         15												
                                     </td>
@@ -401,7 +401,7 @@
                                         10
                                     </td>
                                     <td>#187204</td>
-                                    <td>20 Sep 2024</td>
+                                    <td>{{ __('20 Sep 2024') }}</td>
                                     <td class="d-flex">
                                         <div class="edit-delete-action d-flex align-items-center justify-content-center">
                                             <a class="me-2 p-2 d-flex align-items-center justify-content-between border rounded" href="#" data-bs-toggle="modal" data-bs-target="#edit-stock-transfer">
@@ -421,8 +421,8 @@
                                             <span class="checkmarks"></span>
                                         </label>
                                     </td>
-                                    <td>Fulfillment Hub</td>
-                                    <td>EdgeWare Solutions</td>
+                                    <td>{{ __('Fulfillment Hub') }}</td>
+                                    <td>{{ __('EdgeWare Solutions') }}</td>
                                     <td>
                                         45												
                                     </td>
@@ -430,7 +430,7 @@
                                         35
                                     </td>
                                     <td>#139064</td>
-                                    <td>10 Sep 2024</td>
+                                    <td>{{ __('10 Sep 2024') }}</td>
                                     <td class="d-flex">
                                         <div class="edit-delete-action d-flex align-items-center justify-content-center">
                                             <a class="me-2 p-2 d-flex align-items-center justify-content-between border rounded" href="#" data-bs-toggle="modal" data-bs-target="#edit-stock-transfer">
@@ -450,8 +450,8 @@
                                             <span class="checkmarks"></span>
                                         </label>
                                     </td>
-                                    <td>Retail Supply Hub</td>
-                                    <td>Overflow Warehouse</td>
+                                    <td>{{ __('Retail Supply Hub') }}</td>
+                                    <td>{{ __('Overflow Warehouse') }}</td>
                                     <td>
                                         70												
                                     </td>
@@ -459,7 +459,7 @@
                                         60
                                     </td>
                                     <td>#274509</td>
-                                    <td>14 Oct 2024</td>
+                                    <td>{{ __('14 Oct 2024') }}</td>
                                     <td class="d-flex">
                                         <div class="edit-delete-action d-flex align-items-center justify-content-center">
                                             <a class="me-2 d-flex align-items-center justify-content-between border rounded p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-stock-transfer">

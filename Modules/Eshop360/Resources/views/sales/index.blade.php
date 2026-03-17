@@ -1,7 +1,7 @@
 <x-dashboard::layouts.master
-    :title="'Sales List — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Sales List') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Sales List">
+    :pageTitle="__('Sales List')">
 
 @component('components.breadcrumb')
                 @slot('title')
@@ -36,7 +36,7 @@
                         <div class="form-sort">
                             <i data-feather="sliders" class="info-img"></i>
                             <select class="select">
-                                <option>Sort by Date</option>
+                                <option>{{ __('Sort by Date') }}</option>
                             </select>
                         </div>
                     </div>
@@ -48,7 +48,7 @@
                                     <div class="input-blocks">
                                         <i data-feather="user" class="info-img"></i>
                                         <select class="select">
-                                            <option>Choose Customer Name</option>
+                                            <option>{{ __('Choose Customer Name') }}</option>
                                         </select>
                                     </div>
                                 </div>
@@ -56,32 +56,32 @@
                                     <div class="input-blocks">
                                         <i data-feather="stop-circle" class="info-img"></i>
                                         <select class="select">
-                                            <option>Choose Status</option>
-                                            <option>Completed</option>
-                                            <option>Pending</option>
+                                            <option>{{ __('Choose Status') }}</option>
+                                            <option>{{ __('Completed') }}</option>
+                                            <option>{{ __('Pending') }}</option>
                                         </select>
                                     </div>
                                 </div>
                                 <div class="col-lg-2 col-sm-6 col-12">
                                     <div class="input-blocks">
                                         <i data-feather="file-text" class="info-img"></i>
-                                        <input type="text" placeholder="Enter Reference" class="form-control">
+                                        <input type="text" placeholder="{{ __('Enter Reference') }}" class="form-control">
                                     </div>
                                 </div>
                                 <div class="col-lg-3 col-sm-6 col-12">
                                     <div class="input-blocks">
                                         <i data-feather="stop-circle" class="info-img"></i>
                                         <select class="select">
-                                            <option>Choose Payment Status</option>
-                                            <option>Paid</option>
-                                            <option>Due</option>
+                                            <option>{{ __('Choose Payment Status') }}</option>
+                                            <option>{{ __('Paid') }}</option>
+                                            <option>{{ __('Due') }}</option>
                                         </select>
                                     </div>
                                 </div>
                                 <div class="col-lg-2 col-sm-6 col-12">
                                     <div class="input-blocks">
                                         <a class="btn btn-filters ms-auto"> <i data-feather="search"
-                                                class="feather-search"></i> Search </a>
+                                                class="feather-search"></i>{{ __('Search') }}</a>
                                     </div>
                                 </div>
                             </div>
@@ -98,16 +98,16 @@
                                             <span class="checkmarks"></span>
                                         </label>
                                     </th>
-                                    <th>Customer Name</th>
-                                    <th>Reference</th>
-                                    <th>Date</th>
-                                    <th>Status</th>
-                                    <th>Grand Total</th>
-                                    <th>Paid</th>
-                                    <th>Due</th>
-                                    <th>Payment Status</th>
-                                    <th>Biller</th>
-                                    <th class="text-center">Action</th>
+                                    <th>{{ __('Customer Name') }}</th>
+                                    <th>{{ __('Reference') }}</th>
+                                    <th>{{ __('Date') }}</th>
+                                    <th>{{ __('Status') }}</th>
+                                    <th>{{ __('Grand Total') }}</th>
+                                    <th>{{ __('Paid') }}</th>
+                                    <th>{{ __('Due') }}</th>
+                                    <th>{{ __('Payment Status') }}</th>
+                                    <th>{{ __('Biller') }}</th>
+                                    <th class="text-center">{{ __('Action') }}</th>
                                 </tr>
                             </thead>
                             <tbody class="sales-list">
@@ -124,7 +124,7 @@
                                     <td>{{ $sale->created_at->format('d M Y') }}</td>
                                     <td>
                                         @if(($sale->status ?? '') === 'completed')
-                                            <span class="badge badge-bgsuccess">Completed</span>
+                                            <span class="badge badge-bgsuccess">{{ __('Completed') }}</span>
                                         @else
                                             <span class="badge badge-bgdanger">{{ ucfirst($sale->status ?? 'Pending') }}</span>
                                         @endif
@@ -134,9 +134,9 @@
                                     <td>${{ number_format($sale->due_amount ?? (($sale->total ?? 0) - ($sale->paid_amount ?? 0)), 2) }}</td>
                                     <td>
                                         @if(($sale->due_amount ?? (($sale->total ?? 0) - ($sale->paid_amount ?? 0))) <= 0)
-                                            <span class="badge badge-linesuccess">Paid</span>
+                                            <span class="badge badge-linesuccess">{{ __('Paid') }}</span>
                                         @else
-                                            <span class="badge badge-linedanger">Due</span>
+                                            <span class="badge badge-linedanger">{{ __('Due') }}</span>
                                         @endif
                                     </td>
                                     <td>{{ $sale->biller->name ?? 'Admin' }}</td>
@@ -148,18 +148,18 @@
                                         <ul class="dropdown-menu">
                                             <li>
                                                 <a href="{{ route('eshop360.sales.show', [$instance->slug ?? '', $sale]) }}" class="dropdown-item"><i data-feather="eye"
-                                                        class="info-img"></i>Sale Detail</a>
+                                                        class="info-img"></i>{{ __('Sale Detail') }}</a>
                                             </li>
                                             <li>
                                                 <a href="{{ route('eshop360.sales.show', [$instance->slug ?? '', $sale]) }}" class="dropdown-item"><i
-                                                        data-feather="corner-down-left" class="info-img"></i>Return / Update</a>
+                                                        data-feather="corner-down-left" class="info-img"></i>{{ __('Return / Update') }}</a>
                                             </li>
                                             <li>
                                                 <form action="{{ route('eshop360.sales.destroy', [$instance->slug ?? '', $sale]) }}" method="POST" onsubmit="return confirm('Are you sure?')">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" class="dropdown-item"><i
-                                                            data-feather="trash-2" class="info-img"></i>Delete Sale</button>
+                                                            data-feather="trash-2" class="info-img"></i>{{ __('Delete Sale') }}</button>
                                                 </form>
                                             </li>
                                         </ul>
@@ -167,7 +167,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="11" class="text-center">No sales found.</td>
+                                    <td colspan="11" class="text-center">{{ __('No sales found.') }}</td>
                                 </tr>
                                 @endforelse
                             </tbody>

@@ -3,6 +3,7 @@
 namespace Modules\Eshop360\Models;
 
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -30,7 +31,6 @@ class Order extends Model
         'cash_register_id',
         'holding_id',
         'channel_id',
-        'is_codifarm',
         'payment_terms',
         'delivery_date',
         'delivered_at',
@@ -46,6 +46,7 @@ class Order extends Model
         'source',
         'biller_id',
         'employee_id',
+        'project_id',
     ];
 
     protected $casts = [
@@ -53,7 +54,6 @@ class Order extends Model
         'tax_amount' => 'decimal:2',
         'discount_amount' => 'decimal:2',
         'shipping_amount' => 'decimal:2',
-        'is_codifarm' => 'boolean',
         'delivery_date' => 'date',
         'delivered_at' => 'datetime',
         'total' => 'decimal:2',
@@ -126,6 +126,11 @@ class Order extends Model
         return $this->hasMany(EmployeeCommission::class);
     }
 
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class);
+    }
+
     public function channel(): BelongsTo
     {
         return $this->belongsTo(DistributionChannel::class, 'channel_id');
@@ -136,9 +141,20 @@ class Order extends Model
         return $this->hasMany(ChannelMarginLog::class);
     }
 
-    public function codifarmMarginLog(): HasOne
+    /**
+     * Check if this order is associated with a distribution channel.
+     */
+    public function isChannelOrder(): bool
     {
-        return $this->hasOne(CodifarmMarginLog::class);
+        return $this->channel_id !== null;
+    }
+
+    /**
+     * Scope to filter orders by distribution channel.
+     */
+    public function scopeForChannel(Builder $query, int $channelId): Builder
+    {
+        return $query->where('channel_id', $channelId);
     }
 
     public function getReferenceAttribute(): string

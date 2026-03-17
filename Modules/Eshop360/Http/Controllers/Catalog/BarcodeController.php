@@ -5,6 +5,7 @@ namespace Modules\Eshop360\Http\Controllers\Catalog;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\Eshop360\Models\Product;
+use Modules\Eshop360\Services\PdfService;
 
 class BarcodeController extends Controller
 {
@@ -42,5 +43,46 @@ class BarcodeController extends Controller
         $paperSize = $validated['paper_size'] ?? 'a4';
 
         return view('eshop360::catalog.barcodes.generate', compact('products', 'type', 'quantity', 'paperSize'));
+    }
+
+    /**
+     * Batch print barcodes as a PDF sheet.
+     *
+     * POST with product_ids[], per_row, size, show_name, show_price, show_sku, format, quantity.
+     */
+    public function printBatch(Request $request)
+    {
+        $validated = $request->validate([
+            'product_ids'   => 'required|array|min:1',
+            'product_ids.*' => 'exists:eshop_products,id',
+            'per_row'       => 'nullable|integer|in:2,3,4',
+            'size'          => 'nullable|in:small,medium,large',
+            'show_name'     => 'nullable|boolean',
+            'show_price'    => 'nullable|boolean',
+            'show_sku'      => 'nullable|boolean',
+            'format'        => 'nullable|in:Code128,EAN13,Code39',
+            'quantity'      => 'nullable|integer|min:1|max:100',
+        ]);
+
+        $pdfService = app(PdfService::class);
+
+        $options = [
+            'per_row'    => $validated['per_row'] ?? 3,
+            'size'       => $validated['size'] ?? 'medium',
+            'show_name'  => (bool) ($validated['show_name'] ?? true),
+            'show_price' => (bool) ($validated['show_price'] ?? true),
+            'show_sku'   => (bool) ($validated['show_sku'] ?? false),
+            'format'     => $validated['format'] ?? 'Code128',
+            'quantity'   => $validated['quantity'] ?? 1,
+        ];
+
+        $path = $pdfService->generateBarcodeSheet($validated['product_ids'], $options);
+
+        $mimeType = str_ends_with($path, '.pdf') ? 'application/pdf' : 'text/html';
+        $filename = 'barcodes-' . now()->format('Ymd-His') . (str_ends_with($path, '.pdf') ? '.pdf' : '.html');
+
+        return response()->download($path, $filename, [
+            'Content-Type' => $mimeType,
+        ])->deleteFileAfterSend();
     }
 }

@@ -1,13 +1,13 @@
 <x-dashboard::layouts.master
-    :title="'New Import Order — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('New Import Order') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="New Import Order">
+    :pageTitle="__('New Import Order')">
 
 <div class="page-header">
     <div class="add-item d-flex">
         <div class="page-title">
-            <h4 class="fw-bold">New Import Order</h4>
-            <h6>Create a new import order</h6>
+            <h4 class="fw-bold">{{ __('New Import Order') }}</h4>
+            <h6>{{ __('Create a new import order') }}</h6>
         </div>
     </div>
     <div class="page-btn">
@@ -18,13 +18,13 @@
 <form action="{{ route('eshop360.imports.store', $instance->slug ?? '') }}" method="POST" id="importForm">
     @csrf
     <div class="card">
-        <div class="card-header"><h5>Order Information</h5></div>
+        <div class="card-header"><h5>{{ __('Order Information') }}</h5></div>
         <div class="card-body">
             <div class="row">
                 <div class="col-md-4 mb-3">
-                    <label class="form-label">Supplier <span class="text-danger">*</span></label>
+                    <label class="form-label">{{ __('Supplier') }}<span class="text-danger">*</span></label>
                     <select name="supplier_id" class="form-select @error('supplier_id') is-invalid @enderror" required>
-                        <option value="">Select Supplier</option>
+                        <option value="">{{ __('Select Supplier') }}</option>
                         @foreach($suppliers ?? [] as $supplier)
                         <option value="{{ $supplier->id }}" {{ old('supplier_id') == $supplier->id ? 'selected' : '' }}>{{ $supplier->name }}</option>
                         @endforeach
@@ -32,9 +32,9 @@
                     @error('supplier_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 <div class="col-md-4 mb-3">
-                    <label class="form-label">Shipping Type <span class="text-danger">*</span></label>
+                    <label class="form-label">{{ __('Shipping Type') }}<span class="text-danger">*</span></label>
                     <select name="shipping_type" class="form-select @error('shipping_type') is-invalid @enderror" required>
-                        <option value="">Select Type</option>
+                        <option value="">{{ __('Select Type') }}</option>
                         <option value="air" {{ old('shipping_type') === 'air' ? 'selected' : '' }}>Air</option>
                         <option value="sea" {{ old('shipping_type') === 'sea' ? 'selected' : '' }}>Sea</option>
                         <option value="land" {{ old('shipping_type') === 'land' ? 'selected' : '' }}>Land</option>
@@ -42,11 +42,11 @@
                     @error('shipping_type')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 <div class="col-md-4 mb-3">
-                    <label class="form-label">Expected Arrival Date</label>
+                    <label class="form-label">{{ __('Expected Arrival Date') }}</label>
                     <input type="date" name="expected_arrival" class="form-control" value="{{ old('expected_arrival') }}">
                 </div>
                 <div class="col-md-12 mb-3">
-                    <label class="form-label">Notes</label>
+                    <label class="form-label">{{ __('Notes') }}</label>
                     <textarea name="notes" class="form-control" rows="2">{{ old('notes') }}</textarea>
                 </div>
             </div>
@@ -55,19 +55,19 @@
 
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h5>Products</h5>
-            <button type="button" class="btn btn-sm btn-primary" id="addProductRow"><i class="ti ti-plus me-1"></i>Add Product</button>
+            <h5>{{ __('Products') }}</h5>
+            <button type="button" class="btn btn-sm btn-primary" id="addProductRow"><i class="ti ti-plus me-1"></i>{{ __('Add Product') }}</button>
         </div>
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table" id="productsTable">
                     <thead>
                         <tr>
-                            <th style="width:35%">Product</th>
-                            <th style="width:15%">Quantity</th>
-                            <th style="width:15%">Unit Price</th>
-                            <th style="width:15%">Weight (kg)</th>
-                            <th style="width:15%">Subtotal</th>
+                            <th style="width:35%">{{ __('Product') }}</th>
+                            <th style="width:15%">{{ __('Quantity') }}</th>
+                            <th style="width:15%">{{ __('Unit Price') }}</th>
+                            <th style="width:15%">{{ __('Weight (kg)') }}</th>
+                            <th style="width:15%">{{ __('Subtotal') }}</th>
                             <th style="width:5%"></th>
                         </tr>
                     </thead>
@@ -75,7 +75,7 @@
                         <tr class="product-row" data-index="0">
                             <td>
                                 <select name="items[0][product_id]" class="form-select product-select" required>
-                                    <option value="">Select Product</option>
+                                    <option value="">{{ __('Select Product') }}</option>
                                     @foreach($products ?? [] as $product)
                                     <option value="{{ $product->id }}" data-price="{{ $product->cost_price ?? 0 }}">{{ $product->name }}</option>
                                     @endforeach
@@ -90,7 +90,7 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td colspan="4" class="text-end fw-bold">Total:</td>
+                            <td colspan="4" class="text-end fw-bold">{{ __('Total:') }}</td>
                             <td><span id="grandTotal" class="fw-bold">0.00</span></td>
                             <td></td>
                         </tr>
@@ -101,8 +101,8 @@
     </div>
 
     <div class="d-flex gap-2 mb-4">
-        <button type="submit" class="btn btn-primary">Create Import Order</button>
-        <button type="submit" name="status" value="draft" class="btn btn-secondary">Save as Draft</button>
+        <button type="submit" class="btn btn-primary">{{ __('Create Import Order') }}</button>
+        <button type="submit" name="status" value="draft" class="btn btn-secondary">{{ __('Save as Draft') }}</button>
         <a href="{{ route('eshop360.imports.index', $instance->slug ?? '') }}" class="btn btn-outline-secondary">Cancel</a>
     </div>
 </form>

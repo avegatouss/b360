@@ -1,20 +1,20 @@
 <x-dashboard::layouts.master
-    :title="'Boite de reception — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Boite de reception') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Boite de reception">
+    :pageTitle="__('Boite de reception')">
 
     <div class="page-wrapper">
         <div class="content">
             <div class="page-header">
                 <div class="add-item d-flex">
                     <div class="page-title">
-                        <h4>Boite de reception</h4>
-                        <h6>Messages recus</h6>
+                        <h4>{{ __('Boite de reception') }}</h4>
+                        <h6>{{ __('Messages recus') }}</h6>
                     </div>
                 </div>
                 <ul class="table-top-head">
                     <li>
-                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="Refresh"><i class="ti ti-refresh"></i></a>
+                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Refresh') }}"><i class="ti ti-refresh"></i></a>
                     </li>
                 </ul>
             </div>
@@ -28,11 +28,11 @@
                                     <th class="no-sort">
                                         <label class="checkboxs"><input type="checkbox" id="select-all"><span class="checkmarks"></span></label>
                                     </th>
-                                    <th>Expediteur</th>
-                                    <th>Sujet</th>
-                                    <th>Date</th>
-                                    <th>Statut</th>
-                                    <th class="no-sort">Actions</th>
+                                    <th>{{ __('Expediteur') }}</th>
+                                    <th>{{ __('Sujet') }}</th>
+                                    <th>{{ __('Date') }}</th>
+                                    <th>{{ __('Statut') }}</th>
+                                    <th class="no-sort">{{ __('Actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -50,9 +50,9 @@
                                     <td>{{ $message->created_at->format('d/m/Y H:i') }}</td>
                                     <td>
                                         @if($message->read_at)
-                                            <span class="badge bg-light text-dark">Lu</span>
+                                            <span class="badge bg-light text-dark">{{ __('Lu') }}</span>
                                         @else
-                                            <span class="badge bg-primary">Non lu</span>
+                                            <span class="badge bg-primary">{{ __('Non lu') }}</span>
                                         @endif
                                     </td>
                                     <td>
@@ -65,7 +65,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="6" class="text-center text-muted">Aucun message.</td>
+                                    <td colspan="6" class="text-center text-muted">{{ __('Aucun message.') }}</td>
                                 </tr>
                                 @endforelse
                             </tbody>

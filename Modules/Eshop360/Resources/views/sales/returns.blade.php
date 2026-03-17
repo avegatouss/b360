@@ -1,13 +1,13 @@
 <x-dashboard::layouts.master
-    :title="'Retours ventes — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Retours ventes') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Retours ventes">
+    :pageTitle="__('Retours ventes')">
 
 <div class="page-header">
     <div class="add-item d-flex">
         <div class="page-title">
-            <h4 class="fw-bold">Retours de vente</h4>
-            <h6>Suivi des ventes remboursees et reinjectees en stock</h6>
+            <h4 class="fw-bold">{{ __('Retours de vente') }}</h4>
+            <h6>{{ __('Suivi des ventes remboursees et reinjectees en stock') }}</h6>
         </div>
     </div>
     <div class="page-btn d-flex gap-2">
@@ -24,15 +24,15 @@
     <div class="card-body">
         <form method="GET" action="{{ route('eshop360.sales.returns', $instance->slug ?? '') }}" class="row g-3 align-items-end mb-4">
             <div class="col-md-4">
-                <label class="form-label">Recherche</label>
+                <label class="form-label">{{ __('Recherche') }}</label>
                 <input type="text" name="search" class="form-control" value="{{ request('search') }}" placeholder="Numero retour ou vente">
             </div>
             <div class="col-md-3">
-                <label class="form-label">Date debut</label>
+                <label class="form-label">{{ __('Date debut') }}</label>
                 <input type="date" name="date_from" class="form-control" value="{{ request('date_from') }}">
             </div>
             <div class="col-md-3">
-                <label class="form-label">Date fin</label>
+                <label class="form-label">{{ __('Date fin') }}</label>
                 <input type="date" name="date_to" class="form-control" value="{{ request('date_to') }}">
             </div>
             <div class="col-md-2 d-grid">
@@ -46,13 +46,13 @@
             <table class="table align-middle">
                 <thead>
                     <tr>
-                        <th>Reference</th>
-                        <th>Client</th>
-                        <th>Date</th>
-                        <th>Montant</th>
-                        <th>Rembourse</th>
-                        <th>Origine</th>
-                        <th class="text-end">Action</th>
+                        <th>{{ __('Reference') }}</th>
+                        <th>{{ __('Client') }}</th>
+                        <th>{{ __('Date') }}</th>
+                        <th>{{ __('Montant') }}</th>
+                        <th>{{ __('Rembourse') }}</th>
+                        <th>{{ __('Origine') }}</th>
+                        <th class="text-end">{{ __('Action') }}</th>
                     </tr>
                 </thead>
                 <tbody>

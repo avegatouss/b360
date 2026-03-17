@@ -1,13 +1,13 @@
 <x-dashboard::layouts.master
-    :title="'Online Orders — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Online Orders') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Online Orders">
+    :pageTitle="__('Online Orders')">
 
 <div class="page-header">
             <div class="add-item d-flex">
                 <div class="page-title">
-                    <h4>Sales</h4>
-                    <h6>Manage Your Sales</h6>
+                    <h4>{{ __('Sales') }}</h4>
+                    <h6>{{ __('Manage Your Sales') }}</h6>
                 </div>
             </div>
             <ul class="table-top-head">
@@ -18,14 +18,14 @@
                     <a data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"><img src="{{URL::asset('build/img/icons/excel.svg')}}" alt="img"></a>
                 </li>	
                 <li>
-                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="Refresh"><i class="ti ti-refresh"></i></a>
+                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Refresh') }}"><i class="ti ti-refresh"></i></a>
                 </li>
                 <li>
-                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="Collapse" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
+                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Collapse') }}" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
                 </li>
             </ul>
             <div class="page-btn">
-                <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-sales-new"><i class="ti ti-circle-plus me-1"></i>Add Sales</a>
+                <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-sales-new"><i class="ti ti-circle-plus me-1"></i>{{ __('Add Sales') }}</a>
             </div>
         </div>
         
@@ -44,16 +44,16 @@
                         </a>
                         <ul class="dropdown-menu  dropdown-menu-end p-3">
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Carl Evans</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Carl Evans') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Minerva Rameriz</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Minerva Rameriz') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Robert Lamon</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Robert Lamon') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Patricia Lewis</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Patricia Lewis') }}</a>
                             </li>
                         </ul>
                     </div>
@@ -63,10 +63,10 @@
                         </a>
                         <ul class="dropdown-menu  dropdown-menu-end p-3">
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Completed</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Completed') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Pending</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Pending') }}</a>
                             </li>
                         </ul>
                     </div>
@@ -76,13 +76,13 @@
                         </a>
                         <ul class="dropdown-menu  dropdown-menu-end p-3">
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Paid</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Paid') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Unpaid</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Unpaid') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Overdue</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Overdue') }}</a>
                             </li>
                         </ul>
                     </div>
@@ -92,19 +92,19 @@
                         </a>
                         <ul class="dropdown-menu  dropdown-menu-end p-3">
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Recently Added</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Recently Added') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Ascending</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Ascending') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Desending</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Desending') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Last Month</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Last Month') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Last 7 Days</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Last 7 Days') }}</a>
                             </li>
                         </ul>
                     </div>
@@ -121,15 +121,15 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </th>
-                                <th>Customer</th>
-                                <th>Reference</th>
-                                <th>Date</th>
-                                <th>Status</th>
-                                <th>Grand Total</th>
-                                <th>Paid</th>
-                                <th>Due</th>
-                                <th>Payment Status</th>
-                                <th>Biller</th>
+                                <th>{{ __('Customer') }}</th>
+                                <th>{{ __('Reference') }}</th>
+                                <th>{{ __('Date') }}</th>
+                                <th>{{ __('Status') }}</th>
+                                <th>{{ __('Grand Total') }}</th>
+                                <th>{{ __('Paid') }}</th>
+                                <th>{{ __('Due') }}</th>
+                                <th>{{ __('Payment Status') }}</th>
+                                <th>{{ __('Biller') }}</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -146,39 +146,39 @@
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/users/user-27.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Carl Evans</a>
+                                        <a href="javascript:void(0);">{{ __('Carl Evans') }}</a>
                                     </div>
                                 </td>
-                                <td>SL001</td>
-                                <td>24 Dec 2024</td>
-                                <td><span class="badge badge-success">Completed</span></td>
+                                <td>{{ __('SL001') }}</td>
+                                <td>{{ __('24 Dec 2024') }}</td>
+                                <td><span class="badge badge-success">{{ __('Completed') }}</span></td>
                                 <td>$1000</td>
                                 <td>$1000</td>
                                 <td>$0.00</td>
-                                <td><span class="badge badge-soft-success shadow-none badge-xs"><i class="ti ti-point-filled me-1"></i>Paid</span></td>
-                                <td>Admin</td>
+                                <td><span class="badge badge-soft-success shadow-none badge-xs"><i class="ti ti-point-filled me-1"></i>{{ __('Paid') }}</span></td>
+                                <td>{{ __('Admin') }}</td>
                                 <td class="text-center">
                                     <a class="action-set" href="javascript:void(0);" data-bs-toggle="dropdown" aria-expanded="true">
                                         <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
                                     </a>
                                     <ul class="dropdown-menu">
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#sales-details-new"><i data-feather="eye" class="info-img"></i>Sale Detail</a>
+                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#sales-details-new"><i data-feather="eye" class="info-img"></i>{{ __('Sale Detail') }}</a>
                                         </li>
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#edit-sales-new"><i data-feather="edit" class="info-img"></i>Edit Sale</a>
+                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#edit-sales-new"><i data-feather="edit" class="info-img"></i>{{ __('Edit Sale') }}</a>
                                         </li>
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#showpayment"><i data-feather="dollar-sign" class="info-img"></i>Show Payments</a>
+                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#showpayment"><i data-feather="dollar-sign" class="info-img"></i>{{ __('Show Payments') }}</a>
                                         </li>
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#createpayment"><i data-feather="plus-circle" class="info-img"></i>Create Payment</a>
+                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#createpayment"><i data-feather="plus-circle" class="info-img"></i>{{ __('Create Payment') }}</a>
                                         </li>
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item"><i data-feather="download" class="info-img"></i>Download pdf</a>
+                                            <a href="javascript:void(0);" class="dropdown-item"><i data-feather="download" class="info-img"></i>{{ __('Download pdf') }}</a>
                                         </li>	
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item mb-0" data-bs-toggle="modal" data-bs-target="#delete"><i data-feather="trash-2" class="info-img"></i>Delete Sale</a>
+                                            <a href="javascript:void(0);" class="dropdown-item mb-0" data-bs-toggle="modal" data-bs-target="#delete"><i data-feather="trash-2" class="info-img"></i>{{ __('Delete Sale') }}</a>
                                         </li>								
                                     </ul>
                                 </td>
@@ -195,39 +195,39 @@
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/users/user-02.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Minerva Rameriz</a>
+                                        <a href="javascript:void(0);">{{ __('Minerva Rameriz') }}</a>
                                     </div>
                                 </td>
-                                <td>SL002</td>
-                                <td>10 Dec 2024</td>
-                                <td><span class="badge badge-cyan">Pending</span></td>
+                                <td>{{ __('SL002') }}</td>
+                                <td>{{ __('10 Dec 2024') }}</td>
+                                <td><span class="badge badge-cyan">{{ __('Pending') }}</span></td>
                                 <td>$1500</td>
                                 <td>$0.00</td>
                                 <td>$1500</td>
-                                <td><span class="badge badge-soft-danger badge-xs shadow-none"><i class="ti ti-point-filled me-1"></i>Unpaid</span></td>
-                                <td>Admin</td>
+                                <td><span class="badge badge-soft-danger badge-xs shadow-none"><i class="ti ti-point-filled me-1"></i>{{ __('Unpaid') }}</span></td>
+                                <td>{{ __('Admin') }}</td>
                                 <td class="text-center">
                                     <a class="action-set" href="javascript:void(0);" data-bs-toggle="dropdown" aria-expanded="true">
                                         <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
                                     </a>
                                     <ul class="dropdown-menu">
                                         <li>
-                                            <a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#sales-details-new"><i data-feather="eye" class="info-img"></i>Sale Detail</a>
+                                            <a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#sales-details-new"><i data-feather="eye" class="info-img"></i>{{ __('Sale Detail') }}</a>
                                         </li>
                                         <li>
                                             <a href="{{url('edit-sales')}}" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#edit-sales-new" ><i data-feather="edit" class="info-img"></i>Edit Sale</a>
                                         </li>
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#showpayment"><i data-feather="dollar-sign" class="info-img"></i>Show Payments</a>
+                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#showpayment"><i data-feather="dollar-sign" class="info-img"></i>{{ __('Show Payments') }}</a>
                                         </li>
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#createpayment"><i data-feather="plus-circle" class="info-img"></i>Create Payment</a>
+                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#createpayment"><i data-feather="plus-circle" class="info-img"></i>{{ __('Create Payment') }}</a>
                                         </li>
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item"><i data-feather="download" class="info-img"></i>Download pdf</a>
+                                            <a href="javascript:void(0);" class="dropdown-item"><i data-feather="download" class="info-img"></i>{{ __('Download pdf') }}</a>
                                         </li>	
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item mb-0" data-bs-toggle="modal" data-bs-target="#delete"><i data-feather="trash-2" class="info-img"></i>Delete Sale</a>
+                                            <a href="javascript:void(0);" class="dropdown-item mb-0" data-bs-toggle="modal" data-bs-target="#delete"><i data-feather="trash-2" class="info-img"></i>{{ __('Delete Sale') }}</a>
                                         </li>								
                                     </ul>
                                 </td>
@@ -244,39 +244,39 @@
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/users/user-05.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Robert Lamon</a>
+                                        <a href="javascript:void(0);">{{ __('Robert Lamon') }}</a>
                                     </div>
                                 </td>
-                                <td>SL003</td>
-                                <td>08 Feb 2023</td>
-                                <td><span class="badge badge-success">Completed</span></td>
+                                <td>{{ __('SL003') }}</td>
+                                <td>{{ __('08 Feb 2023') }}</td>
+                                <td><span class="badge badge-success">{{ __('Completed') }}</span></td>
                                 <td>$1500</td>
                                 <td>$0.00</td>
                                 <td>$1500</td>
-                                <td><span class="badge badge-soft-success shadow-none badge-xs"><i class="ti ti-point-filled me-1"></i>Paid</span></td>
-                                <td>Admin</td>
+                                <td><span class="badge badge-soft-success shadow-none badge-xs"><i class="ti ti-point-filled me-1"></i>{{ __('Paid') }}</span></td>
+                                <td>{{ __('Admin') }}</td>
                                 <td class="text-center">
                                     <a class="action-set" href="javascript:void(0);"  data-bs-toggle="dropdown" aria-expanded="true">
                                         <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
                                     </a>
                                     <ul class="dropdown-menu">
                                         <li>
-                                            <a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#sales-details-new"><i data-feather="eye" class="info-img"></i>Sale Detail</a>
+                                            <a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#sales-details-new"><i data-feather="eye" class="info-img"></i>{{ __('Sale Detail') }}</a>
                                         </li>
                                         <li>
                                             <a href="{{url('edit-sales')}}" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#edit-sales-new"><i data-feather="edit" class="info-img"></i>Edit Sale</a>
                                         </li>
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#showpayment"><i data-feather="dollar-sign" class="info-img"></i>Show Payments</a>
+                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#showpayment"><i data-feather="dollar-sign" class="info-img"></i>{{ __('Show Payments') }}</a>
                                         </li>
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#createpayment"><i data-feather="plus-circle" class="info-img"></i>Create Payment</a>
+                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#createpayment"><i data-feather="plus-circle" class="info-img"></i>{{ __('Create Payment') }}</a>
                                         </li>
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item"><i data-feather="download" class="info-img"></i>Download pdf</a>
+                                            <a href="javascript:void(0);" class="dropdown-item"><i data-feather="download" class="info-img"></i>{{ __('Download pdf') }}</a>
                                         </li>	
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item mb-0" data-bs-toggle="modal" data-bs-target="#delete"><i data-feather="trash-2" class="info-img"></i>Delete Sale</a>
+                                            <a href="javascript:void(0);" class="dropdown-item mb-0" data-bs-toggle="modal" data-bs-target="#delete"><i data-feather="trash-2" class="info-img"></i>{{ __('Delete Sale') }}</a>
                                         </li>								
                                     </ul>
                                 </td>
@@ -293,39 +293,39 @@
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/users/user-22.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Patricia Lewis</a>
+                                        <a href="javascript:void(0);">{{ __('Patricia Lewis') }}</a>
                                     </div>
                                 </td>
-                                <td>SL004</td>
-                                <td>12 Feb 2023</td>
-                                <td><span class="badge badge-success">Completed</span></td>
+                                <td>{{ __('SL004') }}</td>
+                                <td>{{ __('12 Feb 2023') }}</td>
+                                <td><span class="badge badge-success">{{ __('Completed') }}</span></td>
                                 <td>$2000</td>
                                 <td>$1000</td>
                                 <td>$1000</td>
-                                <td><span class="badge badge-soft-warning badge-xs shadow-none"><i class="ti ti-point-filled me-1"></i>Overdue</span></td>
-                                <td>Admin</td>
+                                <td><span class="badge badge-soft-warning badge-xs shadow-none"><i class="ti ti-point-filled me-1"></i>{{ __('Overdue') }}</span></td>
+                                <td>{{ __('Admin') }}</td>
                                 <td class="text-center">
                                     <a class="action-set" href="javascript:void(0);" data-bs-toggle="dropdown" aria-expanded="true">
                                         <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
                                     </a>
                                     <ul class="dropdown-menu">
                                         <li>
-                                            <a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#sales-details-new"><i data-feather="eye" class="info-img"></i>Sale Detail</a>
+                                            <a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#sales-details-new"><i data-feather="eye" class="info-img"></i>{{ __('Sale Detail') }}</a>
                                         </li>
                                         <li>
                                             <a href="{{url('edit-sales')}}" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#edit-sales-new"><i data-feather="edit" class="info-img"></i>Edit Sale</a>
                                         </li>
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#showpayment"><i data-feather="dollar-sign" class="info-img"></i>Show Payments</a>
+                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#showpayment"><i data-feather="dollar-sign" class="info-img"></i>{{ __('Show Payments') }}</a>
                                         </li>
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#createpayment"><i data-feather="plus-circle" class="info-img"></i>Create Payment</a>
+                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#createpayment"><i data-feather="plus-circle" class="info-img"></i>{{ __('Create Payment') }}</a>
                                         </li>
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item"><i data-feather="download" class="info-img"></i>Download pdf</a>
+                                            <a href="javascript:void(0);" class="dropdown-item"><i data-feather="download" class="info-img"></i>{{ __('Download pdf') }}</a>
                                         </li>	
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item mb-0" data-bs-toggle="modal" data-bs-target="#delete"><i data-feather="trash-2" class="info-img"></i>Delete Sale</a>
+                                            <a href="javascript:void(0);" class="dropdown-item mb-0" data-bs-toggle="modal" data-bs-target="#delete"><i data-feather="trash-2" class="info-img"></i>{{ __('Delete Sale') }}</a>
                                         </li>								
                                     </ul>
                                 </td>
@@ -342,39 +342,39 @@
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/users/user-03.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Mark Joslyn</a>
+                                        <a href="javascript:void(0);">{{ __('Mark Joslyn') }}</a>
                                     </div>
                                 </td>
-                                <td>SL005</td>
-                                <td>17 Mar 2023</td>
-                                <td><span class="badge badge-success">Completed</span></td>
+                                <td>{{ __('SL005') }}</td>
+                                <td>{{ __('17 Mar 2023') }}</td>
+                                <td><span class="badge badge-success">{{ __('Completed') }}</span></td>
                                 <td>$800</td>
                                 <td>$800</td>
                                 <td>$0.00</td>
-                                <td><span class="badge badge-soft-success shadow-none badge-xs"><i class="ti ti-point-filled me-1"></i>Paid</span></td>
-                                <td>Admin</td>
+                                <td><span class="badge badge-soft-success shadow-none badge-xs"><i class="ti ti-point-filled me-1"></i>{{ __('Paid') }}</span></td>
+                                <td>{{ __('Admin') }}</td>
                                 <td class="text-center">
                                     <a class="action-set" href="javascript:void(0);" data-bs-toggle="dropdown" aria-expanded="true">
                                         <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
                                     </a>
                                     <ul class="dropdown-menu">
                                         <li>
-                                            <a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#sales-details-new"><i data-feather="eye" class="info-img"></i>Sale Detail</a>
+                                            <a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#sales-details-new"><i data-feather="eye" class="info-img"></i>{{ __('Sale Detail') }}</a>
                                         </li>
                                         <li>
                                             <a href="{{url('edit-sales')}}" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#edit-sales-new"><i data-feather="edit" class="info-img"></i>Edit Sale</a>
                                         </li>
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#showpayment"><i data-feather="dollar-sign" class="info-img"></i>Show Payments</a>
+                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#showpayment"><i data-feather="dollar-sign" class="info-img"></i>{{ __('Show Payments') }}</a>
                                         </li>
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#createpayment"><i data-feather="plus-circle" class="info-img"></i>Create Payment</a>
+                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#createpayment"><i data-feather="plus-circle" class="info-img"></i>{{ __('Create Payment') }}</a>
                                         </li>
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item"><i data-feather="download" class="info-img"></i>Download pdf</a>
+                                            <a href="javascript:void(0);" class="dropdown-item"><i data-feather="download" class="info-img"></i>{{ __('Download pdf') }}</a>
                                         </li>	
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item mb-0" data-bs-toggle="modal" data-bs-target="#delete"><i data-feather="trash-2" class="info-img"></i>Delete Sale</a>
+                                            <a href="javascript:void(0);" class="dropdown-item mb-0" data-bs-toggle="modal" data-bs-target="#delete"><i data-feather="trash-2" class="info-img"></i>{{ __('Delete Sale') }}</a>
                                         </li>								
                                     </ul>
                                 </td>
@@ -391,39 +391,39 @@
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/users/user-12.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Marsha Betts</a>
+                                        <a href="javascript:void(0);">{{ __('Marsha Betts') }}</a>
                                     </div>
                                 </td>
-                                <td>SL006</td>
-                                <td>24 Mar 2023</td>
-                                <td><span class="badge badge-cyan">Pending</span></td>
+                                <td>{{ __('SL006') }}</td>
+                                <td>{{ __('24 Mar 2023') }}</td>
+                                <td><span class="badge badge-cyan">{{ __('Pending') }}</span></td>
                                 <td>$750</td>
                                 <td>$0.00</td>
                                 <td>$750</td>
-                                <td><span class="badge badge-soft-danger badge-xs shadow-none"><i class="ti ti-point-filled me-1"></i>Unpaid</span></td>
-                                <td>Admin</td>
+                                <td><span class="badge badge-soft-danger badge-xs shadow-none"><i class="ti ti-point-filled me-1"></i>{{ __('Unpaid') }}</span></td>
+                                <td>{{ __('Admin') }}</td>
                                 <td class="text-center">
                                     <a class="action-set" href="javascript:void(0);" data-bs-toggle="dropdown" aria-expanded="true">
                                         <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
                                     </a>
                                     <ul class="dropdown-menu">
                                         <li>
-                                            <a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#sales-details-new"><i data-feather="eye" class="info-img"></i>Sale Detail</a>
+                                            <a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#sales-details-new"><i data-feather="eye" class="info-img"></i>{{ __('Sale Detail') }}</a>
                                         </li>
                                         <li>
                                             <a href="{{url('edit-sales')}}" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#edit-sales-new"><i data-feather="edit" class="info-img"></i>Edit Sale</a>
                                         </li>
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#showpayment"><i data-feather="dollar-sign" class="info-img"></i>Show Payments</a>
+                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#showpayment"><i data-feather="dollar-sign" class="info-img"></i>{{ __('Show Payments') }}</a>
                                         </li>
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#createpayment"><i data-feather="plus-circle" class="info-img"></i>Create Payment</a>
+                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#createpayment"><i data-feather="plus-circle" class="info-img"></i>{{ __('Create Payment') }}</a>
                                         </li>
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item"><i data-feather="download" class="info-img"></i>Download pdf</a>
+                                            <a href="javascript:void(0);" class="dropdown-item"><i data-feather="download" class="info-img"></i>{{ __('Download pdf') }}</a>
                                         </li>	
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item mb-0" data-bs-toggle="modal" data-bs-target="#delete"><i data-feather="trash-2" class="info-img"></i>Delete Sale</a>
+                                            <a href="javascript:void(0);" class="dropdown-item mb-0" data-bs-toggle="modal" data-bs-target="#delete"><i data-feather="trash-2" class="info-img"></i>{{ __('Delete Sale') }}</a>
                                         </li>								
                                     </ul>
                                 </td>
@@ -440,39 +440,39 @@
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/users/user-06.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Daniel Jude</a>
+                                        <a href="javascript:void(0);">{{ __('Daniel Jude') }}</a>
                                     </div>
                                 </td>
-                                <td>SL007</td>
-                                <td>06 Apr 2023</td>
-                                <td><span class="badge badge-success">Completed</span></td>
+                                <td>{{ __('SL007') }}</td>
+                                <td>{{ __('06 Apr 2023') }}</td>
+                                <td><span class="badge badge-success">{{ __('Completed') }}</span></td>
                                 <td>$1300</td>
                                 <td>$1300</td>
                                 <td>$0.00</td>
-                                <td><span class="badge badge-soft-success shadow-none badge-xs"><i class="ti ti-point-filled me-1"></i>Paid</span></td>
-                                <td>Admin</td>
+                                <td><span class="badge badge-soft-success shadow-none badge-xs"><i class="ti ti-point-filled me-1"></i>{{ __('Paid') }}</span></td>
+                                <td>{{ __('Admin') }}</td>
                                 <td class="text-center">
                                     <a class="action-set" href="javascript:void(0);" data-bs-toggle="dropdown" aria-expanded="true">
                                         <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
                                     </a>
                                     <ul class="dropdown-menu">
                                         <li>
-                                            <a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#sales-details-new"><i data-feather="eye" class="info-img"></i>Sale Detail</a>
+                                            <a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#sales-details-new"><i data-feather="eye" class="info-img"></i>{{ __('Sale Detail') }}</a>
                                         </li>
                                         <li>
                                             <a href="{{url('edit-sales')}}" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#edit-sales-new"><i data-feather="edit" class="info-img"></i>Edit Sale</a>
                                         </li>
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#showpayment"><i data-feather="dollar-sign" class="info-img"></i>Show Payments</a>
+                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#showpayment"><i data-feather="dollar-sign" class="info-img"></i>{{ __('Show Payments') }}</a>
                                         </li>
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#createpayment"><i data-feather="plus-circle" class="info-img"></i>Create Payment</a>
+                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#createpayment"><i data-feather="plus-circle" class="info-img"></i>{{ __('Create Payment') }}</a>
                                         </li>
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item"><i data-feather="download" class="info-img"></i>Download pdf</a>
+                                            <a href="javascript:void(0);" class="dropdown-item"><i data-feather="download" class="info-img"></i>{{ __('Download pdf') }}</a>
                                         </li>	
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item mb-0" data-bs-toggle="modal" data-bs-target="#delete"><i data-feather="trash-2" class="info-img"></i>Delete Sale</a>
+                                            <a href="javascript:void(0);" class="dropdown-item mb-0" data-bs-toggle="modal" data-bs-target="#delete"><i data-feather="trash-2" class="info-img"></i>{{ __('Delete Sale') }}</a>
                                         </li>								
                                     </ul>
                                 </td>
@@ -489,39 +489,39 @@
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/users/user-21.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Emma Bates</a>
+                                        <a href="javascript:void(0);">{{ __('Emma Bates') }}</a>
                                     </div>
                                 </td>
-                                <td>SL008</td>
-                                <td>16 Apr 2023</td>
-                                <td><span class="badge badge-success">Completed</span></td>
+                                <td>{{ __('SL008') }}</td>
+                                <td>{{ __('16 Apr 2023') }}</td>
+                                <td><span class="badge badge-success">{{ __('Completed') }}</span></td>
                                 <td>$1100</td>
                                 <td>$1100</td>
                                 <td>$0.00</td>
-                                <td><span class="badge badge-soft-success shadow-none badge-xs"><i class="ti ti-point-filled me-1"></i>Paid</span></td>
-                                <td>Admin</td>
+                                <td><span class="badge badge-soft-success shadow-none badge-xs"><i class="ti ti-point-filled me-1"></i>{{ __('Paid') }}</span></td>
+                                <td>{{ __('Admin') }}</td>
                                 <td class="text-center">
                                     <a class="action-set" href="javascript:void(0);" data-bs-toggle="dropdown" aria-expanded="true">
                                         <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
                                     </a>
                                     <ul class="dropdown-menu">
                                         <li>
-                                            <a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#sales-details-new"><i data-feather="eye" class="info-img"></i>Sale Detail</a>
+                                            <a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#sales-details-new"><i data-feather="eye" class="info-img"></i>{{ __('Sale Detail') }}</a>
                                         </li>
                                         <li>
                                             <a href="{{url('edit-sales')}}" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#edit-sales-new"><i data-feather="edit" class="info-img"></i>Edit Sale</a>
                                         </li>
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#showpayment"><i data-feather="dollar-sign" class="info-img"></i>Show Payments</a>
+                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#showpayment"><i data-feather="dollar-sign" class="info-img"></i>{{ __('Show Payments') }}</a>
                                         </li>
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#createpayment"><i data-feather="plus-circle" class="info-img"></i>Create Payment</a>
+                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#createpayment"><i data-feather="plus-circle" class="info-img"></i>{{ __('Create Payment') }}</a>
                                         </li>
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item"><i data-feather="download" class="info-img"></i>Download pdf</a>
+                                            <a href="javascript:void(0);" class="dropdown-item"><i data-feather="download" class="info-img"></i>{{ __('Download pdf') }}</a>
                                         </li>	
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item mb-0" data-bs-toggle="modal" data-bs-target="#delete"><i data-feather="trash-2" class="info-img"></i>Delete Sale</a>
+                                            <a href="javascript:void(0);" class="dropdown-item mb-0" data-bs-toggle="modal" data-bs-target="#delete"><i data-feather="trash-2" class="info-img"></i>{{ __('Delete Sale') }}</a>
                                         </li>								
                                     </ul>
                                 </td>
@@ -538,39 +538,39 @@
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/users/user-16.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Richard Fralick</a>
+                                        <a href="javascript:void(0);">{{ __('Richard Fralick') }}</a>
                                     </div>
                                 </td>
-                                <td>SL009</td>
-                                <td>04 May 2023</td>
-                                <td><span class="badge badge-cyan">Pending</span></td>
+                                <td>{{ __('SL009') }}</td>
+                                <td>{{ __('04 May 2023') }}</td>
+                                <td><span class="badge badge-cyan">{{ __('Pending') }}</span></td>
                                 <td>$2300</td>
                                 <td>$2300</td>
                                 <td>$0.00</td>
-                                <td><span class="badge badge-soft-success shadow-none badge-xs"><i class="ti ti-point-filled me-1"></i>Paid</span></td>
-                                <td>Admin</td>
+                                <td><span class="badge badge-soft-success shadow-none badge-xs"><i class="ti ti-point-filled me-1"></i>{{ __('Paid') }}</span></td>
+                                <td>{{ __('Admin') }}</td>
                                 <td class="text-center">
                                     <a class="action-set" href="javascript:void(0);" data-bs-toggle="dropdown" aria-expanded="true">
                                         <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
                                     </a>
                                     <ul class="dropdown-menu">
                                         <li>
-                                            <a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#sales-details-new"><i data-feather="eye" class="info-img"></i>Sale Detail</a>
+                                            <a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#sales-details-new"><i data-feather="eye" class="info-img"></i>{{ __('Sale Detail') }}</a>
                                         </li>
                                         <li>
                                             <a href="{{url('edit-sales')}}" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#edit-sales-new"><i data-feather="edit" class="info-img"></i>Edit Sale</a>
                                         </li>
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#showpayment"><i data-feather="dollar-sign" class="info-img"></i>Show Payments</a>
+                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#showpayment"><i data-feather="dollar-sign" class="info-img"></i>{{ __('Show Payments') }}</a>
                                         </li>
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#createpayment"><i data-feather="plus-circle" class="info-img"></i>Create Payment</a>
+                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#createpayment"><i data-feather="plus-circle" class="info-img"></i>{{ __('Create Payment') }}</a>
                                         </li>
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item"><i data-feather="download" class="info-img"></i>Download pdf</a>
+                                            <a href="javascript:void(0);" class="dropdown-item"><i data-feather="download" class="info-img"></i>{{ __('Download pdf') }}</a>
                                         </li>	
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item mb-0" data-bs-toggle="modal" data-bs-target="#delete"><i data-feather="trash-2" class="info-img"></i>Delete Sale</a>
+                                            <a href="javascript:void(0);" class="dropdown-item mb-0" data-bs-toggle="modal" data-bs-target="#delete"><i data-feather="trash-2" class="info-img"></i>{{ __('Delete Sale') }}</a>
                                         </li>								
                                     </ul>
                                 </td>
@@ -587,39 +587,39 @@
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/users/user-26.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Michelle Robison</a>
+                                        <a href="javascript:void(0);">{{ __('Michelle Robison') }}</a>
                                     </div>
                                 </td>
-                                <td>SL010</td>
-                                <td>29 May 2023</td>
-                                <td><span class="badge badge-cyan">Pending</span></td>
+                                <td>{{ __('SL010') }}</td>
+                                <td>{{ __('29 May 2023') }}</td>
+                                <td><span class="badge badge-cyan">{{ __('Pending') }}</span></td>
                                 <td>$1700</td>
                                 <td>$1700</td>
                                 <td>$0.00</td>
-                                <td><span class="badge badge-soft-success shadow-none badge-xs"><i class="ti ti-point-filled me-1"></i>Paid</span></td>
-                                <td>Admin</td>
+                                <td><span class="badge badge-soft-success shadow-none badge-xs"><i class="ti ti-point-filled me-1"></i>{{ __('Paid') }}</span></td>
+                                <td>{{ __('Admin') }}</td>
                                 <td class="text-center">
                                     <a class="action-set" href="javascript:void(0);" data-bs-toggle="dropdown" aria-expanded="true">
                                         <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
                                     </a>
                                     <ul class="dropdown-menu">
                                         <li>
-                                            <a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#sales-details-new"><i data-feather="eye" class="info-img"></i>Sale Detail</a>
+                                            <a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#sales-details-new"><i data-feather="eye" class="info-img"></i>{{ __('Sale Detail') }}</a>
                                         </li>
                                         <li>
                                             <a href="{{url('edit-sales')}}" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#edit-sales-new"><i data-feather="edit" class="info-img"></i>Edit Sale</a>
                                         </li>
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#showpayment"><i data-feather="dollar-sign" class="info-img"></i>Show Payments</a>
+                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#showpayment"><i data-feather="dollar-sign" class="info-img"></i>{{ __('Show Payments') }}</a>
                                         </li>
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#createpayment"><i data-feather="plus-circle" class="info-img"></i>Create Payment</a>
+                                            <a href="javascript:void(0);" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#createpayment"><i data-feather="plus-circle" class="info-img"></i>{{ __('Create Payment') }}</a>
                                         </li>
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item"><i data-feather="download" class="info-img"></i>Download pdf</a>
+                                            <a href="javascript:void(0);" class="dropdown-item"><i data-feather="download" class="info-img"></i>{{ __('Download pdf') }}</a>
                                         </li>	
                                         <li>
-                                            <a href="javascript:void(0);" class="dropdown-item mb-0" data-bs-toggle="modal" data-bs-target="#delete"><i data-feather="trash-2" class="info-img"></i>Delete Sale</a>
+                                            <a href="javascript:void(0);" class="dropdown-item mb-0" data-bs-toggle="modal" data-bs-target="#delete"><i data-feather="trash-2" class="info-img"></i>{{ __('Delete Sale') }}</a>
                                         </li>								
                                     </ul>
                                 </td>

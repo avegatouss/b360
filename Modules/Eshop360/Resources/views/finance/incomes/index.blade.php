@@ -1,13 +1,13 @@
 <x-dashboard::layouts.master
-    :title="'Incomes — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Incomes') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Incomes">
+    :pageTitle="__('Incomes')">
 
 <div class="page-header">
     <div class="add-item d-flex">
         <div class="page-title">
-            <h4 class="fw-bold">Incomes</h4>
-            <h6>Manage your incomes</h6>
+            <h4 class="fw-bold">{{ __('Incomes') }}</h4>
+            <h6>{{ __('Manage your incomes') }}</h6>
         </div>
     </div>
     <ul class="table-top-head">
@@ -15,7 +15,7 @@
         <li><a data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"><img src="{{ URL::asset('build/img/icons/excel.svg') }}" alt="img"></a></li>
     </ul>
     <div class="page-btn">
-        <a href="javascript:void(0);" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addIncomeModal"><i data-feather="plus-circle" class="me-1"></i>New Income</a>
+        <a href="javascript:void(0);" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addIncomeModal"><i data-feather="plus-circle" class="me-1"></i>{{ __('New Income') }}</a>
     </div>
 </div>
 
@@ -24,7 +24,7 @@
     <div class="col-md-4">
         <div class="card bg-success text-white">
             <div class="card-body">
-                <h6 class="text-white-50">Total Incomes</h6>
+                <h6 class="text-white-50">{{ __('Total Incomes') }}</h6>
                 <h3 class="fw-bold mb-0">{{ number_format($totalIncomes ?? 0, 2) }}</h3>
             </div>
         </div>
@@ -40,9 +40,9 @@
         </div>
         <div class="d-flex table-dropdown my-xl-auto right-content align-items-center flex-wrap row-gap-3">
             <div class="dropdown me-2">
-                <a href="javascript:void(0);" class="dropdown-toggle btn btn-white btn-md d-inline-flex align-items-center" data-bs-toggle="dropdown">Source</a>
+                <a href="javascript:void(0);" class="dropdown-toggle btn btn-white btn-md d-inline-flex align-items-center" data-bs-toggle="dropdown">{{ __('Source') }}</a>
                 <ul class="dropdown-menu dropdown-menu-end p-3">
-                    <li><a href="javascript:void(0);" class="dropdown-item rounded-1">All</a></li>
+                    <li><a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('All') }}</a></li>
                     @foreach($sources as $source)
                     <li><a href="javascript:void(0);" class="dropdown-item rounded-1">{{ $source->name }}</a></li>
                     @endforeach
@@ -55,13 +55,13 @@
             <table class="table datatable">
                 <thead class="thead-light">
                     <tr>
-                        <th>Date</th>
-                        <th>Description</th>
-                        <th>Source</th>
-                        <th>Account</th>
-                        <th class="text-end">Amount</th>
-                        <th>Reference</th>
-                        <th class="no-sort">Actions</th>
+                        <th>{{ __('Date') }}</th>
+                        <th>{{ __('Description') }}</th>
+                        <th>{{ __('Source') }}</th>
+                        <th>{{ __('Account') }}</th>
+                        <th class="text-end">{{ __('Amount') }}</th>
+                        <th>{{ __('Reference') }}</th>
+                        <th class="no-sort">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -84,7 +84,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="7" class="text-center text-muted">No incomes found.</td></tr>
+                    <tr><td colspan="7" class="text-center text-muted">{{ __('No incomes found.') }}</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -102,52 +102,52 @@
             <form action="{{ route('eshop360.finance.incomes.store', $instance->slug ?? '') }}" method="POST">
                 @csrf
                 <div class="modal-header">
-                    <h5 class="modal-title">New Income</h5>
+                    <h5 class="modal-title">{{ __('New Income') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Date <span class="text-danger">*</span></label>
+                        <label class="form-label">{{ __('Date') }}<span class="text-danger">*</span></label>
                         <input type="date" name="date" class="form-control" value="{{ date('Y-m-d') }}" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Source <span class="text-danger">*</span></label>
+                        <label class="form-label">{{ __('Source') }}<span class="text-danger">*</span></label>
                         <select name="source_id" class="form-select" required>
-                            <option value="">Select source</option>
+                            <option value="">{{ __('Select source') }}</option>
                             @foreach($sources as $source)
                             <option value="{{ $source->id }}">{{ $source->name }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Account <span class="text-danger">*</span></label>
+                        <label class="form-label">{{ __('Account') }}<span class="text-danger">*</span></label>
                         <select name="account_id" class="form-select" required>
-                            <option value="">Select account</option>
+                            <option value="">{{ __('Select account') }}</option>
                             @foreach($accounts as $account)
                             <option value="{{ $account->id }}">{{ $account->name }} ({{ number_format($account->balance, 2) }})</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Amount <span class="text-danger">*</span></label>
+                        <label class="form-label">{{ __('Amount') }}<span class="text-danger">*</span></label>
                         <input type="number" name="amount" class="form-control" step="0.01" min="0.01" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Description <span class="text-danger">*</span></label>
+                        <label class="form-label">{{ __('Description') }}<span class="text-danger">*</span></label>
                         <input type="text" name="description" class="form-control" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Reference</label>
+                        <label class="form-label">{{ __('Reference') }}</label>
                         <input type="text" name="reference" class="form-control">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Notes</label>
+                        <label class="form-label">{{ __('Notes') }}</label>
                         <textarea name="notes" class="form-control" rows="2"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Add Income</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ __('Add Income') }}</button>
                 </div>
             </form>
         </div>

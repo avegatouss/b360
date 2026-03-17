@@ -68,5 +68,6 @@
             }
         });
     </script>
+    @include('authmod::components.recaptcha')
 </body>
 </html>

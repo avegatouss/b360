@@ -1,17 +1,17 @@
 <x-dashboard::layouts.master
-    :title="'Gift Cards — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Gift Cards') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Gift Cards">
+    :pageTitle="__('Gift Cards')">
 
 <div class="page-header">
     <div class="add-item d-flex">
         <div class="page-title">
-            <h4 class="fw-bold">Gift Cards</h4>
-            <h6>Manage gift cards</h6>
+            <h4 class="fw-bold">{{ __('Gift Cards') }}</h4>
+            <h6>{{ __('Manage gift cards') }}</h6>
         </div>
     </div>
     <div class="page-btn">
-        <a href="javascript:void(0);" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addGiftCardModal"><i data-feather="plus-circle" class="me-1"></i>New Gift Card</a>
+        <a href="javascript:void(0);" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addGiftCardModal"><i data-feather="plus-circle" class="me-1"></i>{{ __('New Gift Card') }}</a>
     </div>
 </div>
 
@@ -24,13 +24,13 @@
         </div>
         <div class="d-flex table-dropdown my-xl-auto right-content align-items-center flex-wrap row-gap-3">
             <div class="dropdown">
-                <a href="javascript:void(0);" class="dropdown-toggle btn btn-white btn-md d-inline-flex align-items-center" data-bs-toggle="dropdown">Status</a>
+                <a href="javascript:void(0);" class="dropdown-toggle btn btn-white btn-md d-inline-flex align-items-center" data-bs-toggle="dropdown">{{ __('Status') }}</a>
                 <ul class="dropdown-menu dropdown-menu-end p-3">
-                    <li><a href="javascript:void(0);" class="dropdown-item rounded-1">All</a></li>
-                    <li><a href="javascript:void(0);" class="dropdown-item rounded-1">Active</a></li>
-                    <li><a href="javascript:void(0);" class="dropdown-item rounded-1">Used</a></li>
-                    <li><a href="javascript:void(0);" class="dropdown-item rounded-1">Expired</a></li>
-                    <li><a href="javascript:void(0);" class="dropdown-item rounded-1">Disabled</a></li>
+                    <li><a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('All') }}</a></li>
+                    <li><a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Active') }}</a></li>
+                    <li><a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Used') }}</a></li>
+                    <li><a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Expired') }}</a></li>
+                    <li><a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Disabled') }}</a></li>
                 </ul>
             </div>
         </div>
@@ -40,14 +40,14 @@
             <table class="table datatable">
                 <thead class="thead-light">
                     <tr>
-                        <th>Code</th>
-                        <th>Customer</th>
-                        <th class="text-end">Initial Value</th>
-                        <th class="text-end">Balance</th>
-                        <th>Expires At</th>
-                        <th>Status</th>
-                        <th>Created</th>
-                        <th class="no-sort">Actions</th>
+                        <th>{{ __('Code') }}</th>
+                        <th>{{ __('Customer') }}</th>
+                        <th class="text-end">{{ __('Initial Value') }}</th>
+                        <th class="text-end">{{ __('Balance') }}</th>
+                        <th>{{ __('Expires At') }}</th>
+                        <th>{{ __('Status') }}</th>
+                        <th>{{ __('Created') }}</th>
+                        <th class="no-sort">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -71,14 +71,14 @@
                                 @if($card->status === 'active')
                                 <form action="{{ route('eshop360.finance.gift-cards.disable', [$instance->slug ?? '', $card]) }}" method="POST" class="d-inline" onsubmit="return confirm('Disable this gift card?')">
                                     @csrf @method('PATCH')
-                                    <button type="submit" class="p-2 border-0 bg-transparent" title="Disable"><i data-feather="x-circle" class="text-danger"></i></button>
+                                    <button type="submit" class="p-2 border-0 bg-transparent" title="{{ __('Disable') }}"><i data-feather="x-circle" class="text-danger"></i></button>
                                 </form>
                                 @endif
                             </div>
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="8" class="text-center text-muted">No gift cards found.</td></tr>
+                    <tr><td colspan="8" class="text-center text-muted">{{ __('No gift cards found.') }}</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -96,30 +96,30 @@
             <form action="{{ route('eshop360.finance.gift-cards.store', $instance->slug ?? '') }}" method="POST">
                 @csrf
                 <div class="modal-header">
-                    <h5 class="modal-title">New Gift Card</h5>
+                    <h5 class="modal-title">{{ __('New Gift Card') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Code</label>
-                        <input type="text" name="code" class="form-control" placeholder="Leave empty to auto-generate">
+                        <label class="form-label">{{ __('Code') }}</label>
+                        <input type="text" name="code" class="form-control" placeholder="{{ __('Leave empty to auto-generate') }}">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Value <span class="text-danger">*</span></label>
+                        <label class="form-label">{{ __('Value') }}<span class="text-danger">*</span></label>
                         <input type="number" name="initial_value" class="form-control" step="0.01" min="0.01" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Customer</label>
-                        <input type="text" name="customer_name" class="form-control" placeholder="Optional">
+                        <label class="form-label">{{ __('Customer') }}</label>
+                        <input type="text" name="customer_name" class="form-control" placeholder="{{ __('Optional') }}">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Expires At</label>
+                        <label class="form-label">{{ __('Expires At') }}</label>
                         <input type="date" name="expires_at" class="form-control">
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Create Gift Card</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ __('Create Gift Card') }}</button>
                 </div>
             </form>
         </div>

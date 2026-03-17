@@ -1,13 +1,13 @@
 <x-dashboard::layouts.master
-    :title="'Checkout — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Checkout') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Checkout">
+    :pageTitle="__('Checkout')">
 
 <div class="page-header">
     <div class="add-item d-flex">
         <div class="page-title">
-            <h4 class="fw-bold">Checkout POS</h4>
-            <h6>Validation du panier, paiement et creation de commande</h6>
+            <h4 class="fw-bold">{{ __('Checkout POS') }}</h4>
+            <h6>{{ __('Validation du panier, paiement et creation de commande') }}</h6>
         </div>
     </div>
     <div class="page-btn">
@@ -30,7 +30,7 @@
 
             <div class="card">
                 <div class="card-header">
-                    <h5 class="mb-0">Client et paiement</h5>
+                    <h5 class="mb-0">{{ __('Client et paiement') }}</h5>
                 </div>
                 <div class="card-body">
                     @if(($cartContext['is_codifarm'] ?? false) || $contextChannel)
@@ -41,9 +41,9 @@
                     @endif
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label">Client existant</label>
+                            <label class="form-label">{{ __('Client existant') }}</label>
                             <select name="customer_id" class="form-select">
-                                <option value="">Client comptoir</option>
+                                <option value="">{{ __('Client comptoir') }}</option>
                                 @foreach($customers as $customer)
                                     <option value="{{ $customer->id }}" {{ old('customer_id') == $customer->id ? 'selected' : '' }}>
                                         {{ $customer->name }}
@@ -54,65 +54,65 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">Methode de paiement</label>
+                            <label class="form-label">{{ __('Methode de paiement') }}</label>
                             <select name="payment_method" id="paymentMethod" class="form-select" required>
                                 @php($methods = ['cash' => 'Especes', 'card' => 'Carte', 'cheque' => 'Cheque', 'paypal' => 'Paypal', 'bank_transfer' => 'Virement', 'wallet' => 'Portefeuille client', 'points' => 'Points', 'deposit' => 'Depot', 'gift_card' => 'Carte cadeau', 'external' => 'Externe'])
                                 @foreach($methods as $value => $label)
-                                    <option value="{{ $value }}" {{ old('payment_method', 'cash') === $value ? 'selected' : '' }}>{{ $label }}</option>
+                                    <option value="__BLADE_BLOCK_8__" __BLADE_BLOCK_9__>__BLADE_BLOCK_10__</option>
                                 @endforeach
                             </select>
-                            @error('payment_method') <small class="text-danger">{{ $message }}</small> @enderror
+                            @error('payment_method') <small class="text-danger">__BLADE_BLOCK_11__</small> @enderror
                         </div>
 
-                        {{-- Gift card code (shown only when gift_card selected) --}}
+                        __BLADE_BLOCK_12__
                         <div class="col-md-6" id="giftCardSection" style="display:none;">
                             <label class="form-label">Code carte cadeau</label>
                             <input type="text" name="gift_card_code" id="giftCardCode" class="form-control text-uppercase"
-                                   placeholder="Ex: ABCD1234EFGH" value="{{ old('gift_card_code') }}"
+                                   placeholder="Ex: ABCD1234EFGH" value="__BLADE_BLOCK_13__"
                                    style="letter-spacing:.1em;">
-                            @error('gift_card_code') <small class="text-danger">{{ $message }}</small> @enderror
+                            @error('gift_card_code') <small class="text-danger">__BLADE_BLOCK_14__</small> @enderror
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label">Nom du client</label>
-                            <input type="text" name="customer_name" class="form-control" value="{{ old('customer_name') }}" placeholder="Utilise pour creer un client rapide">
-                            @error('customer_name') <small class="text-danger">{{ $message }}</small> @enderror
+                            <input type="text" name="customer_name" class="form-control" value="__BLADE_BLOCK_15__" placeholder="Utilise pour creer un client rapide">
+                            @error('customer_name') <small class="text-danger">__BLADE_BLOCK_16__</small> @enderror
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label">Telephone</label>
-                            <input type="text" name="customer_phone" class="form-control" value="{{ old('customer_phone') }}">
-                            @error('customer_phone') <small class="text-danger">{{ $message }}</small> @enderror
+                            <input type="text" name="customer_phone" class="form-control" value="__BLADE_BLOCK_17__">
+                            @error('customer_phone') <small class="text-danger">__BLADE_BLOCK_18__</small> @enderror
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label">Email</label>
-                            <input type="email" name="customer_email" class="form-control" value="{{ old('customer_email') }}">
-                            @error('customer_email') <small class="text-danger">{{ $message }}</small> @enderror
+                            <input type="email" name="customer_email" class="form-control" value="__BLADE_BLOCK_19__">
+                            @error('customer_email') <small class="text-danger">__BLADE_BLOCK_20__</small> @enderror
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label">Montant recu</label>
-                            <input type="number" name="paid_amount" class="form-control" min="0" step="0.01" value="{{ old('paid_amount', $totals['total']) }}" required>
-                            @error('paid_amount') <small class="text-danger">{{ $message }}</small> @enderror
+                            <input type="number" name="paid_amount" class="form-control" min="0" step="0.01" value="__BLADE_BLOCK_21__" required>
+                            @error('paid_amount') <small class="text-danger">__BLADE_BLOCK_22__</small> @enderror
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label">Livraison</label>
-                            <input type="number" name="shipping_amount" class="form-control" min="0" step="0.01" value="{{ old('shipping_amount', 0) }}">
-                            @error('shipping_amount') <small class="text-danger">{{ $message }}</small> @enderror
+                            <input type="number" name="shipping_amount" class="form-control" min="0" step="0.01" value="__BLADE_BLOCK_23__">
+                            @error('shipping_amount') <small class="text-danger">__BLADE_BLOCK_24__</small> @enderror
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label">Adresse</label>
-                            <input type="text" name="customer_address" class="form-control" value="{{ old('customer_address') }}">
-                            @error('customer_address') <small class="text-danger">{{ $message }}</small> @enderror
+                            <input type="text" name="customer_address" class="form-control" value="__BLADE_BLOCK_25__">
+                            @error('customer_address') <small class="text-danger">__BLADE_BLOCK_26__</small> @enderror
                         </div>
 
                         <div class="col-12">
                             <label class="form-label">Notes</label>
-                            <textarea name="notes" class="form-control" rows="3">{{ old('notes') }}</textarea>
-                            @error('notes') <small class="text-danger">{{ $message }}</small> @enderror
+                            <textarea name="notes" class="form-control" rows="3">__BLADE_BLOCK_27__</textarea>
+                            @error('notes') <small class="text-danger">__BLADE_BLOCK_28__</small> @enderror
                         </div>
                     </div>
                 </div>
@@ -130,7 +130,7 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Panier</h5>
-                <span class="badge bg-light text-dark">{{ count($cart) }} ligne(s)</span>
+                <span class="badge bg-light text-dark">__BLADE_BLOCK_29__ ligne(s)</span>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -177,19 +177,19 @@
 
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0">Resume</h5>
+                <h5 class="mb-0">{{ __('Resume') }}</h5>
             </div>
             <div class="card-body">
                 <div class="d-flex justify-content-between mb-2">
-                    <span>Sous-total</span>
+                    <span>{{ __('Sous-total') }}</span>
                     <strong>{{ number_format($totals['subtotal'], 2) }}</strong>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
-                    <span>Taxes</span>
+                    <span>{{ __('Taxes') }}</span>
                     <strong>{{ number_format($totals['tax'], 2) }}</strong>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
-                    <span>Remise</span>
+                    <span>{{ __('Remise') }}</span>
                     <strong class="text-danger">-{{ number_format($totals['discount'], 2) }}</strong>
                 </div>
                 @if($coupon)
@@ -198,7 +198,7 @@
                     </div>
                 @endif
                 <div class="d-flex justify-content-between border-top pt-3">
-                    <span class="fw-bold">Total hors livraison</span>
+                    <span class="fw-bold">{{ __('Total hors livraison') }}</span>
                     <strong>{{ number_format($totals['total'], 2) }}</strong>
                 </div>
             </div>

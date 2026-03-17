@@ -1,21 +1,21 @@
 <x-dashboard::layouts.master
-    :title="'Best Sellers — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Best Sellers') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Best Sellers">
+    :pageTitle="__('Best Sellers')">
 
 <div class="page-header">
                 <div class="add-item d-flex">
                     <div class="page-title">
-                        <h4>Bestseller Products Report</h4>
-                        <h6>View Reports of Best Selling Products</h6>
+                        <h4>{{ __('Bestseller Products Report') }}</h4>
+                        <h6>{{ __('View Reports of Best Selling Products') }}</h6>
                     </div>
                 </div>
                 <ul class="table-top-head">
                     <li class="me-2">
-                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="Refresh"><i class="ti ti-refresh"></i></a>
+                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Refresh') }}"><i class="ti ti-refresh"></i></a>
                     </li>
                     <li class="me-2">
-                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="Collapse" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
+                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Collapse') }}" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
                     </li>
                 </ul>
             </div>
@@ -25,9 +25,9 @@
                         <div class="row align-items-end">
                             <div class="col-md-3">
                                 <div class="mb-3">
-                                    <label class="form-label">Choose Date </label>
+                                    <label class="form-label">{{ __('Choose Date') }}</label>
                                     <div class="input-icon-start position-relative">
-                                        <input type="text" class="form-control date-range bookingrange" placeholder="dd/mm/yyyy - dd/mm/yyyy">
+                                        <input type="text" class="form-control date-range bookingrange" placeholder="{{ __('dd/mm/yyyy - dd/mm/yyyy') }}">
                                         <span class="input-icon-left">
                                             <i class="ti ti-calendar"></i>
                                         </span>
@@ -36,30 +36,30 @@
                             </div>
                             <div class="col-md-3">
                                 <div class="mb-3">
-                                    <label class="form-label">Store</label>
+                                    <label class="form-label">{{ __('Store') }}</label>
                                     <select class="select">
-                                        <option>All</option>
-                                        <option>Electro Mart</option>
-                                        <option>Quantum Gadgets</option>
-                                        <option>Prime Bazaar</option>
+                                        <option>{{ __('All') }}</option>
+                                        <option>{{ __('Electro Mart') }}</option>
+                                        <option>{{ __('Quantum Gadgets') }}</option>
+                                        <option>{{ __('Prime Bazaar') }}</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="mb-3">
-                                    <label class="form-label">Products</label>
+                                    <label class="form-label">{{ __('Products') }}</label>
                                     <select class="select">
-                                        <option>All</option>
-                                        <option>Lenovo IdeaPad 3</option>
-                                        <option>Nike Jordan</option>
-                                        <option>Amazon Echo Dot</option>
-                                        <option>Red Premium Satchel</option>
+                                        <option>{{ __('All') }}</option>
+                                        <option>{{ __('Lenovo IdeaPad 3') }}</option>
+                                        <option>{{ __('Nike Jordan') }}</option>
+                                        <option>{{ __('Amazon Echo Dot') }}</option>
+                                        <option>{{ __('Red Premium Satchel') }}</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="col-lg-3">
                                 <div class="mb-3">
-                                    <button class="btn btn-primary" type="submit">Generate Report</button>
+                                    <button class="btn btn-primary" type="submit">{{ __('Generate Report') }}</button>
                                 </div>
                             </div>
                         </div>
@@ -70,7 +70,7 @@
             <div class="card no-search">
                 <div class="card-header d-flex align-items-center justify-content-between flex-wrap row-gap-3">
                     <div>
-                        <h4>Best Sellers</h4>
+                        <h4>{{ __('Best Sellers') }}</h4>
                     </div>
                     <ul class="table-top-head">
                         <li class="me-2">
@@ -80,7 +80,7 @@
                             <a data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"><img src="{{URL::asset('build/img/icons/excel.svg')}}" alt="img"></a>
                         </li>
                         <li>
-                            <a data-bs-toggle="tooltip" data-bs-placement="top" title="Print"><i class="ti ti-printer"></i></a>
+                            <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Print') }}"><i class="ti ti-printer"></i></a>
                         </li>
                     </ul>
                 </div>
@@ -89,26 +89,26 @@
                         <table class="table datatable">
                             <thead class="thead-light">
                                 <tr>
-                                    <th>SKU</th>
-                                    <th>Product Name</th>
-                                    <th>Brand</th>
-                                    <th>Category</th>
-                                    <th>Sold Qty</th>
-                                    <th>Sold Amount</th>
-                                    <th>Instock Qty</th>
+                                    <th>{{ __('SKU') }}</th>
+                                    <th>{{ __('Product Name') }}</th>
+                                    <th>{{ __('Brand') }}</th>
+                                    <th>{{ __('Category') }}</th>
+                                    <th>{{ __('Sold Qty') }}</th>
+                                    <th>{{ __('Sold Amount') }}</th>
+                                    <th>{{ __('Instock Qty') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
                                     
                                     <td>
-                                        <a>PT001</a>
+                                        <a>{{ __('PT001') }}</a>
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <a  class="avatar avatar-md"><img src="{{URL::asset('build/img/products/laptop.png')}}" class="img-fluid" alt="img"></a>
                                             <div class="ms-2">
-                                                <p class="text-dark mb-0"><a>Lenovo IdeaPad 3</a></p>
+                                                <p class="text-dark mb-0"><a>{{ __('Lenovo IdeaPad 3') }}</a></p>
                                             </div>
                                         </div>
                                     </td>
@@ -130,13 +130,13 @@
                                 <tr>
                                     
                                     <td>
-                                        <a >PT002</a>
+                                        <a >{{ __('PT002') }}</a>
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <a  class="avatar avatar-md"><img src="{{URL::asset('build/img/products/stock-img-06.png')}}" class="img-fluid" alt="img"></a>
                                             <div class="ms-2">
-                                                <p class="text-dark mb-0"><a>Beats Pro </a></p>
+                                                <p class="text-dark mb-0"><a>{{ __('Beats Pro') }}</a></p>
                                             </div>
                                         </div>
                                     </td>
@@ -158,13 +158,13 @@
                                 <tr>
                                     
                                     <td>
-                                        <a >PT003</a>
+                                        <a >{{ __('PT003') }}</a>
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <a class="avatar avatar-md"><img src="{{URL::asset('build/img/products/stock-img-02.png')}}" class="img-fluid" alt="img"></a>
                                             <div class="ms-2">
-                                                <p class="text-dark mb-0"><a>Nike Jordan </a></p>
+                                                <p class="text-dark mb-0"><a>{{ __('Nike Jordan') }}</a></p>
                                             </div>
                                         </div>
                                     </td>
@@ -186,13 +186,13 @@
                                 <tr>
                                     
                                     <td>
-                                        <a >PT004</a>
+                                        <a >{{ __('PT004') }}</a>
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <a class="avatar avatar-md"><img src="{{URL::asset('build/img/products/stock-img-03.png')}}" class="img-fluid" alt="img"></a>
                                             <div class="ms-2">
-                                                <p class="text-dark mb-0"><a>Apple Series 5 Watch</a></p>
+                                                <p class="text-dark mb-0"><a>{{ __('Apple Series 5 Watch') }}</a></p>
                                             </div>
                                         </div>
                                     </td>
@@ -214,13 +214,13 @@
                                 <tr>
                                     
                                     <td>
-                                        <a >PT005</a>
+                                        <a >{{ __('PT005') }}</a>
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <a class="avatar avatar-md"><img src="{{URL::asset('build/img/products/stock-img-04.png')}}" class="img-fluid" alt="img"></a>
                                             <div class="ms-2">
-                                                <p class="text-dark mb-0"><a>Amazon Echo Dot</a></p>
+                                                <p class="text-dark mb-0"><a>{{ __('Amazon Echo Dot') }}</a></p>
                                             </div>
                                         </div>
                                     </td>
@@ -242,13 +242,13 @@
                                 <tr>
                                     
                                     <td>
-                                        <a >PT006</a>
+                                        <a >{{ __('PT006') }}</a>
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <a class="avatar avatar-md"><img src="{{URL::asset('build/img/products/stock-img-05.png')}}" class="img-fluid" alt="img"></a>
                                             <div class="ms-2">
-                                                <p class="text-dark mb-0"><a>Sanford Chair Sofa</a></p>
+                                                <p class="text-dark mb-0"><a>{{ __('Sanford Chair Sofa') }}</a></p>
                                             </div>
                                         </div>
                                     </td>
@@ -270,13 +270,13 @@
                                 <tr>
                                     
                                     <td>
-                                        <a >PT007</a>
+                                        <a >{{ __('PT007') }}</a>
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <a class="avatar avatar-md"><img src="{{URL::asset('build/img/products/expire-product-01.png')}}" class="img-fluid" alt="img"></a>
                                             <div class="ms-2">
-                                                <p class="text-dark mb-0"><a>Red Premium Satchel</a></p>
+                                                <p class="text-dark mb-0"><a>{{ __('Red Premium Satchel') }}</a></p>
                                             </div>
                                         </div>
                                     </td>
@@ -298,13 +298,13 @@
                                 <tr>
                                     
                                     <td>
-                                        <a >PT008</a>
+                                        <a >{{ __('PT008') }}</a>
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <a class="avatar avatar-md"><img src="{{URL::asset('build/img/products/expire-product-02.png')}}" class="img-fluid" alt="img"></a>
                                             <div class="ms-2">
-                                                <p class="text-dark mb-0"><a>Iphone 14 Prol</a></p>
+                                                <p class="text-dark mb-0"><a>{{ __('Iphone 14 Prol') }}</a></p>
                                             </div>
                                         </div>
                                     </td>
@@ -326,13 +326,13 @@
                                 <tr>
                                     
                                     <td>
-                                        <a >PT009</a>
+                                        <a >{{ __('PT009') }}</a>
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <a class="avatar avatar-md"><img src="{{URL::asset('build/img/products/expire-product-03.png')}}" class="img-fluid" alt="img"></a>
                                             <div class="ms-2">
-                                                <p class="text-dark mb-0"><a>Gaming Chair</a></p>
+                                                <p class="text-dark mb-0"><a>{{ __('Gaming Chair') }}</a></p>
                                             </div>
                                         </div>
                                     </td>
@@ -354,13 +354,13 @@
                                 <tr>
                                     
                                     <td>
-                                        <a >PT010</a>
+                                        <a >{{ __('PT010') }}</a>
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <a class="avatar avatar-md"><img src="{{URL::asset('build/img/products/expire-product-04.png')}}" class="img-fluid" alt="img"></a>
                                             <div class="ms-2">
-                                                <p class="text-dark mb-0"><a>Borealis Backpack</a></p>
+                                                <p class="text-dark mb-0"><a>{{ __('Borealis Backpack') }}</a></p>
                                             </div>
                                         </div>
                                     </td>

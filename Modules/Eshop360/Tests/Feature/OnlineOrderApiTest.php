@@ -80,7 +80,7 @@ final class OnlineOrderApiTest extends TestCase
         $onlineOrder = OnlineOrder::with('items')->firstOrFail();
 
         $this->assertSame($channel->id, $onlineOrder->channel_id);
-        $this->assertFalse((bool) $onlineOrder->is_codifarm);
+        $this->assertTrue($onlineOrder->isChannelOrder());
         $this->assertSame(125.0, (float) $onlineOrder->total);
         $this->assertSame(125.0, (float) $onlineOrder->items->first()->unit_price);
 

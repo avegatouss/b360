@@ -1,13 +1,13 @@
 <x-dashboard::layouts.master
-    :title="'Product List — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Product List') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Product List">
+    :pageTitle="__('Product List')">
 
 <div class="page-header">
             <div class="add-item d-flex">
                 <div class="page-title">
-                    <h4 class="fw-bold">Product List</h4>
-                    <h6>Manage your products</h6>
+                    <h4 class="fw-bold">{{ __('Product List') }}</h4>
+                    <h6>{{ __('Manage your products') }}</h6>
                 </div>
             </div>
             <ul class="table-top-head">
@@ -18,10 +18,10 @@
                     <a data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"><img src="{{URL::asset('build/img/icons/excel.svg')}}" alt="img"></a>
                 </li>
                 <li>
-                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="Refresh"><i class="ti ti-refresh"></i></a>
+                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Refresh') }}"><i class="ti ti-refresh"></i></a>
                 </li>
                 <li>
-                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="Collapse" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
+                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Collapse') }}" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
                 </li>
             </ul>
             <div class="page-btn">
@@ -29,7 +29,7 @@
             </div>	
             <div class="page-btn import">
                 <a href="#" class="btn btn-secondary color" data-bs-toggle="modal" data-bs-target="#view-notes"><i
-                    data-feather="download" class="me-1"></i>Import Product</a>
+                    data-feather="download" class="me-1"></i>{{ __('Import Product') }}</a>
             </div>
         </div>
         
@@ -48,16 +48,16 @@
                         </a>
                         <ul class="dropdown-menu  dropdown-menu-end p-3">
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Computers</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Computers') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Electronics</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Electronics') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Shoe</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Shoe') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Electronics</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Electronics') }}</a>
                             </li>
                         </ul>
                     </div>
@@ -67,16 +67,16 @@
                         </a>
                         <ul class="dropdown-menu  dropdown-menu-end p-3">
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Lenovo</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Lenovo') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Beats</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Beats') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Nike</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Nike') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Apple</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Apple') }}</a>
                             </li>
                         </ul>
                     </div>
@@ -93,14 +93,14 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </th>
-                                <th>SKU </th>
-                                <th>Product Name</th>
-                                <th>Category</th>
-                                <th>Brand</th>
-                                <th>Price</th>
-                                <th>Unit</th>
-                                <th>Qty</th>
-                                <th>Created By</th>
+                                <th>{{ __('SKU') }}</th>
+                                <th>{{ __('Product Name') }}</th>
+                                <th>{{ __('Category') }}</th>
+                                <th>{{ __('Brand') }}</th>
+                                <th>{{ __('Price') }}</th>
+                                <th>{{ __('Unit') }}</th>
+                                <th>{{ __('Qty') }}</th>
+                                <th>{{ __('Created By') }}</th>
                                 <th class="no-sort"></th>
                             </tr>
                         </thead>
@@ -112,26 +112,26 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </td>
-                                <td>PT001 </td>
+                                <td>{{ __('PT001') }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/products/stock-img-01.png')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Lenovo IdeaPad 3 </a>
+                                        <a href="javascript:void(0);">{{ __('Lenovo IdeaPad 3') }}</a>
                                     </div>												
                                 </td>							
-                                <td>Computers</td>
-                                <td>Lenovo</td>
+                                <td>{{ __('Computers') }}</td>
+                                <td>{{ __('Lenovo') }}</td>
                                 <td>$600</td>
-                                <td>Pc</td>
+                                <td>{{ __('Pc') }}</td>
                                 <td>100</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <a href="javascript:void(0);" class="avatar avatar-sm me-2">
                                             <img src="{{URL::asset('build/img/users/user-30.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">James Kirwin</a>
+                                        <a href="javascript:void(0);">{{ __('James Kirwin') }}</a>
                                     </div>
                                 </td>
                                 <td class="action-table-data">
@@ -155,26 +155,26 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </td>
-                                <td>PT002</td>
+                                <td>{{ __('PT002') }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/products/stock-img-06.png')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Beats Pro</a>
+                                        <a href="javascript:void(0);">{{ __('Beats Pro') }}</a>
                                     </div>												
                                 </td>
-                                <td>Electronics</td>
-                                <td>Beats</td>
+                                <td>{{ __('Electronics') }}</td>
+                                <td>{{ __('Beats') }}</td>
                                 <td>$160</td>
-                                <td>Pc</td>
+                                <td>{{ __('Pc') }}</td>
                                 <td>140</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <a href="javascript:void(0);" class="avatar avatar-sm me-2">
                                             <img src="{{URL::asset('build/img/users/user-13.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Francis Chang</a>
+                                        <a href="javascript:void(0);">{{ __('Francis Chang') }}</a>
                                     </div>
                                 </td>
                                 <td class="action-table-data">
@@ -199,26 +199,26 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </td>
-                                <td>PT003</td>
+                                <td>{{ __('PT003') }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/products/stock-img-02.png')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Nike Jordan</a>
+                                        <a href="javascript:void(0);">{{ __('Nike Jordan') }}</a>
                                     </div>												
                                 </td>											
-                                <td>Shoe</td>
-                                <td>Nike</td>
+                                <td>{{ __('Shoe') }}</td>
+                                <td>{{ __('Nike') }}</td>
                                 <td>$110</td>
-                                <td>Pc</td>
+                                <td>{{ __('Pc') }}</td>
                                 <td>300</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <a href="javascript:void(0);" class="avatar avatar-sm me-2">
                                             <img src="{{URL::asset('build/img/users/user-11.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Antonio Engle</a>
+                                        <a href="javascript:void(0);">{{ __('Antonio Engle') }}</a>
                                     </div>
                                 </td>
                                 <td class="action-table-data">
@@ -243,26 +243,26 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </td>
-                                <td>PT004</td>
+                                <td>{{ __('PT004') }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/products/stock-img-03.png')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Apple Series 5 Watch</a>
+                                        <a href="javascript:void(0);">{{ __('Apple Series 5 Watch') }}</a>
                                     </div>												
                                 </td>											
-                                <td>Electronics</td>
-                                <td>Apple</td>
+                                <td>{{ __('Electronics') }}</td>
+                                <td>{{ __('Apple') }}</td>
                                 <td>$120</td>
-                                <td>Pc</td>
+                                <td>{{ __('Pc') }}</td>
                                 <td>450</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <a href="javascript:void(0);" class="avatar avatar-sm me-2">
                                             <img src="{{URL::asset('build/img/users/user-32.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Leo Kelly</a>
+                                        <a href="javascript:void(0);">{{ __('Leo Kelly') }}</a>
                                     </div>
                                 </td>
                                 <td class="action-table-data">
@@ -287,26 +287,26 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </td>
-                                <td>PT005</td>
+                                <td>{{ __('PT005') }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/products/stock-img-04.png')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Amazon Echo Dot</a>
+                                        <a href="javascript:void(0);">{{ __('Amazon Echo Dot') }}</a>
                                     </div>												
                                 </td>											
-                                <td>Electronics</td>
-                                <td>Amazon</td>
+                                <td>{{ __('Electronics') }}</td>
+                                <td>{{ __('Amazon') }}</td>
                                 <td>$80</td>
-                                <td>Pc</td>
+                                <td>{{ __('Pc') }}</td>
                                 <td>320</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <a href="javascript:void(0);" class="avatar avatar-sm me-2">
                                             <img src="{{URL::asset('build/img/users/user-02.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Annette Walker</a>
+                                        <a href="javascript:void(0);">{{ __('Annette Walker') }}</a>
                                     </div>
                                 </td>
                                 <td class="action-table-data">
@@ -330,26 +330,26 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </td>
-                                <td>PT006</td>
+                                <td>{{ __('PT006') }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/products/stock-img-05.png')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Sanford Chair Sofa</a>
+                                        <a href="javascript:void(0);">{{ __('Sanford Chair Sofa') }}</a>
                                     </div>												
                                 </td>											
-                                <td>Furnitures</td>
-                                <td>Modern Wave</td>
+                                <td>{{ __('Furnitures') }}</td>
+                                <td>{{ __('Modern Wave') }}</td>
                                 <td>$320</td>
-                                <td>Pc</td>
+                                <td>{{ __('Pc') }}</td>
                                 <td>650</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <a href="javascript:void(0);" class="avatar avatar-sm me-2">
                                             <img src="{{URL::asset('build/img/users/user-05.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">John Weaver</a>
+                                        <a href="javascript:void(0);">{{ __('John Weaver') }}</a>
                                     </div>
                                 </td>
                                 <td class="action-table-data">
@@ -374,26 +374,26 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </td>
-                                <td>PT007</td>
+                                <td>{{ __('PT007') }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/products/expire-product-01.png')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Red Premium Satchel</a>
+                                        <a href="javascript:void(0);">{{ __('Red Premium Satchel') }}</a>
                                     </div>												
                                 </td>											
-                                <td>Bags</td>
-                                <td>Dior</td>
+                                <td>{{ __('Bags') }}</td>
+                                <td>{{ __('Dior') }}</td>
                                 <td>$60</td>
-                                <td>Pc</td>
+                                <td>{{ __('Pc') }}</td>
                                 <td>700</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <a href="javascript:void(0);" class="avatar avatar-sm me-2">
                                             <img src="{{URL::asset('build/img/users/user-08.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Gary Hennessy</a>
+                                        <a href="javascript:void(0);">{{ __('Gary Hennessy') }}</a>
                                     </div>
                                 </td>
                                 <td class="action-table-data">
@@ -417,26 +417,26 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </td>
-                                <td>PT008</td>
+                                <td>{{ __('PT008') }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/products/expire-product-02.png')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Iphone 14 Pro</a>
+                                        <a href="javascript:void(0);">{{ __('Iphone 14 Pro') }}</a>
                                     </div>												
                                 </td>											
-                                <td>Phone</td>
-                                <td>Apple</td>
+                                <td>{{ __('Phone') }}</td>
+                                <td>{{ __('Apple') }}</td>
                                 <td>$540</td>
-                                <td>Pc</td>
+                                <td>{{ __('Pc') }}</td>
                                 <td>630</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <a href="javascript:void(0);" class="avatar avatar-sm me-2">
                                             <img src="{{URL::asset('build/img/users/user-04.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Eleanor Panek</a>
+                                        <a href="javascript:void(0);">{{ __('Eleanor Panek') }}</a>
                                     </div>
                                 </td>
                                 <td class="action-table-data">
@@ -460,26 +460,26 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </td>
-                                <td>PT009</td>
+                                <td>{{ __('PT009') }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/products/expire-product-03.png')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Gaming Chair</a>
+                                        <a href="javascript:void(0);">{{ __('Gaming Chair') }}</a>
                                     </div>												
                                 </td>											
-                                <td>Furniture</td>
-                                <td>Arlime</td>
+                                <td>{{ __('Furniture') }}</td>
+                                <td>{{ __('Arlime') }}</td>
                                 <td>$200</td>
-                                <td>Pc</td>
+                                <td>{{ __('Pc') }}</td>
                                 <td>410</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <a href="javascript:void(0);" class="avatar avatar-sm me-2">
                                             <img src="{{URL::asset('build/img/users/user-09.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">William Levy</a>
+                                        <a href="javascript:void(0);">{{ __('William Levy') }}</a>
                                     </div>
                                 </td>
                                 <td class="action-table-data">
@@ -503,26 +503,26 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </td>
-                                <td>PT010</td>
+                                <td>{{ __('PT010') }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/products/expire-product-04.png')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Borealis Backpack</a>
+                                        <a href="javascript:void(0);">{{ __('Borealis Backpack') }}</a>
                                     </div>												
                                 </td>											
-                                <td>Bags</td>
-                                <td>The North Face</td>
+                                <td>{{ __('Bags') }}</td>
+                                <td>{{ __('The North Face') }}</td>
                                 <td>$45</td>
-                                <td>Pc</td>
+                                <td>{{ __('Pc') }}</td>
                                 <td>550</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <a href="javascript:void(0);" class="avatar avatar-sm me-2">
                                             <img src="{{URL::asset('build/img/users/user-10.jpg')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Charlotte Klotz</a>
+                                        <a href="javascript:void(0);">{{ __('Charlotte Klotz') }}</a>
                                     </div>
                                 </td>
                                 <td class="action-table-data">
@@ -546,19 +546,19 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </td>
-                                <td>PT010</td>
+                                <td>{{ __('PT010') }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <a href="javascript:void(0);" class="avatar avatar-md me-2">
                                             <img src="{{URL::asset('build/img/products/expire-product-04.png')}}" alt="product">
                                         </a>
-                                        <a href="javascript:void(0);">Borealis Backpack</a>
+                                        <a href="javascript:void(0);">{{ __('Borealis Backpack') }}</a>
                                     </div>												
                                 </td>											
-                                <td>Bags</td>
-                                <td>The North Face</td>
+                                <td>{{ __('Bags') }}</td>
+                                <td>{{ __('The North Face') }}</td>
                                 <td>$45</td>
-                                <td>Pc</td>
+                                <td>{{ __('Pc') }}</td>
                                 <td>550</td>
                                 <td>
                                     <div class="userimgname">
@@ -567,7 +567,7 @@
                                             <img src="{{URL::asset('build/img/users/user-10.jpg')}}" alt="product">
                                         </a>
                                     </span>
-                                            <a href="javascript:void(0);">Charlotte Klotz</a>
+                                            <a href="javascript:void(0);">{{ __('Charlotte Klotz') }}</a>
                                     </div>
                                 </td>
                                 <td class="action-table-data">

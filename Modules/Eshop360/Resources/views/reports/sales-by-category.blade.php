@@ -1,15 +1,15 @@
 <x-dashboard::layouts.master
-    :title="'Ventes par categorie — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Ventes par categorie') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Ventes par categorie">
+    :pageTitle="__('Ventes par categorie')">
 
     <div class="page-wrapper">
         <div class="content">
             <div class="page-header">
                 <div class="add-item d-flex">
                     <div class="page-title">
-                        <h4>Ventes par categorie</h4>
-                        <h6>Repartition du chiffre d'affaires par categorie</h6>
+                        <h4>{{ __('Ventes par categorie') }}</h4>
+                        <h6>{{ __('Repartition du chiffre d\'affaires par categorie') }}</h6>
                     </div>
                 </div>
                 <ul class="table-top-head">
@@ -28,10 +28,10 @@
                         <table class="table datatable">
                             <thead class="thead-light">
                                 <tr>
-                                    <th>Categorie</th>
-                                    <th>Quantite vendue</th>
-                                    <th>Chiffre d'affaires</th>
-                                    <th>% du total</th>
+                                    <th>{{ __('Categorie') }}</th>
+                                    <th>{{ __('Quantite vendue') }}</th>
+                                    <th>{{ __('Chiffre d\'affaires') }}</th>
+                                    <th>{{ __('% du total') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -44,13 +44,13 @@
                                     <td>{{ $grandTotal > 0 ? number_format((($row['revenue'] ?? 0) / $grandTotal) * 100, 1) : 0 }}%</td>
                                 </tr>
                                 @empty
-                                <tr><td colspan="4" class="text-center text-muted">Aucune donnee</td></tr>
+                                <tr><td colspan="4" class="text-center text-muted">{{ __('Aucune donnee') }}</td></tr>
                                 @endforelse
                             </tbody>
                             @if(count($data) > 0)
                             <tfoot>
                                 <tr class="fw-bold">
-                                    <td>Total</td>
+                                    <td>{{ __('Total') }}</td>
                                     <td>{{ collect($data)->sum('quantity') }}</td>
                                     <td>{{ number_format($grandTotal, 2) }}</td>
                                     <td>100%</td>

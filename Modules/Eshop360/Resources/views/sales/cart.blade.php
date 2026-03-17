@@ -1,13 +1,13 @@
 <x-dashboard::layouts.master
-    :title="'Cart — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Cart') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Cart">
+    :pageTitle="__('Cart')">
 
 <div class="page-header">
                 <div class="add-item d-flex">
                     <div class="page-title">
-                        <h4 class="fw-bold">Cart</h4>
-                        <h6>Manage your cart</h6>
+                        <h4 class="fw-bold">{{ __('Cart') }}</h4>
+                        <h6>{{ __('Manage your cart') }}</h6>
                     </div>
                 </div>
                 <ul class="table-top-head">
@@ -18,10 +18,10 @@
                         <a data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"><img src="{{URL::asset('build/img/icons/excel.svg')}}" alt="img"></a>
                     </li>
                     <li>
-                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="Refresh"><i class="ti ti-refresh"></i></a>
+                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Refresh') }}"><i class="ti ti-refresh"></i></a>
                     </li>
                     <li>
-                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="Collapse" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
+                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Collapse') }}" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
                     </li>
                 </ul>
             </div>
@@ -37,11 +37,11 @@
                                 <span class="checkmarks"></span>
                             </label>
                         </th>
-                        <th>Code </th>
-                        <th>Product</th>
-                        <th>Amount</th>
-                        <th>Quantity</th>
-                        <th>Total</th>
+                        <th>{{ __('Code') }}</th>
+                        <th>{{ __('Product') }}</th>
+                        <th>{{ __('Amount') }}</th>
+                        <th>{{ __('Quantity') }}</th>
+                        <th>{{ __('Total') }}</th>
                         <th class="no-sort"></th>
                     </tr>
                 </thead>
@@ -53,13 +53,13 @@
                                 <span class="checkmarks"></span>
                             </label>
                         </td>
-                        <td>CU001 </td>
+                        <td>{{ __('CU001') }}</td>
                         <td>
                             <div class="d-flex align-items-center">
                                 <a href="javascript:void(0);" class="avatar avatar-md me-1">
                                     <img src="{{URL::asset('build/img/products/stock-img-01.png')}}" alt="product">
                                 </a>
-                                <a href="javascript:void(0);">Lenovo IdeaPad 3</a>
+                                <a href="javascript:void(0);">{{ __('Lenovo IdeaPad 3') }}</a>
                             </div>												
                         </td>
                         <td>$600</td>
@@ -86,13 +86,13 @@
                                 <span class="checkmarks"></span>
                             </label>
                         </td>
-                        <td>CU002 </td>
+                        <td>{{ __('CU002') }}</td>
                         <td>
                             <div class="d-flex align-items-center">
                                 <a href="javascript:void(0);" class="avatar avatar-md me-1">
                                     <img src="{{URL::asset('build/img/products/stock-img-06.png')}}" alt="product">
                                 </a>
-                                <a href="javascript:void(0);">Beats Pro</a>
+                                <a href="javascript:void(0);">{{ __('Beats Pro') }}</a>
                             </div>												
                         </td>
                         <td>$160</td>
@@ -119,13 +119,13 @@
                                 <span class="checkmarks"></span>
                             </label>
                         </td>
-                        <td>CU003 </td>
+                        <td>{{ __('CU003') }}</td>
                         <td>
                             <div class="d-flex align-items-center">
                                 <a href="javascript:void(0);" class="avatar avatar-md me-1">
                                     <img src="{{URL::asset('build/img/products/stock-img-02.png')}}" alt="product">
                                 </a>
-                                <a href="javascript:void(0);">Nike Jordan</a>
+                                <a href="javascript:void(0);">{{ __('Nike Jordan') }}</a>
                             </div>												
                         </td>
                         <td>$110</td>
@@ -152,13 +152,13 @@
                                 <span class="checkmarks"></span>
                             </label>
                         </td>
-                        <td>CU004 </td>
+                        <td>{{ __('CU004') }}</td>
                         <td>
                             <div class="d-flex align-items-center">
                                 <a href="javascript:void(0);" class="avatar avatar-md me-1">
                                     <img src="{{URL::asset('build/img/products/stock-img-03.png')}}" alt="product">
                                 </a>
-                                <a href="javascript:void(0);">Apple Series 5 Watch</a>
+                                <a href="javascript:void(0);">{{ __('Apple Series 5 Watch') }}</a>
                             </div>												
                         </td>
                         <td>$120</td>
@@ -185,13 +185,13 @@
                                 <span class="checkmarks"></span>
                             </label>
                         </td>
-                        <td>CU005 </td>
+                        <td>{{ __('CU005') }}</td>
                         <td>
                             <div class="d-flex align-items-center">
                                 <a href="javascript:void(0);" class="avatar avatar-md me-1">
                                     <img src="{{URL::asset('build/img/products/stock-img-04.png')}}" alt="product">
                                 </a>
-                                <a href="javascript:void(0);">Amazon Echo Dot</a>
+                                <a href="javascript:void(0);">{{ __('Amazon Echo Dot') }}</a>
                             </div>												
                         </td>
                         <td>$80</td>
@@ -220,20 +220,20 @@
             <div class="card-body">
             <div class="d-flex align-items-center justify-content-between">
                 <div class="d-flex align-items-center">
-                    <input type="text" class="form-control me-2" placeholder="Enter Coupon Code">
-                    <a href="#" class="btn btn-primary">Apply</a>
+                    <input type="text" class="form-control me-2" placeholder="{{ __('Enter Coupon Code') }}">
+                    <a href="#" class="btn btn-primary">{{ __('Apply') }}</a>
                 </div>
                 <div class="d-flex align-items-center">
-                    <p class="mb-0 me-2">Total Price : </p>
-                    <p class="h6">Total 2230</p>
+                    <p class="mb-0 me-2">{{ __('Total Price :') }}</p>
+                    <p class="h6">{{ __('Total 2230') }}</p>
                 </div>
             </div>
             </div>
             </div>
 
             <div class="d-flex align-items-center justify-content-end mb-4">
-                <a href="#" class="btn btn-secondary me-2">Checkout</a>
-                <a href="#" class="btn btn-primary">Continue Shopping</a>
+                <a href="#" class="btn btn-secondary me-2">{{ __('Checkout') }}</a>
+                <a href="#" class="btn btn-primary">{{ __('Continue Shopping') }}</a>
             </div>
 
 </x-dashboard::layouts.master>

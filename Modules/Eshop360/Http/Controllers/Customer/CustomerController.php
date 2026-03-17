@@ -8,6 +8,7 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
 use Modules\Core\Support\CurrentInstance;
 use Modules\Eshop360\Models\Customer;
+use Modules\Eshop360\Models\CustomerTransaction;
 use Modules\Eshop360\Models\Order;
 
 class CustomerController extends Controller
@@ -67,7 +68,39 @@ class CustomerController extends Controller
             'last_order_at' => Order::where('customer_id', $customer->id)->latest()->value('created_at'),
         ];
 
-        return view('eshop360::customers.show', compact('customer', 'orders', 'stats'));
+        $walletTransactions = CustomerTransaction::where('customer_id', $customer->id)
+            ->latest()
+            ->limit(20)
+            ->get();
+
+        return view('eshop360::customers.show', compact('customer', 'orders', 'stats', 'walletTransactions'));
+    }
+
+    public function walletTopup(Request $request, string $slug, Customer $customer): RedirectResponse
+    {
+        $validated = $request->validate([
+            'amount' => 'required|numeric|min:0.01',
+            'notes'  => 'nullable|string|max:500',
+        ]);
+
+        $instance = CurrentInstance::get();
+        $amount = (float) $validated['amount'];
+
+        DB::transaction(function () use ($customer, $amount, $validated, $instance) {
+            $customer->increment('wallet_balance', $amount);
+
+            CustomerTransaction::create([
+                'instance_id' => $instance?->id,
+                'customer_id' => $customer->id,
+                'type'        => 'credit',
+                'amount'      => $amount,
+                'notes'       => $validated['notes'] ?? 'Rechargement portefeuille',
+                'created_by'  => auth()->id(),
+            ]);
+        });
+
+        return redirect()->route('eshop360.customers.show', [$slug, $customer])
+            ->with('success', __('Portefeuille recharge de :amount.', ['amount' => number_format($amount, 2)]));
     }
 
     public function update(Request $request, string $slug, Customer $customer): RedirectResponse

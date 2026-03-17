@@ -21,6 +21,7 @@ class Invoice extends Model
         'instance_id',
         'order_id',
         'customer_id',
+        'project_id',
         'invoice_number',
         'status',
         'due_date',
@@ -35,6 +36,7 @@ class Invoice extends Model
         'terms',
         'footer_text',
         'template',
+        'payment_token',
         'created_by',
     ];
 
@@ -57,6 +59,11 @@ class Invoice extends Model
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class);
     }
 
     public function items(): HasMany

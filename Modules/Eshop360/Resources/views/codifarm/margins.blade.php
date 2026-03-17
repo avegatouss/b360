@@ -1,13 +1,13 @@
 <x-dashboard::layouts.master
-    :title="'Codifarm Margins — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Codifarm Margins') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Codifarm Margins">
+    :pageTitle="__('Codifarm Margins')">
 
 <div class="page-header">
     <div class="add-item d-flex">
         <div class="page-title">
-            <h4 class="fw-bold">Margins</h4>
-            <h6>Margin logs and revenue distribution</h6>
+            <h4 class="fw-bold">{{ __('Margins') }}</h4>
+            <h6>{{ __('Margin logs and revenue distribution') }}</h6>
         </div>
     </div>
     <div class="page-btn">
@@ -20,7 +20,7 @@
     <div class="col-md-4">
         <div class="card">
             <div class="card-body text-center">
-                <h6 class="text-muted">Total Margin</h6>
+                <h6 class="text-muted">{{ __('Total Margin') }}</h6>
                 <h3 class="fw-bold text-primary mb-0">{{ number_format($summary['total_margin'] ?? 0, 0, ',', ' ') }} XAF</h3>
             </div>
         </div>
@@ -28,7 +28,7 @@
     <div class="col-md-4">
         <div class="card">
             <div class="card-body text-center">
-                <h6 class="text-muted">Codifarm Part</h6>
+                <h6 class="text-muted">{{ __('Codifarm Part') }}</h6>
                 <h3 class="fw-bold text-success mb-0">{{ number_format($summary['codifarm_part'] ?? 0, 0, ',', ' ') }} XAF</h3>
             </div>
         </div>
@@ -36,7 +36,7 @@
     <div class="col-md-4">
         <div class="card">
             <div class="card-body text-center">
-                <h6 class="text-muted">Saphir Part</h6>
+                <h6 class="text-muted">{{ __('Saphir Part') }}</h6>
                 <h3 class="fw-bold text-info mb-0">{{ number_format($summary['saphir_part'] ?? 0, 0, ',', ' ') }} XAF</h3>
             </div>
         </div>
@@ -49,15 +49,15 @@
         <form action="{{ route('eshop360.codifarm.margins', $instance->slug ?? '') }}" method="GET">
             <div class="row align-items-end">
                 <div class="col-md-4 mb-3">
-                    <label class="form-label">From</label>
+                    <label class="form-label">{{ __('From') }}</label>
                     <input type="date" name="from" class="form-control" value="{{ request('from', now()->startOfMonth()->format('Y-m-d')) }}">
                 </div>
                 <div class="col-md-4 mb-3">
-                    <label class="form-label">To</label>
+                    <label class="form-label">{{ __('To') }}</label>
                     <input type="date" name="to" class="form-control" value="{{ request('to', now()->format('Y-m-d')) }}">
                 </div>
                 <div class="col-md-4 mb-3">
-                    <button type="submit" class="btn btn-primary w-100"><i class="ti ti-filter me-1"></i>Filter</button>
+                    <button type="submit" class="btn btn-primary w-100"><i class="ti ti-filter me-1"></i>{{ __('Filter') }}</button>
                 </div>
             </div>
         </form>
@@ -67,20 +67,20 @@
 {{-- Logs Table --}}
 <div class="card table-list-card">
     <div class="card-header">
-        <h5 class="card-title mb-0">Margin Logs</h5>
+        <h5 class="card-title mb-0">{{ __('Margin Logs') }}</h5>
     </div>
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table datatable">
                 <thead class="thead-light">
                     <tr>
-                        <th>Date</th>
-                        <th>Description</th>
-                        <th>Order Ref</th>
-                        <th>Margin</th>
-                        <th>Codifarm</th>
-                        <th>Saphir</th>
-                        <th>Type</th>
+                        <th>{{ __('Date') }}</th>
+                        <th>{{ __('Description') }}</th>
+                        <th>{{ __('Order Ref') }}</th>
+                        <th>{{ __('Margin') }}</th>
+                        <th>{{ __('Codifarm') }}</th>
+                        <th>{{ __('Saphir') }}</th>
+                        <th>{{ __('Type') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -96,7 +96,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="text-center">No margin logs found.</td>
+                        <td colspan="7" class="text-center">{{ __('No margin logs found.') }}</td>
                     </tr>
                     @endforelse
                 </tbody>

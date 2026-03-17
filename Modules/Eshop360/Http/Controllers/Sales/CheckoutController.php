@@ -56,7 +56,6 @@ class CheckoutController extends Controller
         $validated = $request->validate([
             'customer_id'     => 'nullable|exists:eshop_customers,id',
             'channel_id'      => 'nullable|exists:eshop_distribution_channels,id',
-            'is_codifarm'     => 'nullable|boolean',
             'customer_name'   => 'required_without:customer_id|nullable|string|max:255',
             'customer_email'  => 'nullable|email|max:255',
             'customer_phone'  => 'nullable|string|max:30',
@@ -113,7 +112,6 @@ class CheckoutController extends Controller
             'source' => 'pos',
             'biller_id' => auth()->id(),
             'channel_id' => $cartContext['channel_id'] ?? $validated['channel_id'] ?? null,
-            'is_codifarm' => (bool) ($cartContext['is_codifarm'] ?? $validated['is_codifarm'] ?? false),
         ], $this->resolvePosOperationalData()));
 
         if ($coupon) {
@@ -261,7 +259,7 @@ class CheckoutController extends Controller
     }
 
     /**
-     * @return array{channel_id: int|null, is_codifarm: bool}|null
+     * @return array{channel_id: int|null}|null
      */
     private function getCartContext(): ?array
     {

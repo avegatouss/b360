@@ -4,7 +4,8 @@
         <div class="login-wrapper bg-img">
             <div class="login-content authent-content">
 
-                <form method="POST" action="{{ route('password.email') }}">
+                <form method="POST" action="{{ route('password.email') }}"
+                      data-recaptcha data-recaptcha-action="forgot_password">
                     @csrf
 
                     <div class="login-userset">

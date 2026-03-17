@@ -169,7 +169,7 @@
                 @if($customersWithDue->total() > 0)
                 <tfoot>
                     <tr class="bg-light fw-bold">
-                        <td colspan="4">Total</td>
+                        <td colspan="4">{{ __('Total') }}</td>
                         <td class="text-end text-danger">
                             {{ number_format($customersWithDue->sum('total_due'), 0, ',', ' ') }}
                         </td>

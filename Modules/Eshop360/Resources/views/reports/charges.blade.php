@@ -1,15 +1,15 @@
 <x-dashboard::layouts.master
-    :title="'Charges — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Charges') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Charges">
+    :pageTitle="__('Charges')">
 
     <div class="page-wrapper">
         <div class="content">
             <div class="page-header">
                 <div class="add-item d-flex">
                     <div class="page-title">
-                        <h4>Charges</h4>
-                        <h6>Repartition des charges</h6>
+                        <h4>{{ __('Charges') }}</h4>
+                        <h6>{{ __('Repartition des charges') }}</h6>
                     </div>
                 </div>
                 <ul class="table-top-head">
@@ -42,11 +42,11 @@
                         <table class="table datatable">
                             <thead class="thead-light">
                                 <tr>
-                                    <th>Date</th>
-                                    <th>Categorie</th>
-                                    <th>Description</th>
-                                    <th>Reference</th>
-                                    <th>Montant</th>
+                                    <th>{{ __('Date') }}</th>
+                                    <th>{{ __('Categorie') }}</th>
+                                    <th>{{ __('Description') }}</th>
+                                    <th>{{ __('Reference') }}</th>
+                                    <th>{{ __('Montant') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -59,13 +59,13 @@
                                     <td class="fw-bold">{{ number_format($row['amount'] ?? 0, 2) }}</td>
                                 </tr>
                                 @empty
-                                <tr><td colspan="5" class="text-center text-muted">Aucune charge</td></tr>
+                                <tr><td colspan="5" class="text-center text-muted">{{ __('Aucune charge') }}</td></tr>
                                 @endforelse
                             </tbody>
                             @if(count($data['entries'] ?? $data['items'] ?? []) > 0)
                             <tfoot>
                                 <tr class="fw-bold">
-                                    <td colspan="4">Total</td>
+                                    <td colspan="4">{{ __('Total') }}</td>
                                     <td>{{ number_format(collect($data['entries'] ?? $data['items'] ?? [])->sum('amount'), 2) }}</td>
                                 </tr>
                             </tfoot>

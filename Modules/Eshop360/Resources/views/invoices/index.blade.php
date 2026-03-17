@@ -1,13 +1,13 @@
 <x-dashboard::layouts.master
-    :title="'Invoices — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Invoices') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Invoices">
+    :pageTitle="__('Invoices')">
 
 <div class="page-header">
             <div class="add-item d-flex">
                 <div class="page-title">
-                    <h4>Invoices</h4>
-                    <h6>Manage your stock invoices</h6>
+                    <h4>{{ __('Invoices') }}</h4>
+                    <h6>{{ __('Manage your stock invoices') }}</h6>
                 </div>
             </div>
             <ul class="table-top-head">
@@ -18,10 +18,10 @@
                     <a data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"><img src="{{URL::asset('build/img/icons/excel.svg')}}" alt="img"></a>
                 </li>
                 <li>
-                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="Refresh"><i class="ti ti-refresh"></i></a>
+                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Refresh') }}"><i class="ti ti-refresh"></i></a>
                 </li>
                 <li>
-                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="Collapse" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
+                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Collapse') }}" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
                 </li>
             </ul>
         </div>
@@ -40,13 +40,13 @@
                         </a>
                         <ul class="dropdown-menu  dropdown-menu-end p-3">
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Paid</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Paid') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Unpaid</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Unpaid') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Overdue</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Overdue') }}</a>
                             </li>
                         </ul>
                     </div>
@@ -56,19 +56,19 @@
                         </a>
                         <ul class="dropdown-menu  dropdown-menu-end p-3">
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Recently Added</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Recently Added') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Ascending</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Ascending') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Desending</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Desending') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Last Month</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Last Month') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Last 7 Days</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Last 7 Days') }}</a>
                             </li>
                         </ul>
                     </div>
@@ -85,13 +85,13 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </th>
-                                <th>Invoice No</th>
-                                <th>Customer</th>
-                                <th>Due Date</th>
-                                <th>Amount</th>
-                                <th>Paid</th>
-                                <th>Amount Due</th>
-                                <th>Status</th>
+                                <th>{{ __('Invoice No') }}</th>
+                                <th>{{ __('Customer') }}</th>
+                                <th>{{ __('Due Date') }}</th>
+                                <th>{{ __('Amount') }}</th>
+                                <th>{{ __('Paid') }}</th>
+                                <th>{{ __('Amount Due') }}</th>
+                                <th>{{ __('Status') }}</th>
                                 <th class="no-sort"></th>
                             </tr>
                         </thead>
@@ -143,7 +143,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="9" class="text-center">No invoices found.</td>
+                                <td colspan="9" class="text-center">{{ __('No invoices found.') }}</td>
                             </tr>
                             @endforelse
                         </tbody>

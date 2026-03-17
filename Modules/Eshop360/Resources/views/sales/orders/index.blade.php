@@ -1,13 +1,13 @@
 <x-dashboard::layouts.master
-    :title="'Orders — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Orders') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Orders">
+    :pageTitle="__('Orders')">
 
 <div class="page-header">
                 <div class="add-item d-flex">
                     <div class="page-title">
-                        <h4 class="fw-bold">Order List</h4>
-                        <h6>Manage your orders</h6>
+                        <h4 class="fw-bold">{{ __('Order List') }}</h4>
+                        <h6>{{ __('Manage your orders') }}</h6>
                     </div>
                 </div>
                 <ul class="table-top-head">
@@ -18,10 +18,10 @@
                         <a data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"><img src="{{URL::asset('build/img/icons/excel.svg')}}" alt="img"></a>
                     </li>
                     <li>
-                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="Refresh"><i class="ti ti-refresh"></i></a>
+                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Refresh') }}"><i class="ti ti-refresh"></i></a>
                     </li>
                     <li>
-                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="Collapse" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
+                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Collapse') }}" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
                     </li>
                 </ul>
             </div>
@@ -41,19 +41,19 @@
                             </a>
                             <ul class="dropdown-menu  dropdown-menu-end p-3">
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Recently Added</a>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Recently Added') }}</a>
                                 </li>
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Ascending</a>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Ascending') }}</a>
                                 </li>
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Desending</a>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Desending') }}</a>
                                 </li>
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Last Month</a>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Last Month') }}</a>
                                 </li>
                                 <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">Last 7 Days</a>
+                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Last 7 Days') }}</a>
                                 </li>
                             </ul>
                         </div>
@@ -70,12 +70,12 @@
                                             <span class="checkmarks"></span>
                                         </label>
                                     </th>
-                                    <th>Order ID</th>
-                                    <th>Customer</th>
-                                    <th>Payment Type</th>
-                                    <th>Amount</th>
-                                    <th>Date & Time</th>
-                                    <th>Status</th>
+                                    <th>{{ __('Order ID') }}</th>
+                                    <th>{{ __('Customer') }}</th>
+                                    <th>{{ __('Payment Type') }}</th>
+                                    <th>{{ __('Amount') }}</th>
+                                    <th>{{ __('Date & Time') }}</th>
+                                    <th>{{ __('Status') }}</th>
                                     <th class="no-sort"></th>
                                 </tr>
                             </thead>
@@ -126,7 +126,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="8" class="text-center">No orders found.</td>
+                                    <td colspan="8" class="text-center">{{ __('No orders found.') }}</td>
                                 </tr>
                                 @endforelse
                             </tbody>

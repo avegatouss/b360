@@ -1,13 +1,13 @@
 <x-dashboard::layouts.master
-    :title="'Nouvelle Facture — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Nouvelle Facture') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Nouvelle Facture">
+    :pageTitle="__('Nouvelle Facture')">
 
 <div class="page-header">
     <div class="add-item d-flex">
         <div class="page-title">
-            <h4 class="fw-bold">Nouvelle Facture</h4>
-            <h6>Creer une nouvelle facture</h6>
+            <h4 class="fw-bold">{{ __('Nouvelle Facture') }}</h4>
+            <h6>{{ __('Creer une nouvelle facture') }}</h6>
         </div>
     </div>
     <div class="page-btn">
@@ -21,12 +21,12 @@
     <div class="row">
         <div class="col-md-4">
             <div class="card">
-                <div class="card-header"><h5>Informations</h5></div>
+                <div class="card-header"><h5>{{ __('Informations') }}</h5></div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <label class="form-label">Client</label>
+                        <label class="form-label">{{ __('Client') }}</label>
                         <select name="customer_id" class="form-select">
-                            <option value="">-- Selectionner --</option>
+                            <option value="">{{ __('-- Selectionner --') }}</option>
                             @foreach($customers as $customer)
                             <option value="{{ $customer->id }}" {{ ($order->customer_id ?? old('customer_id')) == $customer->id ? 'selected' : '' }}>
                                 {{ $customer->name }}
@@ -39,44 +39,44 @@
                     @if($order)
                     <input type="hidden" name="order_id" value="{{ $order->id }}">
                     <div class="mb-3">
-                        <label class="form-label">Commande liee</label>
+                        <label class="form-label">{{ __('Commande liee') }}</label>
                         <input type="text" class="form-control" value="{{ $order->order_number }}" disabled>
                     </div>
                     @endif
 
                     <div class="mb-3">
-                        <label class="form-label">Date d'echeance</label>
+                        <label class="form-label">{{ __('Date d\'echeance') }}</label>
                         <input type="date" name="due_date" class="form-control" value="{{ old('due_date', now()->addDays($settings['default_due_days'] ?? 30)->toDateString()) }}">
                         @error('due_date') <small class="text-danger">{{ $message }}</small> @enderror
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Template</label>
+                        <label class="form-label">{{ __('Template') }}</label>
                         <select name="template" class="form-select">
-                            <option value="default">Default</option>
-                            <option value="modern">Modern</option>
-                            <option value="classic">Classic</option>
-                            <option value="minimal">Minimal</option>
+                            <option value="default">{{ __('Default') }}</option>
+                            <option value="modern">{{ __('Modern') }}</option>
+                            <option value="classic">{{ __('Classic') }}</option>
+                            <option value="minimal">{{ __('Minimal') }}</option>
                         </select>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Remise globale</label>
+                        <label class="form-label">{{ __('Remise globale') }}</label>
                         <input type="number" name="discount_amount" class="form-control" value="{{ old('discount_amount', 0) }}" min="0" step="0.01">
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Notes</label>
+                        <label class="form-label">{{ __('Notes') }}</label>
                         <textarea name="notes" class="form-control" rows="3">{{ old('notes') }}</textarea>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Conditions</label>
+                        <label class="form-label">{{ __('Conditions') }}</label>
                         <textarea name="terms" class="form-control" rows="3">{{ old('terms', $settings['default_terms'] ?? '') }}</textarea>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Pied de page</label>
+                        <label class="form-label">{{ __('Pied de page') }}</label>
                         <textarea name="footer_text" class="form-control" rows="2">{{ old('footer_text', $settings['default_footer'] ?? '') }}</textarea>
                     </div>
                 </div>
@@ -86,13 +86,13 @@
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5>Articles</h5>
-                    <button type="button" class="btn btn-sm btn-primary" onclick="addItem()"><i class="ti ti-plus me-1"></i>Ajouter</button>
+                    <h5>{{ __('Articles') }}</h5>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="addItem()"><i class="ti ti-plus me-1"></i>{{ __('Ajouter') }}</button>
                 </div>
                 <div class="card-body">
                     <table class="table" id="items-table">
                         <thead>
-                            <tr><th>Description</th><th>Produit</th><th>Qte</th><th>Prix unit.</th><th>Remise</th><th>Taxe</th><th></th></tr>
+                            <tr><th>{{ __('Description') }}</th><th>{{ __('Produit') }}</th><th>{{ __('Qte') }}</th><th>{{ __('Prix unit.') }}</th><th>{{ __('Remise') }}</th><th>{{ __('Taxe') }}</th><th></th></tr>
                         </thead>
                         <tbody>
                             @if($order)
@@ -138,7 +138,7 @@
             </div>
 
             <div class="text-end">
-                <button type="submit" class="btn btn-primary"><i class="ti ti-check me-1"></i>Creer la facture</button>
+                <button type="submit" class="btn btn-primary"><i class="ti ti-check me-1"></i>{{ __('Creer la facture') }}</button>
             </div>
         </div>
     </div>
@@ -146,7 +146,7 @@
 
 @push('scripts')
 <script>
-let itemIndex = {{ ($order ? $order->items->count() : 1) }};
+let itemIndex = __BLADE_BLOCK_30__;
 function addItem() {
     const tbody = document.querySelector('#items-table tbody');
     const products = @json($products->map(fn($p) => ['id' => $p->id, 'name' => $p->name]));

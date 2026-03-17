@@ -36,7 +36,6 @@ class CartController extends Controller
             'product_id' => 'required|exists:eshop_products,id',
             'quantity'   => 'nullable|integer|min:1',
             'channel_id' => 'nullable|exists:eshop_distribution_channels,id',
-            'is_codifarm' => 'nullable|boolean',
         ]);
 
         $product = Product::findOrFail($validated['product_id']);
@@ -44,7 +43,6 @@ class CartController extends Controller
         $cart = $this->getCart();
         $requestedContext = $this->normalizeContext([
             'channel_id' => $validated['channel_id'] ?? null,
-            'is_codifarm' => (bool) ($validated['is_codifarm'] ?? false),
         ]);
         $cartContext = $this->resolveContextForMutation($requestedContext, $this->getCartContext(), ! empty($cart));
 
@@ -61,7 +59,6 @@ class CartController extends Controller
         $pricing = app(ProductPricingService::class)->resolve(
             $product,
             $cartContext['channel_id'] ?? null,
-            (bool) ($cartContext['is_codifarm'] ?? false),
             true
         );
 
@@ -82,7 +79,6 @@ class CartController extends Controller
                 'quantity' => $quantity,
                 'total' => $pricing['unit_price'] * $quantity,
                 'channel_id' => $pricing['channel_id'],
-                'is_codifarm' => $pricing['is_codifarm'],
                 'price_source' => $pricing['price_source'],
             ];
         }
@@ -329,7 +325,7 @@ class CartController extends Controller
     }
 
     /**
-     * @return array{channel_id: int|null, is_codifarm: bool}|null
+     * @return array{channel_id: int|null}|null
      */
     private function getCartContext(): ?array
     {
@@ -351,7 +347,6 @@ class CartController extends Controller
         if (is_array($firstItem)) {
             $context = $this->normalizeContext([
                 'channel_id' => $firstItem['channel_id'] ?? null,
-                'is_codifarm' => (bool) ($firstItem['is_codifarm'] ?? false),
             ]);
 
             if ($context !== null) {
@@ -387,7 +382,7 @@ class CartController extends Controller
     }
 
     /**
-     * @param  array{channel_id: int|null, is_codifarm: bool}|null  $context
+     * @param  array{channel_id: int|null}|null  $context
      */
     private function storeCartContext(?array $context): void
     {
@@ -434,26 +429,17 @@ class CartController extends Controller
 
     /**
      * @param  array<string, mixed>|null  $context
-     * @return array{channel_id: int|null, is_codifarm: bool}|null
+     * @return array{channel_id: int|null}|null
      */
     private function normalizeContext(?array $context): ?array
     {
         $channelId = isset($context['channel_id']) && $context['channel_id'] !== ''
             ? (int) $context['channel_id']
             : null;
-        $isCodifarm = (bool) ($context['is_codifarm'] ?? false);
-
-        if ($isCodifarm) {
-            return [
-                'channel_id' => null,
-                'is_codifarm' => true,
-            ];
-        }
 
         if ($channelId !== null) {
             return [
                 'channel_id' => $channelId,
-                'is_codifarm' => false,
             ];
         }
 
@@ -461,9 +447,9 @@ class CartController extends Controller
     }
 
     /**
-     * @param  array{channel_id: int|null, is_codifarm: bool}|null  $requestedContext
-     * @param  array{channel_id: int|null, is_codifarm: bool}|null  $existingContext
-     * @return array{channel_id: int|null, is_codifarm: bool}|null|false
+     * @param  array{channel_id: int|null}|null  $requestedContext
+     * @param  array{channel_id: int|null}|null  $existingContext
+     * @return array{channel_id: int|null}|null|false
      */
     private function resolveContextForMutation(?array $requestedContext, ?array $existingContext, bool $cartHasItems): array|null|false
     {

@@ -1,7 +1,7 @@
 <x-dashboard::layouts.master
-    :title="'Client — ' . ($customer->name ?? '') . ' — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Client') . ' —' . ($customer->name ?? '') . ' — ' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Detail Client">
+    :pageTitle="__('Detail Client')">
 
 <div class="page-header">
     <div class="add-item d-flex">
@@ -18,7 +18,7 @@
 <div class="row">
     <div class="col-md-4">
         <div class="card">
-            <div class="card-header"><h5>Informations</h5></div>
+            <div class="card-header"><h5>{{ __('Informations') }}</h5></div>
             <div class="card-body">
                 <table class="table table-borderless">
                     <tr><th>Nom</th><td>{{ $customer->name }}</td></tr>
@@ -32,7 +32,7 @@
         </div>
 
         <div class="card">
-            <div class="card-header"><h5>Statistiques</h5></div>
+            <div class="card-header"><h5>{{ __('Statistiques') }}</h5></div>
             <div class="card-body">
                 <table class="table table-borderless">
                     <tr><th>Total commandes</th><td>{{ $stats['total_orders'] }}</td></tr>
@@ -45,10 +45,10 @@
     </div>
     <div class="col-md-8">
         <div class="card">
-            <div class="card-header"><h5>Commandes</h5></div>
+            <div class="card-header"><h5>{{ __('Commandes') }}</h5></div>
             <div class="card-body">
                 <table class="table">
-                    <thead><tr><th>N.</th><th>Date</th><th>Total</th><th>Statut</th><th>Paiement</th></tr></thead>
+                    <thead><tr><th>{{ __('N.') }}</th><th>{{ __('Date') }}</th><th>{{ __('Total') }}</th><th>{{ __('Statut') }}</th><th>{{ __('Paiement') }}</th></tr></thead>
                     <tbody>
                         @forelse($orders as $order)
                         <tr>
@@ -59,7 +59,7 @@
                             <td><span class="badge bg-{{ $order->payment_status === 'paid' ? 'success' : ($order->payment_status === 'overdue' ? 'danger' : 'warning') }}">{{ ucfirst($order->payment_status) }}</span></td>
                         </tr>
                         @empty
-                        <tr><td colspan="5" class="text-center text-muted">Aucune commande</td></tr>
+                        <tr><td colspan="5" class="text-center text-muted">{{ __('Aucune commande') }}</td></tr>
                         @endforelse
                     </tbody>
                 </table>

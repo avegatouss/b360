@@ -33,7 +33,6 @@ class Product extends Model
         'purchase_price_provisional',
         'pght',
         'cost_price_real',
-        'sale_price_codifarm',
         'tax_rate',
         'discount_type',
         'discount_value',
@@ -69,7 +68,6 @@ class Product extends Model
         'purchase_price_provisional' => 'decimal:4',
         'pght' => 'decimal:4',
         'cost_price_real' => 'decimal:4',
-        'sale_price_codifarm' => 'decimal:4',
         'tax_rate' => 'decimal:2',
         'discount_value' => 'decimal:2',
         'stock_alert_quantity' => 'integer',
@@ -163,5 +161,17 @@ class Product extends Model
         return $this->belongsToMany(DistributionChannel::class, 'eshop_channel_product_prices', 'product_id', 'channel_id')
             ->withPivot('sale_price', 'is_manual_override')
             ->withTimestamps();
+    }
+
+    /**
+     * Get the sale price for a specific distribution channel, or null if not set.
+     */
+    public function priceForChannel(int $channelId): ?float
+    {
+        $channelPrice = $this->channelPrices()
+            ->where('channel_id', $channelId)
+            ->first();
+
+        return $channelPrice ? (float) $channelPrice->sale_price : null;
     }
 }

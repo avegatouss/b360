@@ -57,9 +57,8 @@ class OrderService
 
         return DB::transaction(function () use ($items, $orderData, $instance, $stockService, $adjustStock, $pricingService) {
             $channel = $this->resolveChannel($orderData, $orderData['instance_id'] ?? $instance?->id);
-            $isCodifarm = (bool) ($orderData['is_codifarm'] ?? false);
             $normalizedItems = array_map(
-                fn (array $item): array => $this->normalizeItem($item, $pricingService, $channel?->id, $isCodifarm),
+                fn (array $item): array => $this->normalizeItem($item, $pricingService, $channel?->id),
                 $items
             );
 
@@ -84,7 +83,6 @@ class OrderService
                 'cash_register_id' => $orderData['cash_register_id'] ?? null,
                 'holding_id' => $orderData['holding_id'] ?? null,
                 'channel_id' => $channel?->id,
-                'is_codifarm' => $isCodifarm,
                 'payment_terms' => $orderData['payment_terms'] ?? null,
                 'delivery_date' => $orderData['delivery_date'] ?? null,
                 'delivered_at' => $orderData['delivered_at'] ?? null,
@@ -141,7 +139,7 @@ class OrderService
 
             $this->syncMarginArtifacts($order);
 
-            return $order->fresh(['items', 'payments', 'channel', 'channelMarginLogs', 'codifarmMarginLog']);
+            return $order->fresh(['items', 'payments', 'channel', 'channelMarginLogs']);
         });
     }
 
@@ -272,12 +270,11 @@ class OrderService
         array $item,
         ProductPricingService $pricingService,
         ?int $channelId = null,
-        bool $isCodifarm = false,
     ): array
     {
         $product = Product::findOrFail($item['product_id']);
         $quantity = max(1, (int) ($item['quantity'] ?? 1));
-        $pricing = $pricingService->resolve($product, $channelId, $isCodifarm);
+        $pricing = $pricingService->resolve($product, $channelId);
         $unitPrice = round((float) ($item['unit_price'] ?? $item['price'] ?? $pricing['unit_price']), 2);
         $lineSubtotal = $this->usesPrediscountedUnitPrice($item, $unitPrice)
             ? round((float) $item['original_price'] * $quantity, 2)

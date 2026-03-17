@@ -1,7 +1,7 @@
 <x-dashboard::layouts.master
-    :title="'POS — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('POS') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="POS">
+    :pageTitle="__('POS')">
 
 @php
     $cartItemCount = collect($cart)->sum(fn ($item) => (int) ($item['quantity'] ?? 0));
@@ -15,8 +15,8 @@
 <div class="page-header">
     <div class="add-item d-flex">
         <div class="page-title">
-            <h4 class="fw-bold">Terminal POS</h4>
-            <h6>Panier, encaissement et finalisation de vente</h6>
+            <h4 class="fw-bold">{{ __('Terminal POS') }}</h4>
+            <h6>{{ __('Panier, encaissement et finalisation de vente') }}</h6>
         </div>
     </div>
     <div class="page-btn d-flex gap-2">
@@ -39,7 +39,7 @@
                     <input type="text"
                            id="pos-barcode-input"
                            class="form-control form-control-lg"
-                           placeholder="Scanner un code-barres ou saisir SKU + Entrée..."
+                           placeholder="{{ __('Scanner un code-barres ou saisir SKU + Entrée...') }}"
                            autocomplete="off"
                            autofocus>
                     <button class="btn btn-outline-secondary" type="button" id="pos-barcode-btn">
@@ -49,13 +49,13 @@
 
                 <form method="GET" action="{{ route('eshop360.pos.index', $instance->slug ?? '') }}" class="row g-3 align-items-end">
                     <div class="col-md-3">
-                        <label class="form-label">Recherche</label>
+                        <label class="form-label">{{ __('Recherche') }}</label>
                         <input type="text" name="search" class="form-control" value="{{ request('search') }}" placeholder="Nom, SKU ou code-barres">
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label">Categorie</label>
+                        <label class="form-label">{{ __('Categorie') }}</label>
                         <select name="category_id" class="form-select">
-                            <option value="">Toutes</option>
+                            <option value="">{{ __('Toutes') }}</option>
                             @foreach($categories as $category)
                                 <option value="{{ $category->id }}" {{ (string) request('category_id') === (string) $category->id ? 'selected' : '' }}>
                                     {{ $category->name }}
@@ -64,9 +64,9 @@
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label">Marque</label>
+                        <label class="form-label">{{ __('Marque') }}</label>
                         <select name="brand_id" class="form-select">
-                            <option value="">Toutes</option>
+                            <option value="">{{ __('Toutes') }}</option>
                             @foreach($brands as $brand)
                                 <option value="{{ $brand->id }}" {{ (string) request('brand_id') === (string) $brand->id ? 'selected' : '' }}>
                                     {{ $brand->name }}
@@ -75,9 +75,9 @@
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label">Canal tarifaire</label>
+                        <label class="form-label">{{ __('Canal tarifaire') }}</label>
                         <select name="channel_id" class="form-select">
-                            <option value="">Prix standard</option>
+                            <option value="">{{ __('Prix standard') }}</option>
                             @foreach($channels as $channel)
                                 <option value="{{ $channel->id }}" {{ $activeChannelId === (string) $channel->id ? 'selected' : '' }}>
                                     {{ $channel->name }}
@@ -88,7 +88,7 @@
                     <div class="col-md-2">
                         <div class="form-check mt-4 pt-2">
                             <input type="checkbox" name="is_codifarm" value="1" class="form-check-input" id="pos-is-codifarm" {{ $activeIsCodifarm ? 'checked' : '' }}>
-                            <label class="form-check-label" for="pos-is-codifarm">CODIFARM</label>
+                            <label class="form-check-label" for="pos-is-codifarm">{{ __('CODIFARM') }}</label>
                         </div>
                     </div>
                     <div class="col-md-2 d-grid">
@@ -180,26 +180,26 @@
 
     <div class="col-xl-4">
         <div class="card mb-3">
-            <div class="card-header"><h5 class="mb-0">Session caisse</h5></div>
+            <div class="card-header"><h5 class="mb-0">{{ __('Session caisse') }}</h5></div>
             <div class="card-body">
                 @if($currentRegister)
                     <div class="border rounded p-3 mb-3 bg-light-subtle">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <div>
-                                <div class="fw-semibold">Caisse ouverte</div>
+                                <div class="fw-semibold">{{ __('Caisse ouverte') }}</div>
                                 <div class="small text-muted">{{ optional($currentRegister->opened_at)->format('d/m/Y H:i') }}</div>
                             </div>
-                            <span class="badge bg-success">Ouverte</span>
+                            <span class="badge bg-success">{{ __('Ouverte') }}</span>
                         </div>
-                        <div class="small text-muted mb-1">Point de vente</div>
+                        <div class="small text-muted mb-1">{{ __('Point de vente') }}</div>
                         <div class="mb-2">{{ $currentRegister->store->name ?? 'Non affecte' }}</div>
                         <div class="row g-2 small">
                             <div class="col-6">
-                                <div class="text-muted">Fond initial</div>
+                                <div class="text-muted">{{ __('Fond initial') }}</div>
                                 <div class="fw-semibold">{{ number_format($currentRegister->opening_amount, 2) }}</div>
                             </div>
                             <div class="col-6">
-                                <div class="text-muted">Theorique cash</div>
+                                <div class="text-muted">{{ __('Theorique cash') }}</div>
                                 <div class="fw-semibold">{{ number_format($currentRegisterExpected ?? 0, 2) }}</div>
                             </div>
                         </div>
@@ -208,11 +208,11 @@
                     <form method="POST" action="{{ route('eshop360.pos.registers.close', [$instance->slug ?? '', $currentRegister]) }}" class="row g-3">
                         @csrf
                         <div class="col-12">
-                            <label class="form-label">Montant en caisse</label>
+                            <label class="form-label">{{ __('Montant en caisse') }}</label>
                             <input type="number" name="closing_amount" class="form-control" min="0" step="0.01" value="{{ old('closing_amount', $currentRegisterExpected ?? 0) }}">
                         </div>
                         <div class="col-12">
-                            <label class="form-label">Notes</label>
+                            <label class="form-label">{{ __('Notes') }}</label>
                             <input type="text" name="notes" class="form-control" value="{{ old('notes') }}" placeholder="Observation de cloture">
                         </div>
                         <div class="col-12 d-grid">
@@ -229,20 +229,20 @@
                     <form method="POST" action="{{ route('eshop360.pos.registers.open', $instance->slug ?? '') }}" class="row g-3">
                         @csrf
                         <div class="col-12">
-                            <label class="form-label">Point de vente</label>
+                            <label class="form-label">{{ __('Point de vente') }}</label>
                             <select name="store_id" class="form-select">
-                                <option value="">Aucun</option>
+                                <option value="">{{ __('Aucun') }}</option>
                                 @foreach($stores as $store)
                                     <option value="{{ $store->id }}">{{ $store->name }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="col-12">
-                            <label class="form-label">Fond initial</label>
+                            <label class="form-label">{{ __('Fond initial') }}</label>
                             <input type="number" name="opening_amount" class="form-control" min="0" step="0.01" value="{{ old('opening_amount', 0) }}">
                         </div>
                         <div class="col-12">
-                            <label class="form-label">Notes</label>
+                            <label class="form-label">{{ __('Notes') }}</label>
                             <input type="text" name="notes" class="form-control" value="{{ old('notes') }}" placeholder="Debut de session caisse">
                         </div>
                         <div class="col-12 d-grid">
@@ -257,14 +257,14 @@
 
         <div class="card mb-3">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Panier courant</h5>
+                <h5 class="mb-0">{{ __('Panier courant') }}</h5>
                 <div class="d-flex gap-2 align-items-center">
                     <span class="badge bg-dark">{{ $cartItemCount }} article(s)</span>
                     @if(!empty($cart))
                         <form method="POST" action="{{ route('eshop360.cart.clear', $instance->slug ?? '') }}">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-sm btn-outline-danger">Vider</button>
+                            <button type="submit" class="btn btn-sm btn-outline-danger">{{ __('Vider') }}</button>
                         </form>
                     @endif
                 </div>
@@ -313,12 +313,12 @@
                                         @csrf
                                         @method('PUT')
                                         <input type="number" name="quantity" class="form-control form-control-sm" min="1" value="{{ $quantity }}" style="width: 78px;">
-                                        <button type="submit" class="btn btn-sm btn-outline-primary">Maj</button>
+                                        <button type="submit" class="btn btn-sm btn-outline-primary">{{ __('Maj') }}</button>
                                     </form>
                                     <form method="POST" action="{{ route('eshop360.cart.remove', [$instance->slug ?? '', $itemKey]) }}">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">Retirer</button>
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">{{ __('Retirer') }}</button>
                                     </form>
                                 </div>
                             </div>
@@ -330,23 +330,23 @@
 
         <div class="card mb-3">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Mises en attente</h5>
+                <h5 class="mb-0">{{ __('Mises en attente') }}</h5>
                 <span class="badge bg-secondary">{{ $holdings->count() }}</span>
             </div>
             <div class="card-body">
                 <form method="POST" action="{{ route('eshop360.pos.holdings.store', $instance->slug ?? '') }}" class="row g-3 mb-3">
                     @csrf
                     <div class="col-12">
-                        <label class="form-label">Client</label>
+                        <label class="form-label">{{ __('Client') }}</label>
                         <select name="customer_id" class="form-select" {{ empty($cart) ? 'disabled' : '' }}>
-                            <option value="">Client comptoir</option>
+                            <option value="">{{ __('Client comptoir') }}</option>
                             @foreach($customers as $customer)
                                 <option value="{{ $customer->id }}">{{ $customer->name }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="col-12">
-                        <label class="form-label">Notes</label>
+                        <label class="form-label">{{ __('Notes') }}</label>
                         <input type="text" name="notes" class="form-control" placeholder="Ex: attente pharmacien" {{ empty($cart) ? 'disabled' : '' }}>
                     </div>
                     <div class="col-12 d-grid">
@@ -357,7 +357,7 @@
                 </form>
 
                 @if($holdings->isEmpty())
-                    <p class="text-muted mb-0">Aucune mise en attente active.</p>
+                    <p class="text-muted mb-0">{{ __('Aucune mise en attente active.') }}</p>
                 @else
                     <div class="d-flex flex-column gap-2">
                         @foreach($holdings as $holding)
@@ -375,7 +375,7 @@
                                         <div class="fw-bold">{{ number_format($holding->total, 2) }}</div>
                                         <form method="POST" action="{{ route('eshop360.pos.holdings.resume', [$instance->slug ?? '', $holding]) }}" class="mt-2">
                                             @csrf
-                                            <button type="submit" class="btn btn-sm btn-outline-primary">Reprendre</button>
+                                            <button type="submit" class="btn btn-sm btn-outline-primary">{{ __('Reprendre') }}</button>
                                         </form>
                                     </div>
                                 </div>
@@ -387,12 +387,12 @@
         </div>
 
         <div class="card mb-3">
-            <div class="card-header"><h5 class="mb-0">Coupon et resume</h5></div>
+            <div class="card-header"><h5 class="mb-0">{{ __('Coupon et resume') }}</h5></div>
             <div class="card-body">
                 <form method="POST" action="{{ route('eshop360.cart.coupon', $instance->slug ?? '') }}" class="d-flex gap-2 mb-3">
                     @csrf
                     <input type="text" name="code" class="form-control" placeholder="Code coupon" value="{{ old('code', $coupon['code'] ?? '') }}">
-                    <button type="submit" class="btn btn-outline-secondary">Appliquer</button>
+                    <button type="submit" class="btn btn-outline-secondary">{{ __('Appliquer') }}</button>
                 </form>
 
                 @if($coupon)
@@ -403,19 +403,19 @@
 
                 <table class="table table-borderless mb-0">
                     <tr>
-                        <th>Sous-total</th>
+                        <th>{{ __('Sous-total') }}</th>
                         <td class="text-end">{{ number_format($totals['subtotal'], 2) }}</td>
                     </tr>
                     <tr>
-                        <th>Taxes</th>
+                        <th>{{ __('Taxes') }}</th>
                         <td class="text-end">{{ number_format($totals['tax'], 2) }}</td>
                     </tr>
                     <tr>
-                        <th>Remise</th>
+                        <th>{{ __('Remise') }}</th>
                         <td class="text-end text-danger">-{{ number_format($totals['discount'], 2) }}</td>
                     </tr>
                     <tr class="border-top">
-                        <th class="fw-bold">Total</th>
+                        <th class="fw-bold">{{ __('Total') }}</th>
                         <td class="text-end fw-bold">{{ number_format($totals['total'], 2) }}</td>
                     </tr>
                 </table>
@@ -423,7 +423,7 @@
         </div>
 
         <div class="card">
-            <div class="card-header"><h5 class="mb-0">Encaissement direct</h5></div>
+            <div class="card-header"><h5 class="mb-0">{{ __('Encaissement direct') }}</h5></div>
             <div class="card-body">
                 <form method="POST" action="{{ route('eshop360.sales.store', $instance->slug ?? '') }}">
                     @csrf
@@ -454,9 +454,9 @@
                     @endforeach
 
                     <div class="mb-3">
-                        <label class="form-label">Client</label>
+                        <label class="form-label">{{ __('Client') }}</label>
                         <select name="customer_id" class="form-select">
-                            <option value="">Client comptoir</option>
+                            <option value="">{{ __('Client comptoir') }}</option>
                             @foreach($customers as $customer)
                                 <option value="{{ $customer->id }}" {{ (string) old('customer_id', $settings['default_customer_id'] ?? '') === (string) $customer->id ? 'selected' : '' }}>
                                     {{ $customer->name }}
@@ -466,7 +466,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Paiement</label>
+                        <label class="form-label">{{ __('Paiement') }}</label>
                         <select name="payment_method" class="form-select">
                             @foreach($paymentMethods as $value => $label)
                                 <option value="{{ $value }}" {{ old('payment_method', array_key_first($paymentMethods)) === $value ? 'selected' : '' }}>
@@ -478,17 +478,17 @@
 
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label">Montant recu</label>
+                            <label class="form-label">{{ __('Montant recu') }}</label>
                             <input type="number" name="paid_amount" class="form-control" min="0" step="0.01" value="{{ old('paid_amount', $totals['total']) }}" {{ empty($cart) ? 'disabled' : '' }}>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Livraison</label>
+                            <label class="form-label">{{ __('Livraison') }}</label>
                             <input type="number" name="shipping_amount" class="form-control" min="0" step="0.01" value="{{ old('shipping_amount', 0) }}" {{ empty($cart) ? 'disabled' : '' }}>
                         </div>
                     </div>
 
                     <div class="mt-3">
-                        <label class="form-label">Notes</label>
+                        <label class="form-label">{{ __('Notes') }}</label>
                         <textarea name="notes" class="form-control" rows="3" {{ empty($cart) ? 'disabled' : '' }}>{{ old('notes') }}</textarea>
                     </div>
 

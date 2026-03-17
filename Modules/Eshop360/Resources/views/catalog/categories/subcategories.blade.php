@@ -1,13 +1,13 @@
 <x-dashboard::layouts.master
-    :title="'Sub Categories — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Sub Categories') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Sub Categories">
+    :pageTitle="__('Sub Categories')">
 
 <div class="page-header">
             <div class="add-item d-flex">
                 <div class="page-title">
-                    <h4 class="fw-bold">Sub Category</h4>
-                    <h6>Manage your sub categories</h6>
+                    <h4 class="fw-bold">{{ __('Sub Category') }}</h4>
+                    <h6>{{ __('Manage your sub categories') }}</h6>
                 </div>
             </div>
             <ul class="table-top-head">
@@ -18,14 +18,14 @@
                     <a data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"><img src="{{URL::asset('build/img/icons/excel.svg')}}" alt="img"></a>
                 </li>
                 <li>
-                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="Refresh"><i class="ti ti-refresh"></i></a>
+                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Refresh') }}"><i class="ti ti-refresh"></i></a>
                 </li>
                 <li>
-                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="Collapse" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
+                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Collapse') }}" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
                 </li>
             </ul>
             <div class="page-btn">
-                <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-category"><i class="ti ti-circle-plus me-1"></i>Add Sub Category</a>
+                <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-category"><i class="ti ti-circle-plus me-1"></i>{{ __('Add Sub Category') }}</a>
             </div>
         </div>
         
@@ -45,16 +45,16 @@
                         </a>
                         <ul class="dropdown-menu  dropdown-menu-end p-3">
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Computers</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Computers') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Electronics</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Electronics') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Shoe</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Shoe') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Electronics</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Electronics') }}</a>
                             </li>
                         </ul>
                     </div>
@@ -64,10 +64,10 @@
                         </a>
                         <ul class="dropdown-menu  dropdown-menu-end p-3">
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Active</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Active') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Inactive</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Inactive') }}</a>
                             </li>
                         </ul>
                     </div>
@@ -84,12 +84,12 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </th>
-                                <th>Image</th>
-                                <th>Sub Category</th>
-                                <th>Category</th>
-                                <th>Category Code</th>
-                                <th>Description</th>
-                                <th>Status</th>
+                                <th>{{ __('Image') }}</th>
+                                <th>{{ __('Sub Category') }}</th>
+                                <th>{{ __('Category') }}</th>
+                                <th>{{ __('Category Code') }}</th>
+                                <th>{{ __('Description') }}</th>
+                                <th>{{ __('Status') }}</th>
                                 <th class="no-sort"></th>
                             </tr>
                         </thead>
@@ -106,11 +106,11 @@
                                         <img src="{{URL::asset('build/img/products/stock-img-01.png')}}" alt="product">
                                     </a>
                                 </td>
-                                <td>Laptop</td>
-                                <td>Computers</td>
-                                <td>CT001</td>
-                                <td>Efficient Productivity</td>
-                                <td><span class="badge bg-success fw-medium fs-10">Active</span></td>
+                                <td>{{ __('Laptop') }}</td>
+                                <td>{{ __('Computers') }}</td>
+                                <td>{{ __('CT001') }}</td>
+                                <td>{{ __('Efficient Productivity') }}</td>
+                                <td><span class="badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
                                 <td class="action-table-data">
                                     <div class="edit-delete-action">
                                         <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-category">
@@ -135,11 +135,11 @@
                                         <img src="{{URL::asset('build/img/products/stock-img-07.png')}}" alt="product">
                                     </a>
                                 </td>
-                                <td>Desktop</td>
-                                <td>Computers</td>
-                                <td>CT002</td>
-                                <td>Compact Design</td>
-                                <td><span class="badge bg-success fw-medium fs-10">Active</span></td>
+                                <td>{{ __('Desktop') }}</td>
+                                <td>{{ __('Computers') }}</td>
+                                <td>{{ __('CT002') }}</td>
+                                <td>{{ __('Compact Design') }}</td>
+                                <td><span class="badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
                                 <td class="action-table-data">
                                     <div class="edit-delete-action">
                                         <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-category">
@@ -164,11 +164,11 @@
                                         <img src="{{URL::asset('build/img/products/stock-img-02.png')}}" alt="product">
                                     </a>
                                 </td>
-                                <td>Sneakers</td>
-                                <td>Shoe</td>
-                                <td>CT003</td>
-                                <td>Dynamic Grip</td>
-                                <td><span class="badge bg-success fw-medium fs-10">Active</span></td>
+                                <td>{{ __('Sneakers') }}</td>
+                                <td>{{ __('Shoe') }}</td>
+                                <td>{{ __('CT003') }}</td>
+                                <td>{{ __('Dynamic Grip') }}</td>
+                                <td><span class="badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
                                 <td class="action-table-data">
                                     <div class="edit-delete-action">
                                         <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-category">
@@ -193,11 +193,11 @@
                                         <img src="{{URL::asset('build/img/products/stock-img-08.png')}}" alt="product">
                                     </a>
                                 </td>
-                                <td>Formals</td>
-                                <td>Shoe</td>
-                                <td>CT004</td>
-                                <td>Stylish Comfort</td>
-                                <td><span class="badge bg-success fw-medium fs-10">Active</span></td>
+                                <td>{{ __('Formals') }}</td>
+                                <td>{{ __('Shoe') }}</td>
+                                <td>{{ __('CT004') }}</td>
+                                <td>{{ __('Stylish Comfort') }}</td>
+                                <td><span class="badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
                                 <td class="action-table-data">
                                     <div class="edit-delete-action">
                                         <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-category">
@@ -222,11 +222,11 @@
                                         <img src="{{URL::asset('build/img/products/stock-img-06.png')}}" alt="product">
                                     </a>
                                 </td>
-                                <td>Wearables</td>
-                                <td>Electronics</td>
-                                <td>CT005</td>
-                                <td>Seamless Connectivity</td>
-                                <td><span class="badge bg-success fw-medium fs-10">Active</span></td>
+                                <td>{{ __('Wearables') }}</td>
+                                <td>{{ __('Electronics') }}</td>
+                                <td>{{ __('CT005') }}</td>
+                                <td>{{ __('Seamless Connectivity') }}</td>
+                                <td><span class="badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
                                 <td class="action-table-data">
                                     <div class="edit-delete-action">
                                         <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-category">
@@ -251,11 +251,11 @@
                                         <img src="{{URL::asset('build/img/products/stock-img-04.png')}}" alt="product">
                                     </a>
                                 </td>
-                                <td>Speakers</td>
-                                <td>Electronics</td>
-                                <td>CT006</td>
-                                <td>Reliable Sound</td>
-                                <td><span class="badge bg-success fw-medium fs-10">Active</span></td>
+                                <td>{{ __('Speakers') }}</td>
+                                <td>{{ __('Electronics') }}</td>
+                                <td>{{ __('CT006') }}</td>
+                                <td>{{ __('Reliable Sound') }}</td>
+                                <td><span class="badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
                                 <td class="action-table-data">
                                     <div class="edit-delete-action">
                                         <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-category">
@@ -280,11 +280,11 @@
                                         <img src="{{URL::asset('build/img/products/expire-product-01.png')}}" alt="product">
                                     </a>
                                 </td>
-                                <td>Handbags</td>
-                                <td>Bags</td>
-                                <td>CT007</td>
-                                <td>Compact Carry</td>
-                                <td><span class="badge bg-success fw-medium fs-10">Active</span></td>
+                                <td>{{ __('Handbags') }}</td>
+                                <td>{{ __('Bags') }}</td>
+                                <td>{{ __('CT007') }}</td>
+                                <td>{{ __('Compact Carry') }}</td>
+                                <td><span class="badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
                                 <td class="action-table-data">
                                     <div class="edit-delete-action">
                                         <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-category">
@@ -309,11 +309,11 @@
                                         <img src="{{URL::asset('build/img/products/expire-product-04.png')}}" alt="product">
                                     </a>
                                 </td>
-                                <td>Travel</td>
-                                <td>Bags</td>
-                                <td>CT008</td>
-                                <td>Travel Ready</td>
-                                <td><span class="badge bg-success fw-medium fs-10">Active</span></td>
+                                <td>{{ __('Travel') }}</td>
+                                <td>{{ __('Bags') }}</td>
+                                <td>{{ __('CT008') }}</td>
+                                <td>{{ __('Travel Ready') }}</td>
+                                <td><span class="badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
                                 <td class="action-table-data">
                                     <div class="edit-delete-action">
                                         <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-category">
@@ -338,11 +338,11 @@
                                         <img src="{{URL::asset('build/img/products/stock-img-05.png')}}" alt="product">
                                     </a>
                                 </td>
-                                <td>Sofa</td>
-                                <td>Furniture</td>
-                                <td>CT009</td>
-                                <td>Cozy Comfort</td>
-                                <td><span class="badge bg-success fw-medium fs-10">Active</span></td>
+                                <td>{{ __('Sofa') }}</td>
+                                <td>{{ __('Furniture') }}</td>
+                                <td>{{ __('CT009') }}</td>
+                                <td>{{ __('Cozy Comfort') }}</td>
+                                <td><span class="badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
                                 <td class="action-table-data">
                                     <div class="edit-delete-action">
                                         <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-category">
@@ -367,11 +367,11 @@
                                         <img src="{{URL::asset('build/img/products/expire-product-03.png')}}" alt="product">
                                     </a>
                                 </td>
-                                <td>Chair</td>
-                                <td>Furniture</td>
-                                <td>CT0010</td>
-                                <td>Stylish Comfort</td>
-                                <td><span class="badge bg-success fw-medium fs-10">Active</span></td>
+                                <td>{{ __('Chair') }}</td>
+                                <td>{{ __('Furniture') }}</td>
+                                <td>{{ __('CT0010') }}</td>
+                                <td>{{ __('Stylish Comfort') }}</td>
+                                <td><span class="badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
                                 <td class="action-table-data">
                                     <div class="edit-delete-action">
                                         <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-category">
@@ -396,11 +396,11 @@
                                         <img src="{{URL::asset('build/img/products/product4.jpg')}}" alt="product">
                                     </a>
                                 </td>
-                                <td>Fruits</td>
-                                <td>Fruits</td>
-                                <td>CT004</td>
-                                <td>Fruits Description</td>
-                                <td><span class="badge bg-success fw-medium fs-10">Active</span></td>
+                                <td>{{ __('Fruits') }}</td>
+                                <td>{{ __('Fruits') }}</td>
+                                <td>{{ __('CT004') }}</td>
+                                <td>{{ __('Fruits Description') }}</td>
+                                <td><span class="badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
                                 <td class="action-table-data">
                                     <div class="edit-delete-action">
                                         <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-category">
@@ -425,11 +425,11 @@
                                         <img src="{{URL::asset('build/img/products/product5.jpg')}}" alt="product">
                                     </a>
                                 </td>
-                                <td>Accessories</td>
-                                <td>Accessories</td>
-                                <td>CT005</td>
-                                <td>Accessories Description</td>
-                                <td><span class="badge bg-success fw-medium fs-10">Active</span></td>
+                                <td>{{ __('Accessories') }}</td>
+                                <td>{{ __('Accessories') }}</td>
+                                <td>{{ __('CT005') }}</td>
+                                <td>{{ __('Accessories Description') }}</td>
+                                <td><span class="badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
                                 <td class="action-table-data">
                                     <div class="edit-delete-action">
                                         <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-category">
@@ -454,11 +454,11 @@
                                         <img src="{{URL::asset('build/img/products/product6.jpg')}}" alt="product">
                                     </a>
                                 </td>
-                                <td>Shoes</td>
-                                <td>Shoes</td>
-                                <td>CT006</td>
-                                <td>Shoes Description</td>
-                                <td><span class="badge bg-success fw-medium fs-10">Active</span></td>
+                                <td>{{ __('Shoes') }}</td>
+                                <td>{{ __('Shoes') }}</td>
+                                <td>{{ __('CT006') }}</td>
+                                <td>{{ __('Shoes Description') }}</td>
+                                <td><span class="badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
                                 <td class="action-table-data">
                                     <div class="edit-delete-action">
                                         <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-category">
@@ -483,11 +483,11 @@
                                         <img src="{{URL::asset('build/img/products/product7.jpg')}}" alt="product">
                                     </a>
                                 </td>
-                                <td>Fruits</td>
-                                <td>Fruits</td>
-                                <td>CT007</td>
-                                <td>Fruits Description</td>
-                                <td><span class="badge bg-success fw-medium fs-10">Active</span></td>
+                                <td>{{ __('Fruits') }}</td>
+                                <td>{{ __('Fruits') }}</td>
+                                <td>{{ __('CT007') }}</td>
+                                <td>{{ __('Fruits Description') }}</td>
+                                <td><span class="badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
                                 <td class="action-table-data">
                                     <div class="edit-delete-action">
                                         <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-category">
@@ -512,11 +512,11 @@
                                         <img src="{{URL::asset('build/img/products/product8.jpg')}}" alt="product">
                                     </a>
                                 </td>
-                                <td>Fruits</td>
-                                <td>Fruits</td>
-                                <td>CT008</td>
-                                <td>Fruits Description</td>
-                                <td><span class="badge bg-success fw-medium fs-10">Active</span></td>
+                                <td>{{ __('Fruits') }}</td>
+                                <td>{{ __('Fruits') }}</td>
+                                <td>{{ __('CT008') }}</td>
+                                <td>{{ __('Fruits Description') }}</td>
+                                <td><span class="badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
                                 <td class="action-table-data">
                                     <div class="edit-delete-action">
                                         <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-category">
@@ -541,11 +541,11 @@
                                         <img src="{{URL::asset('build/img/products/product9.jpg')}}" alt="product">
                                     </a>
                                 </td>
-                                <td>Computers</td>
-                                <td>Computers</td>
-                                <td>CT009</td>
-                                <td>Computers Description</td>
-                                <td><span class="badge bg-success fw-medium fs-10">Active</span></td>
+                                <td>{{ __('Computers') }}</td>
+                                <td>{{ __('Computers') }}</td>
+                                <td>{{ __('CT009') }}</td>
+                                <td>{{ __('Computers Description') }}</td>
+                                <td><span class="badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
                                 <td class="action-table-data">
                                     <div class="edit-delete-action">
                                         <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-category">
@@ -570,11 +570,11 @@
                                         <img src="{{URL::asset('build/img/products/product10.jpg')}}" alt="product">
                                     </a>
                                 </td>
-                                <td>Health Care	</td>
-                                <td>Health Care	</td>
-                                <td>CT0010</td>
-                                <td>Health Care Description</td>
-                                <td><span class="badge bg-success fw-medium fs-10">Active</span></td>
+                                <td>{{ __('Health Care') }}</td>
+                                <td>{{ __('Health Care') }}</td>
+                                <td>{{ __('CT0010') }}</td>
+                                <td>{{ __('Health Care Description') }}</td>
+                                <td><span class="badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
                                 <td class="action-table-data">
                                     <div class="edit-delete-action">
                                         <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-category">

@@ -1,12 +1,12 @@
 <x-dashboard::layouts.master
-    :title="'Expired Products - ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Expired Products') . ' -' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Expired Products">
+    :pageTitle="__('Expired Products')">
 
 <div class="page-header">
     <div class="page-title me-auto">
-        <h4 class="fw-bold">Expired Products</h4>
-        <h6>Products with an expiry date before today</h6>
+        <h4 class="fw-bold">{{ __('Expired Products') }}</h4>
+        <h6>{{ __('Products with an expiry date before today') }}</h6>
     </div>
     <div class="page-btn">
         <a href="{{ route('eshop360.stocks.expiry-report', $instance->slug ?? '') }}" class="btn btn-secondary">
@@ -19,17 +19,17 @@
     <div class="card-header">
         <form method="GET" action="{{ route('eshop360.stocks.expired', $instance->slug ?? '') }}" class="row g-3">
             <div class="col-md-9">
-                <label for="search" class="form-label">Search</label>
+                <label for="search" class="form-label">{{ __('Search') }}</label>
                 <input
                     id="search"
                     type="text"
                     name="search"
                     value="{{ request('search') }}"
                     class="form-control"
-                    placeholder="Product name">
+                    placeholder="{{ __('Product name') }}">
             </div>
             <div class="col-md-3 d-flex align-items-end gap-2">
-                <button type="submit" class="btn btn-primary w-100">Filter</button>
+                <button type="submit" class="btn btn-primary w-100">{{ __('Filter') }}</button>
                 <a href="{{ route('eshop360.stocks.expired', $instance->slug ?? '') }}" class="btn btn-light w-100">Reset</a>
             </div>
         </form>
@@ -39,11 +39,11 @@
             <table class="table">
                 <thead class="thead-light">
                     <tr>
-                        <th>Product</th>
-                        <th>SKU</th>
-                        <th>Manufactured date</th>
-                        <th>Expiry date</th>
-                        <th>Warehouses</th>
+                        <th>{{ __('Product') }}</th>
+                        <th>{{ __('SKU') }}</th>
+                        <th>{{ __('Manufactured date') }}</th>
+                        <th>{{ __('Expiry date') }}</th>
+                        <th>{{ __('Warehouses') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -64,13 +64,13 @@
                                         {{ $stock->warehouse->name ?? 'Warehouse' }}: {{ $stock->quantity }}
                                     </div>
                                 @empty
-                                    <span class="text-muted">No stock line</span>
+                                    <span class="text-muted">{{ __('No stock line') }}</span>
                                 @endforelse
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="text-center text-muted py-4">No expired products found.</td>
+                            <td colspan="5" class="text-center text-muted py-4">{{ __('No expired products found.') }}</td>
                         </tr>
                     @endforelse
                 </tbody>

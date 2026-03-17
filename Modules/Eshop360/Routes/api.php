@@ -13,7 +13,7 @@ use Modules\Eshop360\Http\Controllers\Api\ApiController;
 |
 */
 
-Route::middleware(['api', 'eshop360.api.auth'])->prefix('api/eshop360/v1')->name('api.eshop360.')->group(function () {
+Route::middleware(['api', 'eshop360.api.auth', 'eshop360.api.log', 'throttle:60,1'])->prefix('api/eshop360/v1')->name('api.eshop360.')->group(function () {
 
     // ─── Products ────────────────────────────────────
     Route::get('/products', [ApiController::class, 'products'])->name('products.index');
@@ -49,9 +49,21 @@ Route::middleware(['api', 'eshop360.api.auth'])->prefix('api/eshop360/v1')->name
     Route::get('/orders', [ApiController::class, 'onlineOrders'])->name('orders.index');
     Route::get('/orders/{id}', [ApiController::class, 'onlineOrderShow'])->name('orders.show');
     Route::put('/orders/{id}/status', [ApiController::class, 'onlineOrderUpdateStatus'])->name('orders.status');
+});
 
-    // ─── v2 endpoints ────────────────────────────────
-    // Accessible via /api/eshop360/v1/ (will create v2 prefix later)
+/*
+|--------------------------------------------------------------------------
+| API v2 — extended endpoints (dashboard, channels, charges)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['api', 'eshop360.api.auth', 'eshop360.api.log', 'throttle:60,1'])->prefix('api/eshop360/v2')->name('api.eshop360.v2.')->group(function () {
+    Route::get('/dashboard', [ApiController::class, 'dashboard'])->name('dashboard');
+    Route::get('/channels/{channelId}/margins', [ApiController::class, 'channelMargins'])->name('channels.margins');
+    Route::get('/charges/realtime', [ApiController::class, 'chargesRealtime'])->name('charges.realtime');
+});
+
+// Keep v1 aliases for backward compatibility
+Route::middleware(['api', 'eshop360.api.auth', 'eshop360.api.log', 'throttle:60,1'])->prefix('api/eshop360/v1')->name('api.eshop360.')->group(function () {
     Route::get('/dashboard', [ApiController::class, 'dashboard'])->name('dashboard');
     Route::get('/channels/{channelId}/margins', [ApiController::class, 'channelMargins'])->name('channels.margins');
     Route::get('/charges/realtime', [ApiController::class, 'chargesRealtime'])->name('charges.realtime');

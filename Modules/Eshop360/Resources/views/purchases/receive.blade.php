@@ -1,7 +1,7 @@
 <x-dashboard::layouts.master
-    :title="'Réception — ' . $purchase->reference . ' — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Réception') . ' —' . $purchase->reference . ' — ' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Réception marchandise">
+    :pageTitle="__('Réception marchandise')">
 
 <div class="page-header">
     <div class="add-item d-flex">
@@ -22,9 +22,9 @@
 
     <div class="row">
         <div class="col-md-4 mb-3">
-            <label class="form-label fw-semibold">Entrepôt de destination <span class="text-danger">*</span></label>
+            <label class="form-label fw-semibold">{{ __('Entrepôt de destination') }}<span class="text-danger">*</span></label>
             <select name="warehouse_id" class="form-select @error('warehouse_id') is-invalid @enderror" required>
-                <option value="">— Sélectionner un entrepôt —</option>
+                <option value="">{{ __('— Sélectionner un entrepôt —') }}</option>
                 @foreach ($warehouses as $warehouse)
                     <option value="{{ $warehouse->id }}"
                         {{ old('warehouse_id', $purchase->warehouse_id) == $warehouse->id ? 'selected' : '' }}>
@@ -38,18 +38,18 @@
 
     <div class="card">
         <div class="card-header">
-            <h5 class="card-title mb-0">Lignes de commande</h5>
+            <h5 class="card-title mb-0">{{ __('Lignes de commande') }}</h5>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-bordered table-hover mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th>Produit</th>
-                            <th class="text-center" style="width:120px">Commandé</th>
-                            <th class="text-center" style="width:120px">Déjà reçu</th>
-                            <th class="text-center" style="width:120px">Restant</th>
-                            <th class="text-center" style="width:150px">Qté à recevoir</th>
+                            <th>{{ __('Produit') }}</th>
+                            <th class="text-center" style="width:120px">{{ __('Commandé') }}</th>
+                            <th class="text-center" style="width:120px">{{ __('Déjà reçu') }}</th>
+                            <th class="text-center" style="width:120px">{{ __('Restant') }}</th>
+                            <th class="text-center" style="width:150px">{{ __('Qté à recevoir') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -67,7 +67,7 @@
                                 <td class="text-center">{{ $item->received_qty ?? 0 }}</td>
                                 <td class="text-center">
                                     @if ($remaining === 0)
-                                        <span class="badge bg-success">Complet</span>
+                                        <span class="badge bg-success">{{ __('Complet') }}</span>
                                     @else
                                         <span class="badge bg-warning text-dark">{{ $remaining }}</span>
                                     @endif
@@ -96,7 +96,7 @@
 
     <div class="d-flex justify-content-end gap-2 mt-3">
         <a href="{{ route('eshop360.purchases.show', [$instance->slug ?? '', $purchase]) }}"
-           class="btn btn-light">Annuler</a>
+           class="btn btn-light">{{ __('Annuler') }}</a>
         <button type="submit" class="btn btn-primary">
             <i class="ti ti-check me-1"></i>Confirmer la réception
         </button>

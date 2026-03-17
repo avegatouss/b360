@@ -1,5 +1,10 @@
 <?php
 
+// DEPRECATED: Merged into ChannelController. To be deleted after verification.
+// All codifarm functionality is now handled by Modules\Eshop360\Http\Controllers\Channel\ChannelController
+// using the generic DistributionChannel model instead of CodifarmMarginConfig.
+// See routes: eshop360.channels.{show,dashboard,settings,margins,orders}
+
 namespace Modules\Eshop360\Http\Controllers\Codifarm;
 
 use App\Http\Controllers\Controller;

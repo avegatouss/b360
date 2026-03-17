@@ -2,10 +2,12 @@
 
 namespace Modules\Eshop360\Models;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Builder;
 use Modules\Core\Database\Traits\BelongsToInstance;
 
@@ -28,6 +30,9 @@ class DistributionChannel extends Model
         'channel_share',
         'owner_share',
         'settings',
+        'warehouse_id',
+        'portal_enabled',
+        'portal_settings',
     ];
 
     protected $casts = [
@@ -38,6 +43,8 @@ class DistributionChannel extends Model
         'channel_share' => 'decimal:4',
         'owner_share' => 'decimal:4',
         'settings' => 'array',
+        'portal_enabled' => 'boolean',
+        'portal_settings' => 'array',
     ];
 
     public function marginLogs(): HasMany
@@ -65,6 +72,39 @@ class DistributionChannel extends Model
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
+    }
+
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'eshop_channel_users')
+            ->withPivot('role')
+            ->withTimestamps();
+    }
+
+    public function channelUsers(): HasMany
+    {
+        return $this->hasMany(ChannelUser::class, 'channel_id');
+    }
+
+    public function warehouse(): BelongsTo
+    {
+        return $this->belongsTo(Warehouse::class);
+    }
+
+    /**
+     * Get users with the 'manager' role for this channel.
+     */
+    public function managers(): BelongsToMany
+    {
+        return $this->users()->wherePivot('role', 'manager');
+    }
+
+    /**
+     * Check whether the given user is a member of this channel.
+     */
+    public function isUserMember(int $userId): bool
+    {
+        return $this->channelUsers()->where('user_id', $userId)->exists();
     }
 
     /**

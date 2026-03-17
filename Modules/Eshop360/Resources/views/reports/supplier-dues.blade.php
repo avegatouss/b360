@@ -1,15 +1,15 @@
 <x-dashboard::layouts.master
-    :title="'Dettes fournisseurs — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Dettes fournisseurs') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Dettes fournisseurs">
+    :pageTitle="__('Dettes fournisseurs')">
 
     <div class="page-wrapper">
         <div class="content">
             <div class="page-header">
                 <div class="add-item d-flex">
                     <div class="page-title">
-                        <h4>Dettes fournisseurs</h4>
-                        <h6>Montants dus aux fournisseurs</h6>
+                        <h4>{{ __('Dettes fournisseurs') }}</h4>
+                        <h6>{{ __('Montants dus aux fournisseurs') }}</h6>
                     </div>
                 </div>
                 <ul class="table-top-head">
@@ -28,11 +28,11 @@
                         <table class="table datatable">
                             <thead class="thead-light">
                                 <tr>
-                                    <th>Fournisseur</th>
-                                    <th>Telephone</th>
-                                    <th>Total facture</th>
-                                    <th>Total paye</th>
-                                    <th>Solde du</th>
+                                    <th>{{ __('Fournisseur') }}</th>
+                                    <th>{{ __('Telephone') }}</th>
+                                    <th>{{ __('Total facture') }}</th>
+                                    <th>{{ __('Total paye') }}</th>
+                                    <th>{{ __('Solde du') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -45,13 +45,13 @@
                                     <td class="fw-bold text-danger">{{ number_format($row['due'] ?? $row['balance'] ?? 0, 2) }}</td>
                                 </tr>
                                 @empty
-                                <tr><td colspan="5" class="text-center text-muted">Aucune dette</td></tr>
+                                <tr><td colspan="5" class="text-center text-muted">{{ __('Aucune dette') }}</td></tr>
                                 @endforelse
                             </tbody>
                             @if(count($data) > 0)
                             <tfoot>
                                 <tr class="fw-bold">
-                                    <td colspan="2">Total</td>
+                                    <td colspan="2">{{ __('Total') }}</td>
                                     <td>{{ number_format(collect($data)->sum(fn($r) => $r['total_invoiced'] ?? $r['total'] ?? 0), 2) }}</td>
                                     <td>{{ number_format(collect($data)->sum(fn($r) => $r['total_paid'] ?? $r['paid'] ?? 0), 2) }}</td>
                                     <td class="text-danger">{{ number_format(collect($data)->sum(fn($r) => $r['due'] ?? $r['balance'] ?? 0), 2) }}</td>

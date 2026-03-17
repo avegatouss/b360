@@ -41,13 +41,29 @@ use Modules\Eshop360\Http\Controllers\Charges\ChargesController;
 use Modules\Eshop360\Http\Controllers\Channel\ChannelController;
 use Modules\Eshop360\Http\Controllers\OnlineOrder\OnlineOrderController;
 use Modules\Eshop360\Http\Controllers\Communication\MessageController;
+use Modules\Eshop360\Http\Controllers\Communication\BulkMessageController;
+use Modules\Eshop360\Http\Controllers\Communication\SmsGatewayController;
 use Modules\Eshop360\Http\Controllers\Communication\SupportTicketController;
+use Modules\Eshop360\Http\Controllers\Communication\EmailTemplateController;
 use Modules\Eshop360\Http\Controllers\Payment\CinetPayController;
 use Modules\Eshop360\Http\Controllers\Payment\InetPayController;
 use Modules\Eshop360\Http\Controllers\Project\ProjectController;
 use Modules\Eshop360\Http\Controllers\Project\TaskController;
-use Modules\Eshop360\Http\Controllers\Codifarm\CodifarmController;
+use Modules\Eshop360\Http\Controllers\Project\EventController;
+use Modules\Eshop360\Http\Controllers\Invoice\RecurringInvoiceController;
+// CodifarmController import kept for reference — controller is deprecated, routes removed
+// use Modules\Eshop360\Http\Controllers\Codifarm\CodifarmController;
 use Modules\Eshop360\Http\Controllers\Portal\CustomerPortalController;
+use Modules\Eshop360\Http\Controllers\ChannelPortal\ChannelPortalDashboardController;
+use Modules\Eshop360\Http\Controllers\ChannelPortal\ChannelPortalOrderController;
+use Modules\Eshop360\Http\Controllers\ChannelPortal\ChannelPortalStockController;
+use Modules\Eshop360\Http\Controllers\ChannelPortal\ChannelPortalSaleController;
+use Modules\Eshop360\Http\Controllers\ChannelPortal\ChannelPortalCustomerController;
+use Modules\Eshop360\Http\Controllers\ChannelPortal\ChannelPortalMarginController;
+use Modules\Eshop360\Http\Controllers\ChannelPortal\ChannelShopController;
+use Modules\Eshop360\Http\Controllers\Notification\NotificationController;
+use Modules\Eshop360\Http\Controllers\Printing\ReceiptTemplateController;
+use Modules\Eshop360\Http\Controllers\Printing\PrinterController;
 use Modules\Eshop360\Http\Middleware\ApplyCurrentInstanceUrlDefaults;
 
 /*
@@ -120,6 +136,7 @@ Route::middleware([
     Route::prefix('barcodes')->name('eshop360.barcodes.')->middleware('can:eshop.products.view')->group(function () {
         Route::get('/', [BarcodeController::class, 'index'])->name('index');
         Route::post('/generate', [BarcodeController::class, 'generate'])->name('generate');
+        Route::post('/print-batch', [BarcodeController::class, 'printBatch'])->name('print-batch');
     });
 
     // ─── Inventory / Stocks ──────────────────────
@@ -220,6 +237,7 @@ Route::middleware([
         Route::get('/{customer}', [CustomerController::class, 'show'])->name('show');
         Route::put('/{customer}', [CustomerController::class, 'update'])->middleware('can:eshop.customers.manage')->name('update');
         Route::delete('/{customer}', [CustomerController::class, 'destroy'])->middleware('can:eshop.customers.manage')->name('destroy');
+        Route::post('/{customer}/wallet-topup', [CustomerController::class, 'walletTopup'])->middleware('can:eshop.customers.manage')->name('wallet-topup');
         Route::get('/reports/summary', [CustomerController::class, 'report'])->name('report');
         Route::get('/reports/due', [CustomerController::class, 'dueReport'])->name('due-report');
     });
@@ -256,6 +274,17 @@ Route::middleware([
         Route::get('/config/settings', [InvoiceController::class, 'settings'])->middleware('can:eshop.settings.manage')->name('settings');
         Route::put('/config/settings', [InvoiceController::class, 'updateSettings'])->middleware('can:eshop.settings.manage')->name('settings.update');
         Route::get('/reports/summary', [InvoiceController::class, 'report'])->name('report');
+    });
+
+    // ─── Recurring Invoices ─────────────────────────
+    Route::prefix('invoices/recurring')->name('eshop360.recurring-invoices.')->middleware('can:eshop.invoices.manage')->group(function () {
+        Route::get('/', [RecurringInvoiceController::class, 'index'])->name('index');
+        Route::get('/create', [RecurringInvoiceController::class, 'create'])->name('create');
+        Route::post('/', [RecurringInvoiceController::class, 'store'])->name('store');
+        Route::get('/{recurringInvoice}/edit', [RecurringInvoiceController::class, 'edit'])->name('edit');
+        Route::put('/{recurringInvoice}', [RecurringInvoiceController::class, 'update'])->name('update');
+        Route::delete('/{recurringInvoice}', [RecurringInvoiceController::class, 'destroy'])->name('destroy');
+        Route::patch('/{recurringInvoice}/toggle', [RecurringInvoiceController::class, 'toggle'])->name('toggle');
     });
 
     // ─── Promotions ────────────────────────────────
@@ -431,16 +460,21 @@ Route::middleware([
         Route::put('/{charge}', [ChargesController::class, 'update'])->middleware('can:eshop.charges.manage')->name('update');
         Route::delete('/{charge}', [ChargesController::class, 'destroy'])->middleware('can:eshop.charges.manage')->name('destroy');
         Route::get('/realtime', [ChargesController::class, 'realtime'])->name('realtime');
+        Route::get('/realtime-data', [ChargesController::class, 'realtimeData'])->name('realtime-data');
     });
 
     // ─── Distribution Channels ──────────────────────────
+    // (Codifarm functionality merged here — see ChannelController)
     Route::prefix('channels')->name('eshop360.channels.')->middleware(['can:eshop.channels.view', 'billing.feature:eshop360.channels'])->group(function () {
         Route::get('/', [ChannelController::class, 'index'])->name('index');
         Route::get('/create', [ChannelController::class, 'create'])->middleware('can:eshop.channels.manage')->name('create');
         Route::post('/', [ChannelController::class, 'store'])->middleware('can:eshop.channels.manage')->name('store');
         Route::get('/{channel}', [ChannelController::class, 'show'])->name('show');
+        Route::get('/{channel}/dashboard', [ChannelController::class, 'show'])->name('dashboard');
         Route::get('/{channel}/edit', [ChannelController::class, 'edit'])->middleware('can:eshop.channels.manage')->name('edit');
+        Route::get('/{channel}/settings', [ChannelController::class, 'edit'])->middleware('can:eshop.channels.manage')->name('settings');
         Route::put('/{channel}', [ChannelController::class, 'update'])->middleware('can:eshop.channels.manage')->name('update');
+        Route::put('/{channel}/settings', [ChannelController::class, 'update'])->middleware('can:eshop.channels.manage')->name('settings.update');
         Route::delete('/{channel}', [ChannelController::class, 'destroy'])->middleware('can:eshop.channels.manage')->name('destroy');
         Route::get('/{channel}/margins', [ChannelController::class, 'margins'])->name('margins');
         Route::get('/{channel}/orders', [ChannelController::class, 'orders'])->name('orders');
@@ -463,6 +497,27 @@ Route::middleware([
         Route::delete('/{message}', [MessageController::class, 'destroy'])->name('destroy');
     });
 
+    // ─── Communication: SMS Gateways ─────────────────
+    Route::prefix('communication/sms-gateways')->name('eshop360.sms-gateways.')->group(function () {
+        Route::get('/', [SmsGatewayController::class, 'index'])->name('index');
+        Route::get('/create', [SmsGatewayController::class, 'create'])->name('create');
+        Route::post('/', [SmsGatewayController::class, 'store'])->name('store');
+        Route::get('/{gateway}/edit', [SmsGatewayController::class, 'edit'])->name('edit');
+        Route::put('/{gateway}', [SmsGatewayController::class, 'update'])->name('update');
+        Route::delete('/{gateway}', [SmsGatewayController::class, 'destroy'])->name('destroy');
+        Route::post('/{gateway}/test', [SmsGatewayController::class, 'test'])->name('test');
+        Route::post('/{gateway}/default', [SmsGatewayController::class, 'setDefault'])->name('set-default');
+    });
+
+    // ─── Communication: Bulk Messages ──────────────────
+    Route::prefix('communication/bulk')->name('eshop360.bulk-messages.')->group(function () {
+        Route::get('/compose', [BulkMessageController::class, 'compose'])->name('compose');
+        Route::post('/preview', [BulkMessageController::class, 'preview'])->name('preview');
+        Route::post('/send', [BulkMessageController::class, 'send'])->name('send');
+        Route::get('/history', [BulkMessageController::class, 'history'])->name('history');
+        Route::get('/history/{log}', [BulkMessageController::class, 'show'])->name('show');
+    });
+
     // ─── Communication: Support Tickets ──────────────
     Route::prefix('support-tickets')->name('eshop360.tickets.')->middleware('can:eshop.customers.view')->group(function () {
         Route::get('/', [SupportTicketController::class, 'index'])->name('index');
@@ -470,6 +525,15 @@ Route::middleware([
         Route::get('/{ticket}', [SupportTicketController::class, 'show'])->name('show');
         Route::post('/{ticket}/reply', [SupportTicketController::class, 'reply'])->name('reply');
         Route::put('/{ticket}/status', [SupportTicketController::class, 'updateStatus'])->name('status');
+    });
+
+    // ─── Communication: Email Templates ─────────────
+    Route::prefix('communication/email-templates')->name('eshop360.email-templates.')->group(function () {
+        Route::get('/', [EmailTemplateController::class, 'index'])->name('index');
+        Route::get('/{template}/edit', [EmailTemplateController::class, 'edit'])->name('edit');
+        Route::put('/{template}', [EmailTemplateController::class, 'update'])->name('update');
+        Route::get('/{template}/preview', [EmailTemplateController::class, 'preview'])->name('preview');
+        Route::post('/{template}/reset', [EmailTemplateController::class, 'resetToDefault'])->name('reset');
     });
 
     // ─── Advanced Reports ────────────────────────────
@@ -515,14 +579,21 @@ Route::middleware([
         Route::put('/settings', [InetPayController::class, 'updateSettings'])->middleware('can:eshop.settings.manage')->name('settings.update');
     });
 
-    // ─── CODIFARM ───────────────────────────────────
-    Route::prefix('codifarm')->name('eshop360.codifarm.')->middleware('billing.feature:eshop360.codifarm')->group(function () {
-        Route::get('/', [CodifarmController::class, 'dashboard'])->middleware('can:eshop.reports.view')->name('dashboard');
-        Route::get('/config', [CodifarmController::class, 'config'])->middleware('can:eshop.settings.manage')->name('config');
-        Route::match(['put', 'patch'], '/config', [CodifarmController::class, 'updateConfig'])->middleware('can:eshop.settings.manage')->name('config.update');
-        Route::get('/margins', [CodifarmController::class, 'margins'])->middleware('can:eshop.reports.view')->name('margins');
-        Route::get('/orders', [CodifarmController::class, 'orders'])->middleware('can:eshop.sales.view')->name('orders');
+    // ─── Payment Gateways Management (Admin) ────────
+    Route::prefix('payment-gateways')->name('eshop360.payment-gateways.')->middleware('can:eshop.settings.manage')->group(function () {
+        Route::get('/', [\Modules\Eshop360\Http\Controllers\Payment\PaymentGatewayController::class, 'index'])->name('index');
+        Route::get('/create', [\Modules\Eshop360\Http\Controllers\Payment\PaymentGatewayController::class, 'create'])->name('create');
+        Route::post('/', [\Modules\Eshop360\Http\Controllers\Payment\PaymentGatewayController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [\Modules\Eshop360\Http\Controllers\Payment\PaymentGatewayController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [\Modules\Eshop360\Http\Controllers\Payment\PaymentGatewayController::class, 'update'])->name('update');
+        Route::delete('/{id}', [\Modules\Eshop360\Http\Controllers\Payment\PaymentGatewayController::class, 'destroy'])->name('destroy');
+        Route::patch('/{id}/toggle', [\Modules\Eshop360\Http\Controllers\Payment\PaymentGatewayController::class, 'toggle'])->name('toggle');
     });
+
+    // ─── CODIFARM (DEPRECATED) ────────────────────────
+    // All codifarm routes have been merged into the channels group above.
+    // These legacy routes redirect to channel equivalents for backward compatibility.
+    // TODO: Remove after full migration verification.
 
     // ─── Invoice PDF / Email ──────────────────────────
     Route::prefix('invoices')->name('eshop360.invoices.')->middleware('can:eshop.invoices.view')->group(function () {
@@ -552,9 +623,19 @@ Route::middleware([
         Route::put('/{project}', [ProjectController::class, 'update'])->middleware('can:eshop.sales.manage')->name('update');
         Route::delete('/{project}', [ProjectController::class, 'destroy'])->middleware('can:eshop.sales.manage')->name('destroy');
         Route::get('/{project}/calendar', [ProjectController::class, 'calendar'])->name('calendar');
+        Route::get('/{project}/invoices', [ProjectController::class, 'invoices'])->name('invoices');
 
         // Tasks (nested under project)
         Route::post('/{project}/tasks', [TaskController::class, 'store'])->middleware('can:eshop.sales.manage')->name('tasks.store');
+    });
+
+    // ─── Calendar Events ────────────────────────────
+    Route::prefix('projects/calendar')->name('eshop360.calendar.')->middleware('can:eshop.sales.view')->group(function () {
+        Route::get('/', [EventController::class, 'index'])->name('index');
+        Route::get('/events', [EventController::class, 'events'])->name('events');
+        Route::post('/', [EventController::class, 'store'])->middleware('can:eshop.sales.manage')->name('store');
+        Route::put('/{event}', [EventController::class, 'update'])->middleware('can:eshop.sales.manage')->name('update');
+        Route::delete('/{event}', [EventController::class, 'destroy'])->middleware('can:eshop.sales.manage')->name('destroy');
     });
 
     // Task actions (standalone, for AJAX)
@@ -564,4 +645,97 @@ Route::middleware([
         Route::post('/{task}/comments', [TaskController::class, 'addComment'])->name('comments.store');
         Route::post('/reorder', [TaskController::class, 'reorder'])->name('reorder');
     });
+
+    // ─── Channel Portal ─────────────────────────────
+    Route::prefix('channel-portal/{channel}')
+        ->middleware(['eshop.channel.resolve', 'eshop.channel.member'])
+        ->name('eshop360.channel-portal.')
+        ->group(function () {
+            Route::get('/', [ChannelPortalDashboardController::class, 'index'])->name('dashboard');
+
+            Route::get('/orders', [ChannelPortalOrderController::class, 'index'])->name('orders.index');
+            Route::get('/orders/create', [ChannelPortalOrderController::class, 'create'])->name('orders.create');
+            Route::post('/orders', [ChannelPortalOrderController::class, 'store'])->name('orders.store');
+            Route::get('/orders/{order}', [ChannelPortalOrderController::class, 'show'])->name('orders.show');
+            Route::post('/orders/{order}/confirm-reception', [ChannelPortalOrderController::class, 'confirmReception'])->name('orders.confirm-reception');
+
+            Route::get('/stock', [ChannelPortalStockController::class, 'index'])->name('stock.index');
+
+            Route::get('/sales', [ChannelPortalSaleController::class, 'index'])->name('sales.index');
+            Route::get('/sales/{order}', [ChannelPortalSaleController::class, 'show'])->name('sales.show');
+
+            Route::get('/customers', [ChannelPortalCustomerController::class, 'index'])->name('customers.index');
+            Route::get('/customers/{customer}', [ChannelPortalCustomerController::class, 'show'])->name('customers.show');
+
+            Route::get('/margins', [ChannelPortalMarginController::class, 'index'])->name('margins.index');
+        });
+
+    // ─── Notifications ───
+    Route::prefix('notifications')->name('eshop360.notifications.')->group(function () {
+        Route::get('/', [NotificationController::class, 'index'])->name('index');
+        Route::get('/unread-count', [NotificationController::class, 'unreadCount'])->name('unread-count');
+        Route::post('/{id}/read', [NotificationController::class, 'markAsRead'])->name('mark-read');
+        Route::post('/read-all', [NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
+        Route::delete('/{id}', [NotificationController::class, 'destroy'])->name('destroy');
+    });
+
+    // ─── Printing & Receipt Templates ──────────────
+    Route::prefix('receipt-templates')->name('eshop360.receipt-templates.')->middleware('can:eshop.settings.manage')->group(function () {
+        Route::get('/', [ReceiptTemplateController::class, 'index'])->name('index');
+        Route::get('/create', [ReceiptTemplateController::class, 'create'])->name('create');
+        Route::post('/', [ReceiptTemplateController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [ReceiptTemplateController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [ReceiptTemplateController::class, 'update'])->name('update');
+        Route::delete('/{id}', [ReceiptTemplateController::class, 'destroy'])->name('destroy');
+        Route::get('/{id}/preview', [ReceiptTemplateController::class, 'preview'])->name('preview');
+    });
+
+    Route::prefix('printing')->name('eshop360.printing.')->middleware('can:eshop.pos.access')->group(function () {
+        Route::post('/test-connection', [PrinterController::class, 'testConnection'])->middleware('can:eshop.settings.manage')->name('test-connection');
+        Route::post('/receipt/{order}', [PrinterController::class, 'printReceipt'])->name('receipt');
+        Route::post('/open-drawer', [PrinterController::class, 'openDrawer'])->name('open-drawer');
+    });
+
+    // ─── Channel Customer Shop (public-facing e-shop scoped to a channel) ───
+    Route::prefix('channel-shop/{channel}')
+        ->middleware(['eshop.channel.resolve'])
+        ->name('eshop360.channel-shop.')
+        ->group(function () {
+            Route::get('/catalog', [ChannelShopController::class, 'catalog'])->name('catalog');
+            Route::get('/product/{product}', [ChannelShopController::class, 'product'])->name('product');
+
+            Route::middleware('auth')->group(function () {
+                Route::post('/cart/add', [ChannelShopController::class, 'addToCart'])->name('cart.add');
+                Route::get('/cart', [ChannelShopController::class, 'cart'])->name('cart');
+                Route::post('/cart/update', [ChannelShopController::class, 'updateCart'])->name('cart.update');
+                Route::post('/cart/remove', [ChannelShopController::class, 'removeFromCart'])->name('cart.remove');
+                Route::get('/checkout', [ChannelShopController::class, 'checkout'])->name('checkout');
+                Route::post('/checkout', [ChannelShopController::class, 'placeOrder'])->name('checkout.store');
+                Route::get('/orders', [ChannelShopController::class, 'orders'])->name('orders');
+                Route::get('/orders/{order}', [ChannelShopController::class, 'orderDetail'])->name('orders.show');
+                Route::post('/orders/{order}/confirm', [ChannelShopController::class, 'confirmReception'])->name('orders.confirm');
+            });
+        });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Public Payment Routes (no auth required)
+|--------------------------------------------------------------------------
+|
+| These routes are accessible without authentication via a payment token.
+| They allow customers to pay invoices from a link sent by email.
+|
+*/
+
+Route::middleware(['web'])->prefix('pay')->name('eshop360.payment.')->group(function () {
+    Route::get('/{token}', [\Modules\Eshop360\Http\Controllers\Payment\PublicPaymentController::class, 'show'])->name('show');
+    Route::post('/{token}', [\Modules\Eshop360\Http\Controllers\Payment\PublicPaymentController::class, 'initiate'])->name('initiate');
+    Route::get('/{token}/success', [\Modules\Eshop360\Http\Controllers\Payment\PublicPaymentController::class, 'success'])->name('success');
+    Route::get('/callback/{gateway}', [\Modules\Eshop360\Http\Controllers\Payment\PublicPaymentController::class, 'callback'])->name('callback');
+});
+
+// Payment webhooks (no auth, no CSRF)
+Route::middleware(['api'])->prefix('api/eshop360/payment')->name('eshop360.payment.')->group(function () {
+    Route::post('/webhook/{gateway}', [\Modules\Eshop360\Http\Controllers\Payment\PublicPaymentController::class, 'webhook'])->name('webhook');
 });

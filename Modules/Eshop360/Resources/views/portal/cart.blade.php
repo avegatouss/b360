@@ -75,7 +75,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="text-center text-muted py-5">Your online cart is empty.</td>
+                                    <td colspan="5" class="text-center text-muted py-5">{{ __('Your online cart is empty.') }}</td>
                                 </tr>
                             @endforelse
                         </tbody>

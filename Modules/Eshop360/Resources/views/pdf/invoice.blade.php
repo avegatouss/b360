@@ -119,14 +119,14 @@
 
     {{-- Document title --}}
     <div class="doc-title">
-        <h1>FACTURE</h1>
+        <h1>{{ __('FACTURE') }}</h1>
         <div class="reference">Réf. : {{ $invoice->reference }}</div>
     </div>
 
     {{-- Info blocks: Client + Invoice details --}}
     <div class="info-section">
         <div class="info-block">
-            <h4>Facturé à</h4>
+            <h4>{{ __('Facturé à') }}</h4>
             <strong>{{ $invoice->customer->name ?? 'Client comptoir' }}</strong><br>
             @if($invoice->customer?->address)
                 {{ $invoice->customer->address }}<br>
@@ -145,30 +145,30 @@
             @endif
         </div>
         <div class="info-block" style="text-align:right;">
-            <h4 style="text-align:left;">Détails de la facture</h4>
+            <h4 style="text-align:left;">{{ __('Détails de la facture') }}</h4>
             <table style="width:100%;border:none;margin:0;">
                 <tr>
-                    <td style="padding:3px 0;color:#64748b;">N° Facture :</td>
+                    <td style="padding:3px 0;color:#64748b;">{{ __('N° Facture :') }}</td>
                     <td style="padding:3px 0;text-align:right;font-weight:600;">{{ $invoice->reference }}</td>
                 </tr>
                 <tr>
-                    <td style="padding:3px 0;color:#64748b;">Date émission :</td>
+                    <td style="padding:3px 0;color:#64748b;">{{ __('Date émission :') }}</td>
                     <td style="padding:3px 0;text-align:right;">{{ $invoice->created_at?->format('d/m/Y') }}</td>
                 </tr>
                 @if($invoice->due_date)
                 <tr>
-                    <td style="padding:3px 0;color:#64748b;">Date échéance :</td>
+                    <td style="padding:3px 0;color:#64748b;">{{ __('Date échéance :') }}</td>
                     <td style="padding:3px 0;text-align:right;">{{ $invoice->due_date->format('d/m/Y') }}</td>
                 </tr>
                 @endif
                 @if(!empty($invoice->order_id))
                 <tr>
-                    <td style="padding:3px 0;color:#64748b;">N° Commande :</td>
+                    <td style="padding:3px 0;color:#64748b;">{{ __('N° Commande :') }}</td>
                     <td style="padding:3px 0;text-align:right;">{{ $invoice->order?->reference ?? '#' . $invoice->order_id }}</td>
                 </tr>
                 @endif
                 <tr>
-                    <td style="padding:3px 0;color:#64748b;">Statut :</td>
+                    <td style="padding:3px 0;color:#64748b;">{{ __('Statut :') }}</td>
                     <td style="padding:3px 0;text-align:right;">
                         @php
                             $statusClass = match($invoice->status ?? 'pending') {
@@ -190,12 +190,12 @@
         <thead>
             <tr>
                 <th style="width:30px;">#</th>
-                <th>Désignation</th>
-                <th class="text-center" style="width:60px;">Qté</th>
-                <th class="text-right" style="width:100px;">Prix Unit.</th>
-                <th class="text-right" style="width:60px;">TVA</th>
-                <th class="text-right" style="width:100px;">Remise</th>
-                <th class="text-right" style="width:110px;">Total HT</th>
+                <th>{{ __('Désignation') }}</th>
+                <th class="text-center" style="width:60px;">{{ __('Qté') }}</th>
+                <th class="text-right" style="width:100px;">{{ __('Prix Unit.') }}</th>
+                <th class="text-right" style="width:60px;">{{ __('TVA') }}</th>
+                <th class="text-right" style="width:100px;">{{ __('Remise') }}</th>
+                <th class="text-right" style="width:110px;">{{ __('Total HT') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -222,44 +222,44 @@
             </tr>
             @empty
             <tr>
-                <td colspan="7" class="text-center" style="color:#64748b;padding:20px;">Aucun article</td>
+                <td colspan="7" class="text-center" style="color:#64748b;padding:20px;">{{ __('Aucun article') }}</td>
             </tr>
             @endforelse
         </tbody>
         <tfoot>
             <tr class="subtotal-row" style="background:#f1f5f9;">
-                <td colspan="6" class="text-right" style="padding:8px 12px;"><strong>Sous-total HT</strong></td>
+                <td colspan="6" class="text-right" style="padding:8px 12px;"><strong>{{ __('Sous-total HT') }}</strong></td>
                 <td class="text-right" style="padding:8px 12px;">{{ number_format($invoice->subtotal, 2, ',', ' ') }}</td>
             </tr>
             @if(($invoice->tax_amount ?? 0) > 0)
             <tr style="background:#fef9c3;">
-                <td colspan="6" class="text-right" style="padding:7px 12px;"><strong>TVA</strong></td>
+                <td colspan="6" class="text-right" style="padding:7px 12px;"><strong>{{ __('TVA') }}</strong></td>
                 <td class="text-right" style="padding:7px 12px;">{{ number_format($invoice->tax_amount, 2, ',', ' ') }}</td>
             </tr>
             @endif
             @if(($invoice->discount_amount ?? 0) > 0)
             <tr style="background:#fef2f2;">
-                <td colspan="6" class="text-right" style="padding:7px 12px;color:#dc2626;"><strong>Remise</strong></td>
+                <td colspan="6" class="text-right" style="padding:7px 12px;color:#dc2626;"><strong>{{ __('Remise') }}</strong></td>
                 <td class="text-right" style="padding:7px 12px;color:#dc2626;">-{{ number_format($invoice->discount_amount, 2, ',', ' ') }}</td>
             </tr>
             @endif
             @if(($invoice->shipping_amount ?? 0) > 0)
             <tr style="background:#f0fdf4;">
-                <td colspan="6" class="text-right" style="padding:7px 12px;"><strong>Frais de livraison</strong></td>
+                <td colspan="6" class="text-right" style="padding:7px 12px;"><strong>{{ __('Frais de livraison') }}</strong></td>
                 <td class="text-right" style="padding:7px 12px;">{{ number_format($invoice->shipping_amount, 2, ',', ' ') }}</td>
             </tr>
             @endif
             <tr class="total-row">
-                <td colspan="6" class="text-right">TOTAL TTC</td>
+                <td colspan="6" class="text-right">{{ __('TOTAL TTC') }}</td>
                 <td class="text-right">{{ number_format($invoice->total, 2, ',', ' ') }} {{ $instance->settings['currency'] ?? 'FCFA' }}</td>
             </tr>
             @if(($invoice->paid_amount ?? 0) > 0)
             <tr style="background:#dcfce7;">
-                <td colspan="6" class="text-right" style="padding:7px 12px;color:#166534;"><strong>Montant payé</strong></td>
+                <td colspan="6" class="text-right" style="padding:7px 12px;color:#166534;"><strong>{{ __('Montant payé') }}</strong></td>
                 <td class="text-right" style="padding:7px 12px;color:#166534;">{{ number_format($invoice->paid_amount, 2, ',', ' ') }}</td>
             </tr>
             <tr style="background:#fee2e2;">
-                <td colspan="6" class="text-right" style="padding:7px 12px;color:#991b1b;"><strong>Reste à payer</strong></td>
+                <td colspan="6" class="text-right" style="padding:7px 12px;color:#991b1b;"><strong>{{ __('Reste à payer') }}</strong></td>
                 <td class="text-right" style="padding:7px 12px;color:#991b1b;font-weight:700;">{{ number_format(max(0, $invoice->total - ($invoice->paid_amount ?? 0)), 2, ',', ' ') }}</td>
             </tr>
             @endif
@@ -269,7 +269,7 @@
     {{-- Notes --}}
     @if(!empty($invoice->notes))
     <div class="notes-section">
-        <h4>Notes</h4>
+        <h4>{{ __('Notes') }}</h4>
         <p>{{ $invoice->notes }}</p>
     </div>
     @endif
@@ -277,7 +277,7 @@
     {{-- Terms --}}
     @if(!empty($invoice->terms) || !empty($instance->settings['invoice_terms']))
     <div class="terms-section">
-        <h4>Conditions de paiement</h4>
+        <h4>{{ __('Conditions de paiement') }}</h4>
         <p>{{ $invoice->terms ?? $instance->settings['invoice_terms'] }}</p>
     </div>
     @endif
@@ -285,12 +285,12 @@
     {{-- Signatures --}}
     <div class="signature-section" style="margin-top:40px;">
         <div class="signature-block">
-            <p>Signature du vendeur</p>
+            <p>{{ __('Signature du vendeur') }}</p>
             <br><br><br>
             <p>{{ $instance->name }}</p>
         </div>
         <div class="signature-block">
-            <p>Signature du client</p>
+            <p>{{ __('Signature du client') }}</p>
             <br><br><br>
             <p>{{ $invoice->customer->name ?? 'Client' }}</p>
         </div>

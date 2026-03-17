@@ -1,13 +1,13 @@
 <x-dashboard::layouts.master
     :title="$employee->name . ' — ' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Employee Detail">
+    :pageTitle="__('Employee Detail')">
 
 <div class="page-header">
     <div class="add-item d-flex">
         <div class="page-title">
             <h4 class="fw-bold">{{ $employee->name }}</h4>
-            <h6>Employee details and history</h6>
+            <h6>{{ __('Employee details and history') }}</h6>
         </div>
     </div>
     <div class="page-btn">
@@ -32,9 +32,9 @@
             </div>
             <div class="ms-auto">
                 @if($employee->is_active ?? true)
-                    <span class="d-inline-flex align-items-center p-1 pe-2 rounded-1 text-white bg-success fs-10"><i class="ti ti-point-filled me-1 fs-11"></i>Active</span>
+                    <span class="d-inline-flex align-items-center p-1 pe-2 rounded-1 text-white bg-success fs-10"><i class="ti ti-point-filled me-1 fs-11"></i>{{ __('Active') }}</span>
                 @else
-                    <span class="d-inline-flex align-items-center p-1 pe-2 rounded-1 text-white bg-danger fs-10"><i class="ti ti-point-filled me-1 fs-11"></i>Inactive</span>
+                    <span class="d-inline-flex align-items-center p-1 pe-2 rounded-1 text-white bg-danger fs-10"><i class="ti ti-point-filled me-1 fs-11"></i>{{ __('Inactive') }}</span>
                 @endif
             </div>
         </div>
@@ -42,16 +42,16 @@
     <div class="card-body">
         <ul class="nav nav-tabs" id="employeeTabs" role="tablist">
             <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="info-tab" data-bs-toggle="tab" data-bs-target="#info" type="button" role="tab">Info</button>
+                <button class="nav-link active" id="info-tab" data-bs-toggle="tab" data-bs-target="#info" type="button" role="tab">{{ __('Info') }}</button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="salaries-tab" data-bs-toggle="tab" data-bs-target="#salaries" type="button" role="tab">Salaries</button>
+                <button class="nav-link" id="salaries-tab" data-bs-toggle="tab" data-bs-target="#salaries" type="button" role="tab">{{ __('Salaries') }}</button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="commissions-tab" data-bs-toggle="tab" data-bs-target="#commissions" type="button" role="tab">Commissions</button>
+                <button class="nav-link" id="commissions-tab" data-bs-toggle="tab" data-bs-target="#commissions" type="button" role="tab">{{ __('Commissions') }}</button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="attendance-tab" data-bs-toggle="tab" data-bs-target="#attendance" type="button" role="tab">Attendance</button>
+                <button class="nav-link" id="attendance-tab" data-bs-toggle="tab" data-bs-target="#attendance" type="button" role="tab">{{ __('Attendance') }}</button>
             </li>
         </ul>
         <div class="tab-content mt-3" id="employeeTabsContent">
@@ -96,13 +96,13 @@
                     <table class="table">
                         <thead class="thead-light">
                             <tr>
-                                <th>Period</th>
-                                <th>Base Salary</th>
-                                <th>Bonuses</th>
-                                <th>Deductions</th>
-                                <th>Net Pay</th>
-                                <th>Status</th>
-                                <th>Paid At</th>
+                                <th>{{ __('Period') }}</th>
+                                <th>{{ __('Base Salary') }}</th>
+                                <th>{{ __('Bonuses') }}</th>
+                                <th>{{ __('Deductions') }}</th>
+                                <th>{{ __('Net Pay') }}</th>
+                                <th>{{ __('Status') }}</th>
+                                <th>{{ __('Paid At') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -115,16 +115,16 @@
                                 <td class="fw-bold">{{ number_format($salary->net_pay ?? 0, 0, ',', ' ') }} XAF</td>
                                 <td>
                                     @if(($salary->status ?? '') === 'paid')
-                                        <span class="badge bg-success">Paid</span>
+                                        <span class="badge bg-success">{{ __('Paid') }}</span>
                                     @else
-                                        <span class="badge bg-warning">Pending</span>
+                                        <span class="badge bg-warning">{{ __('Pending') }}</span>
                                     @endif
                                 </td>
                                 <td>{{ $salary->paid_at ? \Carbon\Carbon::parse($salary->paid_at)->format('d/m/Y') : '—' }}</td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="7" class="text-center">No salary records found.</td>
+                                <td colspan="7" class="text-center">{{ __('No salary records found.') }}</td>
                             </tr>
                             @endforelse
                         </tbody>
@@ -138,11 +138,11 @@
                     <table class="table">
                         <thead class="thead-light">
                             <tr>
-                                <th>Date</th>
-                                <th>Description</th>
-                                <th>Amount</th>
-                                <th>Source</th>
-                                <th>Status</th>
+                                <th>{{ __('Date') }}</th>
+                                <th>{{ __('Description') }}</th>
+                                <th>{{ __('Amount') }}</th>
+                                <th>{{ __('Source') }}</th>
+                                <th>{{ __('Status') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -154,15 +154,15 @@
                                 <td>{{ $commission->source ?? '—' }}</td>
                                 <td>
                                     @if(($commission->status ?? '') === 'paid')
-                                        <span class="badge bg-success">Paid</span>
+                                        <span class="badge bg-success">{{ __('Paid') }}</span>
                                     @else
-                                        <span class="badge bg-warning">Pending</span>
+                                        <span class="badge bg-warning">{{ __('Pending') }}</span>
                                     @endif
                                 </td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="5" class="text-center">No commissions found.</td>
+                                <td colspan="5" class="text-center">{{ __('No commissions found.') }}</td>
                             </tr>
                             @endforelse
                         </tbody>
@@ -176,11 +176,11 @@
                     <table class="table">
                         <thead class="thead-light">
                             <tr>
-                                <th>Date</th>
-                                <th>Clock In</th>
-                                <th>Clock Out</th>
-                                <th>Hours Worked</th>
-                                <th>Status</th>
+                                <th>{{ __('Date') }}</th>
+                                <th>{{ __('Clock In') }}</th>
+                                <th>{{ __('Clock Out') }}</th>
+                                <th>{{ __('Hours Worked') }}</th>
+                                <th>{{ __('Status') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -192,11 +192,11 @@
                                 <td>{{ $att->hours_worked ?? '—' }}</td>
                                 <td>
                                     @if(($att->status ?? '') === 'present')
-                                        <span class="badge bg-success">Present</span>
+                                        <span class="badge bg-success">{{ __('Present') }}</span>
                                     @elseif(($att->status ?? '') === 'late')
-                                        <span class="badge bg-warning">Late</span>
+                                        <span class="badge bg-warning">{{ __('Late') }}</span>
                                     @elseif(($att->status ?? '') === 'absent')
-                                        <span class="badge bg-danger">Absent</span>
+                                        <span class="badge bg-danger">{{ __('Absent') }}</span>
                                     @else
                                         <span class="badge bg-secondary">{{ $att->status ?? '—' }}</span>
                                     @endif
@@ -204,7 +204,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="5" class="text-center">No attendance records found.</td>
+                                <td colspan="5" class="text-center">{{ __('No attendance records found.') }}</td>
                             </tr>
                             @endforelse
                         </tbody>

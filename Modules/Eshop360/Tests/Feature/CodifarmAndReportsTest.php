@@ -2,13 +2,14 @@
 
 namespace Modules\Eshop360\Tests\Feature;
 
-use Modules\Eshop360\Models\CodifarmMarginLog;
+use Modules\Eshop360\Models\ChannelMarginLog;
+use Modules\Eshop360\Models\DistributionChannel;
 use Modules\Eshop360\Models\Order;
 use Modules\Eshop360\Models\OrderItem;
 use Modules\Eshop360\Models\Product;
 use Modules\Eshop360\Tests\TestCase;
 
-final class CodifarmAndReportsTest extends TestCase
+final class ChannelAndReportsTest extends TestCase
 {
     public function test_pos_overview_report_aggregates_transactions_items_and_cashiers(): void
     {
@@ -120,14 +121,27 @@ final class CodifarmAndReportsTest extends TestCase
             ->assertSee('Admin');
     }
 
-    public function test_codifarm_dashboard_and_orders_use_codifarm_logs_and_order_routes(): void
+    public function test_channel_dashboard_and_orders_use_channel_margin_logs_and_order_routes(): void
     {
         $instance = $this->makeRootInstance();
         $user = $this->makeRootSuperAdmin($instance);
 
+        $channel = DistributionChannel::create([
+            'instance_id' => $instance->id,
+            'name' => 'Canal Rapport',
+            'slug' => 'canal-rapport',
+            'code' => 'CH-RPT',
+            'is_active' => true,
+            'margin_rate' => 0.13,
+            'buy_rate' => 0.20,
+            'debt_share' => 0.20,
+            'channel_share' => 0.30,
+            'owner_share' => 0.50,
+        ]);
+
         $order = Order::create([
             'instance_id' => $instance->id,
-            'order_number' => 'CODI-001',
+            'order_number' => 'CH-001',
             'status' => 'completed',
             'payment_status' => 'paid',
             'payment_method' => 'cash',
@@ -140,30 +154,31 @@ final class CodifarmAndReportsTest extends TestCase
             'due_amount' => 0,
             'source' => 'manual',
             'biller_id' => $user->id,
-            'is_codifarm' => true,
+            'channel_id' => $channel->id,
         ]);
 
-        CodifarmMarginLog::create([
+        ChannelMarginLog::create([
             'instance_id' => $instance->id,
+            'channel_id' => $channel->id,
             'order_id' => $order->id,
             'total_margin' => 1500,
             'debt_part' => 500,
-            'codifarm_part' => 600,
-            'saphir_part' => 400,
+            'channel_part' => 600,
+            'owner_part' => 400,
         ]);
 
         $this->actingAs($user)
-            ->get(route('eshop360.codifarm.dashboard', ['slug' => $instance->slug]))
+            ->get(route('eshop360.channels.dashboard', ['slug' => $instance->slug, 'channel' => $channel]))
             ->assertOk()
             ->assertSee('1 500 XAF', false)
             ->assertSee('600 XAF', false)
             ->assertSee('400 XAF', false)
-            ->assertSee('CODI-001');
+            ->assertSee('CH-001');
 
         $this->actingAs($user)
-            ->get(route('eshop360.codifarm.orders', ['slug' => $instance->slug]))
+            ->get(route('eshop360.channels.orders', ['slug' => $instance->slug, 'channel' => $channel]))
             ->assertOk()
-            ->assertSee('CODI-001')
+            ->assertSee('CH-001')
             ->assertSee('1 500 XAF', false)
             ->assertSee(route('eshop360.orders.show', ['slug' => $instance->slug, 'order' => $order]), false);
     }

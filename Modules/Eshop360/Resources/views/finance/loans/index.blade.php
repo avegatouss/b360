@@ -1,17 +1,17 @@
 <x-dashboard::layouts.master
-    :title="'Loans — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Loans') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Loans">
+    :pageTitle="__('Loans')">
 
 <div class="page-header">
     <div class="add-item d-flex">
         <div class="page-title">
-            <h4 class="fw-bold">Loans</h4>
-            <h6>Manage loans given and received</h6>
+            <h4 class="fw-bold">{{ __('Loans') }}</h4>
+            <h6>{{ __('Manage loans given and received') }}</h6>
         </div>
     </div>
     <div class="page-btn">
-        <a href="javascript:void(0);" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addLoanModal"><i data-feather="plus-circle" class="me-1"></i>New Loan</a>
+        <a href="javascript:void(0);" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addLoanModal"><i data-feather="plus-circle" class="me-1"></i>{{ __('New Loan') }}</a>
     </div>
 </div>
 
@@ -24,21 +24,21 @@
         </div>
         <div class="d-flex table-dropdown my-xl-auto right-content align-items-center flex-wrap row-gap-3">
             <div class="dropdown me-2">
-                <a href="javascript:void(0);" class="dropdown-toggle btn btn-white btn-md d-inline-flex align-items-center" data-bs-toggle="dropdown">Status</a>
+                <a href="javascript:void(0);" class="dropdown-toggle btn btn-white btn-md d-inline-flex align-items-center" data-bs-toggle="dropdown">{{ __('Status') }}</a>
                 <ul class="dropdown-menu dropdown-menu-end p-3">
-                    <li><a href="javascript:void(0);" class="dropdown-item rounded-1">All</a></li>
-                    <li><a href="javascript:void(0);" class="dropdown-item rounded-1">Active</a></li>
-                    <li><a href="javascript:void(0);" class="dropdown-item rounded-1">Paid</a></li>
-                    <li><a href="javascript:void(0);" class="dropdown-item rounded-1">Overdue</a></li>
-                    <li><a href="javascript:void(0);" class="dropdown-item rounded-1">Cancelled</a></li>
+                    <li><a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('All') }}</a></li>
+                    <li><a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Active') }}</a></li>
+                    <li><a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Paid') }}</a></li>
+                    <li><a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Overdue') }}</a></li>
+                    <li><a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Cancelled') }}</a></li>
                 </ul>
             </div>
             <div class="dropdown">
-                <a href="javascript:void(0);" class="dropdown-toggle btn btn-white btn-md d-inline-flex align-items-center" data-bs-toggle="dropdown">Type</a>
+                <a href="javascript:void(0);" class="dropdown-toggle btn btn-white btn-md d-inline-flex align-items-center" data-bs-toggle="dropdown">{{ __('Type') }}</a>
                 <ul class="dropdown-menu dropdown-menu-end p-3">
-                    <li><a href="javascript:void(0);" class="dropdown-item rounded-1">All</a></li>
-                    <li><a href="javascript:void(0);" class="dropdown-item rounded-1">Given</a></li>
-                    <li><a href="javascript:void(0);" class="dropdown-item rounded-1">Received</a></li>
+                    <li><a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('All') }}</a></li>
+                    <li><a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Given') }}</a></li>
+                    <li><a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Received') }}</a></li>
                 </ul>
             </div>
         </div>
@@ -48,16 +48,16 @@
             <table class="table datatable">
                 <thead class="thead-light">
                     <tr>
-                        <th>Reference</th>
-                        <th>Borrower / Lender</th>
-                        <th>Type</th>
-                        <th>Date</th>
-                        <th>Due Date</th>
-                        <th class="text-end">Amount</th>
-                        <th class="text-end">Paid</th>
-                        <th class="text-end">Remaining</th>
-                        <th>Status</th>
-                        <th class="no-sort">Actions</th>
+                        <th>{{ __('Reference') }}</th>
+                        <th>{{ __('Borrower / Lender') }}</th>
+                        <th>{{ __('Type') }}</th>
+                        <th>{{ __('Date') }}</th>
+                        <th>{{ __('Due Date') }}</th>
+                        <th class="text-end">{{ __('Amount') }}</th>
+                        <th class="text-end">{{ __('Paid') }}</th>
+                        <th class="text-end">{{ __('Remaining') }}</th>
+                        <th>{{ __('Status') }}</th>
+                        <th class="no-sort">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -92,7 +92,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="10" class="text-center text-muted">No loans found.</td></tr>
+                    <tr><td colspan="10" class="text-center text-muted">{{ __('No loans found.') }}</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -110,41 +110,41 @@
             <form action="{{ route('eshop360.finance.loans.store', $instance->slug ?? '') }}" method="POST">
                 @csrf
                 <div class="modal-header">
-                    <h5 class="modal-title">New Loan</h5>
+                    <h5 class="modal-title">{{ __('New Loan') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Type <span class="text-danger">*</span></label>
+                        <label class="form-label">{{ __('Type') }}<span class="text-danger">*</span></label>
                         <select name="type" class="form-select" required>
-                            <option value="given">Given (Lent)</option>
-                            <option value="received">Received (Borrowed)</option>
+                            <option value="given">{{ __('Given (Lent)') }}</option>
+                            <option value="received">{{ __('Received (Borrowed)') }}</option>
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Contact Name <span class="text-danger">*</span></label>
+                        <label class="form-label">{{ __('Contact Name') }}<span class="text-danger">*</span></label>
                         <input type="text" name="contact_name" class="form-control" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Amount <span class="text-danger">*</span></label>
+                        <label class="form-label">{{ __('Amount') }}<span class="text-danger">*</span></label>
                         <input type="number" name="amount" class="form-control" step="0.01" min="0.01" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Date <span class="text-danger">*</span></label>
+                        <label class="form-label">{{ __('Date') }}<span class="text-danger">*</span></label>
                         <input type="date" name="date" class="form-control" value="{{ date('Y-m-d') }}" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Due Date</label>
+                        <label class="form-label">{{ __('Due Date') }}</label>
                         <input type="date" name="due_date" class="form-control">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Notes</label>
+                        <label class="form-label">{{ __('Notes') }}</label>
                         <textarea name="notes" class="form-control" rows="2"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Create Loan</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ __('Create Loan') }}</button>
                 </div>
             </form>
         </div>

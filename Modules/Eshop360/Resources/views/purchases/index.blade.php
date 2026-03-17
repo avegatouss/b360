@@ -1,40 +1,40 @@
 <x-dashboard::layouts.master
-    :title="'Purchases — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Purchases') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Purchases">
+    :pageTitle="__('Purchases')">
 
 <div class="page-header transfer">
             <div class="add-item d-flex">
                 <div class="page-title">
-                    <h4 class="fw-bold">Purchase</h4>
-                    <h6>Manage your purchases</h6>
+                    <h4 class="fw-bold">{{ __('Purchase') }}</h4>
+                    <h6>{{ __('Manage your purchases') }}</h6>
                 </div>
             </div>
             <ul class="table-top-head">
                 <li>
-                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="Pdf"><img
+                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Pdf') }}"><img
                             src="{{URL::asset('build/img/icons/pdf.svg')}}" alt="img"></a>
                 </li>
                 <li>
-                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"><img
+                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Excel') }}"><img
                             src="{{URL::asset('build/img/icons/excel.svg')}}" alt="img"></a>
                 </li>
                 <li>
-                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="Refresh"><i
+                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Refresh') }}"><i
                             data-feather="rotate-ccw" class="feather-rotate-ccw"></i></a>
                 </li>
                 <li>
-                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="Collapse" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
+                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Collapse') }}" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
                 </li>
             </ul>
             <div class="d-flex purchase-pg-btn">
                 <div class="page-btn">
                     <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-purchase"><i
-                            data-feather="plus-circle" class="me-1"></i>Add Purchase</a>
+                            data-feather="plus-circle" class="me-1"></i>{{ __('Add Purchase') }}</a>
                 </div>
                 <div class="page-btn import">
                     <a href="#" class="btn btn-secondary color" data-bs-toggle="modal" data-bs-target="#view-notes"><i
-                            data-feather="download" class="me-2"></i>Import Purchase</a>
+                            data-feather="download" class="me-2"></i>{{ __('Import Purchase') }}</a>
                 </div>
             </div>
         </div>
@@ -53,13 +53,13 @@
                         </a>
                         <ul class="dropdown-menu  dropdown-menu-end p-3">
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Paid</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Paid') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Unpaid</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Unpaid') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">Overdue</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Overdue') }}</a>
                             </li>
                         </ul>
                     </div>
@@ -76,14 +76,14 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </th>
-                                <th>Supplier Name</th>
-                                <th>Reference</th>
-                                <th>Date</th>
-                                <th>Status</th>
-                                <th>Total</th>
-                                <th>Paid</th>
-                                <th>Due</th>
-                                <th>Payment Status</th>
+                                <th>{{ __('Supplier Name') }}</th>
+                                <th>{{ __('Reference') }}</th>
+                                <th>{{ __('Date') }}</th>
+                                <th>{{ __('Status') }}</th>
+                                <th>{{ __('Total') }}</th>
+                                <th>{{ __('Paid') }}</th>
+                                <th>{{ __('Due') }}</th>
+                                <th>{{ __('Payment Status') }}</th>
                                 <th class="no-sort"></th>
                             </tr>
                         </thead>
@@ -143,7 +143,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="10" class="text-center">No purchases found.</td>
+                                <td colspan="10" class="text-center">{{ __('No purchases found.') }}</td>
                             </tr>
                             @endforelse
                         </tbody>

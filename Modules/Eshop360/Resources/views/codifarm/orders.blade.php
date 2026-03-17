@@ -1,13 +1,13 @@
 <x-dashboard::layouts.master
-    :title="'Codifarm Orders — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Codifarm Orders') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Codifarm Orders">
+    :pageTitle="__('Codifarm Orders')">
 
 <div class="page-header">
     <div class="add-item d-flex">
         <div class="page-title">
-            <h4 class="fw-bold">Codifarm Orders</h4>
-            <h6>All orders processed through Codifarm</h6>
+            <h4 class="fw-bold">{{ __('Codifarm Orders') }}</h4>
+            <h6>{{ __('All orders processed through Codifarm') }}</h6>
         </div>
     </div>
     <div class="page-btn">
@@ -23,7 +23,7 @@
             </div>
             <div class="col-md-2">
                 <select name="status" class="form-select">
-                    <option value="">Tous les statuts</option>
+                    <option value="">{{ __('Tous les statuts') }}</option>
                     @foreach(['pending' => 'Pending', 'completed' => 'Completed', 'cancelled' => 'Cancelled', 'refunded' => 'Refunded'] as $value => $label)
                         <option value="{{ $value }}" {{ request('status') === $value ? 'selected' : '' }}>{{ $label }}</option>
                     @endforeach
@@ -36,7 +36,7 @@
                 <input type="date" name="date_to" class="form-control" value="{{ request('date_to') }}">
             </div>
             <div class="col-md-2 d-grid">
-                <button type="submit" class="btn btn-primary">Filtrer</button>
+                <button type="submit" class="btn btn-primary">{{ __('Filtrer') }}</button>
             </div>
         </form>
     </div>
@@ -51,12 +51,12 @@
                                 <span class="checkmarks"></span>
                             </label>
                         </th>
-                        <th>Order Ref</th>
-                        <th>Date</th>
-                        <th>Customer</th>
-                        <th>Total</th>
-                        <th>Margin</th>
-                        <th>Status</th>
+                        <th>{{ __('Order Ref') }}</th>
+                        <th>{{ __('Date') }}</th>
+                        <th>{{ __('Customer') }}</th>
+                        <th>{{ __('Total') }}</th>
+                        <th>{{ __('Margin') }}</th>
+                        <th>{{ __('Status') }}</th>
                         <th class="no-sort"></th>
                     </tr>
                 </thead>
@@ -76,11 +76,11 @@
                         <td>{{ number_format($order->codifarmMarginLog?->total_margin ?? 0, 0, ',', ' ') }} XAF</td>
                         <td>
                             @if(($order->status ?? '') === 'completed')
-                                <span class="d-inline-flex align-items-center p-1 pe-2 rounded-1 text-white bg-success fs-10"><i class="ti ti-point-filled me-1 fs-11"></i>Completed</span>
+                                <span class="d-inline-flex align-items-center p-1 pe-2 rounded-1 text-white bg-success fs-10"><i class="ti ti-point-filled me-1 fs-11"></i>{{ __('Completed') }}</span>
                             @elseif(($order->status ?? '') === 'pending')
-                                <span class="d-inline-flex align-items-center p-1 pe-2 rounded-1 text-white bg-warning fs-10"><i class="ti ti-point-filled me-1 fs-11"></i>Pending</span>
+                                <span class="d-inline-flex align-items-center p-1 pe-2 rounded-1 text-white bg-warning fs-10"><i class="ti ti-point-filled me-1 fs-11"></i>{{ __('Pending') }}</span>
                             @elseif(($order->status ?? '') === 'cancelled')
-                                <span class="d-inline-flex align-items-center p-1 pe-2 rounded-1 text-white bg-danger fs-10"><i class="ti ti-point-filled me-1 fs-11"></i>Cancelled</span>
+                                <span class="d-inline-flex align-items-center p-1 pe-2 rounded-1 text-white bg-danger fs-10"><i class="ti ti-point-filled me-1 fs-11"></i>{{ __('Cancelled') }}</span>
                             @else
                                 <span class="d-inline-flex align-items-center p-1 pe-2 rounded-1 text-white bg-secondary fs-10"><i class="ti ti-point-filled me-1 fs-11"></i>{{ $order->status ?? '—' }}</span>
                             @endif
@@ -95,7 +95,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="8" class="text-center">No Codifarm orders found.</td>
+                        <td colspan="8" class="text-center">{{ __('No Codifarm orders found.') }}</td>
                     </tr>
                     @endforelse
                 </tbody>

@@ -22,7 +22,7 @@
                 <select id="portal-status" name="status" class="form-select">
                     <option value="">{{ __('eshop360::eshop.portal_all_statuses') }}</option>
                     @foreach(['pending_validation', 'validated', 'preparing', 'prepared', 'shipping', 'delivered', 'received', 'invoiced', 'cancelled'] as $status)
-                        <option value="{{ $status }}" @selected(request('status') === $status)>{{ ucfirst(str_replace('_', ' ', $status)) }}</option>
+                        <option value="{{ $status }}" @selected(request('status') === $status)>{{ \Modules\Eshop360\Support\UiLabel::enum($status) }}</option>
                     @endforeach
                 </select>
             </div>
@@ -60,7 +60,7 @@
                             </td>
                             <td>{{ number_format((float) $order->total, 2) }}</td>
                             <td>
-                                <span class="badge bg-light text-dark">{{ ucfirst(str_replace('_', ' ', $order->status)) }}</span>
+                                <span class="badge bg-light text-dark">{{ \Modules\Eshop360\Support\UiLabel::enum($order->status) }}</span>
                             </td>
                             <td class="text-end">
                                 <a href="{{ route('eshop360.portal.orders.show', [$instance->slug ?? '', $order]) }}" class="btn btn-sm btn-outline-primary">{{ __('eshop360::eshop.portal_open') }}</a>

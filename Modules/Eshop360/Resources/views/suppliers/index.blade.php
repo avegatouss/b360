@@ -1,13 +1,13 @@
 <x-dashboard::layouts.master
-    :title="'Suppliers — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Suppliers') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Suppliers">
+    :pageTitle="__('Suppliers')">
 
 <div class="page-header">
     <div class="add-item d-flex">
         <div class="page-title">
-            <h4 class="fw-bold">Suppliers</h4>
-            <h6>Manage your suppliers</h6>
+            <h4 class="fw-bold">{{ __('Suppliers') }}</h4>
+            <h6>{{ __('Manage your suppliers') }}</h6>
         </div>
     </div>
     <ul class="table-top-head">
@@ -18,7 +18,7 @@
             <a data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"><img src="{{ URL::asset('build/img/icons/excel.svg') }}" alt="img"></a>
         </li>
         <li>
-            <a data-bs-toggle="tooltip" data-bs-placement="top" title="Refresh"><i data-feather="rotate-ccw" class="feather-rotate-ccw"></i></a>
+            <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Refresh') }}"><i data-feather="rotate-ccw" class="feather-rotate-ccw"></i></a>
         </li>
     </ul>
     <div class="page-btn">
@@ -39,7 +39,7 @@
                     Filter by Country
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end p-3">
-                    <li><a href="javascript:void(0);" class="dropdown-item rounded-1">All Countries</a></li>
+                    <li><a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('All Countries') }}</a></li>
                     @foreach($countries ?? [] as $country)
                     <li><a href="javascript:void(0);" class="dropdown-item rounded-1">{{ $country }}</a></li>
                     @endforeach
@@ -55,13 +55,13 @@
                         <th class="no-sort">
                             <label class="checkboxs"><input type="checkbox" id="select-all"><span class="checkmarks"></span></label>
                         </th>
-                        <th>Name</th>
-                        <th>Company</th>
-                        <th>Country</th>
-                        <th>Phone</th>
-                        <th>Email</th>
-                        <th>Balance</th>
-                        <th class="no-sort">Actions</th>
+                        <th>{{ __('Name') }}</th>
+                        <th>{{ __('Company') }}</th>
+                        <th>{{ __('Country') }}</th>
+                        <th>{{ __('Phone') }}</th>
+                        <th>{{ __('Email') }}</th>
+                        <th>{{ __('Balance') }}</th>
+                        <th class="no-sort">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -92,7 +92,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="8" class="text-center text-muted">No suppliers found.</td></tr>
+                    <tr><td colspan="8" class="text-center text-muted">{{ __('No suppliers found.') }}</td></tr>
                     @endforelse
                 </tbody>
             </table>

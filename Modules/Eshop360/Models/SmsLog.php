@@ -15,12 +15,12 @@ class SmsLog extends Model
 
     protected $fillable = [
         'instance_id',
+        'gateway_id',
         'to',
         'message',
-        'gateway_id',
         'status',
-        'sent_at',
         'error',
+        'sent_at',
     ];
 
     protected $casts = [

@@ -1,13 +1,13 @@
 <x-dashboard::layouts.master
-    :title="'Commissions — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Commissions') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Rapport Commissions">
+    :pageTitle="__('Rapport Commissions')">
 
 <div class="page-header">
     <div class="add-item d-flex">
         <div class="page-title">
-            <h4 class="fw-bold">Rapport Commissions</h4>
-            <h6>Commissions des agents commerciaux par période</h6>
+            <h4 class="fw-bold">{{ __('Rapport Commissions') }}</h4>
+            <h6>{{ __('Commissions des agents commerciaux par période') }}</h6>
         </div>
     </div>
 </div>
@@ -16,7 +16,7 @@
 <form method="GET" class="row g-3 mb-4">
     <div class="col-md-3">
         <select name="employee_id" class="form-select">
-            <option value="">— Tous les employés —</option>
+            <option value="">{{ __('— Tous les employés —') }}</option>
             @foreach ($employees as $employee)
                 <option value="{{ $employee->id }}" {{ request('employee_id') == $employee->id ? 'selected' : '' }}>
                     {{ $employee->name }}
@@ -28,7 +28,7 @@
         <input type="month" name="period" class="form-control" value="{{ request('period', now()->format('Y-m')) }}">
     </div>
     <div class="col-md-2">
-        <button type="submit" class="btn btn-primary w-100">Filtrer</button>
+        <button type="submit" class="btn btn-primary w-100">{{ __('Filtrer') }}</button>
     </div>
 </form>
 
@@ -48,15 +48,15 @@
                     <hr class="my-2">
                     <div class="row text-center">
                         <div class="col-4">
-                            <div class="text-muted small">Total</div>
+                            <div class="text-muted small">{{ __('Total') }}</div>
                             <div class="fw-bold">{{ number_format($emp['total_commissions'], 0, ',', ' ') }}</div>
                         </div>
                         <div class="col-4">
-                            <div class="text-muted small">Payé</div>
+                            <div class="text-muted small">{{ __('Payé') }}</div>
                             <div class="fw-bold text-success">{{ number_format($emp['paid_commissions'], 0, ',', ' ') }}</div>
                         </div>
                         <div class="col-4">
-                            <div class="text-muted small">En attente</div>
+                            <div class="text-muted small">{{ __('En attente') }}</div>
                             <div class="fw-bold text-warning">{{ number_format($emp['unpaid_commissions'], 0, ',', ' ') }}</div>
                         </div>
                     </div>
@@ -69,7 +69,7 @@
 {{-- Détail des commissions --}}
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="card-title mb-0">Détail des commissions</h5>
+        <h5 class="card-title mb-0">{{ __('Détail des commissions') }}</h5>
         <span class="badge bg-secondary">{{ $commissions->total() }} entrées</span>
     </div>
     <div class="card-body p-0">
@@ -77,13 +77,13 @@
             <table class="table table-hover mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th>Employé</th>
-                        <th>Commande</th>
-                        <th class="text-end">Montant vente</th>
-                        <th class="text-center">Taux</th>
-                        <th class="text-end">Commission</th>
-                        <th class="text-center">Statut</th>
-                        <th>Date</th>
+                        <th>{{ __('Employé') }}</th>
+                        <th>{{ __('Commande') }}</th>
+                        <th class="text-end">{{ __('Montant vente') }}</th>
+                        <th class="text-center">{{ __('Taux') }}</th>
+                        <th class="text-end">{{ __('Commission') }}</th>
+                        <th class="text-center">{{ __('Statut') }}</th>
+                        <th>{{ __('Date') }}</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -111,9 +111,9 @@
                             <td class="text-end fw-bold">{{ number_format($commission->amount, 0, ',', ' ') }} XOF</td>
                             <td class="text-center">
                                 @if ($commission->paid_at)
-                                    <span class="badge bg-success">Payé</span>
+                                    <span class="badge bg-success">{{ __('Payé') }}</span>
                                 @else
-                                    <span class="badge bg-warning text-dark">En attente</span>
+                                    <span class="badge bg-warning text-dark">{{ __('En attente') }}</span>
                                 @endif
                             </td>
                             <td>{{ $commission->created_at->format('d/m/Y') }}</td>
@@ -124,7 +124,7 @@
                                           class="d-inline">
                                         @csrf @method('PATCH')
                                         <button class="btn btn-xs btn-success" type="submit"
-                                                onclick="return confirm('Marquer comme payé ?')">
+                                                onclick='return confirm(@js(__('Marquer comme payé ?')))'>
                                             Payer
                                         </button>
                                     </form>
@@ -133,7 +133,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="text-center text-muted py-4">Aucune commission pour cette période.</td>
+                            <td colspan="8" class="text-center text-muted py-4">{{ __('Aucune commission pour cette période.') }}</td>
                         </tr>
                     @endforelse
                 </tbody>

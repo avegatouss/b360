@@ -328,7 +328,7 @@ class PosController extends Controller
     }
 
     /**
-     * @return array{channel_id: int|null, is_codifarm: bool}|null
+     * @return array{channel_id: int|null}|null
      */
     private function getCartContext(): ?array
     {

@@ -1,0 +1,34 @@
+:root {
+    --primary: #1565c0;
+    --primary-hover: #0d47a1;
+    --sidebar-bg: #0d2137;
+    --sidebar-text: #90caf9;
+    --topbar-bg: #ffffff;
+    --body-bg: #e8eef4;
+    --card-bg: #ffffff;
+    --text-color: #1a2332;
+}
+
+.btn-primary {
+    background-color: var(--primary) !important;
+    border-color: var(--primary) !important;
+}
+.btn-primary:hover {
+    background-color: var(--primary-hover) !important;
+    border-color: var(--primary-hover) !important;
+}
+.sidebar {
+    background-color: var(--sidebar-bg) !important;
+}
+.sidebar .sidebar-menu ul li a {
+    color: var(--sidebar-text) !important;
+}
+body {
+    background-color: var(--body-bg) !important;
+}
+a {
+    color: var(--primary);
+}
+.badge.bg-primary {
+    background-color: var(--primary) !important;
+}

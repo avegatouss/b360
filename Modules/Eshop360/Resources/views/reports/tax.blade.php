@@ -1,15 +1,15 @@
 <x-dashboard::layouts.master
-    :title="'Rapport de taxes — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Rapport de taxes') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Rapport de taxes">
+    :pageTitle="__('Rapport de taxes')">
 
     <div class="page-wrapper">
         <div class="content">
             <div class="page-header">
                 <div class="add-item d-flex">
                     <div class="page-title">
-                        <h4>Rapport de taxes</h4>
-                        <h6>Resume des taxes collectees et dues</h6>
+                        <h4>{{ __('Rapport de taxes') }}</h4>
+                        <h6>{{ __('Resume des taxes collectees et dues') }}</h6>
                     </div>
                 </div>
                 <ul class="table-top-head">
@@ -28,11 +28,11 @@
                         <table class="table datatable">
                             <thead class="thead-light">
                                 <tr>
-                                    <th>Taxe</th>
-                                    <th>Taux</th>
-                                    <th>Base imposable</th>
-                                    <th>Montant collecte</th>
-                                    <th>Nombre de transactions</th>
+                                    <th>{{ __('Taxe') }}</th>
+                                    <th>{{ __('Taux') }}</th>
+                                    <th>{{ __('Base imposable') }}</th>
+                                    <th>{{ __('Montant collecte') }}</th>
+                                    <th>{{ __('Nombre de transactions') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -45,13 +45,13 @@
                                     <td>{{ $row['transactions'] ?? $row['count'] ?? 0 }}</td>
                                 </tr>
                                 @empty
-                                <tr><td colspan="5" class="text-center text-muted">Aucune donnee</td></tr>
+                                <tr><td colspan="5" class="text-center text-muted">{{ __('Aucune donnee') }}</td></tr>
                                 @endforelse
                             </tbody>
                             @if(count($data['taxes'] ?? $data) > 0)
                             <tfoot>
                                 <tr class="fw-bold">
-                                    <td colspan="2">Total</td>
+                                    <td colspan="2">{{ __('Total') }}</td>
                                     <td>{{ number_format(collect($data['taxes'] ?? $data)->sum('taxable_amount'), 2) }}</td>
                                     <td>{{ number_format(collect($data['taxes'] ?? $data)->sum(fn($r) => $r['tax_amount'] ?? $r['collected'] ?? 0), 2) }}</td>
                                     <td>{{ collect($data['taxes'] ?? $data)->sum(fn($r) => $r['transactions'] ?? $r['count'] ?? 0) }}</td>

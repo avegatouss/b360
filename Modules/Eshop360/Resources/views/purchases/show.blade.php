@@ -1,7 +1,7 @@
 <x-dashboard::layouts.master
-    :title="'Achat ' . ($purchase->reference ?? '') . ' — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Achat') . ($purchase->reference ?? '') . ' — ' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="Detail Achat">
+    :pageTitle="__('Detail Achat')">
 
 <div class="page-header">
     <div class="add-item d-flex">
@@ -18,17 +18,17 @@
 <div class="row">
     <div class="col-md-4">
         <div class="card">
-            <div class="card-header"><h5>Informations fournisseur</h5></div>
+            <div class="card-header"><h5>{{ __('Informations fournisseur') }}</h5></div>
             <div class="card-body">
                 <table class="table table-borderless">
                     <tr><th>Fournisseur</th><td>{{ $purchase->supplier_name }}</td></tr>
                     <tr><th>Email</th><td>{{ $purchase->supplier_email ?? '-' }}</td></tr>
                     <tr>
-                        <th>Statut</th>
+                        <th>{{ __('Statut') }}</th>
                         <td><span class="badge bg-{{ $purchase->status === 'received' ? 'success' : ($purchase->status === 'cancelled' ? 'danger' : 'warning') }}">{{ ucfirst($purchase->status) }}</span></td>
                     </tr>
                     <tr>
-                        <th>Paiement</th>
+                        <th>{{ __('Paiement') }}</th>
                         <td><span class="badge bg-{{ $purchase->payment_status === 'paid' ? 'success' : ($purchase->payment_status === 'partial' ? 'warning' : 'danger') }}">{{ ucfirst($purchase->payment_status) }}</span></td>
                     </tr>
                     @if($purchase->notes)
@@ -39,7 +39,7 @@
         </div>
 
         <div class="card">
-            <div class="card-header"><h5>Totaux</h5></div>
+            <div class="card-header"><h5>{{ __('Totaux') }}</h5></div>
             <div class="card-body">
                 <table class="table table-borderless">
                     <tr class="fw-bold"><th>Total</th><td class="text-end">{{ number_format($purchase->total, 2) }}</td></tr>
@@ -54,11 +54,11 @@
 
     <div class="col-md-8">
         <div class="card">
-            <div class="card-header"><h5>Articles</h5></div>
+            <div class="card-header"><h5>{{ __('Articles') }}</h5></div>
             <div class="card-body">
                 <table class="table">
                     <thead>
-                        <tr><th>Produit</th><th>Cout unit.</th><th>Qte</th><th>Total</th></tr>
+                        <tr><th>{{ __('Produit') }}</th><th>{{ __('Cout unit.') }}</th><th>{{ __('Qte') }}</th><th>{{ __('Total') }}</th></tr>
                     </thead>
                     <tbody>
                         @forelse($purchase->items as $item)
@@ -69,7 +69,7 @@
                             <td class="fw-bold">{{ number_format($item->total, 2) }}</td>
                         </tr>
                         @empty
-                        <tr><td colspan="4" class="text-center text-muted">Aucun article</td></tr>
+                        <tr><td colspan="4" class="text-center text-muted">{{ __('Aucun article') }}</td></tr>
                         @endforelse
                     </tbody>
                 </table>
