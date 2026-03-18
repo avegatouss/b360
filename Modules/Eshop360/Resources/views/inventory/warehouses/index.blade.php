@@ -1,55 +1,132 @@
 <x-dashboard::layouts.master
-    :title="__('Entrepots et magasins') . ' — ' . ($instance->name ?? 'B360')"
+    :title="__('Entrepôts et magasins') . ' — ' . ($instance->name ?? 'B360')"
     :instance="$instance"
-    :pageTitle="__('Entrepots et magasins')">
+    :pageTitle="__('Entrepôts et magasins')">
 
 @php $slug = $instance->slug ?? ''; @endphp
 
-<div class="page-header">
-    <div class="add-item d-flex">
-        <div class="page-title">
-            <h4 class="fw-bold">{{ __('Entrepots et magasins') }}</h4>
-            <h6>{{ __('Gerer vos lieux de stockage et points de vente') }}</h6>
-        </div>
+{{-- Page Header --}}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h4 class="fw-bold mb-1"><i class="ti ti-building-warehouse me-2"></i>{{ __('Entrepôts et magasins') }}</h4>
+        <p class="text-muted mb-0">{{ __('Gérer vos lieux de stockage et points de vente') }}</p>
     </div>
-    <div class="page-btn d-flex gap-2">
+    <div class="d-flex gap-2">
         <a href="{{ route('eshop360.export.stock', $slug) }}" class="btn btn-outline-info btn-sm">
             <i class="ti ti-download me-1"></i>{{ __('Exporter') }}
         </a>
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-warehouse">
-            <i class="ti ti-circle-plus me-1"></i>{{ __('Nouvel entrepot') }}
+            <i class="ti ti-circle-plus me-1"></i>{{ __('Nouvel entrepôt') }}
         </button>
     </div>
 </div>
 
-{{-- Filtres --}}
+{{-- Global KPI Cards --}}
+<div class="row g-3 mb-3">
+    <div class="col-xl col-sm-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body py-3">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle bg-primary-subtle d-flex align-items-center justify-content-center" style="width:48px;height:48px;">
+                        <i class="ti ti-building-warehouse text-primary fs-4"></i>
+                    </div>
+                    <div class="ms-3">
+                        <h3 class="fw-bold mb-0">{{ $totalWarehouses }}</h3>
+                        <span class="text-muted">{{ __('Entrepôts') }}</span>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <span class="badge bg-success-subtle text-success">{{ $activeWarehouses }} {{ __('actifs') }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl col-sm-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body py-3">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle bg-success-subtle d-flex align-items-center justify-content-center" style="width:48px;height:48px;">
+                        <i class="ti ti-packages text-success fs-4"></i>
+                    </div>
+                    <div class="ms-3">
+                        <h3 class="fw-bold mb-0">{{ number_format($totalStockUnits, 0, ',', ' ') }}</h3>
+                        <span class="text-muted">{{ __('Unités en stock') }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl col-sm-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body py-3">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle bg-info-subtle d-flex align-items-center justify-content-center" style="width:48px;height:48px;">
+                        <i class="ti ti-package text-info fs-4"></i>
+                    </div>
+                    <div class="ms-3">
+                        <h3 class="fw-bold mb-0">{{ $totalProducts }}</h3>
+                        <span class="text-muted">{{ __('Produits stockés') }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl col-sm-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body py-3">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle bg-{{ $lowStockCount > 0 ? 'danger' : 'secondary' }}-subtle d-flex align-items-center justify-content-center" style="width:48px;height:48px;">
+                        <i class="ti ti-alert-triangle text-{{ $lowStockCount > 0 ? 'danger' : 'secondary' }} fs-4"></i>
+                    </div>
+                    <div class="ms-3">
+                        <h3 class="fw-bold mb-0 {{ $lowStockCount > 0 ? 'text-danger' : '' }}">{{ $lowStockCount }}</h3>
+                        <span class="text-muted">{{ __('Stock faible') }}</span>
+                    </div>
+                </div>
+                @if($lowStockCount > 0)
+                <div class="mt-2">
+                    <a href="{{ route('eshop360.stocks.low', $slug) }}" class="btn btn-outline-danger btn-sm py-0 px-2" style="font-size:11px;">
+                        <i class="ti ti-eye me-1"></i>{{ __('Voir') }}
+                    </a>
+                </div>
+                @endif
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Filters --}}
 <div class="card mb-3 border-0 shadow-sm">
     <div class="card-body py-2">
         <form method="GET" action="{{ route('eshop360.warehouses.index', $slug) }}" class="row g-2 align-items-end">
             <div class="col-md-4">
                 <label class="form-label small mb-1">{{ __('Recherche') }}</label>
-                <input type="text" name="search" class="form-control form-control-sm" value="{{ request('search') }}" placeholder="{{ __('Nom, code ou ville...') }}">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text"><i class="ti ti-search"></i></span>
+                    <input type="text" name="search" class="form-control form-control-sm" value="{{ request('search') }}" placeholder="{{ __('Nom, code ou ville...') }}">
+                </div>
             </div>
             <div class="col-md-2">
                 <label class="form-label small mb-1">{{ __('Statut') }}</label>
                 <select name="is_active" class="form-select form-select-sm">
                     <option value="">{{ __('Tous') }}</option>
-                    <option value="1" {{ request('is_active') === '1' ? 'selected' : '' }}>{{ __('Actif') }}</option>
-                    <option value="0" {{ request('is_active') === '0' ? 'selected' : '' }}>{{ __('Inactif') }}</option>
+                    <option value="1" @selected(request('is_active') === '1')>{{ __('Actif') }}</option>
+                    <option value="0" @selected(request('is_active') === '0')>{{ __('Inactif') }}</option>
                 </select>
             </div>
             <div class="col-auto">
-                <button type="submit" class="btn btn-sm btn-primary"><i class="ti ti-search"></i></button>
+                <button type="submit" class="btn btn-sm btn-primary"><i class="ti ti-filter me-1"></i>{{ __('Filtrer') }}</button>
             </div>
             @if(request()->hasAny(['search', 'is_active']))
                 <div class="col-auto">
-                    <a href="{{ route('eshop360.warehouses.index', $slug) }}" class="btn btn-sm btn-outline-secondary"><i class="ti ti-x"></i></a>
+                    <a href="{{ route('eshop360.warehouses.index', $slug) }}" class="btn btn-sm btn-outline-secondary"><i class="ti ti-x me-1"></i>{{ __('Réinitialiser') }}</a>
                 </div>
             @endif
         </form>
     </div>
 </div>
 
+{{-- Alerts --}}
 @if(session('success'))
     <div class="alert alert-success alert-dismissible fade show"><i class="ti ti-check me-1"></i>{{ session('success') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
 @endif
@@ -60,88 +137,172 @@
 {{-- Warehouse Cards --}}
 <div class="row g-3">
     @forelse($warehouses as $warehouse)
+        @php
+            $totalUnits = $warehouse->stocks_sum_quantity ?? 0;
+            $stockPercent = $totalStockUnits > 0 ? round(($totalUnits / $totalStockUnits) * 100, 1) : 0;
+        @endphp
         <div class="col-xl-6">
             <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="bg-primary bg-opacity-10 rounded-circle p-2">
-                            <i class="ti ti-building-warehouse fs-4 text-primary"></i>
+                {{-- Header --}}
+                <div class="card-header bg-transparent py-3">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="rounded bg-primary-subtle d-flex align-items-center justify-content-center" style="width:52px;height:52px;border-radius:12px!important;">
+                                <i class="ti ti-building-warehouse fs-3 text-primary"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-1">{{ $warehouse->name }}</h5>
+                                <div class="d-flex align-items-center gap-2">
+                                    <code class="small">{{ $warehouse->code }}</code>
+                                    @if($warehouse->city)
+                                        <span class="text-muted small"><i class="ti ti-map-pin" style="font-size:12px;"></i> {{ $warehouse->city }}</span>
+                                    @endif
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <h6 class="fw-bold mb-0">{{ $warehouse->name }}</h6>
-                            <small class="text-muted"><code>{{ $warehouse->code }}</code> · {{ $warehouse->city ?: __('Ville non definie') }}</small>
+                        <div class="d-flex align-items-center gap-2">
+                            @if($warehouse->is_active)
+                                <span class="badge bg-success">{{ __('Actif') }}</span>
+                            @else
+                                <span class="badge bg-secondary">{{ __('Inactif') }}</span>
+                            @endif
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-light" data-bs-toggle="dropdown"><i class="ti ti-dots-vertical"></i></button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#edit-wh-{{ $warehouse->id }}"><i class="ti ti-edit me-2"></i>{{ __('Modifier') }}</button></li>
+                                    <li><a class="dropdown-item" href="{{ route('eshop360.stocks.index', [$slug, 'warehouse_id' => $warehouse->id]) }}"><i class="ti ti-package me-2"></i>{{ __('Voir le stock') }}</a></li>
+                                    <li><a class="dropdown-item" href="{{ route('eshop360.stock-transfers.index', [$slug, 'from_warehouse_id' => $warehouse->id]) }}"><i class="ti ti-transfer me-2"></i>{{ __('Transferts') }}</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form action="{{ route('eshop360.warehouses.destroy', [$slug, $warehouse]) }}" method="POST" onsubmit="return confirm('{{ __('Supprimer cet entrepôt et ses magasins ?') }}')">
+                                            @csrf @method('DELETE')
+                                            <button class="dropdown-item text-danger"><i class="ti ti-trash me-2"></i>{{ __('Supprimer') }}</button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
-                    @if($warehouse->is_active)
-                        <span class="badge bg-success-subtle text-success">{{ __('Actif') }}</span>
-                    @else
-                        <span class="badge bg-secondary-subtle text-secondary">{{ __('Inactif') }}</span>
-                    @endif
                 </div>
-                <div class="card-body">
-                    {{-- Stats --}}
+
+                {{-- Stats --}}
+                <div class="card-body py-3">
                     <div class="row g-3 mb-3">
-                        <div class="col-4 text-center">
-                            <div class="bg-light rounded p-2">
-                                <div class="fw-bold fs-5 text-primary">{{ $warehouse->stocks_count }}</div>
-                                <small class="text-muted">{{ __('Lignes stock') }}</small>
+                        <div class="col-4">
+                            <div class="border rounded-3 p-3 text-center h-100">
+                                <div class="d-flex align-items-center justify-content-center mb-2">
+                                    <i class="ti ti-packages text-success me-1"></i>
+                                </div>
+                                <h3 class="fw-bold mb-0 text-success">{{ number_format($totalUnits, 0, ',', ' ') }}</h3>
+                                <small class="text-muted d-block mt-1">{{ __('Unités') }}</small>
+                                @if($stockPercent > 0)
+                                    <div class="progress mt-2" style="height:4px;">
+                                        <div class="progress-bar bg-success" style="width:{{ min($stockPercent, 100) }}%"></div>
+                                    </div>
+                                    <small class="text-muted" style="font-size:10px;">{{ $stockPercent }}% {{ __('du total') }}</small>
+                                @endif
                             </div>
                         </div>
-                        <div class="col-4 text-center">
-                            <div class="bg-light rounded p-2">
-                                <div class="fw-bold fs-5 text-info">{{ $warehouse->stores_count }}</div>
-                                <small class="text-muted">{{ __('Magasins') }}</small>
+                        <div class="col-4">
+                            <div class="border rounded-3 p-3 text-center h-100">
+                                <div class="d-flex align-items-center justify-content-center mb-2">
+                                    <i class="ti ti-list-numbers text-primary me-1"></i>
+                                </div>
+                                <h3 class="fw-bold mb-0 text-primary">{{ $warehouse->stocks_count }}</h3>
+                                <small class="text-muted d-block mt-1">{{ __('Lignes stock') }}</small>
                             </div>
                         </div>
-                        <div class="col-4 text-center">
-                            <div class="bg-light rounded p-2">
-                                @php $totalUnits = \Modules\Eshop360\Models\Stock::where('warehouse_id', $warehouse->id)->sum('quantity'); @endphp
-                                <div class="fw-bold fs-5 text-success">{{ number_format($totalUnits, 0, ',', ' ') }}</div>
-                                <small class="text-muted">{{ __('Unites') }}</small>
+                        <div class="col-4">
+                            <div class="border rounded-3 p-3 text-center h-100">
+                                <div class="d-flex align-items-center justify-content-center mb-2">
+                                    <i class="ti ti-store text-info me-1"></i>
+                                </div>
+                                <h3 class="fw-bold mb-0 text-info">{{ $warehouse->stores_count }}</h3>
+                                <small class="text-muted d-block mt-1">{{ __('Magasins') }}</small>
                             </div>
                         </div>
                     </div>
 
-                    {{-- Contact --}}
-                    @if($warehouse->address || $warehouse->phone || $warehouse->manager_name)
-                        <div class="small text-muted mb-2">
-                            @if($warehouse->address)<div><i class="ti ti-map-pin me-1"></i>{{ $warehouse->address }}</div>@endif
-                            @if($warehouse->phone)<div><i class="ti ti-phone me-1"></i>{{ $warehouse->phone }}</div>@endif
-                            @if($warehouse->manager_name)<div><i class="ti ti-user me-1"></i>{{ $warehouse->manager_name }}</div>@endif
+                    {{-- Contact info --}}
+                    @if($warehouse->address || $warehouse->phone || $warehouse->manager_name || $warehouse->email)
+                        <div class="border-top pt-3">
+                            <div class="row g-2">
+                                @if($warehouse->address)
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-start gap-2">
+                                            <i class="ti ti-map-pin text-muted mt-1" style="font-size:14px;"></i>
+                                            <small class="text-muted">{{ $warehouse->address }}</small>
+                                        </div>
+                                    </div>
+                                @endif
+                                @if($warehouse->phone)
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="ti ti-phone text-muted" style="font-size:14px;"></i>
+                                            <small class="text-muted">{{ $warehouse->phone }}</small>
+                                        </div>
+                                    </div>
+                                @endif
+                                @if($warehouse->email)
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="ti ti-mail text-muted" style="font-size:14px;"></i>
+                                            <small class="text-muted">{{ $warehouse->email }}</small>
+                                        </div>
+                                    </div>
+                                @endif
+                                @if($warehouse->manager_name)
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="ti ti-user text-muted" style="font-size:14px;"></i>
+                                            <small class="fw-medium">{{ $warehouse->manager_name }}</small>
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
                         </div>
                     @endif
 
                     {{-- Stores --}}
                     @php $stores = $warehouse->stores ?? collect(); @endphp
                     @if($stores->isNotEmpty())
-                        <div class="mt-2">
-                            <small class="fw-bold text-muted">{{ __('Magasins rattaches') }}:</small>
-                            <div class="d-flex flex-wrap gap-1 mt-1">
+                        <div class="border-top pt-3 mt-3">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="fw-bold small text-muted"><i class="ti ti-store me-1"></i>{{ __('Magasins rattachés') }}</span>
+                                <span class="badge bg-info-subtle text-info">{{ $stores->count() }}</span>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2">
                                 @foreach($stores as $store)
-                                    <span class="badge bg-light text-dark border">
-                                        <i class="ti ti-store me-1"></i>{{ $store->name }}
-                                        @if(!$store->is_active)<span class="text-muted">({{ __('inactif') }})</span>@endif
-                                    </span>
+                                    <div class="border rounded-2 px-3 py-2 d-flex align-items-center gap-2 bg-light">
+                                        <i class="ti ti-store text-primary" style="font-size:14px;"></i>
+                                        <div>
+                                            <span class="fw-medium small">{{ $store->name }}</span>
+                                            @if($store->code)
+                                                <small class="text-muted ms-1">({{ $store->code }})</small>
+                                            @endif
+                                        </div>
+                                        @if(!$store->is_active)
+                                            <span class="badge bg-secondary-subtle text-secondary" style="font-size:9px;">{{ __('inactif') }}</span>
+                                        @endif
+                                    </div>
                                 @endforeach
                             </div>
                         </div>
                     @endif
                 </div>
-                <div class="card-footer bg-transparent d-flex justify-content-between align-items-center">
-                    <div class="d-flex gap-1">
+
+                {{-- Footer Actions --}}
+                <div class="card-footer bg-transparent py-2">
+                    <div class="d-flex gap-2">
                         <a href="{{ route('eshop360.stocks.index', [$slug, 'warehouse_id' => $warehouse->id]) }}" class="btn btn-sm btn-outline-primary">
-                            <i class="ti ti-package me-1"></i>{{ __('Contenu') }}
+                            <i class="ti ti-package me-1"></i>{{ __('Voir le stock') }}
                         </a>
                         <a href="{{ route('eshop360.stock-transfers.index', [$slug, 'from_warehouse_id' => $warehouse->id]) }}" class="btn btn-sm btn-outline-info">
                             <i class="ti ti-transfer me-1"></i>{{ __('Transferts') }}
                         </a>
-                    </div>
-                    <div class="d-flex gap-1">
-                        <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#edit-wh-{{ $warehouse->id }}" title="{{ __('Modifier') }}"><i class="ti ti-edit"></i></button>
-                        <form action="{{ route('eshop360.warehouses.destroy', [$slug, $warehouse]) }}" method="POST" class="d-inline" onsubmit="return confirm('{{ __('Supprimer cet entrepot et ses magasins ?') }}')">
-                            @csrf @method('DELETE')
-                            <button class="btn btn-sm btn-outline-danger" title="{{ __('Supprimer') }}"><i class="ti ti-trash"></i></button>
-                        </form>
+                        <button class="btn btn-sm btn-outline-secondary ms-auto" data-bs-toggle="modal" data-bs-target="#edit-wh-{{ $warehouse->id }}">
+                            <i class="ti ti-edit me-1"></i>{{ __('Modifier') }}
+                        </button>
                     </div>
                 </div>
             </div>
@@ -149,10 +310,10 @@
 
         {{-- Edit Modal --}}
         <div class="modal fade" id="edit-wh-{{ $warehouse->id }}" tabindex="-1">
-            <div class="modal-dialog">
+            <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">{{ __('Modifier') }}: {{ $warehouse->name }}</h5>
+                        <h5 class="modal-title"><i class="ti ti-edit me-2"></i>{{ __('Modifier') }}: {{ $warehouse->name }}</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <form action="{{ route('eshop360.warehouses.update', [$slug, $warehouse]) }}" method="POST">
@@ -176,7 +337,7 @@
                                     <input type="text" name="city" class="form-control" value="{{ $warehouse->city }}">
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label">{{ __('Telephone') }}</label>
+                                    <label class="form-label">{{ __('Téléphone') }}</label>
                                     <input type="text" name="phone" class="form-control" value="{{ $warehouse->phone }}">
                                 </div>
                                 <div class="col-md-4">
@@ -198,7 +359,7 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{{ __('Annuler') }}</button>
-                            <button type="submit" class="btn btn-primary">{{ __('Enregistrer') }}</button>
+                            <button type="submit" class="btn btn-primary"><i class="ti ti-check me-1"></i>{{ __('Enregistrer') }}</button>
                         </div>
                     </form>
                 </div>
@@ -208,11 +369,15 @@
         <div class="col-12">
             <div class="card border-0 shadow-sm">
                 <div class="card-body text-center text-muted py-5">
-                    <i class="ti ti-building-warehouse fs-1 d-block mb-2"></i>
-                    {{ __('Aucun entrepot trouve.') }}
-                    <br>
-                    <button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#add-warehouse">
-                        <i class="ti ti-circle-plus me-1"></i>{{ __('Creer un entrepot') }}
+                    <i class="ti ti-building-warehouse fs-1 d-block mb-2 opacity-50"></i>
+                    <p class="mb-2">{{ __('Aucun entrepôt trouvé.') }}</p>
+                    @if(request()->hasAny(['search', 'is_active']))
+                        <a href="{{ route('eshop360.warehouses.index', $slug) }}" class="btn btn-outline-primary btn-sm me-2">
+                            <i class="ti ti-x me-1"></i>{{ __('Réinitialiser les filtres') }}
+                        </a>
+                    @endif
+                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#add-warehouse">
+                        <i class="ti ti-circle-plus me-1"></i>{{ __('Créer un entrepôt') }}
                     </button>
                 </div>
             </div>
@@ -229,7 +394,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title"><i class="ti ti-building-warehouse me-2"></i>{{ __('Nouvel entrepot') }}</h5>
+                <h5 class="modal-title"><i class="ti ti-building-warehouse me-2"></i>{{ __('Nouvel entrepôt') }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form action="{{ route('eshop360.warehouses.store', $slug) }}" method="POST">
@@ -237,8 +402,8 @@
                 <div class="modal-body">
                     <div class="row g-3">
                         <div class="col-md-8">
-                            <label class="form-label">{{ __('Nom de l\'entrepot') }} <span class="text-danger">*</span></label>
-                            <input type="text" name="name" class="form-control" required placeholder="{{ __('Ex: Entrepot Central') }}">
+                            <label class="form-label">{{ __('Nom de l\'entrepôt') }} <span class="text-danger">*</span></label>
+                            <input type="text" name="name" class="form-control" required placeholder="{{ __('Ex: Entrepôt Central') }}">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">{{ __('Code') }} <span class="text-danger">*</span></label>
@@ -246,14 +411,14 @@
                         </div>
                         <div class="col-md-8">
                             <label class="form-label">{{ __('Adresse') }}</label>
-                            <input type="text" name="address" class="form-control" placeholder="{{ __('Adresse complete') }}">
+                            <input type="text" name="address" class="form-control" placeholder="{{ __('Adresse complète') }}">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">{{ __('Ville') }}</label>
                             <input type="text" name="city" class="form-control">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">{{ __('Telephone') }}</label>
+                            <label class="form-label">{{ __('Téléphone') }}</label>
                             <input type="text" name="phone" class="form-control">
                         </div>
                         <div class="col-md-4">
@@ -272,14 +437,45 @@
                             </div>
                         </div>
                     </div>
+
+                    {{-- Inline stores --}}
+                    <hr class="my-3">
+                    <h6 class="fw-bold"><i class="ti ti-store me-1"></i>{{ __('Magasins (optionnel)') }}</h6>
+                    <p class="text-muted small mb-2">{{ __('Ajoutez des magasins/points de vente rattachés à cet entrepôt.') }}</p>
+                    <div id="stores-container"></div>
+                    <button type="button" class="btn btn-outline-secondary btn-sm mt-2" id="add-store-btn">
+                        <i class="ti ti-plus me-1"></i>{{ __('Ajouter un magasin') }}
+                    </button>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{{ __('Annuler') }}</button>
-                    <button type="submit" class="btn btn-primary">{{ __('Creer l\'entrepot') }}</button>
+                    <button type="submit" class="btn btn-primary"><i class="ti ti-check me-1"></i>{{ __('Créer l\'entrepôt') }}</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var storeIndex = 0;
+    document.getElementById('add-store-btn').addEventListener('click', function () {
+        var container = document.getElementById('stores-container');
+        var html = '<div class="row g-2 mb-2 align-items-end store-row">' +
+            '<div class="col-md-4"><label class="form-label small mb-1">Nom *</label><input type="text" name="stores[' + storeIndex + '][name]" class="form-control form-control-sm" required></div>' +
+            '<div class="col-md-3"><label class="form-label small mb-1">Code *</label><input type="text" name="stores[' + storeIndex + '][code]" class="form-control form-control-sm" required></div>' +
+            '<div class="col-md-4"><label class="form-label small mb-1">Adresse</label><input type="text" name="stores[' + storeIndex + '][address]" class="form-control form-control-sm"></div>' +
+            '<div class="col-md-1"><button type="button" class="btn btn-sm btn-outline-danger remove-store"><i class="ti ti-x"></i></button></div>' +
+            '</div>';
+        container.insertAdjacentHTML('beforeend', html);
+        storeIndex++;
+    });
+    document.getElementById('stores-container').addEventListener('click', function (e) {
+        if (e.target.closest('.remove-store')) {
+            e.target.closest('.store-row').remove();
+        }
+    });
+});
+</script>
 
 </x-dashboard::layouts.master>

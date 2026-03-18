@@ -15,18 +15,32 @@ class PurchaseReturnController extends Controller
 {
     public function index(Request $request)
     {
-        $returns = PurchaseReturn::with(['purchaseOrder', 'items.product', 'warehouse', 'creator'])
+        $instance = CurrentInstance::get();
+
+        $query = PurchaseReturn::with(['purchaseOrder', 'warehouse', 'creator'])
+            ->withCount('items')
             ->when($request->search, fn ($q, $s) => $q->where(function ($query) use ($s) {
                 $query->where('reference', 'like', "%{$s}%")
                     ->orWhere('supplier_name', 'like', "%{$s}%");
             }))
+            ->when($request->status, fn ($q, $s) => $q->where('status', $s))
+            ->when($request->payment_status, fn ($q, $s) => $q->where('payment_status', $s))
             ->when($request->date_from, fn ($q, $d) => $q->whereDate('created_at', '>=', $d))
-            ->when($request->date_to, fn ($q, $d) => $q->whereDate('created_at', '<=', $d))
-            ->latest()
-            ->paginate(20)
-            ->withQueryString();
+            ->when($request->date_to, fn ($q, $d) => $q->whereDate('created_at', '<=', $d));
 
-        return view('eshop360::purchases.returns', compact('returns'));
+        // KPIs
+        $kpiAll = PurchaseReturn::where('instance_id', $instance->id);
+        $kpiCount = (clone $kpiAll)->count();
+        $kpiTotal = round((float) (clone $kpiAll)->sum('total'), 0);
+        $kpiReimbursed = round((float) (clone $kpiAll)->sum('paid_amount'), 0);
+        $kpiPending = (clone $kpiAll)->where('status', 'pending')->count();
+        $kpiProcessed = (clone $kpiAll)->where('status', 'received')->count();
+
+        $returns = $query->latest()->paginate(20)->withQueryString();
+
+        return view('eshop360::purchases.returns', compact(
+            'returns', 'kpiCount', 'kpiTotal', 'kpiReimbursed', 'kpiPending', 'kpiProcessed'
+        ));
     }
 
     public function store(Request $request): RedirectResponse

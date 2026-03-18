@@ -22,22 +22,35 @@ class ImportController extends Controller
     public function index(Request $request)
     {
         $instance = CurrentInstance::get();
-        $imports = ImportOrder::where('instance_id', $instance->id)
+
+        $query = ImportOrder::where('instance_id', $instance->id)
             ->with('supplier', 'warehouse', 'creator')
             ->withCount('items')
             ->when($request->search, fn ($q, $s) => $q->where('reference', 'like', "%{$s}%"))
             ->when($request->status, fn ($q, $s) => $q->where('status', $s))
             ->when($request->supplier_id, fn ($q, $s) => $q->where('supplier_id', $s))
+            ->when($request->warehouse_id, fn ($q, $w) => $q->where('warehouse_id', $w))
             ->when($request->shipping_type, fn ($q, $t) => $q->where('shipping_type', $t))
             ->when($request->date_from, fn ($q, $d) => $q->whereDate('created_at', '>=', $d))
-            ->when($request->date_to, fn ($q, $d) => $q->whereDate('created_at', '<=', $d))
-            ->latest()
-            ->paginate(20)
-            ->withQueryString();
+            ->when($request->date_to, fn ($q, $d) => $q->whereDate('created_at', '<=', $d));
+
+        // KPIs
+        $allImports = ImportOrder::where('instance_id', $instance->id);
+        $kpiTotal = (clone $allImports)->count();
+        $kpiDraft = (clone $allImports)->where('status', 'draft')->count();
+        $kpiShipped = (clone $allImports)->where('status', 'shipped')->count();
+        $kpiReceived = (clone $allImports)->where('status', 'received')->count();
+        $kpiInTransit = (clone $allImports)->whereIn('status', ['ordered', 'shipped', 'customs'])->count();
+
+        $imports = $query->latest()->paginate(20)->withQueryString();
 
         $suppliers = Supplier::where('instance_id', $instance->id)->orderBy('name')->get(['id', 'name']);
+        $warehouses = Warehouse::where('instance_id', $instance->id)->where('is_active', true)->orderBy('name')->get(['id', 'name']);
 
-        return view('eshop360::imports.index', compact('imports', 'suppliers'));
+        return view('eshop360::imports.index', compact(
+            'imports', 'suppliers', 'warehouses',
+            'kpiTotal', 'kpiDraft', 'kpiShipped', 'kpiReceived', 'kpiInTransit'
+        ));
     }
 
     public function create()

@@ -24,6 +24,8 @@ use Modules\Eshop360\Database\Seeders\DemoPromotionsSeeder;
 use Modules\Eshop360\Database\Seeders\DemoSettingsSeeder;
 use Modules\Eshop360\Database\Seeders\DemoSuppliersSeeder;
 use Modules\Eshop360\Database\Seeders\DemoWebhooksSeeder;
+use Modules\Eshop360\Database\Seeders\DemoCustomerPortalSeeder;
+use Modules\Eshop360\Database\Seeders\DemoChannelPortalSeeder;
 
 final class Eshop360HooksProvider implements RegistersHooks
 {
@@ -307,6 +309,30 @@ final class Eshop360HooksProvider implements RegistersHooks
             parentId: 'eshop360.ventes',
         ));
 
+        $registry->addMenu(new MenuItem(
+            id: 'eshop360.ventes.quotations',
+            label: 'Devis',
+            route: 'eshop360.quotations.index',
+            priority: 760,
+            requiredPermission: 'eshop.sales.view',
+            requiredModule: 'Eshop360',
+            group: 'main',
+            activePattern: 'eshop360.quotations.*',
+            parentId: 'eshop360.ventes',
+        ));
+
+        $registry->addMenu(new MenuItem(
+            id: 'eshop360.ventes.create',
+            label: 'Nouvelle vente',
+            route: 'eshop360.sales.create',
+            priority: 750,
+            requiredPermission: 'eshop.sales.manage',
+            requiredModule: 'Eshop360',
+            group: 'main',
+            activePattern: 'eshop360.sales.create',
+            parentId: 'eshop360.ventes',
+        ));
+
         // =====================================================================
         // Clients (parent)
         // =====================================================================
@@ -583,17 +609,7 @@ final class Eshop360HooksProvider implements RegistersHooks
             parentId: 'eshop360.promotions',
         ));
 
-        $registry->addMenu(new MenuItem(
-            id: 'eshop360.promotions.quotations',
-            label: 'Devis',
-            route: 'eshop360.quotations.index',
-            priority: 780,
-            requiredPermission: 'eshop.sales.view',
-            requiredModule: 'Eshop360',
-            group: 'main',
-            activePattern: 'eshop360.quotations.*',
-            parentId: 'eshop360.promotions',
-        ));
+        // Devis déplacé sous Ventes (eshop360.ventes.quotations)
 
         // =====================================================================
         // RH (parent)
@@ -1226,6 +1242,26 @@ final class Eshop360HooksProvider implements RegistersHooks
             seederClass: DemoChannelsSeeder::class,
             priority: 60,
             description: '2 canaux (CODIFARM, PHARMAPLUS) avec prix produits et logs de marge.',
+            category: 'distribution',
+        ));
+
+        $registry->addDemoProvider(new DemoDataProvider(
+            id: 'eshop360.customer_portal',
+            label: 'Espace client (portail)',
+            module: 'Eshop360',
+            seederClass: DemoCustomerPortalSeeder::class,
+            priority: 58,
+            description: '4 clients avec comptes utilisateur, 8 commandes en ligne couvrant tout le cycle (validation → livraison → reception).',
+            category: 'sales',
+        ));
+
+        $registry->addDemoProvider(new DemoDataProvider(
+            id: 'eshop360.channel_portal',
+            label: 'Portail canal de vente',
+            module: 'Eshop360',
+            seederClass: DemoChannelPortalSeeder::class,
+            priority: 55,
+            description: 'Utilisateurs canal (gerant + agent), 10 commandes canal avec calcul de marges tripartites.',
             category: 'distribution',
         ));
 

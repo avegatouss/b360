@@ -20,7 +20,9 @@ class WarehouseController extends Controller
 
     public function index(Request $request)
     {
-        $warehouses = Warehouse::withCount(['stocks', 'stores'])->with('stores')
+        $warehouses = Warehouse::withCount(['stocks', 'stores'])
+            ->withSum('stocks', 'quantity')
+            ->with('stores')
             ->when($request->search, function ($q, $s) {
                 $q->where(function ($warehouseQuery) use ($s) {
                     $warehouseQuery->where('name', 'like', "%{$s}%")
@@ -33,7 +35,16 @@ class WarehouseController extends Controller
             ->paginate(20)
             ->withQueryString();
 
-        return view('eshop360::inventory.warehouses.index', compact('warehouses'));
+        // Global stats
+        $totalWarehouses = Warehouse::count();
+        $activeWarehouses = Warehouse::where('is_active', true)->count();
+        $totalStockUnits = \Modules\Eshop360\Models\Stock::sum('quantity');
+        $totalProducts = \Modules\Eshop360\Models\Stock::where('quantity', '>', 0)->distinct('product_id')->count('product_id');
+        $lowStockCount = \Modules\Eshop360\Models\Stock::where('quantity', '>', 0)->where('quantity', '<=', 5)->count();
+
+        return view('eshop360::inventory.warehouses.index', compact(
+            'warehouses', 'totalWarehouses', 'activeWarehouses', 'totalStockUnits', 'totalProducts', 'lowStockCount'
+        ));
     }
 
     /**

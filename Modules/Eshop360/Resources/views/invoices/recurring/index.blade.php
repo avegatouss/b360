@@ -11,7 +11,7 @@
         </div>
     </div>
     <div class="page-btn">
-        <a href="{{ route('eshop360.recurring-invoices.create', $instance->slug ?? '') }}" class="btn btn-primary">
+        <a href="{{ route('eshop360.invoices.recurring.create', $instance->slug ?? '') }}" class="btn btn-primary">
             <i class="ti ti-plus me-1"></i>{{ __('Nouvelle recurrence') }}
         </a>
     </div>
@@ -63,16 +63,16 @@
                         </td>
                         <td>
                             <div class="d-flex gap-1">
-                                <form action="{{ route('eshop360.recurring-invoices.toggle', [$instance->slug ?? '', $ri]) }}" method="POST" class="d-inline">
+                                <form action="{{ route('eshop360.invoices.recurring.toggle', [$instance->slug ?? '', $ri]) }}" method="POST" class="d-inline">
                                     @csrf @method('PATCH')
                                     <button type="submit" class="btn btn-sm btn-outline-{{ $ri->is_active ? 'warning' : 'success' }}" title="{{ $ri->is_active ? __('Desactiver') : __('Activer') }}">
                                         <i class="ti ti-{{ $ri->is_active ? 'player-pause' : 'player-play' }}"></i>
                                     </button>
                                 </form>
-                                <a href="{{ route('eshop360.recurring-invoices.edit', [$instance->slug ?? '', $ri]) }}" class="btn btn-sm btn-outline-primary" title="{{ __('Modifier') }}">
+                                <a href="{{ route('eshop360.invoices.recurring.edit', [$instance->slug ?? '', $ri]) }}" class="btn btn-sm btn-outline-primary" title="{{ __('Modifier') }}">
                                     <i class="ti ti-edit"></i>
                                 </a>
-                                <form action="{{ route('eshop360.recurring-invoices.destroy', [$instance->slug ?? '', $ri]) }}" method="POST" class="d-inline" onsubmit='return confirm(@js(__('Supprimer cette recurrence ?')))'>
+                                <form action="{{ route('eshop360.invoices.recurring.destroy', [$instance->slug ?? '', $ri]) }}" method="POST" class="d-inline" onsubmit='return confirm(@js(__('Supprimer cette recurrence ?')))'>
                                     @csrf @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-outline-danger" title="{{ __('Supprimer') }}">
                                         <i class="ti ti-trash"></i>

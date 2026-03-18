@@ -115,20 +115,70 @@ class SaleController extends Controller
 
     public function index(Request $request)
     {
-        $sales = Order::with(['customer', 'items'])
+        $instance = CurrentInstance::get();
+
+        $query = Order::with(['customer', 'channel'])
             ->when($request->status, fn ($q, $s) => $q->where('status', $s))
             ->when($request->payment_status, fn ($q, $s) => $q->where('payment_status', $s))
             ->when($request->source, fn ($q, $s) => $q->where('source', $s))
-            ->when($request->search, fn ($q, $s) => $q->where('order_number', 'like', "%{$s}%")
-                ->orWhereHas('customer', fn ($cq) => $cq->where('name', 'like', "%{$s}%")))
+            ->when($request->channel_id, fn ($q, $c) => $q->where('channel_id', $c))
+            ->when($request->payment_method, fn ($q, $m) => $q->where('payment_method', $m))
+            ->when($request->search, function ($q, $s) {
+                $q->where(function ($qq) use ($s) {
+                    $qq->where('order_number', 'like', "%{$s}%")
+                       ->orWhereHas('customer', fn ($cq) => $cq->where('name', 'like', "%{$s}%"));
+                });
+            })
             ->when($request->customer_id, fn ($q, $c) => $q->where('customer_id', $c))
             ->when($request->date_from, fn ($q, $d) => $q->whereDate('created_at', '>=', $d))
             ->when($request->date_to, fn ($q, $d) => $q->whereDate('created_at', '<=', $d))
-            ->latest()
-            ->paginate(20)
-            ->withQueryString();
+            ->when($request->min_total, fn ($q, $m) => $q->where('total', '>=', $m))
+            ->when($request->max_total, fn ($q, $m) => $q->where('total', '<=', $m));
 
-        return view('eshop360::sales.index', compact('sales'));
+        // KPI from the same filtered query (before pagination)
+        $filteredQuery = clone $query;
+        $kpiTotal = round((float) (clone $filteredQuery)->sum('total'), 0);
+        $kpiPaid = round((float) (clone $filteredQuery)->sum('paid_amount'), 0);
+        $kpiDue = round((float) (clone $filteredQuery)->where('payment_status', '!=', 'paid')->sum('due_amount'), 0);
+        $kpiCount = (clone $filteredQuery)->count();
+        $kpiCompleted = (clone $filteredQuery)->where('status', 'completed')->count();
+        $kpiPending = (clone $filteredQuery)->where('status', 'pending')->count();
+        $kpiCancelled = (clone $filteredQuery)->whereIn('status', ['cancelled', 'refunded'])->count();
+        $kpiAvg = $kpiCount > 0 ? round($kpiTotal / $kpiCount, 0) : 0;
+
+        $sales = $query->latest()->paginate(25)->withQueryString();
+
+        // Lookups for filters
+        $customers = Customer::where('instance_id', $instance->id)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'code']);
+
+        $channels = \Modules\Eshop360\Models\DistributionChannel::where('instance_id', $instance->id)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        $paymentMethods = Order::where('instance_id', $instance->id)
+            ->whereNotNull('payment_method')
+            ->distinct()
+            ->pluck('payment_method');
+
+        return view('eshop360::sales.index', compact(
+            'sales', 'customers', 'channels', 'paymentMethods',
+            'kpiTotal', 'kpiPaid', 'kpiDue', 'kpiCount',
+            'kpiCompleted', 'kpiPending', 'kpiCancelled', 'kpiAvg'
+        ));
+    }
+
+    public function create(string $slug)
+    {
+        $instance = CurrentInstance::get();
+        $customers = Customer::where('instance_id', $instance->id)->where('is_active', true)->orderBy('name')->get();
+        $products = Product::where('instance_id', $instance->id)->where('is_active', true)->orderBy('name')->get();
+        $channels = \Modules\Eshop360\Models\DistributionChannel::where('instance_id', $instance->id)->where('is_active', true)->orderBy('name')->get(['id', 'name']);
+
+        return view('eshop360::sales.create', compact('customers', 'products', 'channels'));
     }
 
     public function store(Request $request, string $slug): RedirectResponse

@@ -16,18 +16,49 @@ class PurchaseController extends Controller
 {
     public function index(Request $request)
     {
-        $purchases = PurchaseOrder::with('items.product')
+        $instance = CurrentInstance::get();
+
+        $query = PurchaseOrder::with(['supplier', 'warehouse'])
+            ->withCount('items')
             ->when($request->status, fn ($q, $s) => $q->where('status', $s))
             ->when($request->payment_status, fn ($q, $s) => $q->where('payment_status', $s))
-            ->when($request->search, fn ($q, $s) => $q->where('reference', 'like', "%{$s}%")
-                ->orWhere('supplier_name', 'like', "%{$s}%"))
+            ->when($request->supplier_id, fn ($q, $s) => $q->where('supplier_id', $s))
+            ->when($request->search, function ($q, $s) {
+                $q->where(function ($qq) use ($s) {
+                    $qq->where('reference', 'like', "%{$s}%")
+                       ->orWhere('supplier_name', 'like', "%{$s}%");
+                });
+            })
             ->when($request->date_from, fn ($q, $d) => $q->whereDate('created_at', '>=', $d))
-            ->when($request->date_to, fn ($q, $d) => $q->whereDate('created_at', '<=', $d))
-            ->latest()
-            ->paginate(20)
-            ->withQueryString();
+            ->when($request->date_to, fn ($q, $d) => $q->whereDate('created_at', '<=', $d));
 
-        return view('eshop360::purchases.index', compact('purchases'));
+        // KPIs
+        $kpiAll = PurchaseOrder::where('instance_id', $instance->id);
+        $kpiTotal = round((float) (clone $kpiAll)->sum('total'), 0);
+        $kpiPaid = round((float) (clone $kpiAll)->sum('paid_amount'), 0);
+        $kpiDue = round((float) (clone $kpiAll)->where('payment_status', '!=', 'paid')->sum('due_amount'), 0);
+        $kpiCount = (clone $kpiAll)->count();
+        $kpiPending = (clone $kpiAll)->where('status', 'pending')->count();
+        $kpiReceived = (clone $kpiAll)->where('status', 'received')->count();
+
+        $purchases = $query->latest()->paginate(25)->withQueryString();
+
+        $suppliers = Supplier::where('instance_id', $instance->id)->orderBy('name')->get(['id', 'name']);
+
+        return view('eshop360::purchases.index', compact(
+            'purchases', 'suppliers',
+            'kpiTotal', 'kpiPaid', 'kpiDue', 'kpiCount', 'kpiPending', 'kpiReceived'
+        ));
+    }
+
+    public function create()
+    {
+        $instance = CurrentInstance::get();
+        $suppliers = Supplier::where('instance_id', $instance->id)->where('is_active', true)->orderBy('name')->get();
+        $warehouses = \Modules\Eshop360\Models\Warehouse::where('instance_id', $instance->id)->where('is_active', true)->get();
+        $products = \Modules\Eshop360\Models\Product::where('instance_id', $instance->id)->where('is_active', true)->get();
+
+        return view('eshop360::purchases.create', compact('suppliers', 'warehouses', 'products'));
     }
 
     public function store(Request $request): RedirectResponse

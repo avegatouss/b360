@@ -20,11 +20,11 @@ final class AuthServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
-        $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
-        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'authmod');
-        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'auth');
+        $this->loadRoutesFrom(__DIR__ . '/../Routes/web.php');
+        $this->loadViewsFrom(__DIR__ . '/../Resources/views', 'authmod');
+        $this->loadViewsFrom(__DIR__ . '/../Resources/views', 'auth');
         $this->loadMigrationsFrom(__DIR__ . '/../Database/Migrations');
-        Blade::anonymousComponentPath(__DIR__ . '/../resources/views/components', 'auth');
+        Blade::anonymousComponentPath(__DIR__ . '/../Resources/views/components', 'auth');
 
         // Register 2FA middleware alias
         /** @var Router $router */

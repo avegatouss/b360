@@ -12,7 +12,7 @@ use Modules\Eshop360\Models\RecurringInvoice;
 
 class RecurringInvoiceController extends Controller
 {
-    public function index()
+    public function index(string $slug)
     {
         $instance = CurrentInstance::get();
 
@@ -24,11 +24,15 @@ class RecurringInvoiceController extends Controller
         return view('eshop360::invoices.recurring.index', compact('recurringInvoices'));
     }
 
-    public function create()
+    public function create(string $slug)
     {
         $instance = CurrentInstance::get();
         $customers = Customer::where('instance_id', $instance->id)->where('is_active', true)->orderBy('name')->get();
-        $invoices = Invoice::where('instance_id', $instance->id)->orderByDesc('id')->limit(100)->get();
+        $invoices = Invoice::where('instance_id', $instance->id)
+            ->with('customer:id,name,code')
+            ->orderByDesc('id')
+            ->limit(200)
+            ->get();
 
         return view('eshop360::invoices.recurring.form', [
             'recurringInvoice' => null,
@@ -37,7 +41,7 @@ class RecurringInvoiceController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, string $slug): RedirectResponse
     {
         $instance = CurrentInstance::get();
 
@@ -55,21 +59,27 @@ class RecurringInvoiceController extends Controller
             'is_active'   => true,
         ]);
 
-        return redirect()->route('eshop360.recurring-invoices.index')
-            ->with('success', 'Facture recurrente creee.');
+        return redirect()->route('eshop360.invoices.recurring.index', $instance->slug)
+            ->with('success', 'Facture récurrente créée.');
     }
 
-    public function edit(RecurringInvoice $recurringInvoice)
+    public function edit(string $slug, RecurringInvoice $recurringInvoice)
     {
         $instance = CurrentInstance::get();
         $customers = Customer::where('instance_id', $instance->id)->where('is_active', true)->orderBy('name')->get();
-        $invoices = Invoice::where('instance_id', $instance->id)->orderByDesc('id')->limit(100)->get();
+        $invoices = Invoice::where('instance_id', $instance->id)
+            ->with('customer:id,name,code')
+            ->orderByDesc('id')
+            ->limit(200)
+            ->get();
 
         return view('eshop360::invoices.recurring.form', compact('recurringInvoice', 'customers', 'invoices'));
     }
 
-    public function update(Request $request, RecurringInvoice $recurringInvoice): RedirectResponse
+    public function update(Request $request, string $slug, RecurringInvoice $recurringInvoice): RedirectResponse
     {
+        $instance = CurrentInstance::get();
+
         $validated = $request->validate([
             'customer_id'         => 'required|exists:eshop_customers,id',
             'template_invoice_id' => 'required|exists:eshop_invoices,id',
@@ -80,25 +90,27 @@ class RecurringInvoiceController extends Controller
 
         $recurringInvoice->update($validated);
 
-        return redirect()->route('eshop360.recurring-invoices.index')
-            ->with('success', 'Facture recurrente mise a jour.');
+        return redirect()->route('eshop360.invoices.recurring.index', $instance->slug)
+            ->with('success', 'Facture récurrente mise à jour.');
     }
 
-    public function destroy(RecurringInvoice $recurringInvoice): RedirectResponse
+    public function destroy(string $slug, RecurringInvoice $recurringInvoice): RedirectResponse
     {
+        $instance = CurrentInstance::get();
         $recurringInvoice->delete();
 
-        return redirect()->route('eshop360.recurring-invoices.index')
-            ->with('success', 'Facture recurrente supprimee.');
+        return redirect()->route('eshop360.invoices.recurring.index', $instance->slug)
+            ->with('success', 'Facture récurrente supprimée.');
     }
 
-    public function toggle(RecurringInvoice $recurringInvoice): RedirectResponse
+    public function toggle(string $slug, RecurringInvoice $recurringInvoice): RedirectResponse
     {
+        $instance = CurrentInstance::get();
         $recurringInvoice->update(['is_active' => !$recurringInvoice->is_active]);
 
-        $status = $recurringInvoice->is_active ? 'activee' : 'desactivee';
+        $status = $recurringInvoice->is_active ? 'activée' : 'désactivée';
 
-        return redirect()->route('eshop360.recurring-invoices.index')
-            ->with('success', "Facture recurrente {$status}.");
+        return redirect()->route('eshop360.invoices.recurring.index', $instance->slug)
+            ->with('success', "Facture récurrente {$status}.");
     }
 }

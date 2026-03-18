@@ -190,13 +190,17 @@ Route::middleware([
     Route::prefix('sales')->name('eshop360.sales.')->middleware('can:eshop.sales.view')->group(function () {
         Route::get('/', [SaleController::class, 'index'])->name('index');
         Route::get('/dashboard', [SaleController::class, 'dashboard'])->name('dashboard');
+        Route::get('/create', [SaleController::class, 'create'])->middleware('can:eshop.sales.manage')->name('create');
         Route::post('/', [SaleController::class, 'store'])->middleware('can:eshop.sales.manage')->name('store');
-        Route::get('/{order}', [SaleController::class, 'show'])->name('show');
-        Route::put('/{order}', [SaleController::class, 'update'])->middleware('can:eshop.sales.manage')->name('update');
-        Route::delete('/{order}', [SaleController::class, 'destroy'])->middleware('can:eshop.sales.manage')->name('destroy');
+
+        // Static routes BEFORE wildcard /{order}
         Route::get('/returns/list', [SaleController::class, 'returns'])->name('returns');
         Route::post('/returns', [SaleController::class, 'storeReturn'])->middleware('can:eshop.sales.manage')->name('returns.store');
         Route::get('/tax/report', [SaleController::class, 'taxReport'])->name('tax-report');
+
+        Route::get('/{order}', [SaleController::class, 'show'])->name('show');
+        Route::put('/{order}', [SaleController::class, 'update'])->middleware('can:eshop.sales.manage')->name('update');
+        Route::delete('/{order}', [SaleController::class, 'destroy'])->middleware('can:eshop.sales.manage')->name('destroy');
     });
 
     // ─── Orders ──────────────────────────────────
@@ -255,14 +259,18 @@ Route::middleware([
     // ─── Purchases ────────────────────────────────
     Route::prefix('purchases')->name('eshop360.purchases.')->middleware('can:eshop.purchases.view')->group(function () {
         Route::get('/', [PurchaseController::class, 'index'])->name('index');
+        Route::get('/create', [PurchaseController::class, 'create'])->middleware('can:eshop.purchases.manage')->name('create');
         Route::post('/', [PurchaseController::class, 'store'])->middleware('can:eshop.purchases.manage')->name('store');
+
+        // Static routes BEFORE wildcard /{purchase}
+        Route::get('/reports/summary', [PurchaseController::class, 'report'])->name('report');
+        Route::get('/reports/transactions', [PurchaseController::class, 'transactions'])->name('transactions');
+
         Route::get('/{purchase}', [PurchaseController::class, 'show'])->name('show');
         Route::put('/{purchase}', [PurchaseController::class, 'update'])->middleware('can:eshop.purchases.manage')->name('update');
         Route::delete('/{purchase}', [PurchaseController::class, 'destroy'])->middleware('can:eshop.purchases.manage')->name('destroy');
         Route::get('/{purchase}/receive', [PurchaseController::class, 'receiveForm'])->middleware('can:eshop.purchases.manage')->name('receive.form');
         Route::post('/{purchase}/receive', [PurchaseController::class, 'receive'])->middleware('can:eshop.purchases.manage')->name('receive');
-        Route::get('/reports/summary', [PurchaseController::class, 'report'])->name('report');
-        Route::get('/reports/transactions', [PurchaseController::class, 'transactions'])->name('transactions');
     });
 
     Route::prefix('purchase-returns')->name('eshop360.purchase-returns.')->middleware('can:eshop.purchases.manage')->group(function () {
@@ -284,20 +292,20 @@ Route::middleware([
         Route::put('/config/settings', [InvoiceController::class, 'updateSettings'])->middleware('can:eshop.settings.manage')->name('settings.update');
         Route::get('/reports/summary', [InvoiceController::class, 'report'])->name('report');
 
+        // ─── Recurring Invoices (MUST be before /{invoice} to avoid route collision) ───
+        Route::prefix('recurring')->name('recurring.')->middleware('can:eshop.invoices.manage')->group(function () {
+            Route::get('/', [RecurringInvoiceController::class, 'index'])->name('index');
+            Route::get('/create', [RecurringInvoiceController::class, 'create'])->name('create');
+            Route::post('/', [RecurringInvoiceController::class, 'store'])->name('store');
+            Route::get('/{recurringInvoice}/edit', [RecurringInvoiceController::class, 'edit'])->name('edit');
+            Route::put('/{recurringInvoice}', [RecurringInvoiceController::class, 'update'])->name('update');
+            Route::delete('/{recurringInvoice}', [RecurringInvoiceController::class, 'destroy'])->name('destroy');
+            Route::patch('/{recurringInvoice}/toggle', [RecurringInvoiceController::class, 'toggle'])->name('toggle');
+        });
+
         Route::get('/{invoice}', [InvoiceController::class, 'show'])->name('show');
         Route::put('/{invoice}', [InvoiceController::class, 'update'])->middleware('can:eshop.invoices.manage')->name('update');
         Route::delete('/{invoice}', [InvoiceController::class, 'destroy'])->middleware('can:eshop.invoices.manage')->name('destroy');
-    });
-
-    // ─── Recurring Invoices ─────────────────────────
-    Route::prefix('invoices/recurring')->name('eshop360.recurring-invoices.')->middleware('can:eshop.invoices.manage')->group(function () {
-        Route::get('/', [RecurringInvoiceController::class, 'index'])->name('index');
-        Route::get('/create', [RecurringInvoiceController::class, 'create'])->name('create');
-        Route::post('/', [RecurringInvoiceController::class, 'store'])->name('store');
-        Route::get('/{recurringInvoice}/edit', [RecurringInvoiceController::class, 'edit'])->name('edit');
-        Route::put('/{recurringInvoice}', [RecurringInvoiceController::class, 'update'])->name('update');
-        Route::delete('/{recurringInvoice}', [RecurringInvoiceController::class, 'destroy'])->name('destroy');
-        Route::patch('/{recurringInvoice}/toggle', [RecurringInvoiceController::class, 'toggle'])->name('toggle');
     });
 
     // ─── Promotions ────────────────────────────────

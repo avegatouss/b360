@@ -14,7 +14,7 @@
     </div>
     <div class="page-btn d-flex gap-2">
         <a href="{{ route('eshop360.export.invoices', $slug) }}" class="btn btn-outline-info btn-sm"><i class="ti ti-download me-1"></i>{{ __('Exporter') }}</a>
-        <a href="{{ route('eshop360.recurring-invoices.index', $slug) }}" class="btn btn-outline-secondary btn-sm"><i class="ti ti-repeat me-1"></i>{{ __('Recurrentes') }}</a>
+        <a href="{{ route('eshop360.invoices.recurring.index', $slug) }}" class="btn btn-outline-secondary btn-sm"><i class="ti ti-repeat me-1"></i>{{ __('Recurrentes') }}</a>
         <a href="{{ route('eshop360.invoices.create', $slug) }}" class="btn btn-primary"><i class="ti ti-circle-plus me-1"></i>{{ __('Nouvelle facture') }}</a>
     </div>
 </div>

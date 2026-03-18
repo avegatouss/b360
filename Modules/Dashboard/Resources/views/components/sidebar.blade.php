@@ -20,7 +20,8 @@
                         <span>{{ $item->label }}</span>
                         <span class="menu-arrow"></span>
                     </a>
-                    <ul class="{{ $item->isActive() ? 'd-block' : '' }}">
+                    {{-- Use inline style instead of d-block class to avoid !important conflict with jQuery slideToggle --}}
+                    <ul {!! $item->isActive() ? 'style="display:block;"' : 'style="display:none;"' !!}>
                         @foreach($item->children as $child)
                         <li>
                             <a href="{{ $child->url($instance) }}"
