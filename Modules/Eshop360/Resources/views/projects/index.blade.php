@@ -22,9 +22,12 @@
             </a>
         </li>
     </ul>
-    <div class="page-btn">
+    <div class="page-btn d-flex gap-2">
+        <a href="{{ route('eshop360.calendar.index', $instance->slug ?? '') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="ti ti-calendar me-1"></i>{{ __('Calendrier') }}
+        </a>
         <a href="{{ route('eshop360.projects.create', $instance->slug ?? '') }}" class="btn btn-primary">
-            <i class="ti ti-circle-plus me-1"></i>Nouveau projet
+            <i class="ti ti-circle-plus me-1"></i>{{ __('Nouveau projet') }}
         </a>
     </div>
 </div>
@@ -113,8 +116,9 @@
                     <option value="">{{ __('Toutes priorités') }}</option>
                     <option value="low" {{ request('priority') === 'low' ? 'selected' : '' }}>Basse</option>
                     <option value="medium" {{ request('priority') === 'medium' ? 'selected' : '' }}>Moyenne</option>
-                    <option value="high" {{ request('priority') === 'high' ? 'selected' : '' }}>Haute</option>
-                    <option value="critical" {{ request('priority') === 'critical' ? 'selected' : '' }}>Critique</option>
+                    <option value="high" {{ request('priority') === 'high' ? 'selected' : '' }}>{{ __('Haute') }}</option>
+                    <option value="urgent" {{ request('priority') === 'urgent' ? 'selected' : '' }}>{{ __('Urgente') }}</option>
+                    <option value="critical" {{ request('priority') === 'critical' ? 'selected' : '' }}>{{ __('Critique') }}</option>
                 </select>
             </div>
             <div class="col-md-2 d-flex gap-2">
@@ -151,6 +155,7 @@
             'low'      => ['label' => 'Basse',    'class' => 'text-bg-light'],
             'medium'   => ['label' => 'Moyenne',  'class' => 'text-bg-primary'],
             'high'     => ['label' => 'Haute',    'class' => 'text-bg-warning'],
+            'urgent'   => ['label' => 'Urgente',  'class' => 'text-bg-danger'],
             'critical' => ['label' => 'Critique', 'class' => 'text-bg-danger'],
         ][$project->priority ?? 'medium'];
 

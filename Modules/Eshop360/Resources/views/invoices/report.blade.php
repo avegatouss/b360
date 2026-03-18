@@ -1,369 +1,264 @@
+@php $slug = $instance->slug ?? ''; @endphp
 <x-dashboard::layouts.master
-    :title="__('Invoice Report') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Rapport facturation') . ' — ' . ($instance->name ?? 'B360')"
     :instance="$instance"
-    :pageTitle="__('Invoice Report')">
+    :pageTitle="__('Rapport facturation')">
 
-<div class="page-header">
+    <div class="page-wrapper">
+        <div class="content">
+            {{-- Page Header --}}
+            <div class="page-header">
                 <div class="add-item d-flex">
                     <div class="page-title">
-                        <h4>{{ __('Invoice Report') }}</h4>
-                        <h6>{{ __('Manage Your Invoice Report') }}</h6>
+                        <h4>{{ __('Rapport facturation') }}</h4>
+                        <h6>{{ __('Analyse des factures emises') }}</h6>
                     </div>
                 </div>
-                <ul class="table-top-head">
-                    <li class="me-2">
-                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Refresh') }}"><i class="ti ti-refresh"></i></a>
-                    </li>
-                    <li class="me-2">
-                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Collapse') }}" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
-                    </li>
-                </ul>
-            </div>
-            <div class="row">
-                <div class="col-xl-3 col-sm-6 col-12 d-flex">
-                    <div class="card border border-success sale-widget flex-fill">
-                        <div class="card-body d-flex align-items-center">
-                            <span class="sale-icon bg-success text-white">
-                                <i class="ti ti-align-box-bottom-left-filled fs-24"></i>
-                            </span>
-                            <div class="ms-2">
-                                <p class="fw-medium mb-1">{{ __('Total Amount') }}</p>
-                                <div>
-                                    <h3>$4,56,000</h3>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-sm-6 col-12 d-flex">
-                    <div class="card border border-info sale-widget flex-fill">
-                        <div class="card-body d-flex align-items-center">
-                            <span class="sale-icon bg-info text-white">
-                                <i class="ti ti-align-box-bottom-left-filled fs-24"></i>
-                            </span>
-                            <div class="ms-2">
-                                <p class="fw-medium mb-1">{{ __('Total Paid') }}</p>
-                                <div>
-                                    <h3>$2,56,42</h3>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-sm-6 col-12 d-flex">
-                    <div class="card border border-orange sale-widget flex-fill">
-                        <div class="card-body d-flex align-items-center">
-                            <span class="sale-icon bg-orange text-white">
-                                <i class="ti ti-moneybag fs-24"></i>
-                            </span>
-                            <div class="ms-2">
-                                <p class="fw-medium mb-1">{{ __('Total Unpaid') }}</p>
-                                <div>
-                                    <h3>$1,52,45</h3>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-sm-6 col-12 d-flex">
-                    <div class="card border border-danger sale-widget flex-fill">
-                        <div class="card-body d-flex align-items-center">
-                            <span class="sale-icon bg-danger text-white">
-                                <i class="ti ti-alert-circle-filled fs-24"></i>
-                            </span>
-                            <div class="ms-2">
-                                <p class="fw-medium mb-1">{{ __('Overdue') }}</p>
-                                <div>
-                                    <h3>$2,56,12</h3>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="d-flex align-items-center gap-2">
+                    <a href="#" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" title="{{ __('Exporter') }}">
+                        <i class="ti ti-download me-1"></i>{{ __('Exporter') }}
+                    </a>
                 </div>
             </div>
-            <div class="card">
-                <div class="card-body pb-1">
-                    <form action="{{url('invoice-report')}}">
-                        <div class="row align-items-end">
-                            <div class="col-lg-10">
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label class="form-label">{{ __('Choose Date') }}</label>
-                                            <div class="input-icon-start position-relative">
-                                                <input type="text" class="form-control date-range bookingrange" placeholder="{{ __('dd/mm/yyyy - dd/mm/yyyy') }}">
-                                                <span class="input-icon-left">
-                                                    <i class="ti ti-calendar"></i>
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label class="form-label">{{ __('Customer') }}</label>
-                                            <select class="select">
-                                                <option>{{ __('All') }}</option>
-                                                <option>{{ __('Carl Evans') }}</option>
-                                                <option>{{ __('Minerva Rameriz') }}</option>
-                                                <option>{{ __('Robert Lamon') }}</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label class="form-label">{{ __('Status') }}</label>
-                                            <select class="select">
-                                                <option>{{ __('All') }}</option>
-                                                <option>{{ __('Paid') }}</option>
-                                                <option>{{ __('Unpaid') }}</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-lg-2">
-                                <div class="mb-3">
-                                    <button class="btn btn-primary w-100" type="submit">{{ __('Generate Report') }}</button>
-                                </div>
-                            </div>
+
+            {{-- Filter Card --}}
+            <div class="card mb-3 border-0 shadow-sm">
+                <div class="card-body py-3">
+                    <form method="GET" class="row g-2 align-items-end">
+                        <div class="col-auto">
+                            <label class="form-label mb-1">{{ __('Du') }}</label>
+                            <input type="date" name="date_from" value="{{ $dateFrom ?? '' }}" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-auto">
+                            <label class="form-label mb-1">{{ __('Au') }}</label>
+                            <input type="date" name="date_to" value="{{ $dateTo ?? '' }}" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-sm btn-primary"><i class="ti ti-filter me-1"></i>{{ __('Filtrer') }}</button>
+                        </div>
+                        <div class="col-auto">
+                            <a href="{{ request()->url() }}" class="btn btn-sm btn-outline-secondary"><i class="ti ti-refresh me-1"></i>{{ __('Reinitialiser') }}</a>
                         </div>
                     </form>
                 </div>
             </div>
-            
-            <div class="card no-search">
-                <div class="card-header d-flex align-items-center justify-content-between flex-wrap row-gap-3">
-                    <div>
-                        <h4>{{ __('Invoice Report') }}</h4>
+
+            {{-- KPI Cards --}}
+            <div class="row g-3 mb-4">
+                <div class="col-xl-3 col-sm-6">
+                    <div class="card border-0 shadow-sm border-start border-primary border-3 h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <span class="avatar avatar-md bg-primary-transparent rounded-circle">
+                                    <i class="ti ti-file-invoice fs-20 text-primary"></i>
+                                </span>
+                                <div class="ms-3">
+                                    <p class="text-muted mb-1 small">{{ __('Total facture') }}</p>
+                                    <h4 class="fw-bold mb-0">{{ number_format($summary['total_invoiced'] ?? 0, 0, ',', ' ') }}</h4>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <ul class="table-top-head">
-                        <li class="me-2">
-                            <a data-bs-toggle="tooltip" data-bs-placement="top" title="Pdf"><img src="{{URL::asset('build/img/icons/pdf.svg')}}" alt="img"></a>
-                        </li>
-                        <li class="me-2">
-                            <a data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"><img src="{{URL::asset('build/img/icons/excel.svg')}}" alt="img"></a>
-                        </li>
-                        <li>
-                            <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Print') }}"><i class="ti ti-printer"></i></a>
-                        </li>
-                    </ul>
                 </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table datatable">
-                            <thead class="thead-light">
-                                <tr>
-                                    <th class="no-sort">
-                                        <label class="checkboxs">
-                                            <input type="checkbox" id="select-all">
-                                            <span class="checkmarks"></span>
-                                        </label>
-                                    </th>
-                                    <th>{{ __('Invoice No') }}</th>
-                                    <th>{{ __('Customer') }}</th>
-                                    <th>{{ __('Due Date') }}</th>
-                                    <th>{{ __('Amount') }}</th>
-                                    <th>{{ __('Paid') }}</th>
-                                    <th>{{ __('Amount Due') }}</th>
-                                    <th>{{ __('Status') }}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>
-                                        <label class="checkboxs">
-                                            <input type="checkbox">
-                                            <span class="checkmarks"></span>
-                                        </label>
-                                    </td>
-                                    <td><a href="#">{{ __('INV001') }}</a></td>
-                                    <td>{{ __('Carl Evans') }}</td>
-                                    <td>{{ __('24 Dec 2024') }}</td>
-                                    <td>$500</td>
-                                    <td>$500</td>
-                                    <td>$500</td>
-                                    <td>
-                                        <span class="badge badge-success d-inline-flex align-items-center badge-xs">
-                                            <i class="ti ti-point-filled me-1"></i>Paid
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <label class="checkboxs">
-                                            <input type="checkbox">
-                                            <span class="checkmarks"></span>
-                                        </label>
-                                    </td>
-                                    <td><a href="#">{{ __('INV002') }}</a></td>
-                                    <td>{{ __('Minerva Rameriz') }}</td>
-                                    <td>{{ __('10 Dec 2024') }}</td>
-                                    <td>$1500</td>
-                                    <td>$1500</td>
-                                    <td>$1500</td>
-                                    <td>
-                                        <span class="badge badge-success d-inline-flex align-items-center badge-xs">
-                                            <i class="ti ti-point-filled me-1"></i>Paid
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <label class="checkboxs">
-                                            <input type="checkbox">
-                                            <span class="checkmarks"></span>
-                                        </label>
-                                    </td>
-                                    <td><a href="#">{{ __('INV003') }}</a></td>
-                                    <td>{{ __('Robert Lamon') }}</td>
-                                    <td>{{ __('27 Nov 2024') }}</td>
-                                    <td>$600</td>
-                                    <td>$600</td>
-                                    <td>$600</td>
-                                    <td>
-                                        <span class="badge badge-success d-inline-flex align-items-center badge-xs">
-                                            <i class="ti ti-point-filled me-1"></i>Paid
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <label class="checkboxs">
-                                            <input type="checkbox">
-                                            <span class="checkmarks"></span>
-                                        </label>
-                                    </td>
-                                    <td><a href="#">{{ __('INV004') }}</a></td>
-                                    <td>{{ __('Patricia Lewis') }}</td>
-                                    <td>{{ __('18 Nov 2024') }}</td>
-                                    <td>$1000</td>
-                                    <td>$1000</td>
-                                    <td>$1000</td>
-                                    <td>
-                                        <span class="badge badge-success d-inline-flex align-items-center badge-xs">
-                                            <i class="ti ti-point-filled me-1"></i>Paid
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <label class="checkboxs">
-                                            <input type="checkbox">
-                                            <span class="checkmarks"></span>
-                                        </label>
-                                    </td>
-                                    <td><a href="#">{{ __('INV005') }}</a></td>
-                                    <td>{{ __('Mark Joslyn') }}</td>
-                                    <td>{{ __('06 Nov 2024') }}</td>
-                                    <td>$1200</td>
-                                    <td>$1200</td>
-                                    <td>$1200</td>
-                                    <td>
-                                        <span class="badge badge-success d-inline-flex align-items-center badge-xs">
-                                            <i class="ti ti-point-filled me-1"></i>Paid
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <label class="checkboxs">
-                                            <input type="checkbox">
-                                            <span class="checkmarks"></span>
-                                        </label>
-                                    </td>
-                                    <td><a href="#">{{ __('INV006') }}</a></td>
-                                    <td>{{ __('Marsha Betts') }}</td>
-                                    <td>{{ __('25 Oct 2024') }}</td>
-                                    <td>$800</td>
-                                    <td>$800</td>
-                                    <td>$800</td>
-                                    <td>
-                                        <span class="badge badge-success d-inline-flex align-items-center badge-xs">
-                                            <i class="ti ti-point-filled me-1"></i>Paid
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <label class="checkboxs">
-                                            <input type="checkbox">
-                                            <span class="checkmarks"></span>
-                                        </label>
-                                    </td>
-                                    <td><a href="#">{{ __('INV007') }}</a></td>
-                                    <td>{{ __('Daniel Jude') }}</td>
-                                    <td>{{ __('14 Oct 2024') }}</td>
-                                    <td>$2000</td>
-                                    <td>$2000</td>
-                                    <td>$2000</td>
-                                    <td>
-                                        <span class="badge badge-success d-inline-flex align-items-center badge-xs">
-                                            <i class="ti ti-point-filled me-1"></i>Paid
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <label class="checkboxs">
-                                            <input type="checkbox">
-                                            <span class="checkmarks"></span>
-                                        </label>
-                                    </td>
-                                    <td><a href="#">{{ __('INV008') }}</a></td>
-                                    <td>{{ __('Emma Bates') }}</td>
-                                    <td>{{ __('03 Oct 2024') }}</td>
-                                    <td>$100</td>
-                                    <td>$100</td>
-                                    <td>$100</td>
-                                    <td>
-                                        <span class="badge badge-success d-inline-flex align-items-center badge-xs">
-                                            <i class="ti ti-point-filled me-1"></i>Paid
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <label class="checkboxs">
-                                            <input type="checkbox">
-                                            <span class="checkmarks"></span>
-                                        </label>
-                                    </td>
-                                    <td><a href="#">{{ __('INV009') }}</a></td>
-                                    <td>{{ __('Richard Fralick') }}</td>
-                                    <td>{{ __('20 Sep 2024') }}</td>
-                                    <td>$300</td>
-                                    <td>$300</td>
-                                    <td>$300</td>
-                                    <td>
-                                        <span class="badge badge-success d-inline-flex align-items-center badge-xs">
-                                            <i class="ti ti-point-filled me-1"></i>Paid
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <label class="checkboxs">
-                                            <input type="checkbox">
-                                            <span class="checkmarks"></span>
-                                        </label>
-                                    </td>
-                                    <td><a href="#">{{ __('INV010') }}</a></td>
-                                    <td>{{ __('Michelle Robison') }}</td>
-                                    <td>{{ __('10 Sep 2024') }}</td>
-                                    <td>$5000</td>
-                                    <td>$5000</td>
-                                    <td>$5000</td>
-                                    <td>
-                                        <span class="badge badge-danger d-inline-flex align-items-center badge-xs">
-                                            <i class="ti ti-point-filled me-1"></i>Unpaid
-                                        </span>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                <div class="col-xl-3 col-sm-6">
+                    <div class="card border-0 shadow-sm border-start border-success border-3 h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <span class="avatar avatar-md bg-success-transparent rounded-circle">
+                                    <i class="ti ti-circle-check fs-20 text-success"></i>
+                                </span>
+                                <div class="ms-3">
+                                    <p class="text-muted mb-1 small">{{ __('Paye') }}</p>
+                                    <h4 class="fw-bold mb-0 text-success">{{ number_format($summary['total_paid'] ?? 0, 0, ',', ' ') }}</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-sm-6">
+                    <div class="card border-0 shadow-sm border-start border-warning border-3 h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <span class="avatar avatar-md bg-warning-transparent rounded-circle">
+                                    <i class="ti ti-clock fs-20 text-warning"></i>
+                                </span>
+                                <div class="ms-3">
+                                    <p class="text-muted mb-1 small">{{ __('Impaye') }}</p>
+                                    <h4 class="fw-bold mb-0 text-warning">{{ number_format($summary['total_due'] ?? 0, 0, ',', ' ') }}</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-sm-6">
+                    <div class="card border-0 shadow-sm border-start border-danger border-3 h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <span class="avatar avatar-md bg-danger-transparent rounded-circle">
+                                    <i class="ti ti-alert-circle fs-20 text-danger"></i>
+                                </span>
+                                <div class="ms-3">
+                                    <p class="text-muted mb-1 small">{{ __('En retard') }}</p>
+                                    <h4 class="fw-bold mb-0 text-danger">{{ number_format($summary['overdue_count'] ?? 0, 0, ',', ' ') }}</h4>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <!-- /product list -->
+
+            {{-- Tables --}}
+            <div class="row g-3">
+                {{-- Invoices by Status --}}
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-transparent">
+                            <h5 class="card-title mb-0">
+                                <i class="ti ti-list-check me-2"></i>{{ __('Par statut') }}
+                                <span class="badge bg-primary ms-2">{{ $invoicesByStatus->count() }}</span>
+                            </h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>{{ __('Statut') }}</th>
+                                            <th class="text-end">{{ __('Nombre') }}</th>
+                                            <th class="text-end">{{ __('Montant') }}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse($invoicesByStatus as $row)
+                                        @php
+                                            $statusColors = [
+                                                'paid' => 'success',
+                                                'partial' => 'warning',
+                                                'unpaid' => 'danger',
+                                                'overdue' => 'danger',
+                                                'draft' => 'secondary',
+                                                'cancelled' => 'dark',
+                                            ];
+                                            $color = $statusColors[$row->status] ?? 'secondary';
+                                        @endphp
+                                        <tr>
+                                            <td>
+                                                <span class="badge bg-{{ $color }}-transparent text-{{ $color }}">
+                                                    <i class="ti ti-point-filled me-1"></i>{{ ucfirst($row->status) }}
+                                                </span>
+                                            </td>
+                                            <td class="text-end">{{ number_format($row->count, 0, ',', ' ') }}</td>
+                                            <td class="text-end fw-semibold">{{ number_format($row->total, 0, ',', ' ') }}</td>
+                                        </tr>
+                                        @empty
+                                        <tr><td colspan="3" class="text-center text-muted py-3">{{ __('Aucune donnee') }}</td></tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Invoices by Month --}}
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-transparent">
+                            <h5 class="card-title mb-0">
+                                <i class="ti ti-calendar-stats me-2"></i>{{ __('Par mois') }}
+                                <span class="badge bg-primary ms-2">{{ $invoicesByMonth->count() }}</span>
+                            </h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>{{ __('Periode') }}</th>
+                                            <th class="text-end">{{ __('Nombre') }}</th>
+                                            <th class="text-end">{{ __('Total') }}</th>
+                                            <th class="text-end">{{ __('Paye') }}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @php
+                                            $months = [1 => 'Jan', 2 => 'Fev', 3 => 'Mar', 4 => 'Avr', 5 => 'Mai', 6 => 'Jun', 7 => 'Jul', 8 => 'Aou', 9 => 'Sep', 10 => 'Oct', 11 => 'Nov', 12 => 'Dec'];
+                                        @endphp
+                                        @forelse($invoicesByMonth as $row)
+                                        <tr>
+                                            <td><i class="ti ti-calendar me-1 text-muted"></i>{{ $months[$row->month] ?? $row->month }} {{ $row->year }}</td>
+                                            <td class="text-end">{{ number_format($row->count, 0, ',', ' ') }}</td>
+                                            <td class="text-end fw-semibold">{{ number_format($row->total, 0, ',', ' ') }}</td>
+                                            <td class="text-end text-success">{{ number_format($row->paid, 0, ',', ' ') }}</td>
+                                        </tr>
+                                        @empty
+                                        <tr><td colspan="4" class="text-center text-muted py-3">{{ __('Aucune donnee') }}</td></tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Monthly Chart --}}
+            @if($invoicesByMonth->isNotEmpty())
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-header bg-transparent">
+                    <h5 class="card-title mb-0"><i class="ti ti-chart-bar me-2"></i>{{ __('Evolution mensuelle') }}</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="invoicesChart" height="300"></canvas>
+                </div>
+            </div>
+            @endif
+        </div>
+    </div>
+
+    @if(isset($invoicesByMonth) && $invoicesByMonth->isNotEmpty())
+    @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const ctx = document.getElementById('invoicesChart').getContext('2d');
+            const months = ['', 'Jan', 'Fev', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aou', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const data = @json($invoicesByMonth);
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.map(d => months[d.month] + ' ' + d.year),
+                    datasets: [
+                        {
+                            label: '{{ __("Total") }}',
+                            data: data.map(d => d.total),
+                            backgroundColor: 'rgba(59, 130, 246, 0.6)',
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            borderWidth: 1,
+                            borderRadius: 4
+                        },
+                        {
+                            label: '{{ __("Paye") }}',
+                            data: data.map(d => d.paid),
+                            backgroundColor: 'rgba(16, 185, 129, 0.6)',
+                            borderColor: 'rgba(16, 185, 129, 1)',
+                            borderWidth: 1,
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, ticks: { callback: v => new Intl.NumberFormat('fr-FR').format(v) } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        });
+    </script>
+    @endpush
+    @endif
 
 </x-dashboard::layouts.master>

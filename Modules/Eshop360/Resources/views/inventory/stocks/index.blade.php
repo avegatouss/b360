@@ -1,192 +1,273 @@
 <x-dashboard::layouts.master
-    :title="__('Manage Stocks') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Gestion des stocks') . ' — ' . ($instance->name ?? 'B360')"
     :instance="$instance"
-    :pageTitle="__('Manage Stocks')">
+    :pageTitle="__('Gestion des stocks')">
+
+@php $slug = $instance->slug ?? ''; @endphp
 
 <div class="page-header">
-            <div class="add-item d-flex">
-                <div class="page-title">
-                    <h4>{{ __('Manage Stock') }}</h4>
-                    <h6>{{ __('Manage your stock') }}</h6>
-                </div>
-            </div>
-            <ul class="table-top-head">
-                <li>
-                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="Pdf"><img src="{{URL::asset('build/img/icons/pdf.svg')}}" alt="img"></a>
-                </li>
-                <li>
-                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"><img src="{{URL::asset('build/img/icons/excel.svg')}}" alt="img"></a>
-                </li>
-                <li>
-                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Refresh') }}"><i class="ti ti-refresh"></i></a>
-                </li>
-                <li>
-                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Collapse') }}" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
-                </li>
-            </ul>
-            <div class="page-btn">
-                <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-stock"><i class="ti ti-circle-plus me-1"></i>{{ __('Add Stock') }}</a>
-            </div>
+    <div class="add-item d-flex">
+        <div class="page-title">
+            <h4 class="fw-bold">{{ __('Gestion des stocks') }}</h4>
+            <h6>{{ __('Suivre les niveaux de stock par entrepot et magasin') }}</h6>
         </div>
-        <!-- /product list -->
-        <div class="card">
-            <div class="card-header d-flex align-items-center justify-content-between flex-wrap row-gap-3">
-                <div class="search-set">
-                    <div class="search-input">
-                        <span class="btn-searchset"><i class="ti ti-search fs-14 feather-search"></i></span>
-                    </div>
-                </div>
-                <div class="d-flex table-dropdown my-xl-auto right-content align-items-center flex-wrap row-gap-3">
-                    <div class="dropdown me-2">
-                        <a href="javascript:void(0);" class="dropdown-toggle btn btn-white btn-md d-inline-flex align-items-center" data-bs-toggle="dropdown">
-                            Warehouse
-                        </a>
-                        <ul class="dropdown-menu  dropdown-menu-end p-3">
-                            @foreach($warehouses as $warehouse)
-                            <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ $warehouse->name }}</a>
-                            </li>
-                            @endforeach
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table datatable">
-                        <thead class="thead-light">
-                            <tr>
-                                <th class="no-sort">
-                                    <label class="checkboxs">
-                                        <input type="checkbox" id="select-all">
-                                        <span class="checkmarks"></span>
-                                    </label>
-                                </th>
-                                <th>{{ __('Warehouse') }}</th>
-                                <th>{{ __('Product') }}</th>
-                                <th>{{ __('Date') }}</th>
-                                <th>{{ __('Qty') }}</th>
-                                <th class="no-sort"></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($stocks as $stock)
-                            <tr>
-                                <td>
-                                    <label class="checkboxs">
-                                        <input type="checkbox">
-                                        <span class="checkmarks"></span>
-                                    </label>
-                                </td>
-                                <td>{{ $stock->warehouse->name ?? '—' }}</td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <a href="javascript:void(0);" class="avatar avatar-md me-2">
-                                            @if($stock->product->image ?? false)
-                                                <img src="{{ asset('storage/' . $stock->product->image) }}" alt="product">
-                                            @else
-                                                <img src="{{URL::asset('build/img/products/stock-img-01.png')}}" alt="product">
-                                            @endif
-                                        </a>
-                                        <a href="javascript:void(0);">{{ $stock->product->name ?? '—' }}</a>
-                                    </div>
-                                </td>
-                                <td>{{ $stock->created_at->format('d M Y') }}</td>
-                                <td>{{ $stock->quantity }}</td>
-                                <td class="d-flex">
-                                    <div class="d-flex align-items-center edit-delete-action">
-                                        <a class="me-2 border rounded d-flex align-items-center p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-stock-{{ $stock->id }}">
-                                            <i data-feather="edit" class="feather-edit"></i>
-                                        </a>
-                                        <form action="{{ route('eshop360.stocks.destroy', [$instance->slug ?? '', $stock]) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="p-2 border rounded d-flex align-items-center bg-transparent">
-                                                <i data-feather="trash-2" class="feather-trash-2"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="6" class="text-center">{{ __('No stock entries found.') }}</td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-                @if($stocks->hasPages())
-                <div class="p-3">
-                    {{ $stocks->links() }}
-                </div>
-                @endif
-            </div>
-        </div>
-        <!-- /product list -->
+    </div>
+    <div class="page-btn d-flex gap-2">
+        <a href="{{ route('eshop360.export.stock', $slug) }}" class="btn btn-outline-info btn-sm">
+            <i class="ti ti-download me-1"></i>{{ __('Exporter') }}
+        </a>
+        <a href="{{ route('eshop360.stocks.low', $slug) }}" class="btn btn-outline-warning btn-sm">
+            <i class="ti ti-alert-triangle me-1"></i>{{ __('Stock faible') }}
+        </a>
+        <a href="{{ route('eshop360.stock-adjustments.index', $slug) }}" class="btn btn-outline-secondary btn-sm">
+            <i class="ti ti-adjustments me-1"></i>{{ __('Ajustements') }}
+        </a>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-stock">
+            <i class="ti ti-circle-plus me-1"></i>{{ __('Ajouter du stock') }}
+        </button>
+    </div>
+</div>
 
-<!-- Add Stock Modal -->
-<div class="modal fade" id="add-stock" tabindex="-1" aria-labelledby="addStockLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+{{-- Filtres --}}
+<div class="card mb-3 border-0 shadow-sm">
+    <div class="card-body py-2">
+        <form method="GET" action="{{ route('eshop360.stocks.index', $slug) }}" class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small mb-1">{{ __('Recherche') }}</label>
+                <input type="text" name="search" class="form-control form-control-sm" value="{{ request('search') }}" placeholder="{{ __('Nom ou SKU du produit...') }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small mb-1">{{ __('Entrepot') }}</label>
+                <select name="warehouse_id" class="form-select form-select-sm select2-filter" data-placeholder="{{ __('Tous') }}">
+                    <option value="">{{ __('Tous les entrepots') }}</option>
+                    @foreach($warehouses as $wh)
+                        <option value="{{ $wh->id }}" {{ (string) request('warehouse_id') === (string) $wh->id ? 'selected' : '' }}>{{ $wh->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small mb-1">{{ __('Magasin') }}</label>
+                <select name="store_id" class="form-select form-select-sm select2-filter" data-placeholder="{{ __('Tous') }}">
+                    <option value="">{{ __('Tous les magasins') }}</option>
+                    @foreach($stores as $store)
+                        <option value="{{ $store->id }}" {{ (string) request('store_id') === (string) $store->id ? 'selected' : '' }}>{{ $store->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-auto">
+                <div class="form-check form-check-inline mb-0">
+                    <input class="form-check-input" type="checkbox" name="low_stock" value="1" id="low_stock" {{ request('low_stock') ? 'checked' : '' }} onchange="this.form.submit()">
+                    <label class="form-check-label small text-warning fw-medium" for="low_stock">{{ __('Stock faible uniquement') }}</label>
+                </div>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-sm btn-primary"><i class="ti ti-search"></i></button>
+            </div>
+            @if(request()->hasAny(['search', 'warehouse_id', 'store_id', 'low_stock']))
+                <div class="col-auto">
+                    <a href="{{ route('eshop360.stocks.index', $slug) }}" class="btn btn-sm btn-outline-secondary"><i class="ti ti-x"></i></a>
+                </div>
+            @endif
+        </form>
+    </div>
+</div>
+
+@if(session('success'))
+    <div class="alert alert-success alert-dismissible fade show"><i class="ti ti-check me-1"></i>{{ session('success') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+@endif
+@if(session('error'))
+    <div class="alert alert-danger alert-dismissible fade show"><i class="ti ti-x me-1"></i>{{ session('error') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+@endif
+
+{{-- Table --}}
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-transparent">
+        <h6 class="mb-0 fw-bold"><i class="ti ti-package me-2"></i>{{ __('Niveaux de stock') }} <span class="badge bg-primary ms-1">{{ $stocks->total() }}</span></h6>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:50px;"></th>
+                        <th>{{ __('Produit') }}</th>
+                        <th>{{ __('SKU') }}</th>
+                        <th>{{ __('Entrepot') }}</th>
+                        <th>{{ __('Magasin') }}</th>
+                        <th class="text-center">{{ __('Quantite') }}</th>
+                        <th class="text-center">{{ __('Reserve') }}</th>
+                        <th class="text-center">{{ __('Disponible') }}</th>
+                        <th class="text-end" style="width:120px;">{{ __('Actions') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($stocks as $stock)
+                        @php
+                            $alertQty = $stock->product?->alert_quantity ?? 5;
+                            $available = $stock->quantity - ($stock->reserved_quantity ?? 0);
+                            $isLow = $stock->quantity <= $alertQty && $stock->quantity > 0;
+                            $isEmpty = $stock->quantity <= 0;
+                        @endphp
+                        <tr class="{{ $isEmpty ? 'table-danger' : ($isLow ? 'table-warning' : '') }}" style="--bs-table-bg-type: {{ $isEmpty ? 'rgba(220,53,69,.05)' : ($isLow ? 'rgba(255,193,7,.05)' : 'transparent') }}">
+                            <td>
+                                @if($stock->product?->image)
+                                    <img src="{{ asset('storage/' . $stock->product->image) }}" class="rounded" style="width:32px;height:32px;object-fit:cover;">
+                                @else
+                                    <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width:32px;height:32px;"><i class="ti ti-package text-muted"></i></div>
+                                @endif
+                            </td>
+                            <td class="fw-medium">{{ $stock->product?->name ?? '—' }}</td>
+                            <td class="small text-muted"><code>{{ $stock->product?->sku ?? '—' }}</code></td>
+                            <td class="small">{{ $stock->warehouse?->name ?? '—' }}</td>
+                            <td class="small">{{ $stock->store?->name ?? '—' }}</td>
+                            <td class="text-center">
+                                <span class="badge {{ $isEmpty ? 'bg-danger' : ($isLow ? 'bg-warning text-dark' : 'bg-success') }} fw-bold">{{ $stock->quantity }}</span>
+                            </td>
+                            <td class="text-center text-muted">{{ $stock->reserved_quantity ?? 0 }}</td>
+                            <td class="text-center fw-bold {{ $available <= 0 ? 'text-danger' : 'text-success' }}">{{ $available }}</td>
+                            <td class="text-end">
+                                <div class="d-flex gap-1 justify-content-end">
+                                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#edit-stock-{{ $stock->id }}" title="{{ __('Modifier') }}"><i class="ti ti-edit"></i></button>
+                                    <form action="{{ route('eshop360.stocks.destroy', [$slug, $stock]) }}" method="POST" class="d-inline" onsubmit="return confirm('{{ __('Supprimer cette entree de stock ?') }}')">
+                                        @csrf @method('DELETE')
+                                        <button class="btn btn-sm btn-outline-danger" title="{{ __('Supprimer') }}"><i class="ti ti-trash"></i></button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="9" class="text-center text-muted py-4">
+                                <i class="ti ti-package-off fs-1 d-block mb-2"></i>
+                                {{ __('Aucune entree de stock trouvee.') }}
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        @if($stocks->hasPages())
+            <div class="p-3">{{ $stocks->links() }}</div>
+        @endif
+    </div>
+</div>
+
+{{-- Add Stock Modal --}}
+<div class="modal fade" id="add-stock" tabindex="-1">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="addStockLabel">{{ __('Add Stock') }}</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title">{{ __('Ajouter du stock') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form method="POST" action="{{ route('eshop360.stocks.store', $instance->slug ?? '') }}">
+            <form method="POST" action="{{ route('eshop360.stocks.store', $slug) }}">
                 @csrf
                 <div class="modal-body">
                     <div class="row g-3">
                         <div class="col-12">
-                            <label class="form-label">{{ __('Product') }} <span class="text-danger">*</span></label>
-                            <select name="product_id" class="form-select" required>
-                                <option value="">{{ __('Select product') }}</option>
+                            <label class="form-label">{{ __('Produit') }} <span class="text-danger">*</span></label>
+                            <select name="product_id" class="form-select select2-modal" required>
+                                <option value="">{{ __('Selectionner un produit') }}</option>
                                 @foreach($products as $product)
-                                    <option value="{{ $product->id }}" @selected(old('product_id') == $product->id)>
-                                        {{ $product->name }}
-                                    </option>
+                                    <option value="{{ $product->id }}">{{ $product->name }} ({{ $product->sku }})</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">{{ __('Warehouse') }} <span class="text-danger">*</span></label>
-                            <select name="warehouse_id" class="form-select" required>
-                                <option value="">{{ __('Select warehouse') }}</option>
-                                @foreach($warehouses as $warehouse)
-                                    <option value="{{ $warehouse->id }}" @selected(old('warehouse_id') == $warehouse->id)>
-                                        {{ $warehouse->name }}
-                                    </option>
+                            <label class="form-label">{{ __('Entrepot') }} <span class="text-danger">*</span></label>
+                            <select name="warehouse_id" class="form-select select2-modal" required>
+                                <option value="">{{ __('Selectionner') }}</option>
+                                @foreach($warehouses as $wh)
+                                    <option value="{{ $wh->id }}">{{ $wh->name }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">{{ __('Store') }}</label>
+                            <label class="form-label">{{ __('Magasin') }}</label>
                             <select name="store_id" class="form-select">
-                                <option value="">{{ __('None') }}</option>
+                                <option value="">{{ __('Aucun') }}</option>
                                 @foreach($stores as $store)
-                                    <option value="{{ $store->id }}" @selected(old('store_id') == $store->id)>
-                                        {{ $store->name }}
-                                    </option>
+                                    <option value="{{ $store->id }}">{{ $store->name }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">{{ __('Quantity') }} <span class="text-danger">*</span></label>
-                            <input type="number" name="quantity" value="{{ old('quantity', 1) }}" min="1" class="form-control" required>
+                            <label class="form-label">{{ __('Quantite') }} <span class="text-danger">*</span></label>
+                            <input type="number" name="quantity" value="1" min="1" class="form-control" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">{{ __('Notes') }}</label>
-                            <input type="text" name="notes" value="{{ old('notes') }}" class="form-control">
+                            <input type="text" name="notes" class="form-control" placeholder="{{ __('Motif optionnel') }}">
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
-                    <button type="submit" class="btn btn-primary">{{ __('Add Stock') }}</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{{ __('Annuler') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ __('Ajouter') }}</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+{{-- Edit Stock Modals --}}
+@foreach($stocks as $stock)
+<div class="modal fade" id="edit-stock-{{ $stock->id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ __('Modifier le stock') }}: {{ $stock->product?->name ?? '—' }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ route('eshop360.stocks.update', [$slug, $stock]) }}">
+                @csrf @method('PUT')
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">{{ __('Quantite') }}</label>
+                            <input type="number" name="quantity" value="{{ $stock->quantity }}" min="0" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ __('Reserve') }}</label>
+                            <input type="number" name="reserved_quantity" value="{{ $stock->reserved_quantity ?? 0 }}" min="0" class="form-control">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">{{ __('Raison de l\'ajustement') }}</label>
+                            <input type="text" name="reason" class="form-control" placeholder="{{ __('Motif du changement') }}">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{{ __('Annuler') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ __('Enregistrer') }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endforeach
+
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
+@endpush
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    if (typeof jQuery !== 'undefined' && jQuery.fn.select2) {
+        jQuery('.select2-filter').select2({
+            theme: 'bootstrap-5', allowClear: true, width: '100%',
+        }).on('change', function () { this.closest('form').submit(); });
+
+        jQuery('.select2-modal').each(function () {
+            var $el = jQuery(this), $modal = $el.closest('.modal');
+            $el.select2({ theme: 'bootstrap-5', dropdownParent: $modal.length ? $modal : undefined, width: '100%' });
+        });
+    }
+});
+</script>
+@endpush
 
 </x-dashboard::layouts.master>

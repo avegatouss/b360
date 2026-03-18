@@ -1,161 +1,109 @@
 <x-dashboard::layouts.master
-    :title="__('Purchases') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Achats fournisseurs') . ' — ' . ($instance->name ?? 'B360')"
     :instance="$instance"
-    :pageTitle="__('Purchases')">
+    :pageTitle="__('Achats fournisseurs')">
 
-<div class="page-header transfer">
-            <div class="add-item d-flex">
-                <div class="page-title">
-                    <h4 class="fw-bold">{{ __('Purchase') }}</h4>
-                    <h6>{{ __('Manage your purchases') }}</h6>
-                </div>
-            </div>
-            <ul class="table-top-head">
-                <li>
-                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Pdf') }}"><img
-                            src="{{URL::asset('build/img/icons/pdf.svg')}}" alt="img"></a>
-                </li>
-                <li>
-                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Excel') }}"><img
-                            src="{{URL::asset('build/img/icons/excel.svg')}}" alt="img"></a>
-                </li>
-                <li>
-                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Refresh') }}"><i
-                            data-feather="rotate-ccw" class="feather-rotate-ccw"></i></a>
-                </li>
-                <li>
-                    <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Collapse') }}" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
-                </li>
-            </ul>
-            <div class="d-flex purchase-pg-btn">
-                <div class="page-btn">
-                    <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-purchase"><i
-                            data-feather="plus-circle" class="me-1"></i>{{ __('Add Purchase') }}</a>
-                </div>
-                <div class="page-btn import">
-                    <a href="#" class="btn btn-secondary color" data-bs-toggle="modal" data-bs-target="#view-notes"><i
-                            data-feather="download" class="me-2"></i>{{ __('Import Purchase') }}</a>
-                </div>
-            </div>
-        </div>
+@php $slug = $instance->slug ?? ''; @endphp
 
-        <div class="card">
-            <div class="card-header d-flex align-items-center justify-content-between flex-wrap row-gap-3">
-                <div class="search-set">
-                    <div class="search-input">
-                        <span class="btn-searchset"><i class="ti ti-search fs-14 feather-search"></i></span>
-                    </div>
-                </div>
-                <div class="d-flex table-dropdown my-xl-auto right-content align-items-center flex-wrap row-gap-3">
-                    <div class="dropdown">
-                        <a href="javascript:void(0);" class="dropdown-toggle btn btn-white btn-md d-inline-flex align-items-center" data-bs-toggle="dropdown">
-                        Payment Status
-                        </a>
-                        <ul class="dropdown-menu  dropdown-menu-end p-3">
-                            <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Paid') }}</a>
-                            </li>
-                            <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Unpaid') }}</a>
-                            </li>
-                            <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Overdue') }}</a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table datatable">
-                        <thead class="thead-light">
-                            <tr>
-                                <th class="no-sort">
-                                    <label class="checkboxs">
-                                        <input type="checkbox" id="select-all">
-                                        <span class="checkmarks"></span>
-                                    </label>
-                                </th>
-                                <th>{{ __('Supplier Name') }}</th>
-                                <th>{{ __('Reference') }}</th>
-                                <th>{{ __('Date') }}</th>
-                                <th>{{ __('Status') }}</th>
-                                <th>{{ __('Total') }}</th>
-                                <th>{{ __('Paid') }}</th>
-                                <th>{{ __('Due') }}</th>
-                                <th>{{ __('Payment Status') }}</th>
-                                <th class="no-sort"></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($purchases as $purchase)
-                            <tr>
-                                <td>
-                                    <label class="checkboxs">
-                                        <input type="checkbox">
-                                        <span class="checkmarks"></span>
-                                    </label>
-                                </td>
-                                <td>{{ $purchase->supplier->name ?? $purchase->supplier_name ?? '—' }}</td>
-                                <td>{{ $purchase->reference ?? $purchase->order_number ?? '—' }}</td>
-                                <td>{{ $purchase->created_at->format('d M Y') }}</td>
-                                <td>
-                                    @php
-                                        $pStatus = $purchase->status ?? 'pending';
-                                        $pBadge = match($pStatus) {
-                                            'received' => 'badges status-badge fs-10 p-1 px-2 rounded-1',
-                                            'pending' => 'badges status-badge badge-pending fs-10 p-1 px-2 rounded-1',
-                                            'ordered' => 'badges status-badge bg-warning fs-10 p-1 px-2 rounded-1',
-                                            default => 'badges status-badge fs-10 p-1 px-2 rounded-1',
-                                        };
-                                    @endphp
-                                    <span class="{{ $pBadge }}">{{ ucfirst($pStatus) }}</span>
-                                </td>
-                                <td>${{ number_format($purchase->total ?? 0, 2) }}</td>
-                                <td>${{ number_format($purchase->paid_amount ?? 0, 2) }}</td>
-                                <td>${{ number_format($purchase->due_amount ?? (($purchase->total ?? 0) - ($purchase->paid_amount ?? 0)), 2) }}</td>
-                                <td>
-                                    @php
-                                        $payStatus = $purchase->payment_status ?? 'unpaid';
-                                        $payClass = match($payStatus) {
-                                            'paid' => 'p-1 pe-2 rounded-1 text-success bg-success-transparent fs-10',
-                                            'unpaid' => 'p-1 pe-2 rounded-1 text-danger bg-danger-transparent fs-10',
-                                            'overdue' => 'p-1 pe-2 rounded-1 text-warning bg-warning-transparent fs-10',
-                                            default => 'p-1 pe-2 rounded-1 text-secondary bg-secondary-transparent fs-10',
-                                        };
-                                    @endphp
-                                    <span class="{{ $payClass }}"><i class="ti ti-point-filled me-1 fs-11"></i>{{ ucfirst($payStatus) }}</span>
-                                </td>
-                                <td class="action-table-data">
-                                    <div class="edit-delete-action">
-                                        <a class="me-2 p-2" href="{{ route('eshop360.purchases.show', [$instance->slug ?? '', $purchase]) }}">
-                                            <i data-feather="eye" class="action-eye"></i>
-                                        </a>
-                                        <form action="{{ route('eshop360.purchases.destroy', [$instance->slug ?? '', $purchase]) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="p-2 border-0 bg-transparent">
-                                                <i data-feather="trash-2" class="feather-trash-2"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="10" class="text-center">{{ __('No purchases found.') }}</td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-                @if($purchases->hasPages())
-                <div class="p-3">
-                    {{ $purchases->links() }}
-                </div>
-                @endif
-            </div>
+<div class="page-header">
+    <div class="add-item d-flex">
+        <div class="page-title">
+            <h4 class="fw-bold">{{ __('Achats fournisseurs') }}</h4>
+            <h6>{{ __('Gerer les bons de commande et approvisionnements') }}</h6>
         </div>
-        <!-- /product list -->
+    </div>
+    <div class="page-btn d-flex gap-2">
+        <a href="{{ route('eshop360.export.purchases', $slug) }}" class="btn btn-outline-info btn-sm"><i class="ti ti-download me-1"></i>{{ __('Exporter') }}</a>
+        <a href="{{ route('eshop360.purchase-returns.index', $slug) }}" class="btn btn-outline-warning btn-sm"><i class="ti ti-receipt-refund me-1"></i>{{ __('Retours') }}</a>
+        <a href="{{ route('eshop360.purchases.create', $slug) }}" class="btn btn-primary"><i class="ti ti-circle-plus me-1"></i>{{ __('Nouvel achat') }}</a>
+    </div>
+</div>
+
+<div class="card mb-3 border-0 shadow-sm">
+    <div class="card-body py-2">
+        <form method="GET" action="{{ route('eshop360.purchases.index', $slug) }}" class="row g-2 align-items-end">
+            <div class="col-md-2">
+                <label class="form-label small mb-1">{{ __('Recherche') }}</label>
+                <input type="text" name="search" class="form-control form-control-sm" value="{{ request('search') }}" placeholder="{{ __('Ref ou fournisseur...') }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small mb-1">{{ __('Statut') }}</label>
+                <select name="status" class="form-select form-select-sm">
+                    <option value="">{{ __('Tous') }}</option>
+                    @foreach(['pending' => 'En attente', 'ordered' => 'Commandee', 'received' => 'Recue', 'cancelled' => 'Annulee'] as $v => $l)
+                        <option value="{{ $v }}" {{ request('status') === $v ? 'selected' : '' }}>{{ __($l) }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small mb-1">{{ __('Paiement') }}</label>
+                <select name="payment_status" class="form-select form-select-sm">
+                    <option value="">{{ __('Tous') }}</option>
+                    <option value="paid" {{ request('payment_status') === 'paid' ? 'selected' : '' }}>{{ __('Paye') }}</option>
+                    <option value="partial" {{ request('payment_status') === 'partial' ? 'selected' : '' }}>{{ __('Partiel') }}</option>
+                    <option value="unpaid" {{ request('payment_status') === 'unpaid' ? 'selected' : '' }}>{{ __('Impaye') }}</option>
+                </select>
+            </div>
+            <div class="col-md-1"><label class="form-label small mb-1">{{ __('Du') }}</label><input type="date" name="date_from" class="form-control form-control-sm" value="{{ request('date_from') }}"></div>
+            <div class="col-md-1"><label class="form-label small mb-1">{{ __('Au') }}</label><input type="date" name="date_to" class="form-control form-control-sm" value="{{ request('date_to') }}"></div>
+            <div class="col-auto"><button type="submit" class="btn btn-sm btn-primary"><i class="ti ti-search"></i></button></div>
+            @if(request()->hasAny(['search','status','payment_status','date_from','date_to']))
+                <div class="col-auto"><a href="{{ route('eshop360.purchases.index', $slug) }}" class="btn btn-sm btn-outline-secondary"><i class="ti ti-x"></i></a></div>
+            @endif
+        </form>
+    </div>
+</div>
+
+@if(session('success'))<div class="alert alert-success alert-dismissible fade show"><i class="ti ti-check me-1"></i>{{ session('success') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>@endif
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-transparent"><h6 class="mb-0 fw-bold"><i class="ti ti-truck me-2"></i>{{ __('Bons de commande') }} <span class="badge bg-primary ms-1">{{ $purchases->total() }}</span></h6></div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>{{ __('Reference') }}</th>
+                        <th>{{ __('Fournisseur') }}</th>
+                        <th class="text-center">{{ __('Statut') }}</th>
+                        <th class="text-end">{{ __('Total') }}</th>
+                        <th class="text-end">{{ __('Paye') }}</th>
+                        <th class="text-end">{{ __('Reste') }}</th>
+                        <th class="text-center">{{ __('Paiement') }}</th>
+                        <th>{{ __('Date') }}</th>
+                        <th class="text-end" style="width:100px;">{{ __('Actions') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($purchases as $po)
+                        @php
+                            $sc = match($po->status) { 'received' => 'bg-success', 'ordered' => 'bg-info', 'pending' => 'bg-warning text-dark', 'cancelled' => 'bg-danger', default => 'bg-secondary' };
+                            $pc = match($po->payment_status) { 'paid' => 'bg-success', 'partial' => 'bg-warning text-dark', default => 'bg-danger' };
+                        @endphp
+                        <tr>
+                            <td class="fw-medium"><a href="{{ route('eshop360.purchases.show', [$slug, $po]) }}" class="text-decoration-none">{{ $po->reference }}</a></td>
+                            <td class="small">{{ $po->supplier?->name ?? $po->supplier_name ?? '—' }}</td>
+                            <td class="text-center"><span class="badge {{ $sc }} rounded-pill" style="font-size:.6rem;">{{ ucfirst($po->status) }}</span></td>
+                            <td class="text-end fw-bold">{{ number_format($po->total, 0, ',', ' ') }}</td>
+                            <td class="text-end small text-success">{{ number_format($po->paid_amount, 0, ',', ' ') }}</td>
+                            <td class="text-end small {{ $po->due_amount > 0 ? 'text-danger' : '' }}">{{ number_format($po->due_amount, 0, ',', ' ') }}</td>
+                            <td class="text-center"><span class="badge {{ $pc }} rounded-pill" style="font-size:.6rem;">{{ ucfirst($po->payment_status) }}</span></td>
+                            <td class="small text-muted">{{ $po->created_at?->format('d/m/Y') }}</td>
+                            <td class="text-end">
+                                <div class="d-flex gap-1 justify-content-end">
+                                    <a href="{{ route('eshop360.purchases.show', [$slug, $po]) }}" class="btn btn-sm btn-outline-info"><i class="ti ti-eye"></i></a>
+                                    <form action="{{ route('eshop360.purchases.destroy', [$slug, $po]) }}" method="POST" class="d-inline" onsubmit="return confirm('{{ __('Supprimer cette commande ?') }}')">@csrf @method('DELETE')<button class="btn btn-sm btn-outline-danger"><i class="ti ti-trash"></i></button></form>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="9" class="text-center text-muted py-4"><i class="ti ti-truck-off fs-1 d-block mb-2"></i>{{ __('Aucune commande d\'achat trouvee.') }}</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        @if($purchases->hasPages())<div class="p-3">{{ $purchases->links() }}</div>@endif
+    </div>
+</div>
 
 </x-dashboard::layouts.master>

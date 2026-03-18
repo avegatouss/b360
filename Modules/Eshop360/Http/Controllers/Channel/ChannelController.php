@@ -33,7 +33,7 @@ class ChannelController extends Controller
     /**
      * Show channel dashboard with margin summary.
      */
-    public function show(DistributionChannel $channel)
+    public function show(string $slug, DistributionChannel $channel)
     {
         $summary = $this->marginService->getMarginSummary(
             $channel->instance_id,
@@ -82,12 +82,12 @@ class ChannelController extends Controller
     /**
      * Edit channel configuration.
      */
-    public function edit(DistributionChannel $channel)
+    public function edit(string $slug, DistributionChannel $channel)
     {
         return view('eshop360::channels.edit', compact('channel'));
     }
 
-    public function update(Request $request, DistributionChannel $channel)
+    public function update(Request $request, string $slug, DistributionChannel $channel)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -108,7 +108,7 @@ class ChannelController extends Controller
     /**
      * View channel margins with date filtering.
      */
-    public function margins(Request $request, DistributionChannel $channel)
+    public function margins(Request $request, string $slug, DistributionChannel $channel)
     {
         $from = $request->get('from', now()->startOfMonth()->toDateTimeString());
         $to = $request->get('to', now()->toDateTimeString());
@@ -124,7 +124,7 @@ class ChannelController extends Controller
     /**
      * View orders assigned to this channel.
      */
-    public function orders(DistributionChannel $channel)
+    public function orders(string $slug, DistributionChannel $channel)
     {
         $orders = Order::where('instance_id', $channel->instance_id)
             ->where('channel_id', $channel->id)
@@ -134,7 +134,7 @@ class ChannelController extends Controller
         return view('eshop360::channels.orders', compact('channel', 'orders'));
     }
 
-    public function destroy(DistributionChannel $channel)
+    public function destroy(string $slug, DistributionChannel $channel)
     {
         $instance = CurrentInstance::get();
         $channel->delete();

@@ -20,7 +20,7 @@ class WarehouseController extends Controller
 
     public function index(Request $request)
     {
-        $warehouses = Warehouse::withCount(['stocks', 'stores'])
+        $warehouses = Warehouse::withCount(['stocks', 'stores'])->with('stores')
             ->when($request->search, function ($q, $s) {
                 $q->where(function ($warehouseQuery) use ($s) {
                     $warehouseQuery->where('name', 'like', "%{$s}%")
@@ -47,6 +47,18 @@ class WarehouseController extends Controller
             'name'         => 'required|string|max:255',
             'warehouse_id' => 'nullable|exists:eshop_warehouses,id',
         ]);
+
+        // Default to first warehouse if not specified
+        if (empty($validated['warehouse_id'])) {
+            $defaultWarehouse = Warehouse::where('instance_id', $instance->id)->where('is_active', true)->first();
+            if (!$defaultWarehouse) {
+                $error = __('Veuillez creer un entrepot avant de creer un magasin.');
+                return $request->wantsJson()
+                    ? response()->json(['message' => $error], 422)
+                    : redirect()->back()->with('error', $error);
+            }
+            $validated['warehouse_id'] = $defaultWarehouse->id;
+        }
 
         $validated['instance_id'] = $instance->id;
         $validated['is_active'] = true;

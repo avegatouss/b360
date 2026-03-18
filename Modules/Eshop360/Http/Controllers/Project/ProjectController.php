@@ -71,7 +71,7 @@ class ProjectController extends Controller
             ->with('success', "Projet \"{$project->name}\" créé.");
     }
 
-    public function show(Project $project)
+    public function show(string $slug, Project $project)
     {
         $project->load(['tasks' => fn($q) => $q->whereNull('parent_task_id')->orderBy('sort_order'), 'customer']);
         $project->loadCount(['tasks', 'tasks as completed_tasks_count' => fn($q) => $q->where('status', 'done')]);
@@ -83,10 +83,12 @@ class ProjectController extends Controller
             'done'        => $project->tasks->where('status', 'done'),
         ];
 
-        return view('eshop360::projects.show', compact('project', 'tasksByStatus'));
+        $tasks = $project->tasks;
+
+        return view('eshop360::projects.show', compact('project', 'tasks', 'tasksByStatus'));
     }
 
-    public function edit(Project $project)
+    public function edit(string $slug, Project $project)
     {
         $instance = CurrentInstance::get();
         $customers = Customer::where('instance_id', $instance->id)->orderBy('name')->get();
@@ -94,7 +96,7 @@ class ProjectController extends Controller
         return view('eshop360::projects.edit', compact('project', 'customers'));
     }
 
-    public function update(Request $request, Project $project): RedirectResponse
+    public function update(Request $request, string $slug, Project $project): RedirectResponse
     {
         $validated = $request->validate([
             'name'        => 'required|string|max:255',
@@ -114,7 +116,7 @@ class ProjectController extends Controller
             ->with('success', 'Projet mis à jour.');
     }
 
-    public function destroy(Project $project): RedirectResponse
+    public function destroy(string $slug, Project $project): RedirectResponse
     {
         $project->tasks()->each(fn($t) => $t->comments()->delete());
         $project->tasks()->delete();

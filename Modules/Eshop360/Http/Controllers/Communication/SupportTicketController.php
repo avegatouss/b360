@@ -10,14 +10,23 @@ use Modules\Core\Support\CurrentInstance;
 
 class SupportTicketController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $instance = CurrentInstance::get();
         $tickets = SupportTicket::where('instance_id', $instance->id)
             ->with('customer')
+            ->when($request->search, fn ($q, $s) => $q->where('subject', 'like', "%{$s}%")
+                ->orWhereHas('customer', fn ($cq) => $cq->where('name', 'like', "%{$s}%")))
+            ->when($request->status, fn ($q, $s) => $q->where('status', $s))
+            ->when($request->priority, fn ($q, $p) => $q->where('priority', $p))
             ->latest()
-            ->paginate(20);
-        return view('eshop360::communication.tickets.index', compact('tickets'));
+            ->paginate(20)
+            ->withQueryString();
+
+        $customers = \Modules\Eshop360\Models\Customer::where('instance_id', $instance->id)
+            ->where('is_active', true)->orderBy('name')->get(['id', 'name']);
+
+        return view('eshop360::communication.tickets.index', compact('tickets', 'customers'));
     }
 
     public function show(string $slug, SupportTicket $ticket)

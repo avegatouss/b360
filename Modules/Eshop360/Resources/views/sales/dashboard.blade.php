@@ -1,221 +1,342 @@
 <x-dashboard::layouts.master
-    :title="__('Sales Dashboard') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Tableau de bord ventes') . ' — ' . ($instance->name ?? 'B360')"
     :instance="$instance"
-    :pageTitle="__('Sales Dashboard')">
+    :pageTitle="__('Tableau de bord ventes')">
 
-<div class="welcome d-lg-flex align-items-center justify-content-between">
-            <div class="d-flex align-items-center welcome-text">
-                <h3 class="d-flex align-items-center"><img src="{{URL::asset('build/img/icons/hi.svg')}}" alt="img">&nbsp;Hi {{ auth()->user()->name ?? 'User' }},</h3>&nbsp;<h6>here's what's happening with your store today.</h6>
+@php $slug = $instance->slug ?? ''; @endphp
+
+{{-- Filters --}}
+<div class="card mb-3 border-0 shadow-sm">
+    <div class="card-body py-2">
+        <form method="GET" action="{{ route('eshop360.sales.dashboard', $slug) }}" class="row g-2 align-items-center">
+            <div class="col-auto">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text"><i class="ti ti-calendar"></i></span>
+                    <input type="date" name="date_from" class="form-control" value="{{ $dateFrom }}">
+                    <span class="input-group-text">-</span>
+                    <input type="date" name="date_to" class="form-control" value="{{ $dateTo }}">
+                </div>
             </div>
-            <div class="d-flex align-items-center">
-                <div class="input-icon-start position-relative me-2">
-                    <span class="input-icon-addon fs-16 text-gray-9">
-                        <i class="ti ti-calendar"></i>
+            <div class="col-auto">
+                <select name="channel_id" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">{{ __('Tous les canaux') }}</option>
+                    @foreach($channels as $ch)
+                        <option value="{{ $ch->id }}" {{ (string) $channelId === (string) $ch->id ? 'selected' : '' }}>{{ $ch->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-sm btn-primary"><i class="ti ti-search me-1"></i>{{ __('Filtrer') }}</button>
+            </div>
+            @if($channelId || $dateFrom !== now()->startOfMonth()->toDateString())
+                <div class="col-auto">
+                    <a href="{{ route('eshop360.sales.dashboard', $slug) }}" class="btn btn-sm btn-outline-secondary"><i class="ti ti-x me-1"></i>{{ __('Reset') }}</a>
+                </div>
+            @endif
+            @if($channelId)
+                <div class="col-auto">
+                    <span class="badge bg-info-subtle text-info px-3 py-2">
+                        <i class="ti ti-filter me-1"></i>Canal: {{ $channels->firstWhere('id', $channelId)?->name ?? $channelId }}
                     </span>
-                    <input type="text" class="form-control date-range bookingrange" placeholder="{{ __('Search Product') }}">
                 </div>
-                <ul class="table-top-head">
-                    <li>
-                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Refresh') }}"><i class="ti ti-refresh"></i></a>
-                    </li>
-                    <li>
-                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Collapse') }}" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-        <div class="row sales-cards">
-            <div class="col-xl-6 col-sm-12 col-12 d-flex">
-                <div class="card d-flex align-items-center justify-content-between flex-fill mb-4">
-                    <div>
-                        <h6>{{ __('Weekly Earning') }}</h6>
-                        <h3>$<span class="counters" data-count="{{ $weekSales ?? 0 }}">{{ number_format($weekSales ?? 0, 2) }}</span></h3>
-                        <p class="sales-range"><span class="text-success"><i data-feather="chevron-up" class="feather-16"></i>—&nbsp;</span>{{ __('compare to last week') }}</p>
-                    </div>
-                    <img src="{{URL::asset('build/img/icons/weekly-earning.svg')}}" alt="img">
-                </div>
-            </div>
-            <div class="col-xl-3 col-sm-6 col-12 d-flex">
-                <div class="card color-info bg-primary flex-fill mb-4">
-                    <div class="mb-2">
-                        <img src="{{URL::asset('build/img/icons/total-sales.svg')}}" alt="img">
-                    </div>
-                    <h3 class="counters" data-count="{{ $monthSales ?? 0 }}">{{ number_format($monthSales ?? 0, 2) }}</h3>
-                    <p>{{ __('Monthly Sales') }}</p>
-                    <i data-feather="rotate-ccw" class="feather-16" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Refresh') }}"></i>
-                </div>
-            </div>
-            <div class="col-xl-3 col-sm-6 col-12 d-flex">
-                <div class="card color-info bg-secondary flex-fill mb-4">
-                    <div class="mb-2">
-                        <img src="{{URL::asset('build/img/icons/purchased-earnings.svg')}}" alt="img">
-                    </div>
-                    <h3 class="counters" data-count="{{ $todaySales ?? 0 }}">{{ number_format($todaySales ?? 0, 2) }}</h3>
-                    <p>{{ __('Today\'s Sales') }}</p>
-                    <i data-feather="rotate-ccw" class="feather-16" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Refresh') }}"></i>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-sm-12 col-md-12 col-xl-4 d-flex">
-                <div class="card flex-fill w-100 mb-4">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h4 class="card-title mb-0">{{ __('Best Seller') }}</h4>
-                        <a href="javascript:void(0);" class="btn btn-outline-light btn-sm">{{ __('View All') }}</a>
-                    </div>
-                    <div class="card-body pb-0">
-                        <div class="table-responsive">
-                            <table class="table table-borderless best-seller">
-                                <tbody>
-                                    @forelse($topProducts ?? [] as $topProduct)
-                                    <tr>
-                                        <td class="ps-0">
-                                            <div class="d-flex align-items-center">
-                                                <a href="javascript:void(0);" class="avatar avatar-lg me-2">
-                                                    @if($topProduct->image)
-                                                        <img src="{{ asset('storage/' . $topProduct->image) }}" alt="img">
-                                                    @else
-                                                        <img src="{{URL::asset('build/img/products/stock-img-01.png')}}" alt="img">
-                                                    @endif
-                                                </a>
-                                                <div>
-                                                    <h6><a href="javascript:void(0);" class="fw-bold">{{ $topProduct->name }}</a></h6>
-                                                    <p>${{ number_format($topProduct->price, 2) }}</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <p class="text-gray-9 mb-1">{{ __('Sales') }}</p>
-                                            <p class="text-gray-9 fw-medium">{{ $topProduct->total_sold ?? $topProduct->orders_count ?? 0 }}</p>
-                                        </td>
-                                    </tr>
-                                    @empty
-                                    <tr>
-                                        <td colspan="2" class="text-center">{{ __('No data available.') }}</td>
-                                    </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-12 col-md-12 col-xl-8 d-flex">
-                <div class="card flex-fill w-100 mb-4">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h4 class="card-title mb-0">{{ __('Recent Transactions') }}</h4>
-                        <a href="javascript:void(0);" class="btn btn-outline-light btn-sm">{{ __('View All') }}</a>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-borderless recent-transactions">
-                                <thead class="thead-light">
-                                    <tr>
-                                        <th>#</th>
-                                        <th>{{ __('Order Details') }}</th>
-                                        <th>{{ __('Payment') }}</th>
-                                        <th>{{ __('Status') }}</th>
-                                        <th>{{ __('Amount') }}</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @forelse($recentSales ?? [] as $index => $sale)
-                                    <tr>
-                                        <td>{{ $index + 1 }}</td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <div>
-                                                    <h6><a href="javascript:void(0);" class="fw-bold">{{ $sale->order_number ?? '#' . $sale->id }}</a></h6>
-                                                    <span class="d-flex align-items-center"><i data-feather="clock" class="feather-14"></i>{{ $sale->created_at->diffForHumans() }}</span>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span class="d-block head-text">{{ ucfirst($sale->payment_method ?? 'N/A') }}</span>
-                                            <span class="text-blue">{{ $sale->order_number ?? '' }}</span>
-                                        </td>
-                                        <td>
-                                            @php
-                                                $saleStatusBadge = match($sale->status ?? 'pending') {
-                                                    'completed' => 'badge badge-success badge-xs d-inline-flex align-items-center',
-                                                    'cancelled' => 'badge badge-danger badge-xs d-inline-flex align-items-center',
-                                                    default => 'badge badge-cyan badge-xs d-inline-flex align-items-center',
-                                                };
-                                            @endphp
-                                            <span class="{{ $saleStatusBadge }}"><i class="ti ti-circle-filled fs-5 me-1"></i>{{ ucfirst($sale->status ?? 'Pending') }}</span>
-                                        </td>
-                                        <td class="fs-16 fw-bold text-gray-9">${{ number_format($sale->total ?? 0, 2) }}</td>
-                                    </tr>
-                                    @empty
-                                    <tr>
-                                        <td colspan="5" class="text-center">{{ __('No recent transactions.') }}</td>
-                                    </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Button trigger modal -->
+            @endif
+        </form>
+    </div>
+</div>
 
-        <div class="row sales-board">
-            <div class="col-md-12 col-lg-7 col-sm-12 col-12 d-flex">
-                <div class="card flex-fill flex-fill">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="card-title mb-0">{{ __('Sales Analytics') }}</h5>
-                        <div class="graph-sets">
-                            <div class="dropdown dropdown-wraper">
-                                <button class="btn btn-white btn-sm dropdown-toggle d-flex align-items-center" type="button" id="dropdown-sales" data-bs-toggle="dropdown" aria-expanded="false"><i data-feather="calendar" class="feather-14"></i>{{ date('Y') }}</button>
-                                <ul class="dropdown-menu" aria-labelledby="dropdown-sales">
-                                    <li>
-                                        <a href="javascript:void(0);" class="dropdown-item">{{ date('Y') }}</a>
-                                    </li>
-                                    <li>
-                                        <a href="javascript:void(0);" class="dropdown-item">{{ date('Y') - 1 }}</a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
+{{-- KPI Cards --}}
+<div class="row g-3 mb-3">
+    <div class="col-xl-3 col-sm-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted mb-1 small">{{ __('CA Periode') }}</p>
+                        <h3 class="fw-bold mb-0 text-primary">{{ number_format($totalSales, 0, ',', ' ') }}</h3>
                     </div>
-                    <div class="card-body pt-1 pb-0">
-                        <div id="sales-analysis" class="chart-set"></div>
+                    <div class="bg-primary bg-opacity-10 rounded-circle p-2">
+                        <i class="ti ti-chart-bar fs-4 text-primary"></i>
                     </div>
+                </div>
+                <div class="mt-2 small text-muted">
+                    <span class="text-success fw-medium">{{ number_format($todaySales, 0, ',', ' ') }}</span> {{ __("aujourd'hui") }}
                 </div>
             </div>
-            <div class="col-md-12 col-lg-5 col-sm-12 col-12 d-flex">
-                <!-- World Map -->
-                <div class="card flex-fill">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="card-title mb-0">{{ __('Sales by Countries') }}</h5>
-                        <div class="graph-sets">
-                            <div class="dropdown dropdown-wraper">
-                                <button class="btn btn-white btn-sm dropdown-toggle d-flex align-items-center" type="button" id="dropdown-country-sales" data-bs-toggle="dropdown" aria-expanded="false">{{ __('This Week') }}</button>
-                                <ul class="dropdown-menu" aria-labelledby="dropdown-country-sales">
-                                    <li>
-                                        <a href="javascript:void(0);" class="dropdown-item">{{ __('This Month') }}</a>
-                                    </li>
-                                    <li>
-                                        <a href="javascript:void(0);" class="dropdown-item">{{ __('This Year') }}</a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted mb-1 small">{{ __('Commandes') }}</p>
+                        <h3 class="fw-bold mb-0">{{ $totalOrders }}</h3>
                     </div>
-                    <div class="card-body">
-                        <div id="sales_db_world_map" style="height: 265px;"></div>
-                        <p class="sales-range"><span class="text-success"><i data-feather="chevron-up" class="feather-16"></i>—&nbsp;</span>{{ __('compare to last week') }}</p>
+                    <div class="bg-success bg-opacity-10 rounded-circle p-2">
+                        <i class="ti ti-shopping-cart fs-4 text-success"></i>
                     </div>
                 </div>
-                <!-- /World Map -->
+                <div class="mt-2 small">
+                    <span class="badge bg-success-subtle text-success me-1">{{ $completedOrders }}</span>
+                    <span class="badge bg-warning-subtle text-warning me-1">{{ $pendingOrders }}</span>
+                    <span class="badge bg-danger-subtle text-danger">{{ $cancelledOrders }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted mb-1 small">{{ __('Panier moyen') }}</p>
+                        <h3 class="fw-bold mb-0">{{ number_format($avgOrderValue, 0, ',', ' ') }}</h3>
+                    </div>
+                    <div class="bg-info bg-opacity-10 rounded-circle p-2">
+                        <i class="ti ti-receipt fs-4 text-info"></i>
+                    </div>
+                </div>
+                <div class="mt-2 small text-muted">
+                    {{ __('Taxe') }}: {{ number_format($totalTax, 0, ',', ' ') }} | {{ __('Remise') }}: {{ number_format($totalDiscount, 0, ',', ' ') }}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted mb-1 small">{{ __('Impayes') }}</p>
+                        <h3 class="fw-bold mb-0 {{ $totalDue > 0 ? 'text-danger' : 'text-muted' }}">{{ number_format($totalDue, 0, ',', ' ') }}</h3>
+                    </div>
+                    <div class="bg-danger bg-opacity-10 rounded-circle p-2">
+                        <i class="ti ti-alert-triangle fs-4 text-danger"></i>
+                    </div>
+                </div>
+                <div class="mt-2 small text-muted">
+                    {{ __('Encaisse') }}: <span class="text-success fw-medium">{{ number_format($totalPaid, 0, ',', ' ') }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-3">
+    {{-- Chart: Daily Sales --}}
+    <div class="col-xl-8">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 fw-bold"><i class="ti ti-trending-up me-2"></i>{{ __('Ventes journalieres') }}</h6>
+            </div>
+            <div class="card-body">
+                <div style="position:relative; height:280px;">
+                    <canvas id="dailySalesChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
 
+    {{-- Sales by Source & Payment --}}
+    <div class="col-xl-4">
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-header bg-transparent">
+                <h6 class="mb-0 fw-bold"><i class="ti ti-arrows-split me-2"></i>{{ __('Par source') }}</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    @php
+                        $sourceLabels = ['pos' => ['POS', 'bg-primary'], 'online' => ['En ligne', 'bg-info'], 'manual' => ['Manuel', 'bg-secondary'], 'channel_portal' => ['Canal', 'bg-success']];
+                    @endphp
+                    @foreach($sourceLabels as $src => [$label, $badgeClass])
+                        @php $s = $salesBySource->get($src); @endphp
+                        <div class="list-group-item d-flex justify-content-between align-items-center px-3 py-2">
+                            <span><span class="badge {{ $badgeClass }} me-2">{{ $label }}</span>{{ $s ? $s->count : 0 }} cmd.</span>
+                            <span class="fw-bold">{{ number_format($s ? $s->total : 0, 0, ',', ' ') }}</span>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-transparent">
+                <h6 class="mb-0 fw-bold"><i class="ti ti-credit-card me-2"></i>{{ __('Par paiement') }}</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    @forelse($salesByPayment as $pm)
+                        <div class="list-group-item d-flex justify-content-between align-items-center px-3 py-2">
+                            <span class="text-capitalize">{{ $pm->payment_method ?? '—' }} <small class="text-muted">({{ $pm->count }})</small></span>
+                            <span class="fw-bold">{{ number_format($pm->total, 0, ',', ' ') }}</span>
+                        </div>
+                    @empty
+                        <div class="list-group-item text-center text-muted small py-3">{{ __('Aucune donnee') }}</div>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    {{-- Top Products --}}
+    <div class="col-xl-5">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 fw-bold"><i class="ti ti-star me-2"></i>{{ __('Top produits') }}</h6>
+                <a href="{{ route('eshop360.reports.best-sellers', $slug) }}" class="btn btn-sm btn-outline-primary">{{ __('Voir tout') }}</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="small">{{ __('Produit') }}</th>
+                                <th class="text-center small">{{ __('Qte') }}</th>
+                                <th class="text-end small">{{ __('CA') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($topProducts as $tp)
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            @if($tp->product?->image)
+                                                <img src="{{ asset('storage/' . $tp->product->image) }}" class="rounded me-2" style="width:28px;height:28px;object-fit:cover;">
+                                            @else
+                                                <div class="bg-light rounded me-2 d-flex align-items-center justify-content-center" style="width:28px;height:28px;"><i class="ti ti-package text-muted" style="font-size:.7rem;"></i></div>
+                                            @endif
+                                            <div>
+                                                <div class="fw-medium small text-truncate" style="max-width:160px;">{{ $tp->product?->name ?? '—' }}</div>
+                                                <div class="text-muted" style="font-size:.65rem;">{{ $tp->product?->sku ?? '' }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center fw-bold small">{{ $tp->total_qty }}</td>
+                                    <td class="text-end fw-bold small text-primary">{{ number_format($tp->total_revenue, 0, ',', ' ') }}</td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="3" class="text-center text-muted py-3 small">{{ __('Aucune vente') }}</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Recent Orders --}}
+    <div class="col-xl-7">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 fw-bold"><i class="ti ti-clock me-2"></i>{{ __('Dernieres commandes') }}</h6>
+                <a href="{{ route('eshop360.orders.index', $slug) }}" class="btn btn-sm btn-outline-primary">{{ __('Voir tout') }}</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="small">{{ __('Ref') }}</th>
+                                <th class="small">{{ __('Client') }}</th>
+                                <th class="small">{{ __('Source') }}</th>
+                                <th class="text-center small">{{ __('Statut') }}</th>
+                                <th class="text-center small">{{ __('Paiement') }}</th>
+                                <th class="text-end small">{{ __('Total') }}</th>
+                                <th class="small">{{ __('Date') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($recentSales as $sale)
+                                @php
+                                    $statusClass = match($sale->status) {
+                                        'completed' => 'bg-success', 'pending' => 'bg-warning',
+                                        'processing' => 'bg-info', 'cancelled', 'refunded' => 'bg-danger',
+                                        default => 'bg-secondary',
+                                    };
+                                    $payClass = match($sale->payment_status) {
+                                        'paid' => 'bg-success', 'partial' => 'bg-warning', default => 'bg-danger',
+                                    };
+                                @endphp
+                                <tr>
+                                    <td class="small fw-medium">
+                                        <a href="{{ route('eshop360.sales.show', [$slug, $sale]) }}" class="text-decoration-none">{{ $sale->reference }}</a>
+                                    </td>
+                                    <td class="small text-truncate" style="max-width:100px;">{{ $sale->customer?->name ?? '—' }}</td>
+                                    <td class="small">
+                                        <span class="badge bg-light text-dark" style="font-size:.6rem;">{{ $sale->source }}</span>
+                                        @if($sale->channel)
+                                            <span class="badge bg-info-subtle text-info" style="font-size:.55rem;">{{ $sale->channel->name }}</span>
+                                        @endif
+                                    </td>
+                                    <td class="text-center"><span class="badge {{ $statusClass }} rounded-pill" style="font-size:.6rem;">{{ ucfirst($sale->status) }}</span></td>
+                                    <td class="text-center"><span class="badge {{ $payClass }} rounded-pill" style="font-size:.6rem;">{{ ucfirst($sale->payment_status) }}</span></td>
+                                    <td class="text-end small fw-bold">{{ number_format($sale->total, 0, ',', ' ') }}</td>
+                                    <td class="small text-muted">{{ $sale->created_at?->format('d/m H:i') }}</td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="7" class="text-center text-muted py-3 small">{{ __('Aucune commande') }}</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 <script>
-    var dailySalesData = @json($dailySales ?? []);
+document.addEventListener('DOMContentLoaded', function () {
+    var dailyData = @json($dailySales);
+    var labels = dailyData.map(function (d) { return d.date; });
+    var totals = dailyData.map(function (d) { return parseFloat(d.total); });
+    var counts = dailyData.map(function (d) { return parseInt(d.count); });
+
+    var ctx = document.getElementById('dailySalesChart');
+    if (ctx && labels.length > 0) {
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'CA',
+                        data: totals,
+                        backgroundColor: 'rgba(99, 102, 241, 0.7)',
+                        borderRadius: 4,
+                        yAxisID: 'y',
+                    },
+                    {
+                        label: 'Commandes',
+                        data: counts,
+                        type: 'line',
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 2,
+                        pointRadius: 3,
+                        fill: true,
+                        yAxisID: 'y1',
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: { legend: { position: 'top', labels: { usePointStyle: true, pointStyle: 'circle' } } },
+                scales: {
+                    y: { type: 'linear', position: 'left', ticks: { callback: function (v) { return v.toLocaleString('fr-FR'); } } },
+                    y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, beginAtZero: true }
+                }
+            }
+        });
+    } else if (ctx) {
+        ctx.parentElement.textContent = 'Aucune vente sur la periode.';
+        ctx.parentElement.classList.add('text-center', 'text-muted', 'py-5');
+    }
+});
 </script>
 @endpush
 

@@ -72,7 +72,7 @@ class TaskController extends Controller
             ->with('success', 'Tâche mise à jour.');
     }
 
-    public function destroy(Task $task): JsonResponse|RedirectResponse
+    public function destroy(string $slug, Task $task): JsonResponse|RedirectResponse
     {
         $projectId = $task->project_id;
         $task->subTasks()->delete();

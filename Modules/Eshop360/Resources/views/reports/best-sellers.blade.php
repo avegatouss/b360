@@ -1,388 +1,173 @@
+@php $slug = $instance->slug ?? ''; @endphp
 <x-dashboard::layouts.master
-    :title="__('Best Sellers') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Meilleures ventes') . ' — ' . ($instance->name ?? 'B360')"
     :instance="$instance"
-    :pageTitle="__('Best Sellers')">
+    :pageTitle="__('Meilleures ventes')">
 
-<div class="page-header">
+    <div class="page-wrapper">
+        <div class="content">
+            {{-- Page Header --}}
+            <div class="page-header">
                 <div class="add-item d-flex">
                     <div class="page-title">
-                        <h4>{{ __('Bestseller Products Report') }}</h4>
-                        <h6>{{ __('View Reports of Best Selling Products') }}</h6>
+                        <h4>{{ __('Meilleures ventes') }}</h4>
+                        <h6>{{ __('Top produits par volume et chiffre d\'affaires') }}</h6>
                     </div>
                 </div>
-                <ul class="table-top-head">
-                    <li class="me-2">
-                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Refresh') }}"><i class="ti ti-refresh"></i></a>
-                    </li>
-                    <li class="me-2">
-                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Collapse') }}" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
-                    </li>
-                </ul>
+                <div class="d-flex align-items-center gap-2">
+                    <a href="#" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" title="{{ __('Exporter') }}">
+                        <i class="ti ti-download me-1"></i>{{ __('Exporter') }}
+                    </a>
+                </div>
             </div>
-            <div class="card">
-                <div class="card-body pb-1">
-                    <form action="{{url('best-seller')}}">
-                        <div class="row align-items-end">
-                            <div class="col-md-3">
-                                <div class="mb-3">
-                                    <label class="form-label">{{ __('Choose Date') }}</label>
-                                    <div class="input-icon-start position-relative">
-                                        <input type="text" class="form-control date-range bookingrange" placeholder="{{ __('dd/mm/yyyy - dd/mm/yyyy') }}">
-                                        <span class="input-icon-left">
-                                            <i class="ti ti-calendar"></i>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="mb-3">
-                                    <label class="form-label">{{ __('Store') }}</label>
-                                    <select class="select">
-                                        <option>{{ __('All') }}</option>
-                                        <option>{{ __('Electro Mart') }}</option>
-                                        <option>{{ __('Quantum Gadgets') }}</option>
-                                        <option>{{ __('Prime Bazaar') }}</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="mb-3">
-                                    <label class="form-label">{{ __('Products') }}</label>
-                                    <select class="select">
-                                        <option>{{ __('All') }}</option>
-                                        <option>{{ __('Lenovo IdeaPad 3') }}</option>
-                                        <option>{{ __('Nike Jordan') }}</option>
-                                        <option>{{ __('Amazon Echo Dot') }}</option>
-                                        <option>{{ __('Red Premium Satchel') }}</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-lg-3">
-                                <div class="mb-3">
-                                    <button class="btn btn-primary" type="submit">{{ __('Generate Report') }}</button>
-                                </div>
-                            </div>
+
+            {{-- Filter Card --}}
+            <div class="card mb-3 border-0 shadow-sm">
+                <div class="card-body py-3">
+                    <form method="GET" class="row g-2 align-items-end">
+                        <div class="col-auto">
+                            <label class="form-label mb-1">{{ __('Du') }}</label>
+                            <input type="date" name="date_from" value="{{ $dateFrom ?? '' }}" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-auto">
+                            <label class="form-label mb-1">{{ __('Au') }}</label>
+                            <input type="date" name="date_to" value="{{ $dateTo ?? '' }}" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-auto">
+                            <label class="form-label mb-1">{{ __('Limite') }}</label>
+                            <input type="number" name="limit" value="{{ $limit ?? 20 }}" class="form-control form-control-sm" min="5" max="100" style="width:80px">
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-sm btn-primary"><i class="ti ti-filter me-1"></i>{{ __('Filtrer') }}</button>
+                        </div>
+                        <div class="col-auto">
+                            <a href="{{ request()->url() }}" class="btn btn-sm btn-outline-secondary"><i class="ti ti-refresh me-1"></i>{{ __('Reinitialiser') }}</a>
                         </div>
                     </form>
                 </div>
             </div>
-            <!-- /product list -->
-            <div class="card no-search">
-                <div class="card-header d-flex align-items-center justify-content-between flex-wrap row-gap-3">
-                    <div>
-                        <h4>{{ __('Best Sellers') }}</h4>
+
+            {{-- Podium: Top 3 --}}
+            @if($bestSellers->count() >= 3)
+            <div class="row g-3 mb-4 justify-content-center">
+                {{-- 2nd Place --}}
+                <div class="col-md-4 col-lg-3">
+                    <div class="card border-0 shadow-sm text-center h-100" style="margin-top: 2rem;">
+                        <div class="card-body">
+                            <div class="mb-2">
+                                <span class="avatar avatar-lg bg-secondary-transparent rounded-circle">
+                                    <i class="ti ti-medal fs-24 text-secondary"></i>
+                                </span>
+                            </div>
+                            <h6 class="fw-bold">{{ $bestSellers[1]->product->name ?? '---' }}</h6>
+                            <p class="text-muted small mb-1">{{ $bestSellers[1]->product->sku ?? '' }}</p>
+                            <h5 class="fw-bold text-secondary">{{ number_format($bestSellers[1]->total_qty ?? 0, 0, ',', ' ') }} {{ __('unites') }}</h5>
+                            <p class="text-muted small mb-0">{{ __('CA') }}: {{ number_format($bestSellers[1]->total_revenue ?? 0, 0, ',', ' ') }}</p>
+                        </div>
+                        <div class="card-footer bg-secondary text-white fw-bold py-2">2</div>
                     </div>
-                    <ul class="table-top-head">
-                        <li class="me-2">
-                            <a data-bs-toggle="tooltip" data-bs-placement="top" title="Pdf"><img src="{{URL::asset('build/img/icons/pdf.svg')}}" alt="img"></a>
-                        </li>
-                        <li class="me-2">
-                            <a data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"><img src="{{URL::asset('build/img/icons/excel.svg')}}" alt="img"></a>
-                        </li>
-                        <li>
-                            <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Print') }}"><i class="ti ti-printer"></i></a>
-                        </li>
-                    </ul>
+                </div>
+                {{-- 1st Place --}}
+                <div class="col-md-4 col-lg-3">
+                    <div class="card border-0 shadow-sm text-center h-100 border-warning border-2">
+                        <div class="card-body">
+                            <div class="mb-2">
+                                <span class="avatar avatar-xl bg-warning-transparent rounded-circle">
+                                    <i class="ti ti-trophy fs-30 text-warning"></i>
+                                </span>
+                            </div>
+                            <h5 class="fw-bold">{{ $bestSellers[0]->product->name ?? '---' }}</h5>
+                            <p class="text-muted small mb-1">{{ $bestSellers[0]->product->sku ?? '' }}</p>
+                            <h4 class="fw-bold text-warning">{{ number_format($bestSellers[0]->total_qty ?? 0, 0, ',', ' ') }} {{ __('unites') }}</h4>
+                            <p class="text-muted small mb-0">{{ __('CA') }}: {{ number_format($bestSellers[0]->total_revenue ?? 0, 0, ',', ' ') }}</p>
+                        </div>
+                        <div class="card-footer bg-warning text-dark fw-bold py-2">1</div>
+                    </div>
+                </div>
+                {{-- 3rd Place --}}
+                <div class="col-md-4 col-lg-3">
+                    <div class="card border-0 shadow-sm text-center h-100" style="margin-top: 3rem;">
+                        <div class="card-body">
+                            <div class="mb-2">
+                                <span class="avatar avatar-lg bg-orange-transparent rounded-circle">
+                                    <i class="ti ti-medal fs-24" style="color:#cd7f32;"></i>
+                                </span>
+                            </div>
+                            <h6 class="fw-bold">{{ $bestSellers[2]->product->name ?? '---' }}</h6>
+                            <p class="text-muted small mb-1">{{ $bestSellers[2]->product->sku ?? '' }}</p>
+                            <h5 class="fw-bold" style="color:#cd7f32;">{{ number_format($bestSellers[2]->total_qty ?? 0, 0, ',', ' ') }} {{ __('unites') }}</h5>
+                            <p class="text-muted small mb-0">{{ __('CA') }}: {{ number_format($bestSellers[2]->total_revenue ?? 0, 0, ',', ' ') }}</p>
+                        </div>
+                        <div class="card-footer text-white fw-bold py-2" style="background:#cd7f32;">3</div>
+                    </div>
+                </div>
+            </div>
+            @endif
+
+            {{-- Full Table --}}
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent">
+                    <h5 class="card-title mb-0">
+                        <i class="ti ti-flame me-2"></i>{{ __('Classement complet') }}
+                        <span class="badge bg-primary ms-2">{{ $bestSellers->count() }}</span>
+                    </h5>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table datatable">
-                            <thead class="thead-light">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
                                 <tr>
+                                    <th style="width:60px">#</th>
+                                    <th>{{ __('Produit') }}</th>
                                     <th>{{ __('SKU') }}</th>
-                                    <th>{{ __('Product Name') }}</th>
-                                    <th>{{ __('Brand') }}</th>
-                                    <th>{{ __('Category') }}</th>
-                                    <th>{{ __('Sold Qty') }}</th>
-                                    <th>{{ __('Sold Amount') }}</th>
-                                    <th>{{ __('Instock Qty') }}</th>
+                                    <th>{{ __('Categorie') }}</th>
+                                    <th>{{ __('Marque') }}</th>
+                                    <th class="text-end">{{ __('Qte vendue') }}</th>
+                                    <th class="text-end">{{ __('Commandes') }}</th>
+                                    <th class="text-end">{{ __('CA') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    
+                                @forelse($bestSellers as $i => $item)
+                                @php $rank = $i + 1; @endphp
+                                <tr class="{{ $rank <= 3 ? 'table-warning bg-opacity-25' : '' }}">
                                     <td>
-                                        <a>{{ __('PT001') }}</a>
+                                        @if($rank === 1)
+                                            <span class="badge bg-warning text-dark"><i class="ti ti-trophy me-1"></i>1</span>
+                                        @elseif($rank === 2)
+                                            <span class="badge bg-secondary"><i class="ti ti-medal me-1"></i>2</span>
+                                        @elseif($rank === 3)
+                                            <span class="badge bg-orange text-white"><i class="ti ti-medal me-1"></i>3</span>
+                                        @else
+                                            <span class="text-muted">{{ $rank }}</span>
+                                        @endif
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <a  class="avatar avatar-md"><img src="{{URL::asset('build/img/products/laptop.png')}}" class="img-fluid" alt="img"></a>
-                                            <div class="ms-2">
-                                                <p class="text-dark mb-0"><a>{{ __('Lenovo IdeaPad 3') }}</a></p>
-                                            </div>
+                                            @if($item->product && $item->product->image)
+                                                <img src="{{ asset('storage/' . $item->product->image) }}" class="avatar avatar-sm rounded me-2" alt="">
+                                            @else
+                                                <span class="avatar avatar-sm bg-light rounded me-2"><i class="ti ti-photo text-muted"></i></span>
+                                            @endif
+                                            <span class="fw-semibold">{{ $item->product->name ?? '---' }}</span>
                                         </div>
                                     </td>
-                                    <td>
-                                        Lenovo
-                                    </td>
-                                    <td>
-                                        Computers									
-                                    </td>
-                                    <td>05</td>
-                                    <td>
-                                        $3000
-                                    </td>
-                                    <td>
-                                        100
-                                    </td>
-                                    
+                                    <td><code>{{ $item->product->sku ?? '---' }}</code></td>
+                                    <td>{{ $item->product->category->name ?? '—' }}</td>
+                                    <td>{{ $item->product->brand->name ?? '—' }}</td>
+                                    <td class="text-end fw-bold">{{ number_format($item->total_qty ?? 0, 0, ',', ' ') }}</td>
+                                    <td class="text-end">{{ number_format($item->order_count ?? 0, 0, ',', ' ') }}</td>
+                                    <td class="text-end fw-bold">{{ number_format($item->total_revenue ?? 0, 0, ',', ' ') }}</td>
                                 </tr>
-                                <tr>
-                                    
-                                    <td>
-                                        <a >{{ __('PT002') }}</a>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <a  class="avatar avatar-md"><img src="{{URL::asset('build/img/products/stock-img-06.png')}}" class="img-fluid" alt="img"></a>
-                                            <div class="ms-2">
-                                                <p class="text-dark mb-0"><a>{{ __('Beats Pro') }}</a></p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        Beats
-                                    </td>
-                                    <td>
-                                        Electronics									
-                                    </td>
-                                    <td>10</td>
-                                    <td>
-                                        $1600
-                                    </td>
-                                    <td>
-                                        140
-                                    </td>
-                                    
-                                </tr>
-                                <tr>
-                                    
-                                    <td>
-                                        <a >{{ __('PT003') }}</a>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <a class="avatar avatar-md"><img src="{{URL::asset('build/img/products/stock-img-02.png')}}" class="img-fluid" alt="img"></a>
-                                            <div class="ms-2">
-                                                <p class="text-dark mb-0"><a>{{ __('Nike Jordan') }}</a></p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        Nike
-                                    </td>
-                                    <td>
-                                        Shoe								
-                                    </td>
-                                    <td>08</td>
-                                    <td>
-                                        $880
-                                    </td>
-                                    <td>
-                                        300
-                                    </td>
-                                    
-                                </tr>
-                                <tr>
-                                    
-                                    <td>
-                                        <a >{{ __('PT004') }}</a>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <a class="avatar avatar-md"><img src="{{URL::asset('build/img/products/stock-img-03.png')}}" class="img-fluid" alt="img"></a>
-                                            <div class="ms-2">
-                                                <p class="text-dark mb-0"><a>{{ __('Apple Series 5 Watch') }}</a></p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        Apple
-                                    </td>
-                                    <td>
-                                        Electronics								
-                                    </td>
-                                    <td>10</td>
-                                    <td>
-                                        $1200
-                                    </td>
-                                    <td>
-                                        450
-                                    </td>
-                                    
-                                </tr>
-                                <tr>
-                                    
-                                    <td>
-                                        <a >{{ __('PT005') }}</a>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <a class="avatar avatar-md"><img src="{{URL::asset('build/img/products/stock-img-04.png')}}" class="img-fluid" alt="img"></a>
-                                            <div class="ms-2">
-                                                <p class="text-dark mb-0"><a>{{ __('Amazon Echo Dot') }}</a></p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        Amazon
-                                    </td>
-                                    <td>
-                                        Electronics								
-                                    </td>
-                                    <td>05</td>
-                                    <td>
-                                        $400
-                                    </td>
-                                    <td>
-                                        320
-                                    </td>
-                                    
-                                </tr>
-                                <tr>
-                                    
-                                    <td>
-                                        <a >{{ __('PT006') }}</a>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <a class="avatar avatar-md"><img src="{{URL::asset('build/img/products/stock-img-05.png')}}" class="img-fluid" alt="img"></a>
-                                            <div class="ms-2">
-                                                <p class="text-dark mb-0"><a>{{ __('Sanford Chair Sofa') }}</a></p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        Modern Wave
-                                    </td>
-                                    <td>
-                                        Furniture							
-                                    </td>
-                                    <td>07</td>
-                                    <td>
-                                        $2240
-                                    </td>
-                                    <td>
-                                        650
-                                    </td>
-                                    
-                                </tr>
-                                <tr>
-                                    
-                                    <td>
-                                        <a >{{ __('PT007') }}</a>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <a class="avatar avatar-md"><img src="{{URL::asset('build/img/products/expire-product-01.png')}}" class="img-fluid" alt="img"></a>
-                                            <div class="ms-2">
-                                                <p class="text-dark mb-0"><a>{{ __('Red Premium Satchel') }}</a></p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        Dior
-                                    </td>
-                                    <td>
-                                        Bags						
-                                    </td>
-                                    <td>15</td>
-                                    <td>
-                                        $900
-                                    </td>
-                                    <td>
-                                        700
-                                    </td>
-                                    
-                                </tr>
-                                <tr>
-                                    
-                                    <td>
-                                        <a >{{ __('PT008') }}</a>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <a class="avatar avatar-md"><img src="{{URL::asset('build/img/products/expire-product-02.png')}}" class="img-fluid" alt="img"></a>
-                                            <div class="ms-2">
-                                                <p class="text-dark mb-0"><a>{{ __('Iphone 14 Prol') }}</a></p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        Apple
-                                    </td>
-                                    <td>
-                                        Phone					
-                                    </td>
-                                    <td>12</td>
-                                    <td>
-                                        $6480
-                                    </td>
-                                    <td>
-                                        630
-                                    </td>
-                                    
-                                </tr>
-                                <tr>
-                                    
-                                    <td>
-                                        <a >{{ __('PT009') }}</a>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <a class="avatar avatar-md"><img src="{{URL::asset('build/img/products/expire-product-03.png')}}" class="img-fluid" alt="img"></a>
-                                            <div class="ms-2">
-                                                <p class="text-dark mb-0"><a>{{ __('Gaming Chair') }}</a></p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        Arlime
-                                    </td>
-                                    <td>
-                                        Furniture				
-                                    </td>
-                                    <td>10</td>
-                                    <td>
-                                        $2000
-                                    </td>
-                                    <td>
-                                        410
-                                    </td>
-                                    
-                                </tr>
-                                <tr>
-                                    
-                                    <td>
-                                        <a >{{ __('PT010') }}</a>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <a class="avatar avatar-md"><img src="{{URL::asset('build/img/products/expire-product-04.png')}}" class="img-fluid" alt="img"></a>
-                                            <div class="ms-2">
-                                                <p class="text-dark mb-0"><a>{{ __('Borealis Backpack') }}</a></p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        The North Face
-                                    </td>
-                                    <td>
-                                        Bags			
-                                    </td>
-                                    <td>20</td>
-                                    <td>
-                                        $900
-                                    </td>
-                                    <td>
-                                        550
-                                    </td>
-                                </tr>
+                                @empty
+                                <tr><td colspan="8" class="text-center text-muted py-3">{{ __('Aucune donnee') }}</td></tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
-            <!-- /product list -->
+        </div>
+    </div>
 
 </x-dashboard::layouts.master>

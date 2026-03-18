@@ -58,6 +58,7 @@ class Product extends Model
         'pharmacy_price',
         'min_qty_wholesale',
         'is_active',
+        'selling_type',
         'created_by',
     ];
 

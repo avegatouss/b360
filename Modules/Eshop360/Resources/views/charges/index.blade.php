@@ -21,7 +21,10 @@
             <h6>{{ __('Suivi des couts fixes de l\'entreprise') }}</h6>
         </div>
     </div>
-    <div class="page-btn">
+    <div class="page-btn d-flex gap-2">
+        <a href="{{ route('eshop360.charges.cost-absorption', $instance->slug ?? '') }}" class="btn btn-outline-info btn-sm">
+            <i class="ti ti-chart-dots me-1"></i>{{ __('Rapprochement ventes') }}
+        </a>
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addChargeModal">
             <i class="ti ti-circle-plus me-1"></i>{{ __('Ajouter une charge') }}
         </button>

@@ -6,6 +6,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Str;
+use Modules\Core\Support\CurrentInstance;
 use Modules\Eshop360\Models\Brand;
 use Modules\Eshop360\Models\Category;
 use Modules\Eshop360\Models\Product;
@@ -72,11 +73,18 @@ class ProductController extends Controller
             'purchase_price_provisional' => 'nullable|numeric|min:0',
             'pght'                       => 'nullable|numeric|min:0',
             'cost_price_real'            => 'nullable|numeric|min:0',
+            'selling_type'               => 'nullable|in:pos,online,both',
         ]);
 
         $validated['slug'] = Str::slug($validated['name']);
-        $validated['instance_id'] = $request->route('instance_id') ?? session('instance_id');
+        $validated['instance_id'] = CurrentInstance::get()?->id ?? $request->route('instance_id') ?? session('instance_id');
         $validated['created_by'] = auth()->id();
+        $validated['cost_price'] = $validated['cost_price'] ?? 0;
+        $validated['tax_rate'] = $validated['tax_rate'] ?? 0;
+        $validated['discount_type'] = $validated['discount_type'] ?? 'none';
+        $validated['discount_value'] = $validated['discount_value'] ?? 0;
+        $validated['unit'] = $validated['unit'] ?? 'pcs';
+        $validated['selling_type'] = $validated['selling_type'] ?? 'both';
 
         if ($request->hasFile('image')) {
             $validated['image'] = $request->file('image')->store('products', 'public');
@@ -92,26 +100,36 @@ class ProductController extends Controller
 
         Product::create($validated);
 
-        return redirect()->route('eshop360.products.index')
-            ->with('success', __('Product created successfully.'));
+        return redirect()->route('eshop360.products.index', ['slug' => $request->route('slug')])
+            ->with('success', __('Produit cree avec succes.'));
     }
 
-    public function show(Product $product)
+    public function show(string $slug, Product $product)
     {
         $product->load(['category', 'brand', 'stocks.warehouse', 'stocks.store', 'creator', 'variations']);
 
         $totalStock = $product->stocks->sum('quantity');
         $reservedStock = $product->stocks->sum('reserved_quantity');
 
+        if (request()->ajax() || request()->wantsJson()) {
+            return response()->json([
+                'product' => $product,
+                'total_stock' => $totalStock,
+                'reserved_stock' => $reservedStock,
+            ]);
+        }
+
         return view('eshop360::catalog.products.show', compact('product', 'totalStock', 'reservedStock'));
     }
 
-    public function edit(Product $product)
+    public function edit(string $slug, Product $product)
     {
         $categories = Category::active()->orderBy('name')->get();
         $brands = Brand::where('is_active', true)->orderBy('name')->get();
+        $stores = Store::orderBy('name')->get(['id', 'name']);
+        $warehouses = Warehouse::orderBy('name')->get(['id', 'name']);
 
-        return view('eshop360::catalog.products.edit', compact('product', 'categories', 'brands'));
+        return view('eshop360::catalog.products.edit', compact('product', 'categories', 'brands', 'stores', 'warehouses'));
     }
 
     public function update(Request $request, string $slug, Product $product): RedirectResponse
@@ -144,6 +162,10 @@ class ProductController extends Controller
         ]);
 
         $validated['slug'] = Str::slug($validated['name']);
+        $validated['tax_rate'] = $validated['tax_rate'] ?? 0;
+        $validated['discount_type'] = $validated['discount_type'] ?? 'none';
+        $validated['unit'] = $validated['unit'] ?? 'pcs';
+        $validated['selling_type'] = $validated['selling_type'] ?? 'both';
 
         if ($request->hasFile('image')) {
             $validated['image'] = $request->file('image')->store('products', 'public');
@@ -218,14 +240,14 @@ class ProductController extends Controller
 
     // ─── Product Variations CRUD ─────────────────────
 
-    public function variations(Product $product)
+    public function variations(string $slug, Product $product)
     {
         $product->load(['variations' => fn ($q) => $q->orderBy('name')]);
 
         return view('eshop360::catalog.products.variations', compact('product'));
     }
 
-    public function storeVariation(Request $request, Product $product): RedirectResponse
+    public function storeVariation(Request $request, string $slug, Product $product): RedirectResponse
     {
         $validated = $request->validate([
             'name'       => 'required|string|max:255',
@@ -252,7 +274,7 @@ class ProductController extends Controller
             ->with('success', __('Variation created.'));
     }
 
-    public function updateVariation(Request $request, Product $product, \Modules\Eshop360\Models\ProductVariation $variation): RedirectResponse
+    public function updateVariation(Request $request, string $slug, Product $product, \Modules\Eshop360\Models\ProductVariation $variation): RedirectResponse
     {
         $validated = $request->validate([
             'name'       => 'required|string|max:255',
@@ -277,7 +299,7 @@ class ProductController extends Controller
             ->with('success', __('Variation updated.'));
     }
 
-    public function destroyVariation(Product $product, \Modules\Eshop360\Models\ProductVariation $variation): RedirectResponse
+    public function destroyVariation(string $slug, Product $product, \Modules\Eshop360\Models\ProductVariation $variation): RedirectResponse
     {
         $variation->delete();
 

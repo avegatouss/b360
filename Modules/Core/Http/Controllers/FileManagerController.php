@@ -192,8 +192,9 @@ final class FileManagerController extends Controller
         return 'instances/' . $instanceId;
     }
 
-    private function sanitizePath(string $path): string
+    private function sanitizePath(?string $path): string
     {
+        $path = (string) ($path ?? '');
         // Remove any directory traversal attempts
         $path = str_replace(['..', '\\'], ['', '/'], $path);
         $path = trim($path, '/');

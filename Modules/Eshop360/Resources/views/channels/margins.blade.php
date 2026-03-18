@@ -1,7 +1,7 @@
 <x-dashboard::layouts.master
-    :title="__('Marges') . ' —' . ($channel->name ?? '') . ' — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Marges') . ' — ' . ($channel->name ?? '') . ' — ' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    ::pageTitle="__('\'Marges — \' . ($channel->name ?? \'\')')">
+    :pageTitle="__('Marges') . ' — ' . ($channel->name ?? '')">
 
 <div class="page-header">
     <div class="add-item d-flex">

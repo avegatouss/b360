@@ -10,13 +10,19 @@ use Modules\Core\Support\CurrentInstance;
 
 class SupplierController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $instance = CurrentInstance::get();
         $suppliers = Supplier::where('instance_id', $instance->id)
             ->withCount('purchaseOrders')
+            ->when($request->search, fn ($q, $s) => $q->where('name', 'like', "%{$s}%")
+                ->orWhere('company', 'like', "%{$s}%")
+                ->orWhere('email', 'like', "%{$s}%"))
+            ->when($request->country, fn ($q, $c) => $q->where('country', $c))
+            ->when($request->filled('is_active'), fn ($q) => $q->where('is_active', $request->boolean('is_active')))
             ->latest()
-            ->paginate(20);
+            ->paginate(20)
+            ->withQueryString();
         return view('eshop360::suppliers.index', compact('suppliers'));
     }
 

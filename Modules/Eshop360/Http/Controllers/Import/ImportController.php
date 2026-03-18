@@ -19,14 +19,25 @@ class ImportController extends Controller
     {
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $instance = CurrentInstance::get();
         $imports = ImportOrder::where('instance_id', $instance->id)
             ->with('supplier', 'warehouse', 'creator')
+            ->withCount('items')
+            ->when($request->search, fn ($q, $s) => $q->where('reference', 'like', "%{$s}%"))
+            ->when($request->status, fn ($q, $s) => $q->where('status', $s))
+            ->when($request->supplier_id, fn ($q, $s) => $q->where('supplier_id', $s))
+            ->when($request->shipping_type, fn ($q, $t) => $q->where('shipping_type', $t))
+            ->when($request->date_from, fn ($q, $d) => $q->whereDate('created_at', '>=', $d))
+            ->when($request->date_to, fn ($q, $d) => $q->whereDate('created_at', '<=', $d))
             ->latest()
-            ->paginate(20);
-        return view('eshop360::imports.index', compact('imports'));
+            ->paginate(20)
+            ->withQueryString();
+
+        $suppliers = Supplier::where('instance_id', $instance->id)->orderBy('name')->get(['id', 'name']);
+
+        return view('eshop360::imports.index', compact('imports', 'suppliers'));
     }
 
     public function create()

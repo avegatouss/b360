@@ -15,8 +15,9 @@ class BarcodeController extends Controller
     {
         $warehouses = Warehouse::where('is_active', true)->orderBy('name')->get(['id', 'name']);
         $stores     = Store::where('is_active', true)->orderBy('name')->get(['id', 'name']);
+        $categories = \Modules\Eshop360\Models\Category::active()->orderBy('name')->get(['id', 'name']);
 
-        $products = Product::select('id', 'name', 'sku', 'barcode', 'qrcode', 'price')
+        $products = Product::select('id', 'name', 'sku', 'barcode', 'qrcode', 'price', 'image')
             ->when($request->search, fn ($q, $s) => $q->where('name', 'like', "%{$s}%")
                 ->orWhere('sku', 'like', "%{$s}%")
                 ->orWhere('barcode', 'like', "%{$s}%"))
@@ -28,7 +29,7 @@ class BarcodeController extends Controller
             ->paginate(50)
             ->withQueryString();
 
-        return view('eshop360::catalog.barcodes.index', compact('products', 'warehouses', 'stores'));
+        return view('eshop360::catalog.barcodes.index', compact('products', 'warehouses', 'stores', 'categories'));
     }
 
     public function qrcode(Request $request)

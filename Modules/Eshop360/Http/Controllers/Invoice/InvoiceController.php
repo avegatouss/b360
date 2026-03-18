@@ -151,14 +151,28 @@ class InvoiceController extends Controller
 
     public function templates()
     {
-        $templates = [
-            ['name' => 'default', 'label' => __('Default'), 'preview' => 'invoices/templates/default.png'],
-            ['name' => 'modern', 'label' => __('Modern'), 'preview' => 'invoices/templates/modern.png'],
-            ['name' => 'classic', 'label' => __('Classic'), 'preview' => 'invoices/templates/classic.png'],
-            ['name' => 'minimal', 'label' => __('Minimal'), 'preview' => 'invoices/templates/minimal.png'],
+        $invoiceTemplates = [
+            ['name' => 'default', 'label' => __('Standard'), 'description' => __('Template facture classique'), 'icon' => 'ti-file-invoice', 'color' => 'primary'],
+            ['name' => 'invoice-a4-v1', 'label' => __('A4 Version 1'), 'description' => __('Format A4 professionnel'), 'icon' => 'ti-file-text', 'color' => 'info'],
+            ['name' => 'invoice-a4-v2', 'label' => __('A4 Version 2'), 'description' => __('Format A4 moderne'), 'icon' => 'ti-file-text', 'color' => 'success'],
+            ['name' => 'invoice-a4-compact', 'label' => __('A4 Compact'), 'description' => __('Format condense sur une page'), 'icon' => 'ti-layout-rows', 'color' => 'warning'],
+            ['name' => 'invoice-gst-v1', 'label' => __('GST Version 1'), 'description' => __('Conforme aux normes fiscales GST'), 'icon' => 'ti-receipt-tax', 'color' => 'danger'],
+            ['name' => 'invoice-gst-v2', 'label' => __('GST Version 2'), 'description' => __('GST avec detail des taxes'), 'icon' => 'ti-receipt-tax', 'color' => 'secondary'],
         ];
 
-        return view('eshop360::invoices.templates', compact('templates'));
+        $otherTemplates = [
+            ['name' => 'quotation', 'label' => __('Devis / Proforma'), 'description' => __('Template pour les devis clients'), 'icon' => 'ti-clipboard-list', 'color' => 'info'],
+            ['name' => 'proforma', 'label' => __('Facture proforma'), 'description' => __('Facture provisoire avant paiement'), 'icon' => 'ti-file-dots', 'color' => 'primary'],
+            ['name' => 'delivery-note', 'label' => __('Bon de livraison'), 'description' => __('Document d\'accompagnement livraison'), 'icon' => 'ti-truck', 'color' => 'success'],
+            ['name' => 'credit-note', 'label' => __('Avoir / Note de credit'), 'description' => __('Document de remboursement'), 'icon' => 'ti-receipt-refund', 'color' => 'danger'],
+            ['name' => 'order-receipt', 'label' => __('Recu de commande'), 'description' => __('Ticket de caisse POS'), 'icon' => 'ti-receipt', 'color' => 'warning'],
+        ];
+
+        $currentTemplate = $this->eshopSettings->value('invoice', 'default_template', 'default');
+
+        $settings = $this->eshopSettings->get('invoice');
+
+        return view('eshop360::invoices.templates', compact('invoiceTemplates', 'otherTemplates', 'currentTemplate', 'settings'));
     }
 
     public function settings()

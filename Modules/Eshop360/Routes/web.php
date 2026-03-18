@@ -474,6 +474,7 @@ Route::middleware([
         Route::delete('/{charge}', [ChargesController::class, 'destroy'])->middleware('can:eshop.charges.manage')->name('destroy');
         Route::get('/realtime', [ChargesController::class, 'realtime'])->name('realtime');
         Route::get('/realtime-data', [ChargesController::class, 'realtimeData'])->name('realtime-data');
+        Route::get('/cost-absorption', [ChargesController::class, 'costAbsorption'])->name('cost-absorption');
     });
 
     // ─── Distribution Channels ──────────────────────────

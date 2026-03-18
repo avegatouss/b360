@@ -1,220 +1,199 @@
 <x-dashboard::layouts.master
-    :title="__('Brands') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Marques') . ' — ' . ($instance->name ?? 'B360')"
     :instance="$instance"
-    :pageTitle="__('Brands')">
+    :pageTitle="__('Marques')">
+
+@php $slug = $instance->slug ?? ''; @endphp
 
 <div class="page-header">
-                <div class="add-item d-flex">
-                    <div class="page-title">
-                        <h4 class="fw-bold">{{ __('Brand') }}</h4>
-                        <h6>{{ __('Manage your brands') }}</h6>
-                    </div>
-                </div>
-                <ul class="table-top-head">
-                    <li>
-                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="Pdf"><img src="{{URL::asset('build/img/icons/pdf.svg')}}" alt="img"></a>
-                    </li>
-                    <li>
-                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="Excel"><img src="{{URL::asset('build/img/icons/excel.svg')}}" alt="img"></a>
-                    </li>
-                    <li>
-                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Refresh') }}"><i class="ti ti-refresh"></i></a>
-                    </li>
-                    <li>
-                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Collapse') }}" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
-                    </li>
-                </ul>
-                <div class="page-btn">
-                    <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-brand"><i class="ti ti-circle-plus me-1"></i>{{ __('Add Brand') }}</a>
-                </div>
-            </div>
-            <!-- /product list -->
-            <div class="card">
-                <div class="card-header d-flex align-items-center justify-content-between flex-wrap row-gap-3">
-                    <div class="search-set">
-                        <div class="search-input">
-                            <span class="btn-searchset"><i class="ti ti-search fs-14 feather-search"></i></span>
-                        </div>
-                    </div>
-                    <div class="d-flex table-dropdown my-xl-auto right-content align-items-center flex-wrap row-gap-3">
-                        <div class="dropdown me-2">
-                            <a href="javascript:void(0);" class="dropdown-toggle btn btn-white btn-md d-inline-flex align-items-center" data-bs-toggle="dropdown">
-                                Status
-                            </a>
-                            <ul class="dropdown-menu  dropdown-menu-end p-3">
-                                <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Active') }}</a>
-                                </li>
-                                <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Inactive') }}</a>
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="dropdown">
-                            <a href="javascript:void(0);" class="dropdown-toggle btn btn-white btn-md d-inline-flex align-items-center" data-bs-toggle="dropdown">
-                                Sort By : Latest
-                            </a>
-                            <ul class="dropdown-menu  dropdown-menu-end p-3">
-                                <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Latest') }}</a>
-                                </li>
-                                <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Ascending') }}</a>
-                                </li>
-                                <li>
-                                    <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Desending') }}</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table datatable">
-                            <thead class="thead-light">
-                                <tr>
-                                    <th class="no-sort">
-                                        <label class="checkboxs">
-                                            <input type="checkbox" id="select-all">
-                                            <span class="checkmarks"></span>
-                                        </label>
-                                    </th>
-                                    <th>{{ __('Brand') }}</th>
-                                    <th>{{ __('Products Count') }}</th>
-                                    <th>{{ __('Created Date') }}</th>
-                                    <th>{{ __('Status') }}</th>
-                                    <th class="no-sort"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($brands as $brand)
-                                <tr>
-                                    <td>
-                                        <label class="checkboxs">
-                                            <input type="checkbox">
-                                            <span class="checkmarks"></span>
-                                        </label>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <a href="javascript:void(0);" class="avatar avatar-md bg-light-900 p-1 me-2">
-                                                @if($brand->image)
-                                                    <img class="object-fit-contain" src="{{ asset('storage/' . $brand->image) }}" alt="img">
-                                                @else
-                                                    <img class="object-fit-contain" src="{{URL::asset('build/img/brand/lenova.png')}}" alt="img">
-                                                @endif
-                                            </a>
-                                            <a href="javascript:void(0);">{{ $brand->name }}</a>
-                                        </div>
-                                    </td>
-                                    <td>{{ $brand->products_count ?? 0 }}</td>
-                                    <td>{{ $brand->created_at->format('d M Y') }}</td>
-                                    <td><span class="badge table-badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
-                                    <td class="action-table-data">
-                                        <div class="edit-delete-action">
-                                            <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-brand-{{ $brand->id }}">
-                                                <i data-feather="edit" class="feather-edit"></i>
-                                            </a>
-                                            <form action="{{ route('eshop360.brands.destroy', [$instance->slug ?? '', $brand]) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="p-2 border-0 bg-transparent">
-                                                    <i data-feather="trash-2" class="feather-trash-2"></i>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="6" class="text-center">{{ __('No brands found.') }}</td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                    @if($brands->hasPages())
-                    <div class="p-3">
-                        {{ $brands->links() }}
-                    </div>
-                    @endif
-                </div>
-            </div>
-            <!-- /product list -->
+    <div class="add-item d-flex">
+        <div class="page-title">
+            <h4 class="fw-bold">{{ __('Marques') }}</h4>
+            <h6>{{ __('Gerer les marques de produits') }}</h6>
+        </div>
+    </div>
+    <div class="page-btn">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-brand">
+            <i class="ti ti-circle-plus me-1"></i>{{ __('Ajouter une marque') }}
+        </button>
+    </div>
+</div>
 
-<!-- Add Brand Modal -->
-<div class="modal fade" id="add-brand" tabindex="-1" aria-labelledby="addBrandLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+{{-- Filtres --}}
+<div class="card mb-3 border-0 shadow-sm">
+    <div class="card-body py-2">
+        <form method="GET" action="{{ route('eshop360.brands.index', $slug) }}" class="row g-2 align-items-center">
+            <div class="col-md-3">
+                <input type="text" name="search" class="form-control form-control-sm" value="{{ request('search') }}" placeholder="{{ __('Rechercher une marque...') }}">
+            </div>
+            <div class="col-md-2">
+                <select name="is_active" class="form-select form-select-sm">
+                    <option value="">{{ __('Tous les statuts') }}</option>
+                    <option value="1" {{ request('is_active') === '1' ? 'selected' : '' }}>{{ __('Active') }}</option>
+                    <option value="0" {{ request('is_active') === '0' ? 'selected' : '' }}>{{ __('Inactive') }}</option>
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-sm btn-primary"><i class="ti ti-search"></i></button>
+            </div>
+            @if(request()->hasAny(['search', 'is_active']))
+                <div class="col-auto">
+                    <a href="{{ route('eshop360.brands.index', $slug) }}" class="btn btn-sm btn-outline-secondary"><i class="ti ti-x"></i></a>
+                </div>
+            @endif
+        </form>
+    </div>
+</div>
+
+@if(session('success'))
+    <div class="alert alert-success alert-dismissible fade show"><i class="ti ti-check me-1"></i>{{ session('success') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+@endif
+@if(session('error'))
+    <div class="alert alert-danger alert-dismissible fade show"><i class="ti ti-x me-1"></i>{{ session('error') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+@endif
+
+{{-- Table --}}
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:50px;"></th>
+                        <th>{{ __('Marque') }}</th>
+                        <th>{{ __('Slug') }}</th>
+                        <th class="text-center">{{ __('Produits') }}</th>
+                        <th class="text-center">{{ __('Statut') }}</th>
+                        <th>{{ __('Cree le') }}</th>
+                        <th class="text-end" style="width:120px;">{{ __('Actions') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($brands as $brand)
+                        <tr>
+                            <td>
+                                @if($brand->logo)
+                                    <img src="{{ asset('storage/' . $brand->logo) }}" class="rounded bg-light p-1" style="width:36px;height:36px;object-fit:contain;">
+                                @else
+                                    <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width:36px;height:36px;">
+                                        <i class="ti ti-tag text-muted"></i>
+                                    </div>
+                                @endif
+                            </td>
+                            <td class="fw-medium">{{ $brand->name }}</td>
+                            <td class="small text-muted"><code>{{ $brand->slug }}</code></td>
+                            <td class="text-center">
+                                @if($brand->products_count > 0)
+                                    <span class="badge bg-primary-subtle text-primary">{{ $brand->products_count }}</span>
+                                @else
+                                    <span class="text-muted">0</span>
+                                @endif
+                            </td>
+                            <td class="text-center">
+                                @if($brand->is_active)
+                                    <span class="badge bg-success-subtle text-success">{{ __('Active') }}</span>
+                                @else
+                                    <span class="badge bg-secondary-subtle text-secondary">{{ __('Inactive') }}</span>
+                                @endif
+                            </td>
+                            <td class="small text-muted">{{ $brand->created_at?->format('d/m/Y') }}</td>
+                            <td class="text-end">
+                                <div class="d-flex gap-1 justify-content-end">
+                                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#edit-brand-{{ $brand->id }}" title="{{ __('Modifier') }}"><i class="ti ti-edit"></i></button>
+                                    <form action="{{ route('eshop360.brands.destroy', [$slug, $brand]) }}" method="POST" class="d-inline" onsubmit="return confirm('{{ __('Supprimer cette marque ?') }}')">
+                                        @csrf @method('DELETE')
+                                        <button class="btn btn-sm btn-outline-danger" title="{{ __('Supprimer') }}"><i class="ti ti-trash"></i></button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">
+                                <i class="ti ti-tag-off fs-1 d-block mb-2"></i>
+                                {{ __('Aucune marque trouvee.') }}
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        @if($brands->hasPages())
+            <div class="p-3">{{ $brands->links() }}</div>
+        @endif
+    </div>
+</div>
+
+{{-- Add Brand Modal --}}
+<div class="modal fade" id="add-brand" tabindex="-1">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="addBrandLabel">{{ __('Add Brand') }}</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title">{{ __('Nouvelle marque') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form action="{{ route('eshop360.brands.store', $instance->slug ?? '') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('eshop360.brands.store', $slug) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="brand-name" class="form-label">{{ __('Name') }} <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="brand-name" name="name" required maxlength="255" placeholder="{{ __('Enter brand name') }}">
+                        <label class="form-label">{{ __('Nom') }} <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="name" required maxlength="255" placeholder="{{ __('Nom de la marque') }}">
                     </div>
                     <div class="mb-3">
-                        <label for="brand-logo" class="form-label">{{ __('Logo') }}</label>
-                        <input type="file" class="form-control" id="brand-logo" name="logo" accept="image/*">
-                        <small class="text-muted">{{ __('Max 1MB. Accepts JPG, PNG, GIF, SVG.') }}</small>
+                        <label class="form-label">{{ __('Logo') }}</label>
+                        <input type="file" class="form-control form-control-sm" name="logo" accept="image/*">
+                        <small class="text-muted">{{ __('Max 1 Mo. JPG, PNG, SVG') }}</small>
                     </div>
-                    <div class="mb-3">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="is_active" value="1" id="brand-active" checked>
-                            <label class="form-check-label" for="brand-active">{{ __('Active') }}</label>
-                        </div>
+                    <div class="form-check form-switch">
+                        <input type="hidden" name="is_active" value="0">
+                        <input class="form-check-input" type="checkbox" name="is_active" value="1" checked id="add-brand-active">
+                        <label class="form-check-label" for="add-brand-active">{{ __('Active') }}</label>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
-                    <button type="submit" class="btn btn-primary">{{ __('Save') }}</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{{ __('Annuler') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ __('Creer') }}</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<!-- Edit Brand Modals -->
+{{-- Edit Brand Modals --}}
 @foreach($brands as $brand)
-<div class="modal fade" id="edit-brand-{{ $brand->id }}" tabindex="-1" aria-labelledby="editBrandLabel{{ $brand->id }}" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+<div class="modal fade" id="edit-brand-{{ $brand->id }}" tabindex="-1">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="editBrandLabel{{ $brand->id }}">{{ __('Edit Brand') }}</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title">{{ __('Modifier') }}: {{ $brand->name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form action="{{ route('eshop360.brands.update', [$instance->slug ?? '', $brand]) }}" method="POST" enctype="multipart/form-data">
-                @csrf
-                @method('PUT')
+            <form action="{{ route('eshop360.brands.update', [$slug, $brand]) }}" method="POST" enctype="multipart/form-data">
+                @csrf @method('PUT')
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="edit-brand-name-{{ $brand->id }}" class="form-label">{{ __('Name') }} <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="edit-brand-name-{{ $brand->id }}" name="name" value="{{ $brand->name }}" required maxlength="255">
+                        <label class="form-label">{{ __('Nom') }} <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="name" value="{{ $brand->name }}" required maxlength="255">
                     </div>
                     <div class="mb-3">
-                        <label for="edit-brand-logo-{{ $brand->id }}" class="form-label">{{ __('Logo') }}</label>
+                        <label class="form-label">{{ __('Logo') }}</label>
                         @if($brand->logo)
                             <div class="mb-2">
-                                <img src="{{ asset('storage/' . $brand->logo) }}" alt="{{ $brand->name }}" class="img-thumbnail" style="max-height: 60px;">
+                                <img src="{{ asset('storage/' . $brand->logo) }}" alt="{{ $brand->name }}" class="rounded bg-light p-1" style="max-height:50px;">
                             </div>
                         @endif
-                        <input type="file" class="form-control" id="edit-brand-logo-{{ $brand->id }}" name="logo" accept="image/*">
-                        <small class="text-muted">{{ __('Leave empty to keep current logo. Max 1MB.') }}</small>
+                        <input type="file" class="form-control form-control-sm" name="logo" accept="image/*">
+                        <small class="text-muted">{{ __('Laisser vide pour conserver le logo actuel.') }}</small>
                     </div>
-                    <div class="mb-3">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="is_active" value="1" id="edit-brand-active-{{ $brand->id }}" {{ $brand->is_active ? 'checked' : '' }}>
-                            <label class="form-check-label" for="edit-brand-active-{{ $brand->id }}">{{ __('Active') }}</label>
-                        </div>
+                    <div class="form-check form-switch">
+                        <input type="hidden" name="is_active" value="0">
+                        <input class="form-check-input" type="checkbox" name="is_active" value="1" @checked($brand->is_active) id="edit-brand-active-{{ $brand->id }}">
+                        <label class="form-check-label" for="edit-brand-active-{{ $brand->id }}">{{ __('Active') }}</label>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
-                    <button type="submit" class="btn btn-primary">{{ __('Update') }}</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{{ __('Annuler') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ __('Enregistrer') }}</button>
                 </div>
             </form>
         </div>

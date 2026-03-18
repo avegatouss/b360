@@ -10,15 +10,17 @@
             <h6>{{ __('Gerez vos devis et propositions commerciales') }}</h6>
         </div>
     </div>
-    <div class="page-btn">
-        <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#create-quotation-modal">
-            <i class="ti ti-circle-plus me-1"></i>{{ __('Nouveau devis') }}
-        </a>
+    <div class="page-btn d-flex gap-2">
+        <a href="{{ route('eshop360.invoices.index', $instance->slug ?? '') }}" class="btn btn-outline-secondary btn-sm"><i class="ti ti-file-invoice me-1"></i>{{ __('Factures') }}</a>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#create-quotation-modal"><i class="ti ti-circle-plus me-1"></i>{{ __('Nouveau devis') }}</button>
     </div>
 </div>
 
 {{-- Filtres --}}
-<div class="card mb-3">
+@if(session('success'))<div class="alert alert-success alert-dismissible fade show"><i class="ti ti-check me-1"></i>{{ session('success') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>@endif
+@if(session('error'))<div class="alert alert-danger alert-dismissible fade show"><i class="ti ti-x me-1"></i>{{ session('error') }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>@endif
+
+<div class="card mb-3 border-0 shadow-sm">
     <div class="card-body py-2">
         <form method="GET" class="row g-2 align-items-center">
             <div class="col-md-3">
@@ -51,7 +53,8 @@
 </div>
 
 {{-- Tableau --}}
-<div class="card">
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-transparent"><h6 class="mb-0 fw-bold"><i class="ti ti-clipboard-list me-2"></i>{{ __('Devis') }} <span class="badge bg-primary ms-1">{{ $quotations->total() }}</span></h6></div>
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover mb-0">

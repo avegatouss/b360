@@ -25,6 +25,7 @@ Route::middleware([
     'core.instance.member',    // vérifie membership actif
 ])->prefix('/i/{slug}')->group(function () {
 
+    // ─── Users ─────────────────────────────────────────────
     Route::get('/users', [UserController::class, 'index'])
         ->middleware('can:users.view')
         ->name('users.index');
@@ -37,6 +38,10 @@ Route::middleware([
         ->middleware('can:users.manage')
         ->name('users.store');
 
+    Route::get('/users/{user}', [UserController::class, 'show'])
+        ->middleware('can:users.view')
+        ->name('users.show');
+
     Route::get('/users/{user}/edit', [UserController::class, 'edit'])
         ->middleware('can:users.manage')
         ->name('users.edit');
@@ -48,6 +53,15 @@ Route::middleware([
     Route::delete('/users/{user}', [UserController::class, 'destroy'])
         ->middleware('can:users.manage')
         ->name('users.destroy');
+
+    // Quick actions
+    Route::put('/users/{user}/toggle-block', [UserController::class, 'toggleBlock'])
+        ->middleware('can:users.manage')
+        ->name('users.toggle-block');
+
+    Route::put('/users/{user}/toggle-active', [UserController::class, 'toggleActive'])
+        ->middleware('can:users.manage')
+        ->name('users.toggle-active');
 
     Route::put('/users/{user}/memberships', [UserMembershipController::class, 'sync'])
         ->middleware('can:users.manage')

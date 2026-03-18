@@ -161,7 +161,7 @@ final class DemoOrdersSeeder
                     continue;
                 }
 
-                $unitPrice = (float) $product->sale_price;
+                $unitPrice = (float) $product->price;
                 $qty = $item['quantity'];
                 $lineTotal = $unitPrice * $qty;
                 $subtotal += $lineTotal;
@@ -240,7 +240,7 @@ final class DemoOrdersSeeder
 
             foreach ($selectedProducts as $product) {
                 $qty = rand(1, 5);
-                $unitPrice = (float) $product->sale_price;
+                $unitPrice = (float) $product->price;
                 $lineTotal = $unitPrice * $qty;
                 $subtotal += $lineTotal;
 

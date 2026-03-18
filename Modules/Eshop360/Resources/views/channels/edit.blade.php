@@ -1,7 +1,7 @@
 <x-dashboard::layouts.master
-    :title="__('Modifier') . ($channel->name ?? '') . ' — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Modifier') . ' ' . ($channel->name ?? '') . ' — ' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    ::pageTitle="__('\'Modifier \' . ($channel->name ?? \'\')')">
+    :pageTitle="__('Modifier') . ' ' . ($channel->name ?? '')">
 
 <div class="page-header">
     <div class="add-item d-flex">

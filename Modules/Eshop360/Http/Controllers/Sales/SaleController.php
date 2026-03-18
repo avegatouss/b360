@@ -31,31 +31,59 @@ class SaleController extends Controller
     {
         $dateFrom = $request->date_from ?? now()->startOfMonth()->toDateString();
         $dateTo = $request->date_to ?? now()->toDateString();
+        $channelId = $request->channel_id;
 
-        $salesQuery = Order::whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59']);
+        $baseQuery = Order::whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
+            ->when($channelId, fn ($q) => $q->where('channel_id', $channelId));
 
-        $totalSales = (clone $salesQuery)->where('status', 'completed')->sum('total');
-        $totalOrders = (clone $salesQuery)->count();
-        $completedOrders = (clone $salesQuery)->where('status', 'completed')->count();
-        $pendingOrders = (clone $salesQuery)->where('status', 'pending')->count();
-        $cancelledOrders = (clone $salesQuery)->where('status', 'cancelled')->count();
-        $totalTax = (clone $salesQuery)->where('status', 'completed')->sum('tax_amount');
-        $totalDiscount = (clone $salesQuery)->where('status', 'completed')->sum('discount_amount');
-        $totalDue = (clone $salesQuery)->where('payment_status', '!=', 'paid')->sum('due_amount');
+        $completedQuery = (clone $baseQuery)->where('status', 'completed');
+
+        $totalSales = round((float) (clone $completedQuery)->sum('total'), 2);
+        $totalOrders = (clone $baseQuery)->count();
+        $completedOrders = (clone $completedQuery)->count();
+        $pendingOrders = (clone $baseQuery)->where('status', 'pending')->count();
+        $cancelledOrders = (clone $baseQuery)->where('status', 'cancelled')->count();
+        $totalTax = round((float) (clone $completedQuery)->sum('tax_amount'), 2);
+        $totalDiscount = round((float) (clone $completedQuery)->sum('discount_amount'), 2);
+        $totalDue = round((float) (clone $baseQuery)->where('payment_status', '!=', 'paid')->sum('due_amount'), 2);
+        $totalPaid = round((float) (clone $completedQuery)->sum('paid_amount'), 2);
+        $avgOrderValue = $completedOrders > 0 ? round($totalSales / $completedOrders, 2) : 0;
+
+        // Today's sales
+        $todaySales = round((float) Order::whereDate('created_at', today())
+            ->where('status', 'completed')
+            ->when($channelId, fn ($q) => $q->where('channel_id', $channelId))
+            ->sum('total'), 2);
 
         // Daily sales for chart
         $dailySales = Order::where('status', 'completed')
             ->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
+            ->when($channelId, fn ($q) => $q->where('channel_id', $channelId))
             ->select(DB::raw('DATE(created_at) as date'), DB::raw('SUM(total) as total'), DB::raw('COUNT(*) as count'))
             ->groupBy('date')
             ->orderBy('date')
             ->get();
 
+        // Sales by source (pos, online, manual, channel_portal)
+        $salesBySource = (clone $baseQuery)->where('status', '!=', 'cancelled')
+            ->select('source', DB::raw('COUNT(*) as count'), DB::raw('SUM(total) as total'))
+            ->groupBy('source')
+            ->get()
+            ->keyBy('source');
+
+        // Sales by payment method
+        $salesByPayment = (clone $completedQuery)
+            ->select('payment_method', DB::raw('COUNT(*) as count'), DB::raw('SUM(total) as total'))
+            ->groupBy('payment_method')
+            ->orderByDesc('total')
+            ->get();
+
         // Top selling products
         $topProducts = OrderItem::select('product_id', DB::raw('SUM(quantity) as total_qty'), DB::raw('SUM(total) as total_revenue'))
-            ->whereHas('order', function ($q) use ($dateFrom, $dateTo) {
+            ->whereHas('order', function ($q) use ($dateFrom, $dateTo, $channelId) {
                 $q->where('status', 'completed')
-                    ->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59']);
+                    ->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
+                    ->when($channelId, fn ($q2) => $q2->where('channel_id', $channelId));
             })
             ->groupBy('product_id')
             ->orderByDesc('total_qty')
@@ -64,15 +92,24 @@ class SaleController extends Controller
             ->get();
 
         // Recent sales
-        $recentSales = Order::with('customer')
+        $recentSales = Order::with('customer', 'channel')
+            ->when($channelId, fn ($q) => $q->where('channel_id', $channelId))
             ->latest()
             ->limit(10)
             ->get();
 
+        // Channels for filter
+        $channels = \Modules\Eshop360\Models\DistributionChannel::where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
         return view('eshop360::sales.dashboard', compact(
             'totalSales', 'totalOrders', 'completedOrders', 'pendingOrders',
             'cancelledOrders', 'totalTax', 'totalDiscount', 'totalDue',
-            'dailySales', 'topProducts', 'recentSales', 'dateFrom', 'dateTo'
+            'totalPaid', 'avgOrderValue', 'todaySales',
+            'dailySales', 'salesBySource', 'salesByPayment',
+            'topProducts', 'recentSales', 'dateFrom', 'dateTo',
+            'channels', 'channelId'
         ));
     }
 

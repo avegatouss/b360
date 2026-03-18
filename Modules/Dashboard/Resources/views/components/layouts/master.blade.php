@@ -46,6 +46,7 @@
     @if($activeTheme && file_exists(resource_path("css/themes/{$activeTheme}.css")))
         <style>{!! file_get_contents(resource_path("css/themes/{$activeTheme}.css")) !!}</style>
     @endif
+    @stack('styles')
 </head>
 <body>
 
@@ -515,6 +516,8 @@
 })();
 </script>
 @endauth
+
+@stack('scripts')
 
 </body>
 </html>
