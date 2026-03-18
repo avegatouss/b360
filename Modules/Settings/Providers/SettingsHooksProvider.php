@@ -30,6 +30,8 @@ final class SettingsHooksProvider implements RegistersHooks
                 $instance?->isRoot() && TeamContext::isSuperAdmin($user),
         ));
 
+        // ─── Settings groups (sorted by priority DESC) ───────────
+
         $registry->addSettingsGroup(new SettingsGroup(
             id: 'general',
             label: 'General',
@@ -38,11 +40,48 @@ final class SettingsHooksProvider implements RegistersHooks
         ));
 
         $registry->addSettingsGroup(new SettingsGroup(
+            id: 'company',
+            label: 'Entreprise',
+            priority: 950,
+            view: 'settings::partials.company',
+        ));
+
+        $registry->addSettingsGroup(new SettingsGroup(
             id: 'branding',
             label: 'Apparence',
             priority: 900,
             view: 'settings::partials.branding',
         ));
+
+        $registry->addSettingsGroup(new SettingsGroup(
+            id: 'security',
+            label: 'Securite',
+            priority: 700,
+            view: 'settings::partials.security',
+        ));
+
+        $registry->addSettingsGroup(new SettingsGroup(
+            id: 'email',
+            label: 'Email / SMTP',
+            priority: 650,
+            view: 'settings::partials.email',
+        ));
+
+        $registry->addSettingsGroup(new SettingsGroup(
+            id: 'sms',
+            label: 'SMS',
+            priority: 640,
+            view: 'settings::partials.sms',
+        ));
+
+        $registry->addSettingsGroup(new SettingsGroup(
+            id: 'notifications',
+            label: 'Notifications',
+            priority: 630,
+            view: 'settings::partials.notifications',
+        ));
+
+        // ─── Permissions ─────────────────────────────────────────
 
         $registry->addPermissionGroup(new PermissionGroup(
             id: 'settings',

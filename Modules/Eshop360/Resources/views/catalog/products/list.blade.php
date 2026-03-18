@@ -25,14 +25,14 @@
                 </li>
             </ul>
             <div class="page-btn">
-                <a href="{{url('add-product')}}" class="btn btn-primary"><i class="ti ti-circle-plus me-1"></i>Add Product</a>
-            </div>	
+                <a href="{{ route('eshop360.products.create', $instance->slug ?? '') }}" class="btn btn-primary"><i class="ti ti-circle-plus me-1"></i>{{ __('Add Product') }}</a>
+            </div>
             <div class="page-btn import">
-                <a href="#" class="btn btn-secondary color" data-bs-toggle="modal" data-bs-target="#view-notes"><i
+                <a href="#" class="btn btn-secondary color" data-bs-toggle="modal" data-bs-target="#import-products"><i
                     data-feather="download" class="me-1"></i>{{ __('Import Product') }}</a>
             </div>
         </div>
-        
+
         <!-- /product list -->
         <div class="card">
             <div class="card-header d-flex align-items-center justify-content-between flex-wrap row-gap-3">
@@ -44,40 +44,26 @@
                 <div class="d-flex table-dropdown my-xl-auto right-content align-items-center flex-wrap row-gap-3">
                     <div class="dropdown me-2">
                         <a href="javascript:void(0);" class="dropdown-toggle btn btn-white btn-md d-inline-flex align-items-center" data-bs-toggle="dropdown">
-                            Category
+                            {{ __('Category') }}
                         </a>
                         <ul class="dropdown-menu  dropdown-menu-end p-3">
+                            @foreach($categories as $cat)
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Computers') }}</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ $cat->name }}</a>
                             </li>
-                            <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Electronics') }}</a>
-                            </li>
-                            <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Shoe') }}</a>
-                            </li>
-                            <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Electronics') }}</a>
-                            </li>
+                            @endforeach
                         </ul>
                     </div>
                     <div class="dropdown">
                         <a href="javascript:void(0);" class="dropdown-toggle btn btn-white btn-md d-inline-flex align-items-center" data-bs-toggle="dropdown">
-                            Brand
+                            {{ __('Brand') }}
                         </a>
                         <ul class="dropdown-menu  dropdown-menu-end p-3">
+                            @foreach($brands as $brand)
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Lenovo') }}</a>
+                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ $brand->name }}</a>
                             </li>
-                            <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Beats') }}</a>
-                            </li>
-                            <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Nike') }}</a>
-                            </li>
-                            <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Apple') }}</a>
-                            </li>
+                            @endforeach
                         </ul>
                     </div>
                 </div>
@@ -105,6 +91,7 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @forelse($products as $product)
                             <tr>
                                 <td>
                                     <label class="checkboxs">
@@ -112,483 +99,92 @@
                                         <span class="checkmarks"></span>
                                     </label>
                                 </td>
-                                <td>{{ __('PT001') }}</td>
+                                <td>{{ $product->sku }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <a href="javascript:void(0);" class="avatar avatar-md me-2">
-                                            <img src="{{URL::asset('build/img/products/stock-img-01.png')}}" alt="product">
+                                        <a href="{{ route('eshop360.products.show', [$instance->slug ?? '', $product]) }}" class="avatar avatar-md me-2">
+                                            @if($product->image)
+                                                <img src="{{ asset('storage/' . $product->image) }}" alt="product">
+                                            @else
+                                                <img src="{{ URL::asset('build/img/products/stock-img-01.png') }}" alt="product">
+                                            @endif
                                         </a>
-                                        <a href="javascript:void(0);">{{ __('Lenovo IdeaPad 3') }}</a>
-                                    </div>												
-                                </td>							
-                                <td>{{ __('Computers') }}</td>
-                                <td>{{ __('Lenovo') }}</td>
-                                <td>$600</td>
-                                <td>{{ __('Pc') }}</td>
-                                <td>100</td>
+                                        <a href="{{ route('eshop360.products.show', [$instance->slug ?? '', $product]) }}">{{ $product->name }}</a>
+                                    </div>
+                                </td>
+                                <td>{{ $product->category->name ?? '—' }}</td>
+                                <td>{{ $product->brand->name ?? '—' }}</td>
+                                <td>{{ number_format($product->price, 2) }}</td>
+                                <td>{{ $product->unit ?? 'Pc' }}</td>
+                                <td>{{ $product->stocks->sum('quantity') }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <a href="javascript:void(0);" class="avatar avatar-sm me-2">
-                                            <img src="{{URL::asset('build/img/users/user-30.jpg')}}" alt="product">
-                                        </a>
-                                        <a href="javascript:void(0);">{{ __('James Kirwin') }}</a>
+                                        <a href="javascript:void(0);">{{ $product->creator->name ?? '—' }}</a>
                                     </div>
                                 </td>
                                 <td class="action-table-data">
                                     <div class="edit-delete-action">
-                                        <a class="me-2 edit-icon  p-2" href="{{url('product-details')}}">
+                                        <a class="me-2 edit-icon p-2" href="{{ route('eshop360.products.show', [$instance->slug ?? '', $product]) }}">
                                             <i data-feather="eye" class="feather-eye"></i>
                                         </a>
-                                        <a class="me-2 p-2" href="{{url('edit-product')}}" >
+                                        <a class="me-2 p-2" href="{{ route('eshop360.products.edit', [$instance->slug ?? '', $product]) }}">
                                             <i data-feather="edit" class="feather-edit"></i>
                                         </a>
-                                        <a data-bs-toggle="modal" data-bs-target="#delete-modal" class="p-2" href="javascript:void(0);">
-                                            <i data-feather="trash-2" class="feather-trash-2"></i>
-                                        </a>
+                                        <form action="{{ route('eshop360.products.destroy', [$instance->slug ?? '', $product]) }}" method="POST" class="d-inline" onsubmit="return confirm('{{ __('Are you sure?') }}')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="p-2 border-0 bg-transparent">
+                                                <i data-feather="trash-2" class="feather-trash-2"></i>
+                                            </button>
+                                        </form>
                                     </div>
                                 </td>
                             </tr>
+                            @empty
                             <tr>
-                                <td>
-                                    <label class="checkboxs">
-                                        <input type="checkbox">
-                                        <span class="checkmarks"></span>
-                                    </label>
-                                </td>
-                                <td>{{ __('PT002') }}</td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <a href="javascript:void(0);" class="avatar avatar-md me-2">
-                                            <img src="{{URL::asset('build/img/products/stock-img-06.png')}}" alt="product">
-                                        </a>
-                                        <a href="javascript:void(0);">{{ __('Beats Pro') }}</a>
-                                    </div>												
-                                </td>
-                                <td>{{ __('Electronics') }}</td>
-                                <td>{{ __('Beats') }}</td>
-                                <td>$160</td>
-                                <td>{{ __('Pc') }}</td>
-                                <td>140</td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <a href="javascript:void(0);" class="avatar avatar-sm me-2">
-                                            <img src="{{URL::asset('build/img/users/user-13.jpg')}}" alt="product">
-                                        </a>
-                                        <a href="javascript:void(0);">{{ __('Francis Chang') }}</a>
-                                    </div>
-                                </td>
-                                <td class="action-table-data">
-                                    <div class="edit-delete-action">
-                                        <a class="me-2 edit-icon p-2" href="{{url('product-details')}}">
-                                            <i data-feather="eye" class="action-eye"></i>
-                                        </a>
-                                        <a class="me-2 p-2" href="{{url('edit-product')}}">
-                                            <i data-feather="edit" class="feather-edit"></i>
-                                        </a>
-                                        <a data-bs-toggle="modal" data-bs-target="#delete-modal" class="p-2" href="javascript:void(0);">
-                                            <i data-feather="trash-2" class="feather-trash-2"></i>
-                                        </a>
-                                    </div>
-                                    
-                                </td>
+                                <td colspan="10" class="text-center">{{ __('No products found.') }}</td>
                             </tr>
-                            <tr>
-                                <td>
-                                    <label class="checkboxs">
-                                        <input type="checkbox">
-                                        <span class="checkmarks"></span>
-                                    </label>
-                                </td>
-                                <td>{{ __('PT003') }}</td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <a href="javascript:void(0);" class="avatar avatar-md me-2">
-                                            <img src="{{URL::asset('build/img/products/stock-img-02.png')}}" alt="product">
-                                        </a>
-                                        <a href="javascript:void(0);">{{ __('Nike Jordan') }}</a>
-                                    </div>												
-                                </td>											
-                                <td>{{ __('Shoe') }}</td>
-                                <td>{{ __('Nike') }}</td>
-                                <td>$110</td>
-                                <td>{{ __('Pc') }}</td>
-                                <td>300</td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <a href="javascript:void(0);" class="avatar avatar-sm me-2">
-                                            <img src="{{URL::asset('build/img/users/user-11.jpg')}}" alt="product">
-                                        </a>
-                                        <a href="javascript:void(0);">{{ __('Antonio Engle') }}</a>
-                                    </div>
-                                </td>
-                                <td class="action-table-data">
-                                    <div class="edit-delete-action">
-                                        <a class="me-2 edit-icon p-2" href="{{url('product-details')}}">
-                                            <i data-feather="eye" class="action-eye"></i>
-                                        </a>
-                                        <a class="me-2 p-2" href="{{url('edit-product')}}">
-                                            <i data-feather="edit" class="feather-edit"></i>
-                                        </a>
-                                        <a data-bs-toggle="modal" data-bs-target="#delete-modal" class="p-2" href="javascript:void(0);">
-                                            <i data-feather="trash-2" class="feather-trash-2"></i>
-                                        </a>
-                                    </div>
-                                    
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <label class="checkboxs">
-                                        <input type="checkbox">
-                                        <span class="checkmarks"></span>
-                                    </label>
-                                </td>
-                                <td>{{ __('PT004') }}</td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <a href="javascript:void(0);" class="avatar avatar-md me-2">
-                                            <img src="{{URL::asset('build/img/products/stock-img-03.png')}}" alt="product">
-                                        </a>
-                                        <a href="javascript:void(0);">{{ __('Apple Series 5 Watch') }}</a>
-                                    </div>												
-                                </td>											
-                                <td>{{ __('Electronics') }}</td>
-                                <td>{{ __('Apple') }}</td>
-                                <td>$120</td>
-                                <td>{{ __('Pc') }}</td>
-                                <td>450</td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <a href="javascript:void(0);" class="avatar avatar-sm me-2">
-                                            <img src="{{URL::asset('build/img/users/user-32.jpg')}}" alt="product">
-                                        </a>
-                                        <a href="javascript:void(0);">{{ __('Leo Kelly') }}</a>
-                                    </div>
-                                </td>
-                                <td class="action-table-data">
-                                    <div class="edit-delete-action">
-                                        <a class="me-2 edit-icon p-2" href="{{url('product-details')}}">
-                                            <i data-feather="eye" class="action-eye"></i>
-                                        </a>
-                                        <a class="me-2 p-2" href="{{url('edit-product')}}">
-                                            <i data-feather="edit" class="feather-edit"></i>
-                                        </a>
-                                        <a data-bs-toggle="modal" data-bs-target="#delete-modal" class="p-2" href="javascript:void(0);">
-                                            <i data-feather="trash-2" class="feather-trash-2"></i>
-                                        </a>
-                                    </div>
-                                    
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <label class="checkboxs">
-                                        <input type="checkbox">
-                                        <span class="checkmarks"></span>
-                                    </label>
-                                </td>
-                                <td>{{ __('PT005') }}</td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <a href="javascript:void(0);" class="avatar avatar-md me-2">
-                                            <img src="{{URL::asset('build/img/products/stock-img-04.png')}}" alt="product">
-                                        </a>
-                                        <a href="javascript:void(0);">{{ __('Amazon Echo Dot') }}</a>
-                                    </div>												
-                                </td>											
-                                <td>{{ __('Electronics') }}</td>
-                                <td>{{ __('Amazon') }}</td>
-                                <td>$80</td>
-                                <td>{{ __('Pc') }}</td>
-                                <td>320</td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <a href="javascript:void(0);" class="avatar avatar-sm me-2">
-                                            <img src="{{URL::asset('build/img/users/user-02.jpg')}}" alt="product">
-                                        </a>
-                                        <a href="javascript:void(0);">{{ __('Annette Walker') }}</a>
-                                    </div>
-                                </td>
-                                <td class="action-table-data">
-                                    <div class="edit-delete-action">
-                                        <a class="me-2 edit-icon p-2" href="{{url('product-details')}}">
-                                            <i data-feather="eye" class="action-eye"></i>
-                                        </a>
-                                        <a class="me-2 p-2" href="{{url('edit-product')}}">
-                                            <i data-feather="edit" class="feather-edit"></i>
-                                        </a>
-                                        <a data-bs-toggle="modal" data-bs-target="#delete-modal" class="p-2" href="javascript:void(0);">
-                                            <i data-feather="trash-2" class="feather-trash-2"></i>
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <label class="checkboxs">
-                                        <input type="checkbox">
-                                        <span class="checkmarks"></span>
-                                    </label>
-                                </td>
-                                <td>{{ __('PT006') }}</td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <a href="javascript:void(0);" class="avatar avatar-md me-2">
-                                            <img src="{{URL::asset('build/img/products/stock-img-05.png')}}" alt="product">
-                                        </a>
-                                        <a href="javascript:void(0);">{{ __('Sanford Chair Sofa') }}</a>
-                                    </div>												
-                                </td>											
-                                <td>{{ __('Furnitures') }}</td>
-                                <td>{{ __('Modern Wave') }}</td>
-                                <td>$320</td>
-                                <td>{{ __('Pc') }}</td>
-                                <td>650</td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <a href="javascript:void(0);" class="avatar avatar-sm me-2">
-                                            <img src="{{URL::asset('build/img/users/user-05.jpg')}}" alt="product">
-                                        </a>
-                                        <a href="javascript:void(0);">{{ __('John Weaver') }}</a>
-                                    </div>
-                                </td>
-                                <td class="action-table-data">
-                                    <div class="edit-delete-action">
-                                        <a class="me-2 edit-icon p-2" href="{{url('product-details')}}">
-                                            <i data-feather="eye" class="action-eye"></i>
-                                        </a>
-                                        <a class="me-2 p-2" href="{{url('edit-product')}}">
-                                            <i data-feather="edit" class="feather-edit"></i>
-                                        </a>
-                                        <a data-bs-toggle="modal" data-bs-target="#delete-modal" class="p-2" href="javascript:void(0);">
-                                            <i data-feather="trash-2" class="feather-trash-2"></i>
-                                        </a>
-                                    </div>
-                                    
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <label class="checkboxs">
-                                        <input type="checkbox">
-                                        <span class="checkmarks"></span>
-                                    </label>
-                                </td>
-                                <td>{{ __('PT007') }}</td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <a href="javascript:void(0);" class="avatar avatar-md me-2">
-                                            <img src="{{URL::asset('build/img/products/expire-product-01.png')}}" alt="product">
-                                        </a>
-                                        <a href="javascript:void(0);">{{ __('Red Premium Satchel') }}</a>
-                                    </div>												
-                                </td>											
-                                <td>{{ __('Bags') }}</td>
-                                <td>{{ __('Dior') }}</td>
-                                <td>$60</td>
-                                <td>{{ __('Pc') }}</td>
-                                <td>700</td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <a href="javascript:void(0);" class="avatar avatar-sm me-2">
-                                            <img src="{{URL::asset('build/img/users/user-08.jpg')}}" alt="product">
-                                        </a>
-                                        <a href="javascript:void(0);">{{ __('Gary Hennessy') }}</a>
-                                    </div>
-                                </td>
-                                <td class="action-table-data">
-                                    <div class="edit-delete-action">
-                                        <a class="me-2 edit-icon p-2" href="{{url('product-details')}}">
-                                            <i data-feather="eye" class="action-eye"></i>
-                                        </a>
-                                        <a class="me-2 p-2" href="{{url('edit-product')}}">
-                                            <i data-feather="edit" class="feather-edit"></i>
-                                        </a>
-                                        <a data-bs-toggle="modal" data-bs-target="#delete-modal" class="p-2" href="javascript:void(0);">
-                                            <i data-feather="trash-2" class="feather-trash-2"></i>
-                                        </a>
-                                    </div>	
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <label class="checkboxs">
-                                        <input type="checkbox">
-                                        <span class="checkmarks"></span>
-                                    </label>
-                                </td>
-                                <td>{{ __('PT008') }}</td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <a href="javascript:void(0);" class="avatar avatar-md me-2">
-                                            <img src="{{URL::asset('build/img/products/expire-product-02.png')}}" alt="product">
-                                        </a>
-                                        <a href="javascript:void(0);">{{ __('Iphone 14 Pro') }}</a>
-                                    </div>												
-                                </td>											
-                                <td>{{ __('Phone') }}</td>
-                                <td>{{ __('Apple') }}</td>
-                                <td>$540</td>
-                                <td>{{ __('Pc') }}</td>
-                                <td>630</td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <a href="javascript:void(0);" class="avatar avatar-sm me-2">
-                                            <img src="{{URL::asset('build/img/users/user-04.jpg')}}" alt="product">
-                                        </a>
-                                        <a href="javascript:void(0);">{{ __('Eleanor Panek') }}</a>
-                                    </div>
-                                </td>
-                                <td class="action-table-data">
-                                    <div class="edit-delete-action">
-                                        <a class="me-2 edit-icon p-2" href="{{url('product-details')}}">
-                                            <i data-feather="eye" class="action-eye"></i>
-                                        </a>
-                                        <a class="me-2 p-2" href="{{url('edit-product')}}">
-                                            <i data-feather="edit" class="feather-edit"></i>
-                                        </a>
-                                        <a data-bs-toggle="modal" data-bs-target="#delete-modal" class="p-2" href="javascript:void(0);">
-                                            <i data-feather="trash-2" class="feather-trash-2"></i>
-                                        </a>
-                                    </div>	
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <label class="checkboxs">
-                                        <input type="checkbox">
-                                        <span class="checkmarks"></span>
-                                    </label>
-                                </td>
-                                <td>{{ __('PT009') }}</td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <a href="javascript:void(0);" class="avatar avatar-md me-2">
-                                            <img src="{{URL::asset('build/img/products/expire-product-03.png')}}" alt="product">
-                                        </a>
-                                        <a href="javascript:void(0);">{{ __('Gaming Chair') }}</a>
-                                    </div>												
-                                </td>											
-                                <td>{{ __('Furniture') }}</td>
-                                <td>{{ __('Arlime') }}</td>
-                                <td>$200</td>
-                                <td>{{ __('Pc') }}</td>
-                                <td>410</td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <a href="javascript:void(0);" class="avatar avatar-sm me-2">
-                                            <img src="{{URL::asset('build/img/users/user-09.jpg')}}" alt="product">
-                                        </a>
-                                        <a href="javascript:void(0);">{{ __('William Levy') }}</a>
-                                    </div>
-                                </td>
-                                <td class="action-table-data">
-                                    <div class="edit-delete-action">
-                                        <a class="me-2 edit-icon p-2" href="{{url('product-details')}}">
-                                            <i data-feather="eye" class="action-eye"></i>
-                                        </a>
-                                        <a class="me-2 p-2" href="{{url('edit-product')}}">
-                                            <i data-feather="edit" class="feather-edit"></i>
-                                        </a>
-                                        <a data-bs-toggle="modal" data-bs-target="#delete-modal" class="p-2" href="javascript:void(0);">
-                                            <i data-feather="trash-2" class="feather-trash-2"></i>
-                                        </a>
-                                    </div>	
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <label class="checkboxs">
-                                        <input type="checkbox">
-                                        <span class="checkmarks"></span>
-                                    </label>
-                                </td>
-                                <td>{{ __('PT010') }}</td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <a href="javascript:void(0);" class="avatar avatar-md me-2">
-                                            <img src="{{URL::asset('build/img/products/expire-product-04.png')}}" alt="product">
-                                        </a>
-                                        <a href="javascript:void(0);">{{ __('Borealis Backpack') }}</a>
-                                    </div>												
-                                </td>											
-                                <td>{{ __('Bags') }}</td>
-                                <td>{{ __('The North Face') }}</td>
-                                <td>$45</td>
-                                <td>{{ __('Pc') }}</td>
-                                <td>550</td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <a href="javascript:void(0);" class="avatar avatar-sm me-2">
-                                            <img src="{{URL::asset('build/img/users/user-10.jpg')}}" alt="product">
-                                        </a>
-                                        <a href="javascript:void(0);">{{ __('Charlotte Klotz') }}</a>
-                                    </div>
-                                </td>
-                                <td class="action-table-data">
-                                    <div class="edit-delete-action">
-                                        <a class="me-2 edit-icon p-2" href="{{url('product-details')}}">
-                                            <i data-feather="eye" class="action-eye"></i>
-                                        </a>
-                                        <a class="me-2 p-2" href="{{url('edit-product')}}">
-                                            <i data-feather="edit" class="feather-edit"></i>
-                                        </a>
-                                        <a data-bs-toggle="modal" data-bs-target="#delete-modal" class="p-2" href="javascript:void(0);">
-                                            <i data-feather="trash-2" class="feather-trash-2"></i>
-                                        </a>
-                                    </div>	
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <label class="checkboxs">
-                                        <input type="checkbox">
-                                        <span class="checkmarks"></span>
-                                    </label>
-                                </td>
-                                <td>{{ __('PT010') }}</td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <a href="javascript:void(0);" class="avatar avatar-md me-2">
-                                            <img src="{{URL::asset('build/img/products/expire-product-04.png')}}" alt="product">
-                                        </a>
-                                        <a href="javascript:void(0);">{{ __('Borealis Backpack') }}</a>
-                                    </div>												
-                                </td>											
-                                <td>{{ __('Bags') }}</td>
-                                <td>{{ __('The North Face') }}</td>
-                                <td>$45</td>
-                                <td>{{ __('Pc') }}</td>
-                                <td>550</td>
-                                <td>
-                                    <div class="userimgname">
-                                        <span class="avatar avatar-sm">
-                                        <a href="javascript:void(0);">
-                                            <img src="{{URL::asset('build/img/users/user-10.jpg')}}" alt="product">
-                                        </a>
-                                    </span>
-                                            <a href="javascript:void(0);">{{ __('Charlotte Klotz') }}</a>
-                                    </div>
-                                </td>
-                                <td class="action-table-data">
-                                    <div class="edit-delete-action">
-                                        <a class="me-2 edit-icon p-2" href="{{url('product-details')}}">
-                                            <i data-feather="eye" class="action-eye"></i>
-                                        </a>
-                                        <a class="me-2 p-2" href="{{url('edit-product')}}">
-                                            <i data-feather="edit" class="feather-edit"></i>
-                                        </a>
-                                        <a data-bs-toggle="modal" data-bs-target="#delete-modal" class="p-2" href="javascript:void(0);">
-                                            <i data-feather="trash-2" class="feather-trash-2"></i>
-                                        </a>
-                                    </div>	
-                                </td>
-                            </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
+                @if($products->hasPages())
+                <div class="p-3">
+                    {{ $products->links() }}
+                </div>
+                @endif
             </div>
         </div>
         <!-- /product list -->
+
+<!-- Import Products Modal -->
+<div class="modal fade" id="import-products" tabindex="-1" aria-labelledby="importProductsLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="importProductsLabel">{{ __('Import Products') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ route('eshop360.products.store', $instance->slug ?? '') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="import-file-list" class="form-label">{{ __('Upload File') }} <span class="text-danger">*</span></label>
+                        <input type="file" class="form-control" id="import-file-list" name="import_file" required accept=".csv,.xlsx,.xls">
+                        <small class="text-muted">{{ __('Accepted formats: CSV, XLSX, XLS.') }}</small>
+                    </div>
+                    <div class="alert alert-info mb-0">
+                        <i class="ti ti-info-circle me-1"></i>
+                        {{ __('The file should contain columns: Name, SKU, Category, Brand, Price, Unit, Quantity.') }}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ __('Import') }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 </x-dashboard::layouts.master>

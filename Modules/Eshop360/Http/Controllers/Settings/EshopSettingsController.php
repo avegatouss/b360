@@ -5,15 +5,17 @@ namespace Modules\Eshop360\Http\Controllers\Settings;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\Cache;
-use Modules\Core\Support\CurrentInstance;
+use Modules\Eshop360\Services\EshopSettingsService;
 
 class EshopSettingsController extends Controller
 {
+    public function __construct(private readonly EshopSettingsService $settings)
+    {
+    }
+
     public function pos()
     {
-        $instanceId = CurrentInstance::get()?->id ?? 0;
-        $settings = Cache::get("eshop_pos_settings_{$instanceId}", $this->defaultPosSettings());
+        $settings = $this->settings->get('pos');
 
         return view('eshop360::pos.settings', compact('settings'));
     }
@@ -35,8 +37,7 @@ class EshopSettingsController extends Controller
             'barcode_scanner'      => 'boolean',
         ]);
 
-        $instanceId = CurrentInstance::get()?->id ?? 0;
-        Cache::put("eshop_pos_settings_{$instanceId}", $validated);
+        $this->settings->set('pos', $validated);
 
         return redirect()->route('eshop360.settings.pos')
             ->with('success', __('POS settings updated successfully.'));
@@ -44,9 +45,8 @@ class EshopSettingsController extends Controller
 
     public function printer()
     {
-        $instance = CurrentInstance::get();
-        $instanceId = $instance?->id ?? 0;
-        $settings = Cache::get("eshop_printer_settings_{$instanceId}", $this->defaultPrinterSettings());
+        $instance = \Modules\Core\Support\CurrentInstance::get();
+        $settings = $this->settings->get('printer');
 
         return view('eshop360::settings.printer', compact('settings', 'instance'));
     }
@@ -76,8 +76,7 @@ class EshopSettingsController extends Controller
             $validated['logo'] = $request->file('logo')->store('printer_settings', 'public');
         }
 
-        $instanceId = CurrentInstance::get()?->id ?? 0;
-        Cache::put("eshop_printer_settings_{$instanceId}", $validated);
+        $this->settings->set('printer', $validated);
 
         return redirect()->route('eshop360.settings.printer')
             ->with('success', __('Printer settings updated successfully.'));
@@ -85,8 +84,7 @@ class EshopSettingsController extends Controller
 
     public function invoice()
     {
-        $instanceId = CurrentInstance::get()?->id ?? 0;
-        $settings = Cache::get("eshop_invoice_settings_{$instanceId}", $this->defaultInvoiceSettings());
+        $settings = $this->settings->get('invoice');
 
         return view('eshop360::invoices.settings', compact('settings'));
     }
@@ -117,68 +115,9 @@ class EshopSettingsController extends Controller
             $validated['company_logo'] = $request->file('company_logo')->store('invoice_settings', 'public');
         }
 
-        $instanceId = CurrentInstance::get()?->id ?? 0;
-        Cache::put("eshop_invoice_settings_{$instanceId}", $validated);
+        $this->settings->set('invoice', $validated);
 
         return redirect()->route('eshop360.settings.invoice')
             ->with('success', __('Invoice settings updated successfully.'));
-    }
-
-    private function defaultPosSettings(): array
-    {
-        return [
-            'default_layout'       => 'layout1',
-            'default_warehouse_id' => null,
-            'default_customer_id'  => null,
-            'payment_methods'      => ['cash', 'card'],
-            'tax_inclusive'         => false,
-            'sound_enabled'        => true,
-            'print_receipt'        => true,
-            'products_per_page'    => 24,
-            'default_discount'     => 0,
-            'allow_manual_price'   => false,
-            'barcode_scanner'      => true,
-        ];
-    }
-
-    private function defaultPrinterSettings(): array
-    {
-        return [
-            'receipt_printer'      => '',
-            'receipt_width'        => 80,
-            'receipt_header'       => '',
-            'receipt_footer'       => '',
-            'print_logo'           => false,
-            'logo'                 => null,
-            'auto_print_receipt'   => false,
-            'print_kitchen_order'  => false,
-            'kitchen_printer'      => '',
-            'barcode_printer'      => '',
-            'barcode_label_width'  => 40,
-            'barcode_label_height' => 30,
-        ];
-    }
-
-    private function defaultInvoiceSettings(): array
-    {
-        return [
-            'company_name'       => '',
-            'company_address'    => '',
-            'company_phone'      => '',
-            'company_email'      => '',
-            'company_logo'       => null,
-            'tax_number'         => '',
-            'default_terms'      => '',
-            'default_footer'     => '',
-            'default_due_days'   => 30,
-            'default_template'   => 'default',
-            'currency_symbol'    => '$',
-            'currency_position'  => 'before',
-            'show_tax_breakdown' => true,
-            'show_payment_info'  => true,
-            'bank_name'          => '',
-            'bank_account'       => '',
-            'bank_iban'          => '',
-        ];
     }
 }

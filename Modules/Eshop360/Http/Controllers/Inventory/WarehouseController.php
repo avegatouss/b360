@@ -15,7 +15,7 @@ class WarehouseController extends Controller
     public function __construct()
     {
         $this->middleware('can:eshop.inventory.view')->only('index');
-        $this->middleware('can:eshop.inventory.manage')->only(['store', 'update', 'destroy']);
+        $this->middleware('can:eshop.inventory.manage')->only(['store', 'storeStore', 'update', 'destroy']);
     }
 
     public function index(Request $request)
@@ -36,7 +36,32 @@ class WarehouseController extends Controller
         return view('eshop360::inventory.warehouses.index', compact('warehouses'));
     }
 
-    public function store(Request $request): RedirectResponse
+    /**
+     * Quick-create a store (AJAX from product form).
+     */
+    public function storeStore(Request $request): JsonResponse|RedirectResponse
+    {
+        $instance = CurrentInstance::get();
+
+        $validated = $request->validate([
+            'name'         => 'required|string|max:255',
+            'warehouse_id' => 'nullable|exists:eshop_warehouses,id',
+        ]);
+
+        $validated['instance_id'] = $instance->id;
+        $validated['is_active'] = true;
+        $validated['code'] = strtoupper(substr(preg_replace('/[^a-zA-Z0-9]/', '', $validated['name']), 0, 6)) . rand(100, 999);
+
+        $store = Store::create($validated);
+
+        if ($request->wantsJson()) {
+            return response()->json(['id' => $store->id, 'name' => $store->name]);
+        }
+
+        return redirect()->back()->with('success', __('Store created successfully.'));
+    }
+
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
         $instance = CurrentInstance::get();
 
@@ -70,6 +95,10 @@ class WarehouseController extends Controller
             $storeData['warehouse_id'] = $warehouse->id;
             $storeData['is_active'] = true;
             Store::create($storeData);
+        }
+
+        if ($request->wantsJson()) {
+            return response()->json(['id' => $warehouse->id, 'name' => $warehouse->name]);
         }
 
         return redirect()->route('eshop360.warehouses.index', $instance->slug)

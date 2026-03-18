@@ -33,6 +33,17 @@ if (!function_exists('currency')) {
     }
 }
 
+if (!function_exists('date_setting')) {
+    /**
+     * Return the date format from settings, or fall back to d/m/Y.
+     * If a custom format string is provided, it is returned as-is.
+     */
+    function date_setting(?string $format = null): string
+    {
+        return $format ?? setting('company.date_format', 'd/m/Y');
+    }
+}
+
 if (!function_exists('format_currency')) {
     /**
      * Format an amount with the resolved currency.

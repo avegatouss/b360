@@ -16,6 +16,18 @@ final class CoreHooksProvider implements RegistersHooks
 
     public function registerHooks(HookRegistry $registry): void
     {
+        // Documentation — visible to all authenticated users
+        $registry->addMenu(new MenuItem(
+            id: 'core-documentation',
+            label: 'Documentation',
+            route: 'documentation.index',
+            icon: 'ti ti-book-2',
+            priority: 5,
+            group: 'admin',
+            activePattern: 'documentation.*',
+            visibleWhen: fn ($user, $instance) => $user !== null,
+        ));
+
         // Admin parent menu — Systeme
         $registry->addMenu(new MenuItem(
             id: 'core-system',

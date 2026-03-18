@@ -23,7 +23,7 @@ class BrandController extends Controller
         return view('eshop360::catalog.brands.index', compact('brands'));
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
         $validated = $request->validate([
             'name'      => 'required|string|max:255',
@@ -38,7 +38,11 @@ class BrandController extends Controller
             $validated['logo'] = $request->file('logo')->store('brands', 'public');
         }
 
-        Brand::create($validated);
+        $brand = Brand::create($validated);
+
+        if ($request->wantsJson()) {
+            return response()->json(['id' => $brand->id, 'name' => $brand->name]);
+        }
 
         return redirect()->route('eshop360.brands.index')
             ->with('success', __('Brand created successfully.'));

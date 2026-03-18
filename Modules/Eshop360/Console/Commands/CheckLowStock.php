@@ -14,10 +14,16 @@ class CheckLowStock extends Command
 
     public function handle(): int
     {
+        // Check if low-stock alerts are enabled in settings
+        if (!setting('notifications.alert_low_stock_enabled', true)) {
+            $this->info('Low stock alerts are disabled in settings.');
+            return self::SUCCESS;
+        }
+
         $instances = Instance::where('is_active', true)->get();
 
         foreach ($instances as $instance) {
-            $threshold = config('eshop360.stock.low_stock_threshold', 10);
+            $threshold = (int) setting('notifications.alert_low_stock_threshold', config('eshop360.stock.low_stock_threshold', 10));
 
             $lowStockProducts = Product::where('instance_id', $instance->id)
                 ->whereHas('stocks', function ($q) use ($threshold) {

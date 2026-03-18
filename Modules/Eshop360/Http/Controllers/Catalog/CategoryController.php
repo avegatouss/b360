@@ -27,7 +27,24 @@ class CategoryController extends Controller
         return view('eshop360::catalog.categories.index', compact('categories', 'parentCategories'));
     }
 
-    public function store(Request $request): RedirectResponse
+    public function subcategories(Request $request)
+    {
+        $subcategories = Category::with(['parent'])
+            ->whereNotNull('parent_id')
+            ->when($request->search, fn ($q, $s) => $q->where('name', 'like', "%{$s}%"))
+            ->when($request->filled('parent_id'), fn ($q) => $q->where('parent_id', $request->parent_id))
+            ->when($request->filled('is_active'), fn ($q) => $q->where('is_active', $request->boolean('is_active')))
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->paginate(30)
+            ->withQueryString();
+
+        $parentCategories = Category::roots()->active()->orderBy('name')->get();
+
+        return view('eshop360::catalog.categories.subcategories', compact('subcategories', 'parentCategories'));
+    }
+
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
         $validated = $request->validate([
             'name'        => 'required|string|max:255',
@@ -45,7 +62,11 @@ class CategoryController extends Controller
             $validated['image'] = $request->file('image')->store('categories', 'public');
         }
 
-        Category::create($validated);
+        $category = Category::create($validated);
+
+        if ($request->wantsJson()) {
+            return response()->json(['id' => $category->id, 'name' => $category->name]);
+        }
 
         return redirect()->route('eshop360.categories.index')
             ->with('success', __('Category created successfully.'));

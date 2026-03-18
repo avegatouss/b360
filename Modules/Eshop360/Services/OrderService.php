@@ -5,11 +5,13 @@ namespace Modules\Eshop360\Services;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Modules\Core\Support\CurrentInstance;
+use Modules\Eshop360\Events\ReportDataChanged;
 use Modules\Eshop360\Models\DistributionChannel;
 use Modules\Eshop360\Models\Order;
 use Modules\Eshop360\Models\OrderItem;
 use Modules\Eshop360\Models\Payment;
 use Modules\Eshop360\Models\Product;
+use Modules\Eshop360\Models\ProductVariation;
 
 class OrderService
 {
@@ -103,7 +105,9 @@ class OrderService
                 OrderItem::create([
                     'order_id' => $order->id,
                     'product_id' => $item['product']->id,
+                    'variation_id' => $item['variation_id'] ?? null,
                     'product_name' => $item['product_name'],
+                    'variation_name' => $item['variation_name'] ?? null,
                     'sku' => $item['sku'],
                     'quantity' => $item['quantity'],
                     'unit_price' => $item['unit_price'],
@@ -138,6 +142,17 @@ class OrderService
             }
 
             $this->syncMarginArtifacts($order);
+
+            ReportDataChanged::dispatch($order->instance_id, 'sales');
+
+            // Dispatch webhook
+            app(WebhookService::class)->dispatch('order.created', [
+                'order_id' => $order->id,
+                'order_number' => $order->order_number,
+                'total' => (float) $order->total,
+                'customer_id' => $order->customer_id,
+                'source' => $order->source,
+            ]);
 
             return $order->fresh(['items', 'payments', 'channel', 'channelMarginLogs']);
         });
@@ -273,9 +288,15 @@ class OrderService
     ): array
     {
         $product = Product::findOrFail($item['product_id']);
+        $variationId = $item['variation_id'] ?? null;
+        $variation = $variationId ? ProductVariation::find($variationId) : null;
         $quantity = max(1, (int) ($item['quantity'] ?? 1));
         $pricing = $pricingService->resolve($product, $channelId);
-        $unitPrice = round((float) ($item['unit_price'] ?? $item['price'] ?? $pricing['unit_price']), 2);
+
+        // Variation price takes precedence over channel/product pricing
+        $unitPrice = $variation && $variation->price !== null
+            ? round((float) $variation->price, 2)
+            : round((float) ($item['unit_price'] ?? $item['price'] ?? $pricing['unit_price']), 2);
         $lineSubtotal = $this->usesPrediscountedUnitPrice($item, $unitPrice)
             ? round((float) $item['original_price'] * $quantity, 2)
             : round($unitPrice * $quantity, 2);
@@ -291,8 +312,10 @@ class OrderService
 
         return [
             'product' => $product,
+            'variation_id' => $variation?->id,
             'product_name' => (string) ($item['product_name'] ?? $item['name'] ?? $product->name),
-            'sku' => (string) ($item['sku'] ?? $product->sku ?? ''),
+            'variation_name' => $variation?->name ?? ($item['variation_name'] ?? null),
+            'sku' => (string) ($item['sku'] ?? $variation?->sku ?? $product->sku ?? ''),
             'quantity' => $quantity,
             'unit_price' => $unitPrice,
             'line_subtotal' => $lineSubtotal,

@@ -333,22 +333,24 @@ final class PdfService
     }
 
     /**
-     * Build company data array from instance settings.
+     * Build company data array from DB settings (setting() helper),
+     * with fallback to instance model attributes for backward compat.
      */
     private function companyData(mixed $instance): array
     {
         $s = $instance?->settings ?? [];
 
         return [
-            'name' => $instance?->name ?? '',
-            'address' => $s['address'] ?? '',
-            'city' => $s['city'] ?? '',
-            'country' => $s['country'] ?? '',
-            'phone' => $s['phone'] ?? '',
-            'email' => $s['email'] ?? '',
-            'website' => $s['website'] ?? '',
-            'tax_number' => $s['tax_number'] ?? '',
+            'name' => setting('company.company_name', $instance?->name ?? config('app.name')),
+            'legal_name' => setting('company.legal_name', ''),
+            'tax_number' => setting('company.tax_number_nif', $s['tax_number'] ?? ''),
             'gst_number' => $s['gst_number'] ?? '',
+            'address' => setting('company.address', $s['address'] ?? ''),
+            'city' => setting('company.city', $s['city'] ?? ''),
+            'country' => setting('company.country', $s['country'] ?? ''),
+            'phone' => setting('company.phone', $s['phone'] ?? ''),
+            'email' => setting('company.email', $s['email'] ?? ''),
+            'website' => setting('company.website', $s['website'] ?? ''),
             'logo' => $s['logo'] ?? null,
         ];
     }

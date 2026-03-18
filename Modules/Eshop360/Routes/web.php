@@ -51,8 +51,6 @@ use Modules\Eshop360\Http\Controllers\Project\ProjectController;
 use Modules\Eshop360\Http\Controllers\Project\TaskController;
 use Modules\Eshop360\Http\Controllers\Project\EventController;
 use Modules\Eshop360\Http\Controllers\Invoice\RecurringInvoiceController;
-// CodifarmController import kept for reference — controller is deprecated, routes removed
-// use Modules\Eshop360\Http\Controllers\Codifarm\CodifarmController;
 use Modules\Eshop360\Http\Controllers\Portal\CustomerPortalController;
 use Modules\Eshop360\Http\Controllers\ChannelPortal\ChannelPortalDashboardController;
 use Modules\Eshop360\Http\Controllers\ChannelPortal\ChannelPortalOrderController;
@@ -114,11 +112,18 @@ Route::middleware([
         Route::get('/{product}/edit', [ProductController::class, 'edit'])->middleware('can:eshop.products.manage')->name('edit');
         Route::put('/{product}', [ProductController::class, 'update'])->middleware('can:eshop.products.manage')->name('update');
         Route::delete('/{product}', [ProductController::class, 'destroy'])->middleware('can:eshop.products.manage')->name('destroy');
+
+        // Product Variations
+        Route::get('/{product}/variations', [ProductController::class, 'variations'])->middleware('can:eshop.products.manage')->name('variations');
+        Route::post('/{product}/variations', [ProductController::class, 'storeVariation'])->middleware('can:eshop.products.manage')->name('variations.store');
+        Route::put('/{product}/variations/{variation}', [ProductController::class, 'updateVariation'])->middleware('can:eshop.products.manage')->name('variations.update');
+        Route::delete('/{product}/variations/{variation}', [ProductController::class, 'destroyVariation'])->middleware('can:eshop.products.manage')->name('variations.destroy');
     });
 
     // ─── Categories ──────────────────────────────
     Route::prefix('categories')->name('eshop360.categories.')->middleware('can:eshop.products.view')->group(function () {
         Route::get('/', [CategoryController::class, 'index'])->name('index');
+        Route::get('/subcategories', [CategoryController::class, 'subcategories'])->name('subcategories');
         Route::post('/', [CategoryController::class, 'store'])->middleware('can:eshop.products.manage')->name('store');
         Route::put('/{category}', [CategoryController::class, 'update'])->middleware('can:eshop.products.manage')->name('update');
         Route::delete('/{category}', [CategoryController::class, 'destroy'])->middleware('can:eshop.products.manage')->name('destroy');
@@ -135,6 +140,7 @@ Route::middleware([
     // ─── Barcodes ─────────────────────────────────
     Route::prefix('barcodes')->name('eshop360.barcodes.')->middleware('can:eshop.products.view')->group(function () {
         Route::get('/', [BarcodeController::class, 'index'])->name('index');
+        Route::get('/qrcode', [BarcodeController::class, 'qrcode'])->name('qrcode');
         Route::post('/generate', [BarcodeController::class, 'generate'])->name('generate');
         Route::post('/print-batch', [BarcodeController::class, 'printBatch'])->name('print-batch');
     });
@@ -142,6 +148,7 @@ Route::middleware([
     // ─── Inventory / Stocks ──────────────────────
     Route::prefix('stocks')->name('eshop360.stocks.')->middleware('can:eshop.inventory.view')->group(function () {
         Route::get('/', [StockController::class, 'index'])->name('index');
+        Route::post('/', [StockController::class, 'store'])->middleware('can:eshop.inventory.manage')->name('store');
         Route::put('/{stock}', [StockController::class, 'update'])->middleware('can:eshop.inventory.manage')->name('update');
         Route::delete('/{stock}', [StockController::class, 'destroy'])->middleware('can:eshop.inventory.manage')->name('destroy');
         Route::get('/low', [StockController::class, 'lowStock'])->name('low');
@@ -175,6 +182,9 @@ Route::middleware([
         Route::put('/{warehouse}', [WarehouseController::class, 'update'])->name('update');
         Route::delete('/{warehouse}', [WarehouseController::class, 'destroy'])->name('destroy');
     });
+
+    // ─── Stores (quick-create) ───────────────────
+    Route::post('stores', [WarehouseController::class, 'storeStore'])->middleware('can:eshop.inventory.manage')->name('eshop360.stores.store');
 
     // ─── Sales ───────────────────────────────────
     Route::prefix('sales')->name('eshop360.sales.')->middleware('can:eshop.sales.view')->group(function () {
@@ -267,13 +277,16 @@ Route::middleware([
         Route::get('/', [InvoiceController::class, 'index'])->name('index');
         Route::get('/create', [InvoiceController::class, 'create'])->middleware('can:eshop.invoices.manage')->name('create');
         Route::post('/', [InvoiceController::class, 'store'])->middleware('can:eshop.invoices.manage')->name('store');
-        Route::get('/{invoice}', [InvoiceController::class, 'show'])->name('show');
-        Route::put('/{invoice}', [InvoiceController::class, 'update'])->middleware('can:eshop.invoices.manage')->name('update');
-        Route::delete('/{invoice}', [InvoiceController::class, 'destroy'])->middleware('can:eshop.invoices.manage')->name('destroy');
+
+        // Config/settings routes MUST come before /{invoice} to avoid route parameter conflicts
         Route::get('/config/templates', [InvoiceController::class, 'templates'])->middleware('can:eshop.settings.manage')->name('templates');
         Route::get('/config/settings', [InvoiceController::class, 'settings'])->middleware('can:eshop.settings.manage')->name('settings');
         Route::put('/config/settings', [InvoiceController::class, 'updateSettings'])->middleware('can:eshop.settings.manage')->name('settings.update');
         Route::get('/reports/summary', [InvoiceController::class, 'report'])->name('report');
+
+        Route::get('/{invoice}', [InvoiceController::class, 'show'])->name('show');
+        Route::put('/{invoice}', [InvoiceController::class, 'update'])->middleware('can:eshop.invoices.manage')->name('update');
+        Route::delete('/{invoice}', [InvoiceController::class, 'destroy'])->middleware('can:eshop.invoices.manage')->name('destroy');
     });
 
     // ─── Recurring Invoices ─────────────────────────
@@ -489,7 +502,7 @@ Route::middleware([
     });
 
     // ─── Communication: Messages ─────────────────────
-    Route::prefix('messages')->name('eshop360.messages.')->group(function () {
+    Route::prefix('messages')->name('eshop360.messages.')->middleware('can:eshop.customers.view')->group(function () {
         Route::get('/inbox', [MessageController::class, 'inbox'])->name('inbox');
         Route::get('/sent', [MessageController::class, 'sent'])->name('sent');
         Route::get('/{message}', [MessageController::class, 'show'])->name('show');
@@ -498,7 +511,7 @@ Route::middleware([
     });
 
     // ─── Communication: SMS Gateways ─────────────────
-    Route::prefix('communication/sms-gateways')->name('eshop360.sms-gateways.')->group(function () {
+    Route::prefix('communication/sms-gateways')->name('eshop360.sms-gateways.')->middleware('can:eshop.settings.manage')->group(function () {
         Route::get('/', [SmsGatewayController::class, 'index'])->name('index');
         Route::get('/create', [SmsGatewayController::class, 'create'])->name('create');
         Route::post('/', [SmsGatewayController::class, 'store'])->name('store');
@@ -510,7 +523,7 @@ Route::middleware([
     });
 
     // ─── Communication: Bulk Messages ──────────────────
-    Route::prefix('communication/bulk')->name('eshop360.bulk-messages.')->group(function () {
+    Route::prefix('communication/bulk')->name('eshop360.bulk-messages.')->middleware('can:eshop.customers.manage')->group(function () {
         Route::get('/compose', [BulkMessageController::class, 'compose'])->name('compose');
         Route::post('/preview', [BulkMessageController::class, 'preview'])->name('preview');
         Route::post('/send', [BulkMessageController::class, 'send'])->name('send');
@@ -528,7 +541,7 @@ Route::middleware([
     });
 
     // ─── Communication: Email Templates ─────────────
-    Route::prefix('communication/email-templates')->name('eshop360.email-templates.')->group(function () {
+    Route::prefix('communication/email-templates')->name('eshop360.email-templates.')->middleware('can:eshop.settings.manage')->group(function () {
         Route::get('/', [EmailTemplateController::class, 'index'])->name('index');
         Route::get('/{template}/edit', [EmailTemplateController::class, 'edit'])->name('edit');
         Route::put('/{template}', [EmailTemplateController::class, 'update'])->name('update');
@@ -590,10 +603,16 @@ Route::middleware([
         Route::patch('/{id}/toggle', [\Modules\Eshop360\Http\Controllers\Payment\PaymentGatewayController::class, 'toggle'])->name('toggle');
     });
 
-    // ─── CODIFARM (DEPRECATED) ────────────────────────
-    // All codifarm routes have been merged into the channels group above.
-    // These legacy routes redirect to channel equivalents for backward compatibility.
-    // TODO: Remove after full migration verification.
+    // ─── Webhooks Management ────────────────────────────
+    Route::prefix('webhooks')->name('eshop360.webhooks.')->middleware('can:eshop.settings.manage')->group(function () {
+        Route::get('/', [\Modules\Eshop360\Http\Controllers\Settings\WebhookController::class, 'index'])->name('index');
+        Route::post('/', [\Modules\Eshop360\Http\Controllers\Settings\WebhookController::class, 'store'])->name('store');
+        Route::put('/{webhook}', [\Modules\Eshop360\Http\Controllers\Settings\WebhookController::class, 'update'])->name('update');
+        Route::delete('/{webhook}', [\Modules\Eshop360\Http\Controllers\Settings\WebhookController::class, 'destroy'])->name('destroy');
+        Route::post('/{webhook}/ping', [\Modules\Eshop360\Http\Controllers\Settings\WebhookController::class, 'ping'])->name('ping');
+        Route::get('/{webhook}/logs', [\Modules\Eshop360\Http\Controllers\Settings\WebhookController::class, 'logs'])->name('logs');
+        Route::post('/{webhook}/reset', [\Modules\Eshop360\Http\Controllers\Settings\WebhookController::class, 'resetFailures'])->name('reset');
+    });
 
     // ─── Invoice PDF / Email ──────────────────────────
     Route::prefix('invoices')->name('eshop360.invoices.')->middleware('can:eshop.invoices.view')->group(function () {

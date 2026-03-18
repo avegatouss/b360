@@ -50,8 +50,8 @@ final class DemoPromotionsSeeder
     {
         $discounts = [
             ['name' => '[DEMO] Remise grossiste 10%', 'type' => 'percentage', 'value' => 10, 'plan_type' => 'standard', 'applies_to' => 'all'],
-            ['name' => '[DEMO] Remise lot antibiotiques', 'type' => 'percentage', 'value' => 8, 'plan_type' => 'standard', 'applies_to' => 'category'],
-            ['name' => '[DEMO] Promo paracetamol 500 XOF', 'type' => 'fixed', 'value' => 500, 'plan_type' => 'standard', 'applies_to' => 'product'],
+            ['name' => '[DEMO] Remise lot antibiotiques', 'type' => 'percentage', 'value' => 8, 'plan_type' => 'standard', 'applies_to' => 'specific'],
+            ['name' => '[DEMO] Promo paracetamol 500 XOF', 'type' => 'fixed', 'value' => 500, 'plan_type' => 'standard', 'applies_to' => 'specific'],
         ];
 
         foreach ($discounts as $d) {

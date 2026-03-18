@@ -14,13 +14,21 @@ class CheckExpiringProducts extends Command
 
     public function handle(): int
     {
+        // Check if expiry alerts are enabled in settings
+        if (!setting('notifications.alert_expiry_enabled', true)) {
+            $this->info('Expiry alerts are disabled in settings.');
+            return self::SUCCESS;
+        }
+
+        $alertDays = (int) setting('notifications.alert_expiry_days', 30);
+
         $instances = Instance::where('is_active', true)->get();
 
         foreach ($instances as $instance) {
-            // Query stocks expiring within 30 days (includes 7 days and 0 days)
+            // Query stocks expiring within the configured alert period
             $expiringStocks = Stock::where('instance_id', $instance->id)
                 ->whereNotNull('expiry_date')
-                ->where('expiry_date', '<=', now()->addDays(30))
+                ->where('expiry_date', '<=', now()->addDays($alertDays))
                 ->where('expiry_date', '>=', now()->subDay()) // include just-expired
                 ->where('quantity', '>', 0)
                 ->with(['product', 'warehouse'])

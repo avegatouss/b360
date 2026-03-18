@@ -31,8 +31,8 @@
 
     <style>
         :root {
-            --cp-primary: __BLADE_BLOCK_11__;
-            --cp-sidebar-bg: __BLADE_BLOCK_12__;
+            --cp-primary: {{ $primaryColor }};
+            --cp-sidebar-bg: {{ $sidebarBg }};
         }
         .cp-sidebar {
             position: fixed;
@@ -268,11 +268,11 @@
 </div>
 
 <!-- jQuery -->
-<script src="__BLADE_BLOCK_40__"></script>
+<script src="{{ asset('build/js/jquery-3.7.1.min.js') }}"></script>
 <!-- Feather Icon JS -->
-<script src="__BLADE_BLOCK_41__"></script>
+<script src="{{ asset('build/js/feather.min.js') }}"></script>
 <!-- Bootstrap Core JS -->
-<script src="__BLADE_BLOCK_42__"></script>
+<script src="{{ asset('build/js/bootstrap.bundle.min.js') }}"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

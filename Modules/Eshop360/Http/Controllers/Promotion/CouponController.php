@@ -112,6 +112,20 @@ class CouponController extends Controller
             ], 422);
         }
 
+        // Check per-user usage limit
+        if ($coupon->max_uses_per_user > 0 && auth()->check()) {
+            $userUsageCount = \Modules\Eshop360\Models\Order::where('coupon_code', $coupon->code)
+                ->where('biller_id', auth()->id())
+                ->count();
+
+            if ($userUsageCount >= $coupon->max_uses_per_user) {
+                return response()->json([
+                    'valid'   => false,
+                    'message' => __('You have reached the maximum usage limit for this coupon.'),
+                ], 422);
+            }
+        }
+
         $orderAmount = $request->input('order_amount', 0);
         if ($coupon->min_order_amount > 0 && $orderAmount < $coupon->min_order_amount) {
             return response()->json([

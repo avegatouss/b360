@@ -137,12 +137,40 @@
                     </a>
                 </li>
 
+                {{-- Help button --}}
+                @auth
+                @if(isset($instance))
+                <li class="nav-item nav-item-box" style="position:relative;">
+                    <a href="javascript:void(0);" id="b360-help-btn" title="Aide">
+                        <i class="ti ti-help"></i>
+                    </a>
+                    <div id="b360-help-dropdown" class="b360-help-dropdown">
+                        <div class="b360-help-dropdown-header">Aide et assistance</div>
+                        <a href="{{ route('documentation.index', $instance->slug) }}" class="b360-help-dropdown-item">
+                            <i class="ti ti-book-2"></i>
+                            <span>Documentation</span>
+                        </a>
+                        <div class="b360-help-dropdown-divider"></div>
+                        <div class="b360-help-dropdown-header" style="font-size:12px;padding:10px 16px;">Visites guidees</div>
+                        <div class="b360-help-tour-list" id="b360-tour-list">
+                            <div style="padding:12px 16px;color:#999;font-size:13px;">Cliquez pour charger...</div>
+                        </div>
+                    </div>
+                </li>
+                @endif
+                @endauth
+
                 {{-- Notification bell --}}
                 @auth
                 @if(isset($instance))
                 @php
-                    $unreadCount = auth()->user()->unreadNotifications()->count();
-                    $latestNotifications = auth()->user()->notifications()->latest()->take(5)->get();
+                    try {
+                        $unreadCount = auth()->user()->unreadNotifications()->count();
+                        $latestNotifications = auth()->user()->notifications()->latest()->take(5)->get();
+                    } catch (\Exception $e) {
+                        $unreadCount = 0;
+                        $latestNotifications = collect();
+                    }
                 @endphp
                 <li class="nav-item dropdown nav-item-box">
                     <a href="javascript:void(0);" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
@@ -428,6 +456,9 @@
 <!-- Custom JS -->
 <script src="{{ asset('build/js/script.js') }}?v={{ $scriptVersion }}"></script>
 
+<!-- Guided Tour System -->
+@include('core::components.guided-tour')
+
 <!-- Notification polling -->
 @auth
 @if(isset($instance))
@@ -460,7 +491,7 @@
 <script>
 (function() {
     let lockTimeout;
-    const LOCK_MINUTES = {{ config('auth.auto_lock_minutes', 30) }};
+    const LOCK_MINUTES = {{ setting('security.lockscreen_timeout', 30) }};
     function resetLockTimer() {
         clearTimeout(lockTimeout);
         if (LOCK_MINUTES > 0) {

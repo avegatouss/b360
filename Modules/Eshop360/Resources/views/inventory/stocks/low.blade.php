@@ -39,7 +39,15 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-md-3 d-flex align-items-end gap-2">
+            <div class="col-md-3">
+                <label for="min_quantity" class="form-label">{{ __('Min quantity') }}</label>
+                <input id="min_quantity" name="min_quantity" type="number" min="0" value="{{ request('min_quantity') }}" class="form-control" placeholder="{{ __('Min') }}">
+            </div>
+            <div class="col-md-3">
+                <label for="max_quantity" class="form-label">{{ __('Max quantity') }}</label>
+                <input id="max_quantity" name="max_quantity" type="number" min="0" value="{{ request('max_quantity') }}" class="form-control" placeholder="{{ __('Max') }}">
+            </div>
+            <div class="col-md-2 d-flex align-items-end gap-2">
                 <button type="submit" class="btn btn-primary w-100">{{ __('Filter') }}</button>
                 <a href="{{ route('eshop360.stocks.low', $instance->slug ?? '') }}" class="btn btn-light w-100">Reset</a>
             </div>

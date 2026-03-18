@@ -122,16 +122,29 @@
 
 
     {{-- ============================================================ --}}
+    {{-- Module Widgets (registered via HookRegistry)                --}}
+    {{-- ============================================================ --}}
+    @if(isset($widgets) && $widgets->isNotEmpty())
+    <div class="row mt-3">
+        @foreach($widgets as $widget)
+            <div class="col-xl-6 col-12 mb-3">
+                {!! ($widget->render)() !!}
+            </div>
+        @endforeach
+    </div>
+    @endif
+
+    {{-- ============================================================ --}}
     {{-- Quick links                                                  --}}
     {{-- ============================================================ --}}
     <div class="card mt-3 mb-0">
         <div class="card-header">
-            <h5 class="card-title">Accès rapides</h5>
+            <h5 class="card-title">Acces rapides</h5>
         </div>
         <div class="card-body">
             <a href="{{ route('users.index', $instance->slug) }}"
                class="btn btn-primary me-2">
-                <i class="ti ti-users me-1"></i>Gérer les utilisateurs
+                <i class="ti ti-users me-1"></i>Gerer les utilisateurs
             </a>
         </div>
     </div>

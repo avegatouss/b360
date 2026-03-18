@@ -142,4 +142,84 @@
             </div>
             <!-- /product list -->
 
+<!-- Add Brand Modal -->
+<div class="modal fade" id="add-brand" tabindex="-1" aria-labelledby="addBrandLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addBrandLabel">{{ __('Add Brand') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ route('eshop360.brands.store', $instance->slug ?? '') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="brand-name" class="form-label">{{ __('Name') }} <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="brand-name" name="name" required maxlength="255" placeholder="{{ __('Enter brand name') }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="brand-logo" class="form-label">{{ __('Logo') }}</label>
+                        <input type="file" class="form-control" id="brand-logo" name="logo" accept="image/*">
+                        <small class="text-muted">{{ __('Max 1MB. Accepts JPG, PNG, GIF, SVG.') }}</small>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="is_active" value="1" id="brand-active" checked>
+                            <label class="form-check-label" for="brand-active">{{ __('Active') }}</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ __('Save') }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Brand Modals -->
+@foreach($brands as $brand)
+<div class="modal fade" id="edit-brand-{{ $brand->id }}" tabindex="-1" aria-labelledby="editBrandLabel{{ $brand->id }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editBrandLabel{{ $brand->id }}">{{ __('Edit Brand') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ route('eshop360.brands.update', [$instance->slug ?? '', $brand]) }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                @method('PUT')
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="edit-brand-name-{{ $brand->id }}" class="form-label">{{ __('Name') }} <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="edit-brand-name-{{ $brand->id }}" name="name" value="{{ $brand->name }}" required maxlength="255">
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-brand-logo-{{ $brand->id }}" class="form-label">{{ __('Logo') }}</label>
+                        @if($brand->logo)
+                            <div class="mb-2">
+                                <img src="{{ asset('storage/' . $brand->logo) }}" alt="{{ $brand->name }}" class="img-thumbnail" style="max-height: 60px;">
+                            </div>
+                        @endif
+                        <input type="file" class="form-control" id="edit-brand-logo-{{ $brand->id }}" name="logo" accept="image/*">
+                        <small class="text-muted">{{ __('Leave empty to keep current logo. Max 1MB.') }}</small>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="is_active" value="1" id="edit-brand-active-{{ $brand->id }}" {{ $brand->is_active ? 'checked' : '' }}>
+                            <label class="form-check-label" for="edit-brand-active-{{ $brand->id }}">{{ __('Active') }}</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ __('Update') }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endforeach
+
 </x-dashboard::layouts.master>

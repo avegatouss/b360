@@ -351,4 +351,22 @@ return [
     'cost_added' => 'Cost added successfully.',
     'cost_removed' => 'Cost removed.',
     'costs_allocated' => 'Costs allocated to products.',
+
+    // i18n — Previously hardcoded strings
+    'uncategorized' => 'Uncategorized',
+    'unknown' => 'Unknown',
+    'expense' => 'Expense',
+    'coupon_invalid' => 'Invalid or expired coupon.',
+    'coupon_applied' => 'Coupon applied successfully.',
+
+    // POS Payment method labels
+    'payment_cash' => 'Cash',
+    'payment_card' => 'Card',
+    'payment_cheque' => 'Cheque',
+    'payment_paypal' => 'PayPal',
+    'payment_bank_transfer' => 'Bank Transfer',
+    'payment_points' => 'Points',
+    'payment_deposit' => 'Deposit',
+    'payment_gift_card' => 'Gift Card',
+    'payment_external' => 'External',
 ];

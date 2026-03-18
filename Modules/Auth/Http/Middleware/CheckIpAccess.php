@@ -13,6 +13,11 @@ class CheckIpAccess
 {
     public function handle(Request $request, Closure $next): Response
     {
+        // Skip IP rules entirely if disabled in settings
+        if (!setting('security.ip_rules_enabled', false)) {
+            return $next($request);
+        }
+
         $instance = CurrentInstance::get();
 
         if (!$instance) {

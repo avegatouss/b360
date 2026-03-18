@@ -19,6 +19,8 @@ use Modules\Eshop360\Console\Commands\GenerateRecurringInvoices;
 use Modules\Eshop360\Http\Middleware\EnsurePaidFeature;
 use Modules\Eshop360\Services\AuditService;
 use Modules\Eshop360\Services\CartService;
+use Modules\Eshop360\Services\EshopSettingsService;
+use Modules\Eshop360\Services\WebhookService;
 use Modules\Eshop360\Services\CashRegisterService;
 use Modules\Eshop360\Services\ChargesService;
 use Modules\Eshop360\Services\CostCalculatorService;
@@ -49,6 +51,8 @@ final class Eshop360ServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__ . '/../Config/config.php', 'eshop360');
 
         // Core services
+        $this->app->singleton(EshopSettingsService::class);
+        $this->app->singleton(WebhookService::class);
         $this->app->singleton(CartService::class);
         $this->app->singleton(OrderService::class);
         $this->app->singleton(StockService::class);
@@ -81,6 +85,12 @@ final class Eshop360ServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Event listeners
+        \Illuminate\Support\Facades\Event::listen(
+            \Modules\Eshop360\Events\ReportDataChanged::class,
+            \Modules\Eshop360\Listeners\InvalidateReportCache::class,
+        );
+
         $this->loadRoutesFrom(__DIR__ . '/../Routes/web.php');
         $this->loadRoutesFrom(__DIR__ . '/../Routes/api.php');
         $this->loadViewsFrom(__DIR__ . '/../Resources/views', 'eshop360');

@@ -28,7 +28,10 @@ class QuotationController extends Controller
             ->paginate(20)
             ->withQueryString();
 
-        return view('eshop360::promotions.quotations', compact('quotations'));
+        $customers = Customer::orderBy('name')->get(['id', 'name']);
+        $products = Product::where('is_active', true)->orderBy('name')->get(['id', 'name', 'sku', 'price', 'tax_rate']);
+
+        return view('eshop360::promotions.quotations', compact('quotations', 'customers', 'products'));
     }
 
     public function store(Request $request): RedirectResponse

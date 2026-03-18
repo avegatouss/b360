@@ -5,8 +5,10 @@ use Modules\Core\Http\Controllers\AuditLogController;
 use Modules\Core\Http\Controllers\BackupController;
 use Modules\Core\Http\Controllers\CronLogController;
 use Modules\Core\Http\Controllers\FileManagerController;
+use Modules\Core\Http\Controllers\DocumentationController;
 use Modules\Core\Http\Controllers\MaintenanceController;
 use Modules\Core\Http\Controllers\ThemeController;
+use Modules\Core\Http\Controllers\TourController;
 
 /*
 |--------------------------------------------------------------------------
@@ -67,6 +69,26 @@ Route::middleware([
     // Audit Logs
     Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
     Route::get('/audit-logs/{id}', [AuditLogController::class, 'show'])->name('audit-logs.show');
+
+    // Guided Tours API
+    Route::prefix('tours')->name('tours.')->group(function () {
+        Route::get('/available', [TourController::class, 'available'])->name('available');
+        Route::get('/{tourId}/steps', [TourController::class, 'steps'])->name('steps');
+        Route::post('/{tourId}/complete', [TourController::class, 'complete'])->name('complete');
+        Route::post('/reset', [TourController::class, 'reset'])->name('reset');
+    });
+
+    // Documentation
+    Route::prefix('documentation')->name('documentation.')->group(function () {
+        Route::get('/', [DocumentationController::class, 'index'])->name('index');
+        Route::get('/search', [DocumentationController::class, 'search'])->name('search');
+        Route::get('/create', [DocumentationController::class, 'create'])->name('create');
+        Route::post('/', [DocumentationController::class, 'store'])->name('store');
+        Route::get('/{page}', [DocumentationController::class, 'show'])->name('show');
+        Route::get('/{page}/edit', [DocumentationController::class, 'edit'])->name('edit');
+        Route::put('/{page}', [DocumentationController::class, 'update'])->name('update');
+        Route::delete('/{page}', [DocumentationController::class, 'destroy'])->name('destroy');
+    });
 });
 
 /*

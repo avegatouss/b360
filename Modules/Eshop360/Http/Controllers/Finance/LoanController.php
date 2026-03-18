@@ -4,6 +4,7 @@ namespace Modules\Eshop360\Http\Controllers\Finance;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Modules\Eshop360\Models\Loan;
 use Modules\Eshop360\Models\LoanPayment;
 use Modules\Core\Support\CurrentInstance;
@@ -47,17 +48,20 @@ class LoanController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        LoanPayment::create([
-            'loan_id' => $loan->id,
-            'amount' => $validated['amount'],
-            'date' => $validated['date'],
-            'notes' => $validated['notes'] ?? null,
-        ]);
+        DB::transaction(function () use ($validated, $loan) {
+            LoanPayment::create([
+                'loan_id' => $loan->id,
+                'amount' => $validated['amount'],
+                'date' => $validated['date'],
+                'notes' => $validated['notes'] ?? null,
+            ]);
 
-        $loan->increment('paid_amount', $validated['amount']);
-        if ($loan->paid_amount >= $loan->amount) {
-            $loan->update(['status' => 'paid']);
-        }
+            $loan->increment('paid_amount', $validated['amount']);
+            $loan->refresh();
+            if ($loan->paid_amount >= $loan->amount) {
+                $loan->update(['status' => 'paid']);
+            }
+        });
 
         return redirect()->back()->with('success', 'Payment recorded.');
     }

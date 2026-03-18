@@ -3,7 +3,7 @@
 namespace Modules\Demo\Services;
 
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Log;
 use Modules\Core\Hooks\DTO\DemoDataProvider;
 use Modules\Core\Hooks\Registry\HookRegistry;
 
@@ -146,6 +146,13 @@ final class DemoManager
 
             return ['success' => true, 'message' => "'{$provider->label}' installe avec succes."];
         } catch (\Throwable $e) {
+            Log::error("Demo seeder failed: {$provider->id}", [
+                'seeder' => $seederClass,
+                'instance_id' => $instanceId,
+                'error' => $e->getMessage(),
+                'file' => $e->getFile() . ':' . $e->getLine(),
+            ]);
+
             return ['success' => false, 'message' => $e->getMessage()];
         }
     }

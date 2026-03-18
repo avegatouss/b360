@@ -1,7 +1,7 @@
 <x-dashboard::layouts.master
     :title="(isset($gateway) ? 'Modifier' : 'Ajouter') . ' passerelle - ' . ($instance->name ?? $instance->slug ?? __('B360'))"
     :instance="$instance"
-    ::pageTitle="__('isset($gateway) ? \'Modifier la passerelle\' : \'Ajouter une passerelle\'')">
+    :pageTitle="isset($gateway) ? __('Modifier la passerelle') : __('Ajouter une passerelle')">
 
 <div class="page-header">
     <div class="add-item d-flex">

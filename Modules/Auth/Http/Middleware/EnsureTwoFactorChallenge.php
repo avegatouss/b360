@@ -25,10 +25,27 @@ class EnsureTwoFactorChallenge
 
     public function handle(Request $request, Closure $next): Response
     {
+        // Global 2FA kill-switch from settings
+        if (!setting('security.2fa_enabled', false)) {
+            return $next($request);
+        }
+
         $user = $request->user();
 
-        // No user or 2FA not enabled — pass through
-        if (!$user || !$user->hasTwoFactorEnabled()) {
+        // No user — pass through
+        if (!$user) {
+            return $next($request);
+        }
+
+        // If 2FA is forced for admins and user is admin, require 2FA even
+        // if the user hasn't personally enabled it yet.
+        $forceAdmins = (bool) setting('security.2fa_force_admins', false);
+        $isAdmin = $user->hasRole(['super-admin', 'instance-admin']);
+
+        $userHas2FA = $user->hasTwoFactorEnabled();
+
+        // Skip if user doesn't have 2FA enabled AND admin forcing doesn't apply
+        if (!$userHas2FA && !($forceAdmins && $isAdmin)) {
             return $next($request);
         }
 

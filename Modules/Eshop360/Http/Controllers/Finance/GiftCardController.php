@@ -4,6 +4,7 @@ namespace Modules\Eshop360\Http\Controllers\Finance;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Modules\Eshop360\Models\GiftCard;
 use Modules\Eshop360\Models\GiftCardTopup;
 use Modules\Eshop360\Services\FinanceService;
@@ -38,15 +39,19 @@ class GiftCardController extends Controller
     public function topup(Request $request, string $slug, GiftCard $giftCard)
     {
         $validated = $request->validate(['amount' => 'required|numeric|min:1']);
-        GiftCardTopup::create([
-            'gift_card_id' => $giftCard->id,
-            'amount' => $validated['amount'],
-            'user_id' => auth()->id(),
-        ]);
-        $giftCard->increment('balance', $validated['amount']);
-        if ($giftCard->status === 'depleted') {
-            $giftCard->update(['status' => 'active']);
-        }
+
+        DB::transaction(function () use ($validated, $giftCard) {
+            GiftCardTopup::create([
+                'gift_card_id' => $giftCard->id,
+                'amount' => $validated['amount'],
+                'user_id' => auth()->id(),
+            ]);
+            $giftCard->increment('balance', $validated['amount']);
+            if ($giftCard->status === 'depleted') {
+                $giftCard->update(['status' => 'active']);
+            }
+        });
+
         return redirect()->back()->with('success', 'Gift card topped up.');
     }
 

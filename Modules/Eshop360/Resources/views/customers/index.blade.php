@@ -139,4 +139,108 @@
         </div>
         <!-- /product list -->
 
+<!-- Add Customer Modal -->
+<div class="modal fade" id="add-customer" tabindex="-1" aria-labelledby="add-customer-label" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="add-customer-label">{{ __('Add Customer') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ route('eshop360.customers.store', [$instance->slug ?? '']) }}" method="POST">
+                @csrf
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ __('Name') }} <span class="text-danger">*</span></label>
+                            <input type="text" name="name" class="form-control" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ __('Email') }}</label>
+                            <input type="email" name="email" class="form-control">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ __('Phone') }}</label>
+                            <input type="text" name="phone" class="form-control">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ __('Country') }}</label>
+                            <input type="text" name="country" class="form-control">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ __('City') }}</label>
+                            <input type="text" name="city" class="form-control">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ __('Address') }}</label>
+                            <input type="text" name="address" class="form-control">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ __('Save') }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Customer Modals -->
+@foreach($customers as $customer)
+<div class="modal fade" id="edit-customer-{{ $customer->id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ __('Edit Customer') }} — {{ $customer->name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ route('eshop360.customers.update', [$instance->slug ?? '', $customer]) }}" method="POST">
+                @csrf
+                @method('PUT')
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ __('Name') }} <span class="text-danger">*</span></label>
+                            <input type="text" name="name" class="form-control" value="{{ $customer->name }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ __('Email') }}</label>
+                            <input type="email" name="email" class="form-control" value="{{ $customer->email }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ __('Phone') }}</label>
+                            <input type="text" name="phone" class="form-control" value="{{ $customer->phone }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ __('Country') }}</label>
+                            <input type="text" name="country" class="form-control" value="{{ $customer->country }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ __('City') }}</label>
+                            <input type="text" name="city" class="form-control" value="{{ $customer->city }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ __('Address') }}</label>
+                            <input type="text" name="address" class="form-control" value="{{ $customer->address }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ __('Status') }}</label>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="is_active" value="1" {{ ($customer->is_active ?? true) ? 'checked' : '' }}>
+                                <label class="form-check-label">{{ __('Active') }}</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ __('Update') }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endforeach
+
 </x-dashboard::layouts.master>

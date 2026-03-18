@@ -4,6 +4,8 @@ namespace Modules\Eshop360\Http\Controllers\Finance;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Modules\Eshop360\Events\ReportDataChanged;
 use Modules\Eshop360\Models\Expense;
 use Modules\Eshop360\Models\ExpenseCategory;
 use Modules\Eshop360\Models\Account;
@@ -44,13 +46,15 @@ class ExpenseController extends Controller
             $validated['receipt'] = $request->file('receipt')->store('receipts', 'public');
         }
 
-        Expense::create($validated);
+        DB::transaction(function () use ($validated) {
+            Expense::create($validated);
 
-        // Deduct from account if specified
-        if (!empty($validated['account_id'])) {
-            $account = Account::find($validated['account_id']);
-            $account?->decrement('balance', $validated['amount']);
-        }
+            if (!empty($validated['account_id'])) {
+                Account::find($validated['account_id'])?->decrement('balance', $validated['amount']);
+            }
+        });
+
+        ReportDataChanged::dispatch($validated['instance_id'], 'finance');
 
         return redirect()->back()->with('success', 'Expense recorded.');
     }
@@ -63,13 +67,32 @@ class ExpenseController extends Controller
             'date' => 'required|date',
             'description' => 'nullable|string',
         ]);
-        $expense->update($validated);
+
+        DB::transaction(function () use ($validated, $expense) {
+            if ($expense->account_id) {
+                $account = Account::find($expense->account_id);
+                if ($account) {
+                    $account->increment('balance', $expense->amount);
+                    $account->decrement('balance', $validated['amount']);
+                }
+            }
+
+            $expense->update($validated);
+        });
+
         return redirect()->back()->with('success', 'Expense updated.');
     }
 
     public function destroy(string $slug, Expense $expense)
     {
-        $expense->delete();
+        DB::transaction(function () use ($expense) {
+            if ($expense->account_id) {
+                Account::find($expense->account_id)?->increment('balance', $expense->amount);
+            }
+
+            $expense->delete();
+        });
+
         return redirect()->back()->with('success', 'Expense deleted.');
     }
 

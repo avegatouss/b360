@@ -5,23 +5,50 @@ namespace Modules\Eshop360\Http\Controllers\Catalog;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\Eshop360\Models\Product;
+use Modules\Eshop360\Models\Store;
+use Modules\Eshop360\Models\Warehouse;
 use Modules\Eshop360\Services\PdfService;
 
 class BarcodeController extends Controller
 {
     public function index(Request $request)
     {
+        $warehouses = Warehouse::where('is_active', true)->orderBy('name')->get(['id', 'name']);
+        $stores     = Store::where('is_active', true)->orderBy('name')->get(['id', 'name']);
+
         $products = Product::select('id', 'name', 'sku', 'barcode', 'qrcode', 'price')
             ->when($request->search, fn ($q, $s) => $q->where('name', 'like', "%{$s}%")
                 ->orWhere('sku', 'like', "%{$s}%")
                 ->orWhere('barcode', 'like', "%{$s}%"))
+            ->when($request->warehouse_id, fn ($q, $w) => $q->whereHas('stocks', fn ($sq) => $sq->where('warehouse_id', $w)))
+            ->when($request->store_id, fn ($q, $s) => $q->whereHas('stocks', fn ($sq) => $sq->where('store_id', $s)))
             ->when($request->category_id, fn ($q, $c) => $q->where('category_id', $c))
             ->active()
             ->orderBy('name')
             ->paginate(50)
             ->withQueryString();
 
-        return view('eshop360::catalog.barcodes.index', compact('products'));
+        return view('eshop360::catalog.barcodes.index', compact('products', 'warehouses', 'stores'));
+    }
+
+    public function qrcode(Request $request)
+    {
+        $warehouses = Warehouse::where('is_active', true)->orderBy('name')->get(['id', 'name']);
+        $stores     = Store::where('is_active', true)->orderBy('name')->get(['id', 'name']);
+
+        $products = Product::select('id', 'name', 'sku', 'barcode', 'qrcode', 'price')
+            ->when($request->search, fn ($q, $s) => $q->where('name', 'like', "%{$s}%")
+                ->orWhere('sku', 'like', "%{$s}%")
+                ->orWhere('qrcode', 'like', "%{$s}%"))
+            ->when($request->warehouse_id, fn ($q, $w) => $q->whereHas('stocks', fn ($sq) => $sq->where('warehouse_id', $w)))
+            ->when($request->store_id, fn ($q, $s) => $q->whereHas('stocks', fn ($sq) => $sq->where('store_id', $s)))
+            ->when($request->category_id, fn ($q, $c) => $q->where('category_id', $c))
+            ->active()
+            ->orderBy('name')
+            ->paginate(50)
+            ->withQueryString();
+
+        return view('eshop360::catalog.barcodes.qrcode', compact('products', 'warehouses', 'stores'));
     }
 
     public function generate(Request $request)

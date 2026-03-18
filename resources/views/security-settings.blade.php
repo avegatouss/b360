@@ -1,3 +1,9 @@
+{{--
+    @deprecated This legacy static template is superseded by the hook-based settings system.
+    Use Modules/Settings/Resources/views/partials/security.blade.php instead.
+    Accessible via /i/{slug}/settings/security.
+    This file will be removed in a future release.
+--}}
 <?php $page = 'security-settings'; ?>
 @extends('layout.mainlayout')
 @section('content')

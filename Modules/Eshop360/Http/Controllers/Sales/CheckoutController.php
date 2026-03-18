@@ -5,17 +5,18 @@ namespace Modules\Eshop360\Http\Controllers\Sales;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\Cache;
 use Modules\Core\Support\CurrentInstance;
 use Modules\Eshop360\Models\Coupon;
 use Modules\Eshop360\Models\Customer;
 use Modules\Eshop360\Models\DistributionChannel;
 use Modules\Eshop360\Models\GiftCard;
+use Modules\Eshop360\Http\Controllers\Traits\ResolvesPosContext;
 use Modules\Eshop360\Services\FinanceService;
 use Modules\Eshop360\Services\OrderService;
 
 class CheckoutController extends Controller
 {
+    use ResolvesPosContext;
     public function __construct(
         private readonly OrderService $orderService,
         private readonly FinanceService $financeService,
@@ -286,17 +287,4 @@ class CheckoutController extends Controller
     /**
      * @return array<string, int|null>
      */
-    private function resolvePosOperationalData(): array
-    {
-        $instanceId = CurrentInstance::get()?->id ?? 0;
-        $settings = Cache::get("eshop_pos_settings_{$instanceId}", []);
-        $register = app(\Modules\Eshop360\Services\CashRegisterService::class)->getCurrentRegister();
-        $warehouseId = $settings['default_warehouse_id'] ?? $register?->store?->warehouse_id ?? null;
-
-        return array_filter([
-            'store_id' => $register?->store_id,
-            'warehouse_id' => $warehouseId,
-            'cash_register_id' => $register?->id,
-        ], static fn ($value) => $value !== null);
-    }
 }

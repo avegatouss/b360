@@ -32,6 +32,9 @@ final class FileManagerController extends Controller
     public function index(Request $request, string $slug)
     {
         $instance = CurrentInstance::get();
+        if (!$instance) {
+            abort(404, 'Instance not found.');
+        }
         $basePath = $this->basePath($instance->id);
         $subPath = $request->input('path', '');
         $subPath = $this->sanitizePath($subPath);
@@ -91,6 +94,9 @@ final class FileManagerController extends Controller
     public function upload(Request $request, string $slug)
     {
         $instance = CurrentInstance::get();
+        if (!$instance) {
+            abort(404, 'Instance not found.');
+        }
 
         $request->validate([
             'files' => ['required', 'array'],
@@ -116,6 +122,9 @@ final class FileManagerController extends Controller
     public function download(string $slug, Request $request)
     {
         $instance = CurrentInstance::get();
+        if (!$instance) {
+            abort(404, 'Instance not found.');
+        }
         $filePath = $this->sanitizePath($request->input('file', ''));
         $basePath = $this->basePath($instance->id);
         $fullPath = $basePath . '/' . $filePath;
@@ -133,6 +142,9 @@ final class FileManagerController extends Controller
     public function destroy(Request $request, string $slug)
     {
         $instance = CurrentInstance::get();
+        if (!$instance) {
+            abort(404, 'Instance not found.');
+        }
         $filePath = $this->sanitizePath($request->input('file', ''));
         $basePath = $this->basePath($instance->id);
         $fullPath = $basePath . '/' . $filePath;
@@ -157,6 +169,9 @@ final class FileManagerController extends Controller
     public function createFolder(Request $request, string $slug)
     {
         $instance = CurrentInstance::get();
+        if (!$instance) {
+            abort(404, 'Instance not found.');
+        }
 
         $request->validate([
             'folder_name' => ['required', 'string', 'max:100', 'regex:/^[a-zA-Z0-9_\-\s]+$/'],

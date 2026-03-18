@@ -28,27 +28,20 @@
                             <div class="row seacrh-barcode-item mb-1">
                                 <div class="col-sm-6 mb-3 seacrh-barcode-item-one">
                                     <label class="form-label">{{ __('Warehouse') }}<span class="text-danger ms-1">*</span></label>
-                                    <select class="select">
-                                        <option>{{ __('Select') }}</option>
-                                        <option>{{ __('Lavish Warehouse') }}</option>
-                                        <option>{{ __('Quaint Warehouse') }}</option>
-                                        <option>{{ __('Traditional Warehouse') }}</option>
-                                        <option>{{ __('Cool Warehouse') }}</option>
-                                        <option>{{ __('Overflow Warehouse') }}</option>
-                                        <option>{{ __('Nova Storage Hub') }}</option>
-                                        <option>{{ __('Retail Supply Hub') }}</option>
-                                        <option>{{ __('EdgeWare Solutions') }}</option>
+                                    <select class="select" name="warehouse_id">
+                                        <option value="">{{ __('Select') }}</option>
+                                        @foreach($warehouses as $wh)
+                                            <option value="{{ $wh->id }}" @selected(request('warehouse_id') == $wh->id)>{{ $wh->name }}</option>
+                                        @endforeach
                                     </select>
                                 </div>
                                 <div class="col-sm-6 mb-3 seacrh-barcode-item-one">
                                     <label class="form-label">{{ __('Store') }}<span class="text-danger ms-1">*</span></label>
-                                    <select class="select">
-                                        <option>{{ __('Select') }}</option>
-                                        <option>{{ __('Electro Mart') }}</option>
-                                        <option>{{ __('Quantum Gadgets') }}</option>
-                                        <option>{{ __('Prime Bazaar') }}</option>
-                                        <option>{{ __('Gadget World') }}</option>
-                                        <option>{{ __('Volt Vault') }}</option>
+                                    <select class="select" name="store_id">
+                                        <option value="">{{ __('Select') }}</option>
+                                        @foreach($stores as $store)
+                                            <option value="{{ $store->id }}" @selected(request('store_id') == $store->id)>{{ $store->name }}</option>
+                                        @endforeach
                                     </select>
                                 </div>
                             </div>
@@ -60,23 +53,22 @@
                                 <div class="search-form">
                                     <label class="form-label">{{ __('Product') }}<span class="text-danger ms-1">*</span></label>
                                     <div class="position-relative">
-                                        <input type="text" name="search" class="form-control" placeholder="Search Product by Code" value="{{ request('search') }}">
+                                        <input type="text" name="search" class="form-control" placeholder="{{ __('Search Product by Code') }}" value="{{ request('search') }}">
                                         <i data-feather="search" class="feather-search"></i>
                                     </div>
-                                    <div class="dropdown-menu search-dropdown w-100 h-auto rounded-1 mt-2" aria-labelledby="dropdownsearchClickable">
-                                    <ul>
-                                        <li class="fs-14 text-gray-9 mb-2">{{ __('Amazon Echo Dot') }}</li>
-                                        <li class="fs-14 text-gray-9 mb-2">{{ __('Armani Belt') }}</li>
-                                        <li class="fs-14 text-gray-9 mb-2">{{ __('Apple Watch') }}</li>
-                                        <li class="fs-14 text-gray-9">{{ __('Apple Iphone 14 Pro') }}</li>
-                                    </ul>
-                                    </div>
                                 </div>
-                            </div>                                                             
-                                                            
+                            </div>
+
                         </div>
                     </div>
-                </form>  
+                    <div class="row mb-3">
+                        <div class="col-lg-6">
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                <i class="ti ti-search me-1"></i>{{ __('Search') }}
+                            </button>
+                        </div>
+                    </div>
+                </form>
 
                 <div class="col-lg-12">
                     <div class="p-3 bg-light rounded border mb-3">
@@ -97,7 +89,11 @@
                                         <td>
                                             <div class="d-flex align-items-center">
                                                 <a href="javascript:void(0);" class="avatar avatar-md me-2">
-                                                    <img src="{{URL::asset('build/img/products/stock-img-02.png')}}" alt="product">
+                                                    @if($product->image)
+                                                        <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}">
+                                                    @else
+                                                        <img src="{{ URL::asset('build/img/products/stock-img-02.png') }}" alt="product">
+                                                    @endif
                                                 </a>
                                                 <a href="javascript:void(0);">{{ $product->name }}</a>
                                             </div>
@@ -126,7 +122,7 @@
                             </table>
                         </div>
                     </div>
-                    
+
                 </div>
 
                 <div class="paper-search-size">
@@ -134,12 +130,12 @@
                         <div class="col-lg-6">
                             <form class="mb-0">
                                 <label class="form-label">{{ __('Paper Size') }}<span class="text-danger ms-1">*</span></label>
-                                <select class="select">
-                                    <option>{{ __('Select') }}</option>
-                                    <option>{{ __('A3') }}</option>
-                                    <option>{{ __('A4') }}</option>
-                                    <option>{{ __('A5') }}</option>
-                                    <option>{{ __('A6') }}</option>
+                                <select class="select" id="paper-size">
+                                    <option value="">{{ __('Select') }}</option>
+                                    <option value="a4">{{ __('A4') }}</option>
+                                    <option value="a3">{{ __('A3') }}</option>
+                                    <option value="a5">{{ __('A5') }}</option>
+                                    <option value="a6">{{ __('A6') }}</option>
                                 </select>
                             </form>
                         </div>
@@ -154,9 +150,9 @@
                                                 <label for="user7" class="checktoggle mb-0"></label>
                                             </div>
                                         </div>
-                                    </div> 
-                                </div>    
-                                    
+                                    </div>
+                                </div>
+
                                 <div class="col-sm-4">
                                     <div class="search-toggle-list">
                                         <p>{{ __('Show Product Name') }}</p>
@@ -166,7 +162,7 @@
                                                 <label for="user8" class="checktoggle mb-0"></label>
                                             </div>
                                         </div>
-                                    </div> 
+                                    </div>
                                 </div>
 
 
@@ -176,27 +172,109 @@
                                         <div class="m-0">
                                             <div class="status-toggle modal-status d-flex justify-content-between align-items-center">
                                                 <input type="checkbox" id="user9" class="check" checked>
-                                                <label for="user9" class="checktoggle mb-0">	</label>
+                                                <label for="user9" class="checktoggle mb-0"></label>
                                             </div>
                                         </div>
-                                    </div> 
-                                </div> 
-                            </div>                                                               
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div> 
+                </div>
 
-                <div class="search-barcode-button">                            
+                <div class="search-barcode-button">
                     <a href="javascript:void(0);" class="btn btn-submit btn-primary me-2 mt-0" data-bs-toggle="modal" data-bs-target="#prints-barcode">
-                        <span><i class="fas fa-eye me-1"></i></span>Generate Barcode
+                        <span><i class="fas fa-eye me-1"></i></span>{{ __('Generate Barcode') }}
                     </a>
-                    <a href="javascript:void(0);" class="btn btn-cancel btn-secondary fs-13 me-2">
-                        <span><i class="fas fa-power-off me-1"></i></span>Reset Barcode
+                    <a href="javascript:void(0);" class="btn btn-cancel btn-secondary fs-13 me-2" onclick="window.location.href='{{ route('eshop360.barcodes.index', $instance->slug ?? '') }}'">
+                        <span><i class="fas fa-power-off me-1"></i></span>{{ __('Reset Barcode') }}
                     </a>
-                    <a href="javascript:void(0);" class="btn btn-cancel btn-danger close-btn">
-                        <span><i class="fas fa-print me-1"></i></span>Print Barcode
+                    <a href="javascript:void(0);" class="btn btn-cancel btn-danger close-btn" onclick="document.getElementById('print-batch-form').submit();">
+                        <span><i class="fas fa-print me-1"></i></span>{{ __('Print Barcode') }}
                     </a>
                 </div>
             </div>
+
+{{-- Print Barcode Modal --}}
+<div class="modal fade" id="prints-barcode" tabindex="-1" aria-labelledby="printsBarcodeLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="printsBarcodeLabel">{{ __('Print Barcode') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('Close') }}"></button>
+            </div>
+            <form id="print-batch-form" method="POST" action="{{ route('eshop360.barcodes.print-batch', $instance->slug ?? '') }}">
+                @csrf
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">{{ __('Select Products') }}</label>
+                        <div class="border rounded p-3" style="max-height: 250px; overflow-y: auto;">
+                            @forelse($products as $product)
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="product_ids[]" value="{{ $product->id }}" id="print-product-{{ $product->id }}">
+                                    <label class="form-check-label" for="print-product-{{ $product->id }}">
+                                        {{ $product->name }} <span class="text-muted">({{ $product->sku }})</span>
+                                    </label>
+                                </div>
+                            @empty
+                                <p class="text-muted mb-0">{{ __('No products available.') }}</p>
+                            @endforelse
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">{{ __('Per Row') }}</label>
+                            <select class="form-select" name="per_row">
+                                <option value="2">2</option>
+                                <option value="3" selected>3</option>
+                                <option value="4">4</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">{{ __('Size') }}</label>
+                            <select class="form-select" name="size">
+                                <option value="small">{{ __('Small') }}</option>
+                                <option value="medium" selected>{{ __('Medium') }}</option>
+                                <option value="large">{{ __('Large') }}</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">{{ __('Format') }}</label>
+                            <select class="form-select" name="format">
+                                <option value="Code128" selected>Code128</option>
+                                <option value="EAN13">EAN13</option>
+                                <option value="Code39">Code39</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">{{ __('Quantity') }}</label>
+                            <input type="number" class="form-control" name="quantity" value="1" min="1" max="100">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="form-check mt-4">
+                                <input class="form-check-input" type="checkbox" name="show_name" value="1" id="show-name" checked>
+                                <label class="form-check-label" for="show-name">{{ __('Show Name') }}</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="form-check mt-4">
+                                <input class="form-check-input" type="checkbox" name="show_price" value="1" id="show-price" checked>
+                                <label class="form-check-label" for="show-price">{{ __('Show Price') }}</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-print me-1"></i>{{ __('Print Barcode') }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 </x-dashboard::layouts.master>

@@ -104,10 +104,7 @@ class PrinterController extends Controller
      */
     private function printerConfig(Request $request, array $instanceSettings): array
     {
-        $saved = \Illuminate\Support\Facades\Cache::get(
-            'eshop_printer_settings_' . (CurrentInstance::get()?->id ?? 0),
-            []
-        );
+        $saved = app(\Modules\Eshop360\Services\EshopSettingsService::class)->get('printer');
 
         return [
             'type' => $request->input('printer_type', $saved['printer_type'] ?? 'network'),

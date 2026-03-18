@@ -1,0 +1,133 @@
+<?php
+
+namespace Modules\Eshop360\Services;
+
+use Illuminate\Support\Facades\Cache;
+use Modules\Core\Support\CurrentInstance;
+use Modules\Eshop360\Models\EshopModuleSetting;
+
+class EshopSettingsService
+{
+    private const CACHE_TTL = 3600; // 1 hour
+
+    private static array $defaults = [
+        'pos' => [
+            'default_layout'       => 'layout1',
+            'default_warehouse_id' => null,
+            'default_customer_id'  => null,
+            'payment_methods'      => ['cash', 'card'],
+            'tax_inclusive'         => false,
+            'sound_enabled'        => true,
+            'print_receipt'        => true,
+            'products_per_page'    => 24,
+            'default_discount'     => 0,
+            'allow_manual_price'   => false,
+            'barcode_scanner'      => true,
+        ],
+        'printer' => [
+            'printer_type'         => null,
+            'receipt_printer'      => '',
+            'printer_host'         => '',
+            'printer_port'         => null,
+            'printer_share'        => '',
+            'receipt_width'        => 80,
+            'receipt_header'       => '',
+            'receipt_footer'       => '',
+            'print_logo'           => false,
+            'logo'                 => null,
+            'auto_print_receipt'   => false,
+            'print_kitchen_order'  => false,
+            'kitchen_printer'      => '',
+            'barcode_printer'      => '',
+            'barcode_label_width'  => 40,
+            'barcode_label_height' => 30,
+        ],
+        'invoice' => [
+            'company_name'       => '',
+            'company_address'    => '',
+            'company_phone'      => '',
+            'company_email'      => '',
+            'company_logo'       => null,
+            'tax_number'         => '',
+            'default_terms'      => '',
+            'default_footer'     => '',
+            'default_due_days'   => 30,
+            'default_template'   => 'default',
+            'currency_symbol'    => '$',
+            'currency_position'  => 'before',
+            'show_tax_breakdown' => true,
+            'show_payment_info'  => true,
+            'bank_name'          => '',
+            'bank_account'       => '',
+            'bank_iban'          => '',
+        ],
+    ];
+
+    /**
+     * Get settings for a group, with cache + DB persistence.
+     */
+    public function get(string $group, ?int $instanceId = null): array
+    {
+        $instanceId ??= CurrentInstance::get()?->id ?? 0;
+        $cacheKey = $this->cacheKey($group, $instanceId);
+
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($group, $instanceId) {
+            $record = EshopModuleSetting::where('instance_id', $instanceId)
+                ->where('group', $group)
+                ->first();
+
+            $defaults = self::$defaults[$group] ?? [];
+
+            return $record ? array_merge($defaults, $record->data) : $defaults;
+        });
+    }
+
+    /**
+     * Save settings for a group (DB + cache).
+     */
+    public function set(string $group, array $data, ?int $instanceId = null): void
+    {
+        $instanceId ??= CurrentInstance::get()?->id ?? 0;
+
+        EshopModuleSetting::updateOrCreate(
+            ['instance_id' => $instanceId, 'group' => $group],
+            ['data' => $data],
+        );
+
+        $cacheKey = $this->cacheKey($group, $instanceId);
+        $defaults = self::$defaults[$group] ?? [];
+        Cache::put($cacheKey, array_merge($defaults, $data), self::CACHE_TTL);
+    }
+
+    /**
+     * Get a single value from a settings group.
+     */
+    public function value(string $group, string $key, mixed $default = null): mixed
+    {
+        $settings = $this->get($group);
+
+        return $settings[$key] ?? $default;
+    }
+
+    /**
+     * Get defaults for a group.
+     */
+    public function defaults(string $group): array
+    {
+        return self::$defaults[$group] ?? [];
+    }
+
+    /**
+     * Forget cached settings for a group.
+     */
+    public function forget(string $group, ?int $instanceId = null): void
+    {
+        $instanceId ??= CurrentInstance::get()?->id ?? 0;
+        Cache::forget($this->cacheKey($group, $instanceId));
+    }
+
+    private function cacheKey(string $group, int $instanceId): string
+    {
+        return "eshop_settings_{$group}_{$instanceId}";
+    }
+}

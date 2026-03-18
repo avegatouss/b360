@@ -25,10 +25,9 @@
                 </li>
             </ul>
             <div class="page-btn">
-                <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-category"><i class="ti ti-circle-plus me-1"></i>{{ __('Add Sub Category') }}</a>
+                <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-subcategory"><i class="ti ti-circle-plus me-1"></i>{{ __('Add Sub Category') }}</a>
             </div>
         </div>
-        
 
         <!-- /product list -->
         <div class="card">
@@ -41,33 +40,26 @@
                 <div class="d-flex table-dropdown my-xl-auto right-content align-items-center flex-wrap row-gap-3">
                     <div class="dropdown me-2">
                         <a href="javascript:void(0);" class="dropdown-toggle btn btn-white btn-md d-inline-flex align-items-center" data-bs-toggle="dropdown">
-                            Category
+                            {{ __('Category') }}
                         </a>
-                        <ul class="dropdown-menu  dropdown-menu-end p-3">
+                        <ul class="dropdown-menu dropdown-menu-end p-3">
+                            @foreach($parentCategories as $parent)
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Computers') }}</a>
+                                <a href="{{ route('eshop360.categories.subcategories', [$instance->slug ?? '', 'parent_id' => $parent->id]) }}" class="dropdown-item rounded-1">{{ $parent->name }}</a>
                             </li>
-                            <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Electronics') }}</a>
-                            </li>
-                            <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Shoe') }}</a>
-                            </li>
-                            <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Electronics') }}</a>
-                            </li>
+                            @endforeach
                         </ul>
                     </div>
                     <div class="dropdown">
                         <a href="javascript:void(0);" class="dropdown-toggle btn btn-white btn-md d-inline-flex align-items-center" data-bs-toggle="dropdown">
-                            Status
+                            {{ __('Status') }}
                         </a>
-                        <ul class="dropdown-menu  dropdown-menu-end p-3">
+                        <ul class="dropdown-menu dropdown-menu-end p-3">
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Active') }}</a>
+                                <a href="{{ route('eshop360.categories.subcategories', [$instance->slug ?? '', 'is_active' => 1]) }}" class="dropdown-item rounded-1">{{ __('Active') }}</a>
                             </li>
                             <li>
-                                <a href="javascript:void(0);" class="dropdown-item rounded-1">{{ __('Inactive') }}</a>
+                                <a href="{{ route('eshop360.categories.subcategories', [$instance->slug ?? '', 'is_active' => 0]) }}" class="dropdown-item rounded-1">{{ __('Inactive') }}</a>
                             </li>
                         </ul>
                     </div>
@@ -87,13 +79,13 @@
                                 <th>{{ __('Image') }}</th>
                                 <th>{{ __('Sub Category') }}</th>
                                 <th>{{ __('Category') }}</th>
-                                <th>{{ __('Category Code') }}</th>
                                 <th>{{ __('Description') }}</th>
                                 <th>{{ __('Status') }}</th>
                                 <th class="no-sort"></th>
                             </tr>
                         </thead>
                         <tbody>
+                            @forelse($subcategories as $subcategory)
                             <tr>
                                 <td>
                                     <label class="checkboxs">
@@ -103,495 +95,159 @@
                                 </td>
                                 <td>
                                     <a class="avatar avatar-md me-2">
-                                        <img src="{{URL::asset('build/img/products/stock-img-01.png')}}" alt="product">
+                                        @if($subcategory->image)
+                                            <img src="{{ asset('storage/' . $subcategory->image) }}" alt="{{ $subcategory->name }}">
+                                        @else
+                                            <img src="{{ URL::asset('build/img/icons/default-img.svg') }}" alt="{{ $subcategory->name }}">
+                                        @endif
                                     </a>
                                 </td>
-                                <td>{{ __('Laptop') }}</td>
-                                <td>{{ __('Computers') }}</td>
-                                <td>{{ __('CT001') }}</td>
-                                <td>{{ __('Efficient Productivity') }}</td>
-                                <td><span class="badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
+                                <td>{{ $subcategory->name }}</td>
+                                <td>{{ $subcategory->parent->name ?? '—' }}</td>
+                                <td>{{ Str::limit($subcategory->description, 40) ?? '—' }}</td>
+                                <td>
+                                    @if($subcategory->is_active)
+                                        <span class="badge bg-success fw-medium fs-10">{{ __('Active') }}</span>
+                                    @else
+                                        <span class="badge bg-danger fw-medium fs-10">{{ __('Inactive') }}</span>
+                                    @endif
+                                </td>
                                 <td class="action-table-data">
                                     <div class="edit-delete-action">
-                                        <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-category">
+                                        <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-subcategory-{{ $subcategory->id }}">
                                             <i data-feather="edit" class="feather-edit"></i>
                                         </a>
-                                        <a data-bs-toggle="modal" data-bs-target="#delete-modal" class="p-2" href="javascript:void(0);">
-                                            <i data-feather="trash-2" class="feather-trash-2"></i>
-                                        </a>
+                                        <form action="{{ route('eshop360.categories.destroy', [$instance->slug ?? '', $subcategory]) }}" method="POST" class="d-inline" onsubmit="return confirm('{{ __('Are you sure?') }}')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="p-2 border-0 bg-transparent">
+                                                <i data-feather="trash-2" class="feather-trash-2"></i>
+                                            </button>
+                                        </form>
                                     </div>
-                                    
                                 </td>
                             </tr>
+
+                            {{-- Edit Modal for each subcategory --}}
+                            <div class="modal fade" id="edit-subcategory-{{ $subcategory->id }}" tabindex="-1" aria-labelledby="editSubcategoryLabel{{ $subcategory->id }}" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="editSubcategoryLabel{{ $subcategory->id }}">{{ __('Edit Sub Category') }}</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <form action="{{ route('eshop360.categories.update', [$instance->slug ?? '', $subcategory]) }}" method="POST" enctype="multipart/form-data">
+                                            @csrf
+                                            @method('PUT')
+                                            <div class="modal-body">
+                                                <div class="mb-3">
+                                                    <label for="edit-name-{{ $subcategory->id }}" class="form-label">{{ __('Name') }} <span class="text-danger">*</span></label>
+                                                    <input type="text" class="form-control" id="edit-name-{{ $subcategory->id }}" name="name" value="{{ $subcategory->name }}" required maxlength="255">
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="edit-parent-{{ $subcategory->id }}" class="form-label">{{ __('Parent Category') }} <span class="text-danger">*</span></label>
+                                                    <select class="form-select" id="edit-parent-{{ $subcategory->id }}" name="parent_id" required>
+                                                        <option value="">{{ __('Select Parent Category') }}</option>
+                                                        @foreach($parentCategories as $parent)
+                                                            <option value="{{ $parent->id }}" @selected($subcategory->parent_id == $parent->id)>{{ $parent->name }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="edit-description-{{ $subcategory->id }}" class="form-label">{{ __('Description') }}</label>
+                                                    <textarea class="form-control" id="edit-description-{{ $subcategory->id }}" name="description" rows="3" maxlength="2000">{{ $subcategory->description }}</textarea>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="edit-image-{{ $subcategory->id }}" class="form-label">{{ __('Image') }}</label>
+                                                    <input type="file" class="form-control" id="edit-image-{{ $subcategory->id }}" name="image" accept="image/*">
+                                                    @if($subcategory->image)
+                                                        <div class="mt-2">
+                                                            <img src="{{ asset('storage/' . $subcategory->image) }}" alt="{{ $subcategory->name }}" class="img-thumbnail" style="max-height: 80px;">
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="edit-sort-{{ $subcategory->id }}" class="form-label">{{ __('Sort Order') }}</label>
+                                                    <input type="number" class="form-control" id="edit-sort-{{ $subcategory->id }}" name="sort_order" value="{{ $subcategory->sort_order }}" min="0">
+                                                </div>
+                                                <div class="form-check form-switch mb-3">
+                                                    <input class="form-check-input" type="checkbox" id="edit-active-{{ $subcategory->id }}" name="is_active" value="1" @checked($subcategory->is_active)>
+                                                    <label class="form-check-label" for="edit-active-{{ $subcategory->id }}">{{ __('Active') }}</label>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                                                <button type="submit" class="btn btn-primary">{{ __('Save Changes') }}</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            @empty
                             <tr>
-                                <td>
-                                    <label class="checkboxs">
-                                        <input type="checkbox">
-                                        <span class="checkmarks"></span>
-                                    </label>
-                                </td>
-                                <td>
-                                    <a class="avatar avatar-md me-2">
-                                        <img src="{{URL::asset('build/img/products/stock-img-07.png')}}" alt="product">
-                                    </a>
-                                </td>
-                                <td>{{ __('Desktop') }}</td>
-                                <td>{{ __('Computers') }}</td>
-                                <td>{{ __('CT002') }}</td>
-                                <td>{{ __('Compact Design') }}</td>
-                                <td><span class="badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
-                                <td class="action-table-data">
-                                    <div class="edit-delete-action">
-                                        <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-category">
-                                            <i data-feather="edit" class="feather-edit"></i>
-                                        </a>
-                                        <a data-bs-toggle="modal" data-bs-target="#delete-modal" class="p-2" href="javascript:void(0);">
-                                            <i data-feather="trash-2" class="feather-trash-2"></i>
-                                        </a>
-                                    </div>
-                                    
-                                </td>
+                                <td colspan="7" class="text-center">{{ __('No sub categories found.') }}</td>
                             </tr>
-                            <tr>
-                                <td>
-                                    <label class="checkboxs">
-                                        <input type="checkbox">
-                                        <span class="checkmarks"></span>
-                                    </label>
-                                </td>
-                                <td>
-                                    <a class="avatar avatar-md me-2">
-                                        <img src="{{URL::asset('build/img/products/stock-img-02.png')}}" alt="product">
-                                    </a>
-                                </td>
-                                <td>{{ __('Sneakers') }}</td>
-                                <td>{{ __('Shoe') }}</td>
-                                <td>{{ __('CT003') }}</td>
-                                <td>{{ __('Dynamic Grip') }}</td>
-                                <td><span class="badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
-                                <td class="action-table-data">
-                                    <div class="edit-delete-action">
-                                        <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-category">
-                                            <i data-feather="edit" class="feather-edit"></i>
-                                        </a>
-                                        <a data-bs-toggle="modal" data-bs-target="#delete-modal" class="p-2" href="javascript:void(0);">
-                                            <i data-feather="trash-2" class="feather-trash-2"></i>
-                                        </a>
-                                    </div>
-                                    
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <label class="checkboxs">
-                                        <input type="checkbox">
-                                        <span class="checkmarks"></span>
-                                    </label>
-                                </td>
-                                <td>
-                                    <a class="avatar avatar-md me-2">
-                                        <img src="{{URL::asset('build/img/products/stock-img-08.png')}}" alt="product">
-                                    </a>
-                                </td>
-                                <td>{{ __('Formals') }}</td>
-                                <td>{{ __('Shoe') }}</td>
-                                <td>{{ __('CT004') }}</td>
-                                <td>{{ __('Stylish Comfort') }}</td>
-                                <td><span class="badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
-                                <td class="action-table-data">
-                                    <div class="edit-delete-action">
-                                        <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-category">
-                                            <i data-feather="edit" class="feather-edit"></i>
-                                        </a>
-                                        <a data-bs-toggle="modal" data-bs-target="#delete-modal" class="p-2" href="javascript:void(0);">
-                                            <i data-feather="trash-2" class="feather-trash-2"></i>
-                                        </a>
-                                    </div>
-                                    
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <label class="checkboxs">
-                                        <input type="checkbox">
-                                        <span class="checkmarks"></span>
-                                    </label>
-                                </td>
-                                <td>
-                                    <a class="avatar avatar-md me-2">
-                                        <img src="{{URL::asset('build/img/products/stock-img-06.png')}}" alt="product">
-                                    </a>
-                                </td>
-                                <td>{{ __('Wearables') }}</td>
-                                <td>{{ __('Electronics') }}</td>
-                                <td>{{ __('CT005') }}</td>
-                                <td>{{ __('Seamless Connectivity') }}</td>
-                                <td><span class="badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
-                                <td class="action-table-data">
-                                    <div class="edit-delete-action">
-                                        <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-category">
-                                            <i data-feather="edit" class="feather-edit"></i>
-                                        </a>
-                                        <a data-bs-toggle="modal" data-bs-target="#delete-modal" class="p-2" href="javascript:void(0);">
-                                            <i data-feather="trash-2" class="feather-trash-2"></i>
-                                        </a>
-                                    </div>
-                                    
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <label class="checkboxs">
-                                        <input type="checkbox">
-                                        <span class="checkmarks"></span>
-                                    </label>
-                                </td>
-                                <td>
-                                    <a class="avatar avatar-md me-2">
-                                        <img src="{{URL::asset('build/img/products/stock-img-04.png')}}" alt="product">
-                                    </a>
-                                </td>
-                                <td>{{ __('Speakers') }}</td>
-                                <td>{{ __('Electronics') }}</td>
-                                <td>{{ __('CT006') }}</td>
-                                <td>{{ __('Reliable Sound') }}</td>
-                                <td><span class="badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
-                                <td class="action-table-data">
-                                    <div class="edit-delete-action">
-                                        <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-category">
-                                            <i data-feather="edit" class="feather-edit"></i>
-                                        </a>
-                                        <a data-bs-toggle="modal" data-bs-target="#delete-modal" class="p-2" href="javascript:void(0);">
-                                            <i data-feather="trash-2" class="feather-trash-2"></i>
-                                        </a>
-                                    </div>
-                                    
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <label class="checkboxs">
-                                        <input type="checkbox">
-                                        <span class="checkmarks"></span>
-                                    </label>
-                                </td>
-                                <td>
-                                    <a class="avatar avatar-md me-2">
-                                        <img src="{{URL::asset('build/img/products/expire-product-01.png')}}" alt="product">
-                                    </a>
-                                </td>
-                                <td>{{ __('Handbags') }}</td>
-                                <td>{{ __('Bags') }}</td>
-                                <td>{{ __('CT007') }}</td>
-                                <td>{{ __('Compact Carry') }}</td>
-                                <td><span class="badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
-                                <td class="action-table-data">
-                                    <div class="edit-delete-action">
-                                        <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-category">
-                                            <i data-feather="edit" class="feather-edit"></i>
-                                        </a>
-                                        <a data-bs-toggle="modal" data-bs-target="#delete-modal" class="p-2" href="javascript:void(0);">
-                                            <i data-feather="trash-2" class="feather-trash-2"></i>
-                                        </a>
-                                    </div>
-                                    
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <label class="checkboxs">
-                                        <input type="checkbox">
-                                        <span class="checkmarks"></span>
-                                    </label>
-                                </td>
-                                <td>
-                                    <a class="avatar avatar-md me-2">
-                                        <img src="{{URL::asset('build/img/products/expire-product-04.png')}}" alt="product">
-                                    </a>
-                                </td>
-                                <td>{{ __('Travel') }}</td>
-                                <td>{{ __('Bags') }}</td>
-                                <td>{{ __('CT008') }}</td>
-                                <td>{{ __('Travel Ready') }}</td>
-                                <td><span class="badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
-                                <td class="action-table-data">
-                                    <div class="edit-delete-action">
-                                        <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-category">
-                                            <i data-feather="edit" class="feather-edit"></i>
-                                        </a>
-                                        <a data-bs-toggle="modal" data-bs-target="#delete-modal" class="p-2" href="javascript:void(0);">
-                                            <i data-feather="trash-2" class="feather-trash-2"></i>
-                                        </a>
-                                    </div>
-                                    
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <label class="checkboxs">
-                                        <input type="checkbox">
-                                        <span class="checkmarks"></span>
-                                    </label>
-                                </td>
-                                <td>
-                                    <a class="avatar avatar-md me-2">
-                                        <img src="{{URL::asset('build/img/products/stock-img-05.png')}}" alt="product">
-                                    </a>
-                                </td>
-                                <td>{{ __('Sofa') }}</td>
-                                <td>{{ __('Furniture') }}</td>
-                                <td>{{ __('CT009') }}</td>
-                                <td>{{ __('Cozy Comfort') }}</td>
-                                <td><span class="badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
-                                <td class="action-table-data">
-                                    <div class="edit-delete-action">
-                                        <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-category">
-                                            <i data-feather="edit" class="feather-edit"></i>
-                                        </a>
-                                        <a data-bs-toggle="modal" data-bs-target="#delete-modal" class="p-2" href="javascript:void(0);">
-                                            <i data-feather="trash-2" class="feather-trash-2"></i>
-                                        </a>
-                                    </div>
-                                    
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <label class="checkboxs">
-                                        <input type="checkbox">
-                                        <span class="checkmarks"></span>
-                                    </label>
-                                </td>
-                                <td>
-                                    <a class="avatar avatar-md me-2">
-                                        <img src="{{URL::asset('build/img/products/expire-product-03.png')}}" alt="product">
-                                    </a>
-                                </td>
-                                <td>{{ __('Chair') }}</td>
-                                <td>{{ __('Furniture') }}</td>
-                                <td>{{ __('CT0010') }}</td>
-                                <td>{{ __('Stylish Comfort') }}</td>
-                                <td><span class="badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
-                                <td class="action-table-data">
-                                    <div class="edit-delete-action">
-                                        <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-category">
-                                            <i data-feather="edit" class="feather-edit"></i>
-                                        </a>
-                                        <a data-bs-toggle="modal" data-bs-target="#delete-modal" class="p-2" href="javascript:void(0);">
-                                            <i data-feather="trash-2" class="feather-trash-2"></i>
-                                        </a>
-                                    </div>
-                                    
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <label class="checkboxs">
-                                        <input type="checkbox">
-                                        <span class="checkmarks"></span>
-                                    </label>
-                                </td>
-                                <td>
-                                    <a class="avatar avatar-md me-2">
-                                        <img src="{{URL::asset('build/img/products/product4.jpg')}}" alt="product">
-                                    </a>
-                                </td>
-                                <td>{{ __('Fruits') }}</td>
-                                <td>{{ __('Fruits') }}</td>
-                                <td>{{ __('CT004') }}</td>
-                                <td>{{ __('Fruits Description') }}</td>
-                                <td><span class="badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
-                                <td class="action-table-data">
-                                    <div class="edit-delete-action">
-                                        <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-category">
-                                            <i data-feather="edit" class="feather-edit"></i>
-                                        </a>
-                                        <a data-bs-toggle="modal" data-bs-target="#delete-modal" class="p-2" href="javascript:void(0);">
-                                            <i data-feather="trash-2" class="feather-trash-2"></i>
-                                        </a>
-                                    </div>
-                                    
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <label class="checkboxs">
-                                        <input type="checkbox">
-                                        <span class="checkmarks"></span>
-                                    </label>
-                                </td>
-                                <td>
-                                    <a class="avatar avatar-md me-2">
-                                        <img src="{{URL::asset('build/img/products/product5.jpg')}}" alt="product">
-                                    </a>
-                                </td>
-                                <td>{{ __('Accessories') }}</td>
-                                <td>{{ __('Accessories') }}</td>
-                                <td>{{ __('CT005') }}</td>
-                                <td>{{ __('Accessories Description') }}</td>
-                                <td><span class="badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
-                                <td class="action-table-data">
-                                    <div class="edit-delete-action">
-                                        <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-category">
-                                            <i data-feather="edit" class="feather-edit"></i>
-                                        </a>
-                                        <a data-bs-toggle="modal" data-bs-target="#delete-modal" class="p-2" href="javascript:void(0);">
-                                            <i data-feather="trash-2" class="feather-trash-2"></i>
-                                        </a>
-                                    </div>
-                                    
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <label class="checkboxs">
-                                        <input type="checkbox">
-                                        <span class="checkmarks"></span>
-                                    </label>
-                                </td>
-                                <td>
-                                    <a class="avatar avatar-md me-2">
-                                        <img src="{{URL::asset('build/img/products/product6.jpg')}}" alt="product">
-                                    </a>
-                                </td>
-                                <td>{{ __('Shoes') }}</td>
-                                <td>{{ __('Shoes') }}</td>
-                                <td>{{ __('CT006') }}</td>
-                                <td>{{ __('Shoes Description') }}</td>
-                                <td><span class="badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
-                                <td class="action-table-data">
-                                    <div class="edit-delete-action">
-                                        <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-category">
-                                            <i data-feather="edit" class="feather-edit"></i>
-                                        </a>
-                                        <a data-bs-toggle="modal" data-bs-target="#delete-modal" class="p-2" href="javascript:void(0);">
-                                            <i data-feather="trash-2" class="feather-trash-2"></i>
-                                        </a>
-                                    </div>
-                                    
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <label class="checkboxs">
-                                        <input type="checkbox">
-                                        <span class="checkmarks"></span>
-                                    </label>
-                                </td>
-                                <td>
-                                    <a class="avatar avatar-md me-2">
-                                        <img src="{{URL::asset('build/img/products/product7.jpg')}}" alt="product">
-                                    </a>
-                                </td>
-                                <td>{{ __('Fruits') }}</td>
-                                <td>{{ __('Fruits') }}</td>
-                                <td>{{ __('CT007') }}</td>
-                                <td>{{ __('Fruits Description') }}</td>
-                                <td><span class="badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
-                                <td class="action-table-data">
-                                    <div class="edit-delete-action">
-                                        <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-category">
-                                            <i data-feather="edit" class="feather-edit"></i>
-                                        </a>
-                                        <a data-bs-toggle="modal" data-bs-target="#delete-modal" class="p-2" href="javascript:void(0);">
-                                            <i data-feather="trash-2" class="feather-trash-2"></i>
-                                        </a>
-                                    </div>
-                                    
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <label class="checkboxs">
-                                        <input type="checkbox">
-                                        <span class="checkmarks"></span>
-                                    </label>
-                                </td>
-                                <td>
-                                    <a class="avatar avatar-md me-2">
-                                        <img src="{{URL::asset('build/img/products/product8.jpg')}}" alt="product">
-                                    </a>
-                                </td>
-                                <td>{{ __('Fruits') }}</td>
-                                <td>{{ __('Fruits') }}</td>
-                                <td>{{ __('CT008') }}</td>
-                                <td>{{ __('Fruits Description') }}</td>
-                                <td><span class="badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
-                                <td class="action-table-data">
-                                    <div class="edit-delete-action">
-                                        <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-category">
-                                            <i data-feather="edit" class="feather-edit"></i>
-                                        </a>
-                                        <a data-bs-toggle="modal" data-bs-target="#delete-modal" class="p-2" href="javascript:void(0);">
-                                            <i data-feather="trash-2" class="feather-trash-2"></i>
-                                        </a>
-                                    </div>
-                                    
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <label class="checkboxs">
-                                        <input type="checkbox">
-                                        <span class="checkmarks"></span>
-                                    </label>
-                                </td>
-                                <td>
-                                    <a class="avatar avatar-md me-2">
-                                        <img src="{{URL::asset('build/img/products/product9.jpg')}}" alt="product">
-                                    </a>
-                                </td>
-                                <td>{{ __('Computers') }}</td>
-                                <td>{{ __('Computers') }}</td>
-                                <td>{{ __('CT009') }}</td>
-                                <td>{{ __('Computers Description') }}</td>
-                                <td><span class="badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
-                                <td class="action-table-data">
-                                    <div class="edit-delete-action">
-                                        <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-category">
-                                            <i data-feather="edit" class="feather-edit"></i>
-                                        </a>
-                                        <a data-bs-toggle="modal" data-bs-target="#delete-modal" class="p-2" href="javascript:void(0);">
-                                            <i data-feather="trash-2" class="feather-trash-2"></i>
-                                        </a>
-                                    </div>
-                                    
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <label class="checkboxs">
-                                        <input type="checkbox">
-                                        <span class="checkmarks"></span>
-                                    </label>
-                                </td>
-                                <td>
-                                    <a class="avatar avatar-md me-2">
-                                        <img src="{{URL::asset('build/img/products/product10.jpg')}}" alt="product">
-                                    </a>
-                                </td>
-                                <td>{{ __('Health Care') }}</td>
-                                <td>{{ __('Health Care') }}</td>
-                                <td>{{ __('CT0010') }}</td>
-                                <td>{{ __('Health Care Description') }}</td>
-                                <td><span class="badge bg-success fw-medium fs-10">{{ __('Active') }}</span></td>
-                                <td class="action-table-data">
-                                    <div class="edit-delete-action">
-                                        <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-category">
-                                            <i data-feather="edit" class="feather-edit"></i>
-                                        </a>
-                                        <a data-bs-toggle="modal" data-bs-target="#delete-modal" class="p-2" href="javascript:void(0);">
-                                            <i data-feather="trash-2" class="feather-trash-2"></i>
-                                        </a>
-                                    </div>
-                                    
-                                </td>
-                            </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
+                @if($subcategories->hasPages())
+                <div class="p-3">
+                    {{ $subcategories->links() }}
+                </div>
+                @endif
             </div>
         </div>
         <!-- /product list -->
+
+{{-- Add Sub Category Modal --}}
+<div class="modal fade" id="add-subcategory" tabindex="-1" aria-labelledby="addSubcategoryLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addSubcategoryLabel">{{ __('Add Sub Category') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ route('eshop360.categories.store', [$instance->slug ?? '']) }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="add-name" class="form-label">{{ __('Name') }} <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="add-name" name="name" required maxlength="255" placeholder="{{ __('Enter sub category name') }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="add-parent" class="form-label">{{ __('Parent Category') }} <span class="text-danger">*</span></label>
+                        <select class="form-select" id="add-parent" name="parent_id" required>
+                            <option value="">{{ __('Select Parent Category') }}</option>
+                            @foreach($parentCategories as $parent)
+                                <option value="{{ $parent->id }}">{{ $parent->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="add-description" class="form-label">{{ __('Description') }}</label>
+                        <textarea class="form-control" id="add-description" name="description" rows="3" maxlength="2000" placeholder="{{ __('Enter description') }}"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="add-image" class="form-label">{{ __('Image') }}</label>
+                        <input type="file" class="form-control" id="add-image" name="image" accept="image/*">
+                    </div>
+                    <div class="mb-3">
+                        <label for="add-sort" class="form-label">{{ __('Sort Order') }}</label>
+                        <input type="number" class="form-control" id="add-sort" name="sort_order" value="0" min="0">
+                    </div>
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="add-active" name="is_active" value="1" checked>
+                        <label class="form-check-label" for="add-active">{{ __('Active') }}</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ __('Create Sub Category') }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 </x-dashboard::layouts.master>

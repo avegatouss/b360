@@ -28,7 +28,7 @@
                     <a href="{{ route('eshop360.products.create', $instance->slug ?? '') }}" class="btn btn-primary"><i class="ti ti-circle-plus me-1"></i>Add Product</a>
                 </div>
                 <div class="page-btn import">
-                    <a href="#" class="btn btn-primary color" data-bs-toggle="modal" data-bs-target="#view-notes"><i
+                    <a href="#" class="btn btn-primary color" data-bs-toggle="modal" data-bs-target="#import-products"><i
                         data-feather="download" class="me-2"></i>{{ __('Import Product') }}</a>
                 </div>
             </div>
@@ -177,5 +177,35 @@
                 </div>
             </div>
             <!-- /product list -->
+
+<!-- Import Products Modal -->
+<div class="modal fade" id="import-products" tabindex="-1" aria-labelledby="importProductsLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="importProductsLabel">{{ __('Import Products') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ route('eshop360.products.store', $instance->slug ?? '') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="import-file" class="form-label">{{ __('Upload File') }} <span class="text-danger">*</span></label>
+                        <input type="file" class="form-control" id="import-file" name="import_file" required accept=".csv,.xlsx,.xls">
+                        <small class="text-muted">{{ __('Accepted formats: CSV, XLSX, XLS.') }}</small>
+                    </div>
+                    <div class="alert alert-info mb-0">
+                        <i class="ti ti-info-circle me-1"></i>
+                        {{ __('The file should contain columns: Name, SKU, Category, Brand, Price, Unit, Quantity.') }}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ __('Import') }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 </x-dashboard::layouts.master>

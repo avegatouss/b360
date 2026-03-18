@@ -124,4 +124,114 @@
 					</div>
 					<!-- /product list -->
 
+{{-- Add Category Modal --}}
+<div class="modal fade" id="add-category" tabindex="-1" aria-labelledby="addCategoryLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addCategoryLabel">{{ __('Add Category') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ route('eshop360.categories.store', [$instance->slug ?? '']) }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="add-cat-name" class="form-label">{{ __('Name') }} <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="add-cat-name" name="name" required maxlength="255" placeholder="{{ __('Enter category name') }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="add-cat-parent" class="form-label">{{ __('Parent Category') }}</label>
+                        <select class="form-select" id="add-cat-parent" name="parent_id">
+                            <option value="">{{ __('None (Root Category)') }}</option>
+                            @foreach($parentCategories as $parent)
+                                <option value="{{ $parent->id }}">{{ $parent->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="add-cat-description" class="form-label">{{ __('Description') }}</label>
+                        <textarea class="form-control" id="add-cat-description" name="description" rows="3" maxlength="2000" placeholder="{{ __('Enter description') }}"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="add-cat-image" class="form-label">{{ __('Image') }}</label>
+                        <input type="file" class="form-control" id="add-cat-image" name="image" accept="image/*">
+                    </div>
+                    <div class="mb-3">
+                        <label for="add-cat-sort" class="form-label">{{ __('Sort Order') }}</label>
+                        <input type="number" class="form-control" id="add-cat-sort" name="sort_order" value="0" min="0">
+                    </div>
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="add-cat-active" name="is_active" value="1" checked>
+                        <label class="form-check-label" for="add-cat-active">{{ __('Active') }}</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ __('Create Category') }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- Edit Category Modals (one per category) --}}
+@foreach($categories as $category)
+<div class="modal fade" id="edit-category-{{ $category->id }}" tabindex="-1" aria-labelledby="editCategoryLabel{{ $category->id }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editCategoryLabel{{ $category->id }}">{{ __('Edit Category') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ route('eshop360.categories.update', [$instance->slug ?? '', $category]) }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                @method('PUT')
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="edit-cat-name-{{ $category->id }}" class="form-label">{{ __('Name') }} <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="edit-cat-name-{{ $category->id }}" name="name" value="{{ $category->name }}" required maxlength="255">
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-cat-parent-{{ $category->id }}" class="form-label">{{ __('Parent Category') }}</label>
+                        <select class="form-select" id="edit-cat-parent-{{ $category->id }}" name="parent_id">
+                            <option value="">{{ __('None (Root Category)') }}</option>
+                            @foreach($parentCategories as $parent)
+                                @if($parent->id !== $category->id)
+                                    <option value="{{ $parent->id }}" @selected($category->parent_id == $parent->id)>{{ $parent->name }}</option>
+                                @endif
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-cat-description-{{ $category->id }}" class="form-label">{{ __('Description') }}</label>
+                        <textarea class="form-control" id="edit-cat-description-{{ $category->id }}" name="description" rows="3" maxlength="2000">{{ $category->description }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-cat-image-{{ $category->id }}" class="form-label">{{ __('Image') }}</label>
+                        <input type="file" class="form-control" id="edit-cat-image-{{ $category->id }}" name="image" accept="image/*">
+                        @if($category->image)
+                            <div class="mt-2">
+                                <img src="{{ asset('storage/' . $category->image) }}" alt="{{ $category->name }}" class="img-thumbnail" style="max-height: 80px;">
+                            </div>
+                        @endif
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-cat-sort-{{ $category->id }}" class="form-label">{{ __('Sort Order') }}</label>
+                        <input type="number" class="form-control" id="edit-cat-sort-{{ $category->id }}" name="sort_order" value="{{ $category->sort_order }}" min="0">
+                    </div>
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="edit-cat-active-{{ $category->id }}" name="is_active" value="1" @checked($category->is_active)>
+                        <label class="form-check-label" for="edit-cat-active-{{ $category->id }}">{{ __('Active') }}</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ __('Save Changes') }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endforeach
+
 </x-dashboard::layouts.master>

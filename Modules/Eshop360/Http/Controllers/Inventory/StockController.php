@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Modules\Eshop360\Models\Product;
 use Modules\Eshop360\Models\Stock;
 use Modules\Eshop360\Models\StockMovement;
+use Modules\Eshop360\Models\Store;
 use Modules\Eshop360\Models\Warehouse;
 
 class StockController extends Controller
@@ -15,7 +16,7 @@ class StockController extends Controller
     public function __construct()
     {
         $this->middleware('can:eshop.inventory.view');
-        $this->middleware('can:eshop.inventory.manage')->only(['update', 'destroy']);
+        $this->middleware('can:eshop.inventory.manage')->only(['store', 'update', 'destroy']);
     }
 
     public function index(Request $request)
@@ -35,8 +36,45 @@ class StockController extends Controller
             ->withQueryString();
 
         $warehouses = Warehouse::where('is_active', true)->orderBy('name')->get();
+        $stores = Store::where('is_active', true)->orderBy('name')->get();
+        $products = Product::orderBy('name')->limit(1200)->get();
 
-        return view('eshop360::inventory.stocks.index', compact('stocks', 'warehouses'));
+        return view('eshop360::inventory.stocks.index', compact('stocks', 'warehouses', 'stores', 'products'));
+    }
+
+    public function store(Request $request, string $slug)
+    {
+        $validated = $request->validate([
+            'product_id' => 'required|exists:eshop_products,id',
+            'warehouse_id' => 'required|exists:eshop_warehouses,id',
+            'store_id' => 'nullable|exists:eshop_stores,id',
+            'quantity' => 'required|integer|min:1',
+            'notes' => 'nullable|string|max:500',
+        ]);
+
+        DB::transaction(function () use ($validated) {
+            $stock = Stock::firstOrNew([
+                'product_id' => $validated['product_id'],
+                'warehouse_id' => $validated['warehouse_id'],
+                'store_id' => $validated['store_id'] ?? null,
+            ]);
+
+            $stock->quantity = ($stock->quantity ?? 0) + $validated['quantity'];
+            $stock->save();
+
+            StockMovement::create([
+                'product_id' => $stock->product_id,
+                'warehouse_id' => $stock->warehouse_id,
+                'store_id' => $stock->store_id,
+                'type' => 'addition',
+                'quantity' => $validated['quantity'],
+                'notes' => $validated['notes'] ?? 'Stock added',
+                'performed_by' => auth()->id(),
+            ]);
+        });
+
+        return redirect()->route('eshop360.stocks.index', $slug)
+            ->with('success', __('Stock added successfully.'));
     }
 
     public function update(Request $request, string $slug, Stock $stock)
@@ -90,13 +128,30 @@ class StockController extends Controller
 
     public function lowStock(Request $request)
     {
-        $products = Product::with(['stocks.warehouse', 'category', 'brand'])
-            ->lowStock()
-            ->when($request->warehouse_id, fn ($q, $w) => $q->whereHas('stocks', function ($sq) use ($w) {
-                $sq->where('warehouse_id', $w);
-            }))
-            ->when($request->search, fn ($q, $s) => $q->where('name', 'like', "%{$s}%"))
-            ->latest()
+        $productsQuery = Product::with(['stocks.warehouse', 'category', 'brand'])
+            ->whereExists(function ($q) use ($request) {
+                $q->select(DB::raw(1))
+                    ->from('eshop_stocks')
+                    ->whereColumn('eshop_stocks.product_id', 'eshop_products.id')
+                    ->whereRaw('eshop_stocks.quantity <= eshop_products.alert_quantity')
+                    ->when($request->warehouse_id, fn ($q, $w) => $q->where('eshop_stocks.warehouse_id', $w));
+            })
+            ->when($request->search, fn ($q, $s) => $q->where('name', 'like', "%{$s}%"));
+
+        $hasQuantityFilter = $request->filled('min_quantity') || $request->filled('max_quantity');
+
+        if ($hasQuantityFilter) {
+            $productsQuery = $productsQuery
+                ->join('eshop_stocks as all_stocks', 'all_stocks.product_id', '=', 'eshop_products.id')
+                ->when($request->warehouse_id, fn ($q, $w) => $q->where('all_stocks.warehouse_id', $w))
+                ->groupBy('eshop_products.id')
+                ->select('eshop_products.*')
+                ->when($request->filled('min_quantity'), fn ($q, $min) => $q->havingRaw('SUM(all_stocks.quantity) >= ?', [$min]))
+                ->when($request->filled('max_quantity'), fn ($q, $max) => $q->havingRaw('SUM(all_stocks.quantity) <= ?', [$max]));
+        }
+
+        $products = $productsQuery
+            ->latest('eshop_products.created_at')
             ->paginate(30)
             ->withQueryString();
 

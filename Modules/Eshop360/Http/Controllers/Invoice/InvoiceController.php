@@ -5,8 +5,8 @@ namespace Modules\Eshop360\Http\Controllers\Invoice;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Modules\Eshop360\Services\EshopSettingsService;
 use Modules\Core\Support\CurrentInstance;
 use Modules\Eshop360\Models\Customer;
 use Modules\Eshop360\Models\Invoice;
@@ -18,8 +18,10 @@ use Modules\Eshop360\Services\PdfService;
 
 class InvoiceController extends Controller
 {
-    public function __construct(private readonly InvoiceService $invoiceService)
-    {
+    public function __construct(
+        private readonly InvoiceService $invoiceService,
+        private readonly EshopSettingsService $eshopSettings,
+    ) {
     }
 
     public function index(Request $request)
@@ -48,7 +50,7 @@ class InvoiceController extends Controller
         $order = $request->order_id ? Order::with('items.product', 'customer')->find($request->order_id) : null;
 
         $instanceId = $instance?->id ?? 0;
-        $settings = Cache::get("eshop_invoice_settings_{$instanceId}", $this->defaultInvoiceSettings());
+        $settings = $this->eshopSettings->get('invoice');
 
         return view('eshop360::invoices.create', compact('customers', 'products', 'order', 'settings'));
     }
@@ -162,7 +164,7 @@ class InvoiceController extends Controller
     public function settings()
     {
         $instanceId = CurrentInstance::get()?->id ?? 0;
-        $settings = Cache::get("eshop_invoice_settings_{$instanceId}", $this->defaultInvoiceSettings());
+        $settings = $this->eshopSettings->get('invoice');
 
         return view('eshop360::invoices.settings', compact('settings'));
     }
@@ -189,7 +191,7 @@ class InvoiceController extends Controller
         }
 
         $instanceId = CurrentInstance::get()?->id ?? 0;
-        Cache::put("eshop_invoice_settings_{$instanceId}", $validated);
+        $this->eshopSettings->set('invoice', $validated);
 
         return redirect()->route('eshop360.invoices.settings')
             ->with('success', __('Invoice settings updated successfully.'));
@@ -252,21 +254,4 @@ class InvoiceController extends Controller
         return redirect()->back()->with('success', "Facture envoyée par email.");
     }
 
-    private function defaultInvoiceSettings(): array
-    {
-        return [
-            'company_name'     => '',
-            'company_address'  => '',
-            'company_phone'    => '',
-            'company_email'    => '',
-            'company_logo'     => null,
-            'tax_number'       => '',
-            'default_terms'    => '',
-            'default_footer'   => '',
-            'default_due_days' => 30,
-            'default_template' => 'default',
-            'currency_symbol'  => '$',
-            'currency_position' => 'before',
-        ];
-    }
 }

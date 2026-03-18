@@ -4,6 +4,7 @@ namespace Modules\Eshop360\Http\Controllers\Finance;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Modules\Eshop360\Models\Income;
 use Modules\Eshop360\Models\IncomeSource;
 use Modules\Eshop360\Models\Account;
@@ -38,11 +39,14 @@ class IncomeController extends Controller
         ]);
         $validated['instance_id'] = CurrentInstance::get()->id;
         $validated['user_id'] = auth()->id();
-        Income::create($validated);
 
-        if (!empty($validated['account_id'])) {
-            Account::find($validated['account_id'])?->increment('balance', $validated['amount']);
-        }
+        DB::transaction(function () use ($validated) {
+            Income::create($validated);
+
+            if (!empty($validated['account_id'])) {
+                Account::find($validated['account_id'])?->increment('balance', $validated['amount']);
+            }
+        });
 
         return redirect()->back()->with('success', 'Income recorded.');
     }
@@ -55,13 +59,32 @@ class IncomeController extends Controller
             'date' => 'required|date',
             'description' => 'nullable|string',
         ]);
-        $income->update($validated);
+
+        DB::transaction(function () use ($validated, $income) {
+            if ($income->account_id) {
+                $account = Account::find($income->account_id);
+                if ($account) {
+                    $account->decrement('balance', $income->amount);
+                    $account->increment('balance', $validated['amount']);
+                }
+            }
+
+            $income->update($validated);
+        });
+
         return redirect()->back()->with('success', 'Income updated.');
     }
 
     public function destroy(string $slug, Income $income)
     {
-        $income->delete();
+        DB::transaction(function () use ($income) {
+            if ($income->account_id) {
+                Account::find($income->account_id)?->decrement('balance', $income->amount);
+            }
+
+            $income->delete();
+        });
+
         return redirect()->back()->with('success', 'Income deleted.');
     }
 

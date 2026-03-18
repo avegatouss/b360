@@ -33,12 +33,16 @@ class CartController extends Controller
     public function add(Request $request, string $slug): JsonResponse|RedirectResponse
     {
         $validated = $request->validate([
-            'product_id' => 'required|exists:eshop_products,id',
-            'quantity'   => 'nullable|integer|min:1',
-            'channel_id' => 'nullable|exists:eshop_distribution_channels,id',
+            'product_id'   => 'required|exists:eshop_products,id',
+            'variation_id' => 'nullable|exists:eshop_product_variations,id',
+            'quantity'      => 'nullable|integer|min:1',
+            'channel_id'   => 'nullable|exists:eshop_distribution_channels,id',
         ]);
 
         $product = Product::findOrFail($validated['product_id']);
+        $variation = isset($validated['variation_id'])
+            ? \Modules\Eshop360\Models\ProductVariation::find($validated['variation_id'])
+            : null;
         $quantity = $validated['quantity'] ?? 1;
         $cart = $this->getCart();
         $requestedContext = $this->normalizeContext([
@@ -62,24 +66,33 @@ class CartController extends Controller
             true
         );
 
-        $key = (string) $product->id;
+        $key = $variation ? "{$product->id}_v{$variation->id}" : (string) $product->id;
 
         if (isset($cart[$key])) {
             $cart[$key]['quantity'] += $quantity;
-            $cart[$key]['total'] = $cart[$key]['quantity'] * $cart[$key]['unit_price'];
+            $lineDiscount = (float) ($cart[$key]['line_discount'] ?? 0);
+            $gross = $cart[$key]['quantity'] * $cart[$key]['unit_price'];
+            $cart[$key]['total'] = round($gross * (1 - $lineDiscount / 100), 2);
         } else {
+            $unitPrice = ($variation && $variation->price !== null)
+                ? (float) $variation->price
+                : $pricing['unit_price'];
+
             $cart[$key] = [
                 'product_id' => $product->id,
-                'name' => $product->name,
-                'sku' => $product->sku,
-                'image' => $product->image,
-                'unit_price' => $pricing['unit_price'],
+                'variation_id' => $variation?->id,
+                'name' => $variation ? $product->name . ' — ' . $variation->name : $product->name,
+                'variation_name' => $variation?->name,
+                'sku' => $variation?->sku ?: $product->sku,
+                'image' => $variation?->image ?? $product->image,
+                'unit_price' => $unitPrice,
                 'original_price' => $pricing['original_price'],
                 'tax_rate' => (float) $product->tax_rate,
                 'quantity' => $quantity,
-                'total' => $pricing['unit_price'] * $quantity,
+                'total' => $unitPrice * $quantity,
                 'channel_id' => $pricing['channel_id'],
-                'price_source' => $pricing['price_source'],
+                'price_source' => $variation ? 'variation' : $pricing['price_source'],
+                'line_discount' => 0,
             ];
         }
 
@@ -102,7 +115,8 @@ class CartController extends Controller
     public function update(Request $request, string $slug, string $itemKey): JsonResponse|RedirectResponse
     {
         $validated = $request->validate([
-            'quantity'   => 'required|integer|min:1',
+            'quantity'       => 'required|integer|min:1',
+            'line_discount'  => 'nullable|numeric|min:0|max:100',
         ]);
 
         $cart = $this->getCart();
@@ -119,7 +133,14 @@ class CartController extends Controller
         }
 
         $cart[$key]['quantity'] = $validated['quantity'];
-        $cart[$key]['total'] = $cart[$key]['quantity'] * $cart[$key]['unit_price'];
+
+        if (array_key_exists('line_discount', $validated) && $validated['line_discount'] !== null) {
+            $cart[$key]['line_discount'] = (float) $validated['line_discount'];
+        }
+
+        $lineDiscount = (float) ($cart[$key]['line_discount'] ?? 0);
+        $gross = $cart[$key]['quantity'] * $cart[$key]['unit_price'];
+        $cart[$key]['total'] = round($gross * (1 - $lineDiscount / 100), 2);
 
         $this->storeCart($cart);
         $totals = $this->calculateTotals($cart);

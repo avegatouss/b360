@@ -13,6 +13,7 @@ final class CoreServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/core.php', 'core');
         $this->mergeConfigFrom(__DIR__ . '/../config/hooks.php', 'hooks');
+        $this->mergeConfigFrom(__DIR__ . '/../Config/tours.php', 'tours');
 
         $this->app->singleton(HookRegistry::class);
         $this->app->singleton(ModuleManager::class);

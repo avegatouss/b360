@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Cache;
 use Modules\Core\Support\CurrentInstance;
+use Modules\Eshop360\Services\EshopSettingsService;
 use Modules\Eshop360\Models\CashRegister;
 use Modules\Eshop360\Models\Holding;
 use Modules\Eshop360\Models\Brand;
@@ -17,6 +18,7 @@ use Modules\Eshop360\Models\Order;
 use Modules\Eshop360\Models\Product;
 use Modules\Eshop360\Models\Store;
 use Modules\Eshop360\Models\Warehouse;
+use Modules\Eshop360\Services\CartService;
 use Modules\Eshop360\Services\CashRegisterService;
 use Modules\Eshop360\Services\HoldingService;
 
@@ -25,6 +27,8 @@ class PosController extends Controller
     public function __construct(
         private readonly CashRegisterService $cashRegisterService,
         private readonly HoldingService $holdingService,
+        private readonly EshopSettingsService $eshopSettings,
+        private readonly CartService $cartService,
     ) {
     }
 
@@ -65,8 +69,7 @@ class PosController extends Controller
 
     public function settings(string $slug)
     {
-        $instanceId = CurrentInstance::get()?->id ?? 0;
-        $settings = Cache::get("eshop_pos_settings_{$instanceId}", $this->defaultPosSettings());
+        $settings = $this->eshopSettings->get('pos');
 
         return view('eshop360::pos.settings', compact('settings'));
     }
@@ -85,8 +88,7 @@ class PosController extends Controller
             'products_per_page'    => 'nullable|integer|min:10|max:100',
         ]);
 
-        $instanceId = CurrentInstance::get()?->id ?? 0;
-        Cache::put("eshop_pos_settings_{$instanceId}", $validated);
+        $this->eshopSettings->set('pos', $validated);
 
         return redirect()->route('eshop360.pos.settings', ['slug' => $slug])
             ->with('success', __('POS settings updated successfully.'));
@@ -170,7 +172,7 @@ class PosController extends Controller
 
     public function storeHolding(Request $request, string $slug): RedirectResponse
     {
-        $cart = $this->getCart();
+        $cart = $this->cartService->getCart();
 
         if (empty($cart)) {
             return redirect()->route('eshop360.pos.index', ['slug' => $slug])
@@ -183,9 +185,9 @@ class PosController extends Controller
         ]);
 
         $instanceId = CurrentInstance::get()?->id ?? 0;
-        $coupon = $this->getCoupon();
-        $cartContext = $this->getCartContext();
-        $totals = $this->calculateTotals($cart, $coupon);
+        $coupon = $this->cartService->getCoupon();
+        $cartContext = $this->cartService->getContext();
+        $totals = $this->cartService->calculateTotals($cart, $coupon);
 
         $holding = $this->holdingService->createFromSnapshot(
             $cart,
@@ -202,7 +204,7 @@ class PosController extends Controller
             $validated['notes'] ?? null,
         );
 
-        $this->clearCart();
+        $this->cartService->clear();
 
         return redirect()->route('eshop360.pos.index', ['slug' => $slug])
             ->with('success', __('Cart saved on hold as :reference.', ['reference' => $holding->reference]));
@@ -222,10 +224,10 @@ class PosController extends Controller
     private function posData(Request $request): array
     {
         $instanceId = CurrentInstance::get()?->id ?? 0;
-        $settings = Cache::get("eshop_pos_settings_{$instanceId}", $this->defaultPosSettings());
+        $settings = $this->eshopSettings->get('pos');
         $perPage = $request->integer('per_page', (int) ($settings['products_per_page'] ?? 24));
 
-        $products = Product::with(['category', 'brand', 'stocks'])
+        $products = Product::with(['category', 'brand', 'stocks', 'variations' => fn ($q) => $q->where('is_active', true)])
             ->active()
             ->when($request->search, fn ($q, $s) => $q->where('name', 'like', "%{$s}%")
                 ->orWhere('sku', 'like', "%{$s}%")
@@ -236,20 +238,30 @@ class PosController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
-        $categories = Category::active()->roots()->orderBy('sort_order')->orderBy('name')->get();
-        $brands = Brand::where('is_active', true)->orderBy('name')->get();
-        $customers = Customer::where('is_active', true)->orderBy('name')->get();
-        $channels = DistributionChannel::where('instance_id', $instanceId)
-            ->where('is_active', true)
-            ->orderBy('name')
-            ->get();
-        $warehouses = Warehouse::where('is_active', true)->orderBy('name')->get();
-        $stores = Store::where('is_active', true)->orderBy('name')->get();
+        // Cache reference data (categories, brands, warehouses, stores) — 10 min TTL
+        $categories = Cache::remember("pos:categories:{$instanceId}", 600, fn () =>
+            Category::active()->roots()->orderBy('sort_order')->orderBy('name')->get()
+        );
+        $brands = Cache::remember("pos:brands:{$instanceId}", 600, fn () =>
+            Brand::where('is_active', true)->orderBy('name')->get()
+        );
+        $warehouses = Cache::remember("pos:warehouses:{$instanceId}", 600, fn () =>
+            Warehouse::where('is_active', true)->orderBy('name')->get()
+        );
+        $stores = Cache::remember("pos:stores:{$instanceId}", 600, fn () =>
+            Store::where('is_active', true)->orderBy('name')->get()
+        );
+        $channels = Cache::remember("pos:channels:{$instanceId}", 600, fn () =>
+            DistributionChannel::where('instance_id', $instanceId)->where('is_active', true)->orderBy('name')->get()
+        );
 
-        $cart = $this->getCart();
-        $coupon = $this->getCoupon();
-        $cartContext = $this->getCartContext();
-        $totals = $this->calculateTotals($cart, $coupon);
+        // Customers loaded without cache (can be large, paginated via AJAX in future)
+        $customers = Customer::where('is_active', true)->orderBy('name')->limit(500)->get();
+
+        $cart = $this->cartService->getCart();
+        $coupon = $this->cartService->getCoupon();
+        $cartContext = $this->cartService->getContext();
+        $totals = $this->cartService->calculateTotals($cart, $coupon);
         $currentRegister = $this->cashRegisterService->getCurrentRegister();
         $currentRegisterExpected = $currentRegister ? $this->cashRegisterService->expectedAmount($currentRegister) : null;
         $holdings = $this->holdingService->getActiveHoldings($instanceId);
@@ -277,154 +289,11 @@ class PosController extends Controller
         );
     }
 
-    private function defaultPosSettings(): array
-    {
-        return [
-            'default_layout'       => 'layout1',
-            'default_warehouse_id' => null,
-            'default_customer_id'  => null,
-            'payment_methods'      => ['cash', 'card'],
-            'tax_inclusive'         => false,
-            'sound_enabled'        => true,
-            'print_receipt'        => true,
-            'products_per_page'    => 24,
-        ];
-    }
-
-    /**
-     * @return array<string, array<string, mixed>>
-     */
-    private function getCart(): array
-    {
-        if (session()->has($this->scopedCartKey())) {
-            return session()->get($this->scopedCartKey(), []);
-        }
-
-        $legacyCart = session()->get('eshop_cart', []);
-
-        if (! empty($legacyCart)) {
-            session()->put($this->scopedCartKey(), $legacyCart);
-        }
-
-        return $legacyCart;
-    }
-
-    /**
-     * @return array<string, mixed>|null
-     */
-    private function getCoupon(): ?array
-    {
-        if (session()->has($this->scopedCouponKey())) {
-            return session()->get($this->scopedCouponKey());
-        }
-
-        $legacyCoupon = session()->get('eshop_cart_coupon');
-
-        if ($legacyCoupon !== null) {
-            session()->put($this->scopedCouponKey(), $legacyCoupon);
-        }
-
-        return $legacyCoupon;
-    }
-
-    /**
-     * @return array{channel_id: int|null}|null
-     */
-    private function getCartContext(): ?array
-    {
-        if (session()->has($this->scopedCartContextKey())) {
-            return session()->get($this->scopedCartContextKey());
-        }
-
-        $legacyContext = session()->get('eshop_cart_context');
-
-        if ($legacyContext !== null) {
-            session()->put($this->scopedCartContextKey(), $legacyContext);
-        }
-
-        return $legacyContext;
-    }
-
-    /**
-     * @param  array<string, array<string, mixed>>  $cart
-     * @param  array<string, mixed>|null  $coupon
-     * @return array{subtotal: float, tax: float, discount: float, total: float}
-     */
-    private function calculateTotals(array $cart, ?array $coupon): array
-    {
-        $subtotal = 0.0;
-        $tax = 0.0;
-
-        foreach ($cart as $item) {
-            $lineTotal = (float) ($item['total'] ?? ((float) ($item['unit_price'] ?? $item['price'] ?? 0) * (int) ($item['quantity'] ?? 0)));
-            $subtotal += $lineTotal;
-            $tax += round($lineTotal * (((float) ($item['tax_rate'] ?? 0)) / 100), 2);
-        }
-
-        $discount = 0.0;
-
-        if ($coupon) {
-            if (($coupon['type'] ?? null) === 'percentage') {
-                $discount = round($subtotal * (((float) ($coupon['value'] ?? 0)) / 100), 2);
-            } else {
-                $discount = min((float) ($coupon['value'] ?? 0), $subtotal);
-            }
-        }
-
-        return [
-            'subtotal' => round($subtotal, 2),
-            'tax' => round($tax, 2),
-            'discount' => round($discount, 2),
-            'total' => round(max(0, $subtotal + $tax - $discount), 2),
-        ];
-    }
-
-    private function scopedCartKey(): string
-    {
-        $instanceId = CurrentInstance::get()?->id ?? 0;
-
-        return 'eshop_cart_instance_' . $instanceId;
-    }
-
-    private function scopedCouponKey(): string
-    {
-        $instanceId = CurrentInstance::get()?->id ?? 0;
-
-        return 'eshop_cart_coupon_instance_' . $instanceId;
-    }
-
-    private function scopedCartContextKey(): string
-    {
-        $instanceId = CurrentInstance::get()?->id ?? 0;
-
-        return 'eshop_cart_context_instance_' . $instanceId;
-    }
-
-    private function clearCart(): void
-    {
-        session()->forget([
-            $this->scopedCartKey(),
-            $this->scopedCouponKey(),
-            $this->scopedCartContextKey(),
-            'eshop_cart',
-            'eshop_cart_coupon',
-            'eshop_cart_context',
-        ]);
-    }
-
     private function paymentMethodLabel(string $method): string
     {
-        return match ($method) {
-            'cash' => 'Especes',
-            'card' => 'Carte',
-            'cheque' => 'Cheque',
-            'paypal' => 'PayPal',
-            'bank_transfer' => 'Virement',
-            'points' => 'Points',
-            'deposit' => 'Depot',
-            'gift_card' => 'Carte cadeau',
-            'external' => 'Externe',
-            default => ucfirst(str_replace('_', ' ', $method)),
-        };
+        $key = "eshop::eshop.payment_{$method}";
+        $translated = __($key);
+
+        return $translated !== $key ? $translated : ucfirst(str_replace('_', ' ', $method));
     }
 }

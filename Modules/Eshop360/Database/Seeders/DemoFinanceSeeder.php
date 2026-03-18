@@ -41,7 +41,7 @@ final class DemoFinanceSeeder
             ['name' => '[DEMO] Caisse Principale', 'type' => 'cash', 'balance' => 2500000, 'currency' => 'XOF'],
             ['name' => '[DEMO] SGBCI Compte Courant', 'type' => 'bank', 'account_number' => 'CI093 0001 0101 000123456 78', 'bank_name' => 'SGBCI', 'balance' => 15000000, 'currency' => 'XOF'],
             ['name' => '[DEMO] BICICI Epargne', 'type' => 'bank', 'account_number' => 'CI093 0002 0201 000987654 32', 'bank_name' => 'BICICI', 'balance' => 8000000, 'currency' => 'XOF'],
-            ['name' => '[DEMO] Orange Money Pro', 'type' => 'mobile', 'balance' => 500000, 'currency' => 'XOF'],
+            ['name' => '[DEMO] Orange Money Pro', 'type' => 'mobile_money', 'balance' => 500000, 'currency' => 'XOF'],
         ];
 
         $result = [];
@@ -83,7 +83,7 @@ final class DemoFinanceSeeder
         $methods = [
             ['name' => 'Especes', 'type' => 'cash'],
             ['name' => 'Virement bancaire', 'type' => 'bank_transfer'],
-            ['name' => 'Cheque', 'type' => 'check'],
+            ['name' => 'Cheque', 'type' => 'bank_transfer'],
             ['name' => 'Orange Money', 'type' => 'mobile_money'],
             ['name' => 'MTN MoMo', 'type' => 'mobile_money'],
             ['name' => 'Wave', 'type' => 'mobile_money'],
@@ -123,6 +123,8 @@ final class DemoFinanceSeeder
         $account = $accounts[0] ?? null;
         if (!$account || $categories->isEmpty()) return;
 
+        $userId = auth()->id() ?? \App\Models\User::first()?->id ?? 1;
+
         $expenses = [
             ['category' => 'Loyer', 'amount' => 1500000, 'description' => 'Loyer mars 2026', 'date' => now()->startOfMonth()],
             ['category' => 'Electricite', 'amount' => 285000, 'description' => 'Facture CIE fevrier', 'date' => now()->subDays(10)],
@@ -142,6 +144,7 @@ final class DemoFinanceSeeder
                 'amount' => $e['amount'],
                 'date' => $e['date'],
                 'description' => $e['description'],
+                'user_id' => $userId,
             ]);
         }
     }
@@ -151,6 +154,8 @@ final class DemoFinanceSeeder
         $sources = IncomeSource::withoutGlobalScopes()->where('instance_id', $instanceId)->get();
         $account = $accounts[1] ?? $accounts[0] ?? null;
         if (!$account || $sources->isEmpty()) return;
+
+        $userId = auth()->id() ?? \App\Models\User::first()?->id ?? 1;
 
         $incomes = [
             ['source' => 'Commissions', 'amount' => 250000, 'description' => 'Commissions agents fevrier', 'date' => now()->subDays(15)],
@@ -168,6 +173,7 @@ final class DemoFinanceSeeder
                 'amount' => $inc['amount'],
                 'date' => $inc['date'],
                 'description' => $inc['description'],
+                'user_id' => $userId,
             ]);
         }
     }

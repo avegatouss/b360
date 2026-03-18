@@ -125,4 +125,68 @@
         </div>
         <!-- /product list -->
 
+<!-- Add Stock Modal -->
+<div class="modal fade" id="add-stock" tabindex="-1" aria-labelledby="addStockLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addStockLabel">{{ __('Add Stock') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ route('eshop360.stocks.store', $instance->slug ?? '') }}">
+                @csrf
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">{{ __('Product') }} <span class="text-danger">*</span></label>
+                            <select name="product_id" class="form-select" required>
+                                <option value="">{{ __('Select product') }}</option>
+                                @foreach($products as $product)
+                                    <option value="{{ $product->id }}" @selected(old('product_id') == $product->id)>
+                                        {{ $product->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ __('Warehouse') }} <span class="text-danger">*</span></label>
+                            <select name="warehouse_id" class="form-select" required>
+                                <option value="">{{ __('Select warehouse') }}</option>
+                                @foreach($warehouses as $warehouse)
+                                    <option value="{{ $warehouse->id }}" @selected(old('warehouse_id') == $warehouse->id)>
+                                        {{ $warehouse->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ __('Store') }}</label>
+                            <select name="store_id" class="form-select">
+                                <option value="">{{ __('None') }}</option>
+                                @foreach($stores as $store)
+                                    <option value="{{ $store->id }}" @selected(old('store_id') == $store->id)>
+                                        {{ $store->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ __('Quantity') }} <span class="text-danger">*</span></label>
+                            <input type="number" name="quantity" value="{{ old('quantity', 1) }}" min="1" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ __('Notes') }}</label>
+                            <input type="text" name="notes" value="{{ old('notes') }}" class="form-control">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ __('Add Stock') }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 </x-dashboard::layouts.master>

@@ -5,7 +5,6 @@ namespace Modules\Eshop360\Http\Controllers\Sales;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Modules\Core\Support\CurrentInstance;
@@ -14,13 +13,18 @@ use Modules\Eshop360\Models\Customer;
 use Modules\Eshop360\Models\Order;
 use Modules\Eshop360\Models\OrderItem;
 use Modules\Eshop360\Models\Product;
+use Modules\Eshop360\Http\Controllers\Traits\ResolvesPosContext;
+use Modules\Eshop360\Services\CartService;
 use Modules\Eshop360\Services\OrderService;
 use Modules\Eshop360\Services\StockService;
 
 class SaleController extends Controller
 {
-    public function __construct(private readonly OrderService $orderService)
-    {
+    use ResolvesPosContext;
+    public function __construct(
+        private readonly OrderService $orderService,
+        private readonly CartService $cartService,
+    ) {
     }
 
     public function dashboard(Request $request)
@@ -141,7 +145,7 @@ class SaleController extends Controller
         }
 
         if (($validated['source'] ?? null) === 'pos') {
-            $this->clearCart();
+            $this->cartService->clear();
         }
 
         return redirect()->route('eshop360.sales.show', [
@@ -361,32 +365,4 @@ class SaleController extends Controller
         return view('eshop360::sales.tax-report', compact('taxByDay', 'taxByProduct', 'totalTax', 'dateFrom', 'dateTo'));
     }
 
-    private function clearCart(): void
-    {
-        $instanceId = CurrentInstance::get()?->id ?? 0;
-
-        session()->forget([
-            'eshop_cart',
-            'eshop_cart_coupon',
-            'eshop_cart_instance_' . $instanceId,
-            'eshop_cart_coupon_instance_' . $instanceId,
-        ]);
-    }
-
-    /**
-     * @return array<string, int|null>
-     */
-    private function resolvePosOperationalData(): array
-    {
-        $instanceId = CurrentInstance::get()?->id ?? 0;
-        $settings = Cache::get("eshop_pos_settings_{$instanceId}", []);
-        $register = app(\Modules\Eshop360\Services\CashRegisterService::class)->getCurrentRegister();
-        $warehouseId = $settings['default_warehouse_id'] ?? $register?->store?->warehouse_id ?? null;
-
-        return array_filter([
-            'store_id' => $register?->store_id,
-            'warehouse_id' => $warehouseId,
-            'cash_register_id' => $register?->id,
-        ], static fn ($value) => $value !== null);
-    }
 }

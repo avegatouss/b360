@@ -4,17 +4,26 @@ namespace Modules\Eshop360\Providers;
 
 use Modules\Core\Hooks\Contracts\RegistersHooks;
 use Modules\Core\Hooks\DTO\BillableFeature;
+use Modules\Core\Hooks\DTO\DashboardWidget;
 use Modules\Core\Hooks\DTO\DemoDataProvider;
 use Modules\Core\Hooks\DTO\MenuItem;
 use Modules\Core\Hooks\DTO\PermissionGroup;
+use Modules\Core\Hooks\DTO\SettingsGroup;
 use Modules\Core\Hooks\Registry\HookRegistry;
 use Modules\Eshop360\Database\Seeders\DemoCatalogPharmaSeeder;
+use Modules\Eshop360\Database\Seeders\DemoChannelsSeeder;
+use Modules\Eshop360\Database\Seeders\DemoCommunicationSeeder;
 use Modules\Eshop360\Database\Seeders\DemoCustomersSeeder;
 use Modules\Eshop360\Database\Seeders\DemoFinanceSeeder;
 use Modules\Eshop360\Database\Seeders\DemoHRSeeder;
 use Modules\Eshop360\Database\Seeders\DemoInventorySeeder;
+use Modules\Eshop360\Database\Seeders\DemoOrdersSeeder;
+use Modules\Eshop360\Database\Seeders\DemoProductVariationsSeeder;
+use Modules\Eshop360\Database\Seeders\DemoProjectsSeeder;
 use Modules\Eshop360\Database\Seeders\DemoPromotionsSeeder;
+use Modules\Eshop360\Database\Seeders\DemoSettingsSeeder;
 use Modules\Eshop360\Database\Seeders\DemoSuppliersSeeder;
+use Modules\Eshop360\Database\Seeders\DemoWebhooksSeeder;
 
 final class Eshop360HooksProvider implements RegistersHooks
 {
@@ -26,9 +35,46 @@ final class Eshop360HooksProvider implements RegistersHooks
     public function registerHooks(HookRegistry $registry): void
     {
         $this->registerMenuItems($registry);
+        $this->registerDashboardWidgets($registry);
         $this->registerPermissionGroups($registry);
+        $this->registerSettingsGroups($registry);
         $this->registerBillableFeatures($registry);
         $this->registerDemoProviders($registry);
+    }
+
+    private function registerDashboardWidgets(HookRegistry $registry): void
+    {
+        $registry->addWidget(new DashboardWidget(
+            id: 'eshop360.sales_summary',
+            title: 'Ventes du mois',
+            priority: 100,
+            requiredPermission: 'eshop.sales.view',
+            render: fn () => view('eshop360::widgets.sales-summary')->render(),
+        ));
+
+        $registry->addWidget(new DashboardWidget(
+            id: 'eshop360.stock_alerts',
+            title: 'Alertes Stock',
+            priority: 90,
+            requiredPermission: 'eshop.inventory.view',
+            render: fn () => view('eshop360::widgets.stock-alerts')->render(),
+        ));
+
+        $registry->addWidget(new DashboardWidget(
+            id: 'eshop360.recent_orders',
+            title: 'Commandes recentes',
+            priority: 80,
+            requiredPermission: 'eshop.sales.view',
+            render: fn () => view('eshop360::widgets.recent-orders')->render(),
+        ));
+
+        $registry->addWidget(new DashboardWidget(
+            id: 'eshop360.finance_overview',
+            title: 'Finance du mois',
+            priority: 70,
+            requiredPermission: 'eshop.finance.view',
+            render: fn () => view('eshop360::widgets.finance-overview')->render(),
+        ));
     }
 
     private function registerMenuItems(HookRegistry $registry): void
@@ -798,6 +844,36 @@ final class Eshop360HooksProvider implements RegistersHooks
         ));
     }
 
+    private function registerSettingsGroups(HookRegistry $registry): void
+    {
+        $registry->addSettingsGroup(new SettingsGroup(
+            id: 'eshop_pos',
+            label: 'POS (Point de Vente)',
+            priority: 500,
+            view: 'settings::partials.eshop_pos',
+            requiredModule: 'Eshop360',
+            requiredPermission: 'eshop.settings.manage',
+        ));
+
+        $registry->addSettingsGroup(new SettingsGroup(
+            id: 'eshop_invoice',
+            label: 'Facturation',
+            priority: 490,
+            view: 'settings::partials.eshop_invoice',
+            requiredModule: 'Eshop360',
+            requiredPermission: 'eshop.settings.manage',
+        ));
+
+        $registry->addSettingsGroup(new SettingsGroup(
+            id: 'eshop_printer',
+            label: 'Imprimantes',
+            priority: 480,
+            view: 'settings::partials.eshop_printer',
+            requiredModule: 'Eshop360',
+            requiredPermission: 'eshop.settings.manage',
+        ));
+    }
+
     private function registerPermissionGroups(HookRegistry $registry): void
     {
         $registry->addPermissionGroup(new PermissionGroup(
@@ -1131,6 +1207,76 @@ final class Eshop360HooksProvider implements RegistersHooks
             priority: 70,
             description: '5 coupons de reduction et 3 remises automatiques.',
             category: 'promotions',
+        ));
+
+        $registry->addDemoProvider(new DemoDataProvider(
+            id: 'eshop360.orders',
+            label: 'Commandes POS et en ligne',
+            module: 'Eshop360',
+            seederClass: DemoOrdersSeeder::class,
+            priority: 65,
+            description: '7 commandes POS/manuelles avec articles, 3 commandes en ligne avec differents statuts.',
+            category: 'sales',
+        ));
+
+        $registry->addDemoProvider(new DemoDataProvider(
+            id: 'eshop360.channels',
+            label: 'Canaux de distribution',
+            module: 'Eshop360',
+            seederClass: DemoChannelsSeeder::class,
+            priority: 60,
+            description: '2 canaux (CODIFARM, PHARMAPLUS) avec prix produits et logs de marge.',
+            category: 'distribution',
+        ));
+
+        $registry->addDemoProvider(new DemoDataProvider(
+            id: 'eshop360.projects',
+            label: 'Projets, taches et evenements',
+            module: 'Eshop360',
+            seederClass: DemoProjectsSeeder::class,
+            priority: 55,
+            description: '2 projets, 10 taches avec differents statuts, 4 evenements calendrier.',
+            category: 'projects',
+        ));
+
+        $registry->addDemoProvider(new DemoDataProvider(
+            id: 'eshop360.communication',
+            label: 'Communication et support',
+            module: 'Eshop360',
+            seederClass: DemoCommunicationSeeder::class,
+            priority: 50,
+            description: 'Templates email, 4 messages internes, 3 tickets support avec reponses.',
+            category: 'communication',
+        ));
+
+        $registry->addDemoProvider(new DemoDataProvider(
+            id: 'eshop360.product_variations',
+            label: 'Variantes produit',
+            module: 'Eshop360',
+            seederClass: DemoProductVariationsSeeder::class,
+            priority: 97,
+            description: '3 variantes par produit (Boite 10, Boite 30, Flacon sirop) sur 5 produits demo.',
+            category: 'catalog',
+        ));
+
+        $registry->addDemoProvider(new DemoDataProvider(
+            id: 'eshop360.settings',
+            label: 'Parametres module',
+            module: 'Eshop360',
+            seederClass: DemoSettingsSeeder::class,
+            priority: 105,
+            description: 'Configuration POS, facturation et imprimante pre-remplie.',
+            category: 'settings',
+        ));
+
+        $registry->addDemoProvider(new DemoDataProvider(
+            id: 'eshop360.webhooks',
+            label: 'Webhooks',
+            module: 'Eshop360',
+            seederClass: DemoWebhooksSeeder::class,
+            priority: 45,
+            description: '3 webhooks (ERP, Slack, CRM) avec logs exemples.',
+            category: 'integrations',
         ));
     }
 }

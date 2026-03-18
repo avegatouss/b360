@@ -246,7 +246,7 @@ class InvoiceService
         }
 
         if ($paidAmount > 0) {
-            return 'unpaid';
+            return 'partial';
         }
 
         return 'unpaid';

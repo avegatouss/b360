@@ -9,6 +9,8 @@ use Illuminate\Support\Str;
 use Modules\Eshop360\Models\Brand;
 use Modules\Eshop360\Models\Category;
 use Modules\Eshop360\Models\Product;
+use Modules\Eshop360\Models\Store;
+use Modules\Eshop360\Models\Warehouse;
 
 class ProductController extends Controller
 {
@@ -37,8 +39,10 @@ class ProductController extends Controller
     {
         $categories = Category::active()->orderBy('name')->get();
         $brands = Brand::where('is_active', true)->orderBy('name')->get();
+        $stores = Store::orderBy('name')->get(['id', 'name']);
+        $warehouses = Warehouse::orderBy('name')->get(['id', 'name']);
 
-        return view('eshop360::catalog.products.create', compact('categories', 'brands'));
+        return view('eshop360::catalog.products.create', compact('categories', 'brands', 'stores', 'warehouses'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -94,7 +98,7 @@ class ProductController extends Controller
 
     public function show(Product $product)
     {
-        $product->load(['category', 'brand', 'stocks.warehouse', 'stocks.store', 'creator']);
+        $product->load(['category', 'brand', 'stocks.warehouse', 'stocks.store', 'creator', 'variations']);
 
         $totalStock = $product->stocks->sum('quantity');
         $reservedStock = $product->stocks->sum('reserved_quantity');
@@ -210,5 +214,74 @@ class ProductController extends Controller
                 'alert_qty'   => $product->alert_quantity,
             ],
         ]);
+    }
+
+    // ─── Product Variations CRUD ─────────────────────
+
+    public function variations(Product $product)
+    {
+        $product->load(['variations' => fn ($q) => $q->orderBy('name')]);
+
+        return view('eshop360::catalog.products.variations', compact('product'));
+    }
+
+    public function storeVariation(Request $request, Product $product): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name'       => 'required|string|max:255',
+            'sku'        => 'nullable|string|max:100',
+            'barcode'    => 'nullable|string|max:100',
+            'price'      => 'nullable|numeric|min:0',
+            'cost_price' => 'nullable|numeric|min:0',
+            'quantity'   => 'nullable|integer|min:0',
+            'values'     => 'nullable|array',
+            'values.*'   => 'string|max:100',
+            'image'      => 'nullable|image|max:2048',
+            'is_active'  => 'boolean',
+        ]);
+
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')->store('products/variations', 'public');
+        }
+
+        $validated['product_id'] = $product->id;
+
+        \Modules\Eshop360\Models\ProductVariation::create($validated);
+
+        return redirect()->route('eshop360.products.variations', [request()->route('slug'), $product])
+            ->with('success', __('Variation created.'));
+    }
+
+    public function updateVariation(Request $request, Product $product, \Modules\Eshop360\Models\ProductVariation $variation): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name'       => 'required|string|max:255',
+            'sku'        => 'nullable|string|max:100',
+            'barcode'    => 'nullable|string|max:100',
+            'price'      => 'nullable|numeric|min:0',
+            'cost_price' => 'nullable|numeric|min:0',
+            'quantity'   => 'nullable|integer|min:0',
+            'values'     => 'nullable|array',
+            'values.*'   => 'string|max:100',
+            'image'      => 'nullable|image|max:2048',
+            'is_active'  => 'boolean',
+        ]);
+
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')->store('products/variations', 'public');
+        }
+
+        $variation->update($validated);
+
+        return redirect()->route('eshop360.products.variations', [request()->route('slug'), $product])
+            ->with('success', __('Variation updated.'));
+    }
+
+    public function destroyVariation(Product $product, \Modules\Eshop360\Models\ProductVariation $variation): RedirectResponse
+    {
+        $variation->delete();
+
+        return redirect()->route('eshop360.products.variations', [request()->route('slug'), $product])
+            ->with('success', __('Variation deleted.'));
     }
 }
