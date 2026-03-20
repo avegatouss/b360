@@ -52,6 +52,7 @@ use Modules\Eshop360\Http\Controllers\Project\TaskController;
 use Modules\Eshop360\Http\Controllers\Project\EventController;
 use Modules\Eshop360\Http\Controllers\Invoice\RecurringInvoiceController;
 use Modules\Eshop360\Http\Controllers\Portal\CustomerPortalController;
+use Modules\Eshop360\Http\Controllers\Portal\ChannelCustomerPortalController;
 use Modules\Eshop360\Http\Controllers\ChannelPortal\ChannelPortalDashboardController;
 use Modules\Eshop360\Http\Controllers\ChannelPortal\ChannelPortalOrderController;
 use Modules\Eshop360\Http\Controllers\ChannelPortal\ChannelPortalStockController;
@@ -257,6 +258,24 @@ Route::middleware([
         Route::match(['put', 'patch'], '/orders/{onlineOrder}/received', [CustomerPortalController::class, 'confirmReceived'])->name('orders.received');
         Route::match(['put', 'patch'], '/orders/{onlineOrder}/cancel', [CustomerPortalController::class, 'cancelOrder'])->name('orders.cancel');
     });
+
+    // ─── Channel Customer Portal (sous-client du canal) ───
+    Route::prefix('canal/{channel}/portal')
+        ->middleware(['eshop.channel.resolve'])
+        ->name('eshop360.canal-portal.')
+        ->group(function () {
+            Route::get('/', [ChannelCustomerPortalController::class, 'catalog'])->name('catalog');
+            Route::get('/cart', [ChannelCustomerPortalController::class, 'cart'])->name('cart');
+            Route::post('/cart', [ChannelCustomerPortalController::class, 'addToCart'])->name('cart.add');
+            Route::put('/cart/{itemKey}', [ChannelCustomerPortalController::class, 'updateCart'])->name('cart.update');
+            Route::delete('/cart/{itemKey}', [ChannelCustomerPortalController::class, 'removeFromCart'])->name('cart.remove');
+            Route::delete('/cart', [ChannelCustomerPortalController::class, 'clearCart'])->name('cart.clear');
+            Route::post('/checkout', [ChannelCustomerPortalController::class, 'checkout'])->name('checkout');
+            Route::get('/orders', [ChannelCustomerPortalController::class, 'orders'])->name('orders.index');
+            Route::get('/orders/{onlineOrder}', [ChannelCustomerPortalController::class, 'showOrder'])->name('orders.show');
+            Route::match(['put', 'patch'], '/orders/{onlineOrder}/received', [ChannelCustomerPortalController::class, 'confirmReceived'])->name('orders.received');
+            Route::match(['put', 'patch'], '/orders/{onlineOrder}/cancel', [ChannelCustomerPortalController::class, 'cancelOrder'])->name('orders.cancel');
+        });
 
     // ─── Customers ────────────────────────────────
     Route::prefix('customers')->name('eshop360.customers.')->middleware('can:eshop.customers.view')->group(function () {

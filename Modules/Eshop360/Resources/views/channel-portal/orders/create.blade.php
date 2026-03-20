@@ -92,8 +92,8 @@
                 <div class="card-body">
                     <div class="mb-3">
                         <label class="form-label">{{ __('Client') }}</label>
-                        <select name="customer_id" class="form-select">
-                            <option value="">{{ __('-- Aucun --') }}</option>
+                        <select name="customer_id" class="form-select cp-select2" data-placeholder="{{ __('Sélectionner un client') }}">
+                            <option value=""></option>
                             @foreach($customers as $customer)
                                 <option value="{{ $customer->id }}" {{ old('customer_id') == $customer->id ? 'selected' : '' }}>
                                     {{ $customer->name }}

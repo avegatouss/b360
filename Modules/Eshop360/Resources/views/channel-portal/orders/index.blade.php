@@ -24,8 +24,8 @@
         <form method="GET" class="row g-3 align-items-end">
             <div class="col-md-3">
                 <label class="form-label">{{ __('Statut') }}</label>
-                <select name="status" class="form-select">
-                    <option value="">{{ __('Tous') }}</option>
+                <select name="status" class="form-select cp-select2" data-placeholder="{{ __('Tous les statuts') }}">
+                    <option value=""></option>
                     <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>{{ __('En attente') }}</option>
                     <option value="processing" {{ request('status') === 'processing' ? 'selected' : '' }}>{{ __('En cours') }}</option>
                     <option value="completed" {{ request('status') === 'completed' ? 'selected' : '' }}>{{ __('Terminee') }}</option>

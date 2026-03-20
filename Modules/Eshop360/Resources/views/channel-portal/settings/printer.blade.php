@@ -21,7 +21,7 @@
             <div class="row g-3">
                 <div class="col-md-6">
                     <label class="form-label">{{ __('Type d\'imprimante') }}</label>
-                    <select name="printer_type" class="form-select">
+                    <select name="printer_type" class="form-select cp-select2">
                         @php $printerType = $settings['printer_type'] ?? 'thermal'; @endphp
                         <option value="thermal" {{ $printerType === 'thermal' ? 'selected' : '' }}>{{ __('Thermique') }}</option>
                         <option value="inkjet" {{ $printerType === 'inkjet' ? 'selected' : '' }}>{{ __('Jet d\'encre') }}</option>

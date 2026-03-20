@@ -32,6 +32,10 @@
     <link rel="stylesheet" href="{{ asset('build/css/feather.css') }}">
     <!-- Main CSS -->
     <link rel="stylesheet" href="{{ asset('build/css/style.css') }}">
+    <!-- Select2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css">
+    @stack('styles')
 
     <style>
         :root {
@@ -324,6 +328,8 @@
 <script src="{{ asset('build/js/feather.min.js') }}"></script>
 <!-- Bootstrap Core JS -->
 <script src="{{ asset('build/js/bootstrap.bundle.min.js') }}"></script>
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -344,8 +350,21 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// Init Select2 on all .cp-select2 elements
+jQuery(function ($) {
+    $('.cp-select2').each(function () {
+        $(this).select2({
+            theme: 'bootstrap-5',
+            allowClear: true,
+            width: '100%',
+            placeholder: $(this).data('placeholder') || ''
+        });
+    });
+});
 </script>
 
+@stack('scripts')
 @yield('scripts')
 
 </body>

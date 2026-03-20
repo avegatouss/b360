@@ -126,7 +126,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">{{ __('Type') }}</label>
-                            <select name="type" id="couponType" class="form-select" required>
+                            <select name="type" id="couponType" class="form-select cp-select2" required>
                                 <option value="percentage">{{ __('Pourcentage') }}</option>
                                 <option value="fixed">{{ __('Montant fixe') }}</option>
                             </select>

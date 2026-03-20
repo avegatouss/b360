@@ -1,20 +1,21 @@
 <x-dashboard::layouts.master
-    :title="__('eshop360::eshop.portal_client_portal') . ' - ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Portail') . ' ' . $channel->name . ' - ' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="{{ __('eshop360::eshop.portal_client_portal') }}">
+    :pageTitle="__('Portail') . ' ' . $channel->name">
 
 @php
     $slug = $instance->slug ?? '';
+    $channelKey = $channel->slug ?? $channel->id;
 @endphp
 
 <div class="page-header">
     <div class="page-title me-auto">
-        <h4 class="fw-bold">{{ __('eshop360::eshop.portal_client_portal') }}</h4>
+        <h4 class="fw-bold">{{ __('Portail') }} {{ $channel->name }}</h4>
         <h6>{{ __('eshop360::eshop.portal_welcome_back', ['name' => $customer->name]) }}</h6>
     </div>
     <div class="d-flex gap-2">
-        <a href="{{ route('eshop360.portal.orders.index', $instance->slug ?? '') }}" class="btn btn-secondary">{{ __('eshop360::eshop.portal_my_orders') }}</a>
-        <a href="{{ route('eshop360.portal.cart', $instance->slug ?? '') }}" class="btn btn-primary">
+        <a href="{{ route('eshop360.canal-portal.orders.index', [$slug, $channelKey]) }}" class="btn btn-secondary">{{ __('eshop360::eshop.portal_my_orders') }}</a>
+        <a href="{{ route('eshop360.canal-portal.cart', [$slug, $channelKey]) }}" class="btn btn-primary">
             {{ __('eshop360::eshop.portal_cart') }} ({{ count($cart) }})
         </a>
     </div>
@@ -24,7 +25,7 @@
     <div class="col-lg-8">
         <div class="card">
             <div class="card-header">
-                <form method="GET" action="{{ route('eshop360.portal.catalog', $instance->slug ?? '') }}" id="catalog-filter-form" class="row g-2 align-items-center">
+                <form method="GET" action="{{ route('eshop360.canal-portal.catalog', [$slug, $channelKey]) }}" id="catalog-filter-form" class="row g-2 align-items-center">
                     <div class="col">
                         <input type="text" name="search" id="catalog-search" class="form-control form-control-sm" value="{{ request('search') }}" placeholder="{{ __('eshop360::eshop.portal_search_placeholder') }}" autocomplete="off">
                     </div>
@@ -46,7 +47,7 @@
                     </div>
                     @if(request()->hasAny(['search', 'category_id', 'brand_id']))
                         <div class="col-auto">
-                            <a href="{{ route('eshop360.portal.catalog', $slug) }}" class="btn btn-sm btn-outline-secondary"><i class="ti ti-x"></i></a>
+                            <a href="{{ route('eshop360.canal-portal.catalog', [$slug, $channelKey]) }}" class="btn btn-sm btn-outline-secondary"><i class="ti ti-x"></i></a>
                         </div>
                     @endif
                 </form>
@@ -77,7 +78,7 @@
                                     <div class="small text-muted text-uppercase">{{ $product->display_price_source }}</div>
                                 </div>
                                 <div class="mt-auto">
-                                    <form method="POST" action="{{ route('eshop360.portal.cart.add', $instance->slug ?? '') }}" class="row g-2">
+                                    <form method="POST" action="{{ route('eshop360.canal-portal.cart.add', [$slug, $channelKey]) }}" class="row g-2">
                                         @csrf
                                         <input type="hidden" name="product_id" value="{{ $product->id }}">
                                         <div class="col-4">
@@ -110,60 +111,27 @@
     <div class="col-lg-4">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="ti ti-shopping-cart me-1"></i>{{ __('Panier') }} <span class="badge bg-primary ms-1">{{ count($cart) }}</span></h5>
-                <a href="{{ route('eshop360.portal.cart', $slug) }}" class="btn btn-sm btn-outline-primary">{{ __('Voir') }}</a>
+                <h5 class="mb-0">{{ __('eshop360::eshop.portal_cart_snapshot') }}</h5>
+                <a href="{{ route('eshop360.canal-portal.cart', [$slug, $channelKey]) }}" class="btn btn-sm btn-outline-primary">{{ __('eshop360::eshop.portal_open_cart') }}</a>
             </div>
-            <div class="card-body p-0">
-                @forelse($cart as $key => $item)
-                    <div class="d-flex align-items-center gap-2 px-3 py-2 border-bottom">
-                        <div class="flex-grow-1">
-                            <div class="fw-semibold" style="font-size:.85rem;">{{ $item['name'] }}</div>
-                            <div class="d-flex align-items-center gap-1 mt-1">
-                                <form method="POST" action="{{ route('eshop360.portal.cart.update', [$slug, $key]) }}" class="d-inline">
-                                    @csrf @method('PUT')
-                                    <input type="hidden" name="quantity" value="{{ max(1, $item['quantity'] - 1) }}">
-                                    <button type="submit" class="btn btn-outline-secondary px-1 py-0" style="font-size:.7rem;" {{ $item['quantity'] <= 1 ? 'disabled' : '' }}><i class="ti ti-minus" style="font-size:.7rem;"></i></button>
-                                </form>
-                                <span class="fw-bold" style="min-width:24px; text-align:center; font-size:.85rem;">{{ $item['quantity'] }}</span>
-                                <form method="POST" action="{{ route('eshop360.portal.cart.update', [$slug, $key]) }}" class="d-inline">
-                                    @csrf @method('PUT')
-                                    <input type="hidden" name="quantity" value="{{ $item['quantity'] + 1 }}">
-                                    <button type="submit" class="btn btn-outline-secondary px-1 py-0" style="font-size:.7rem;"><i class="ti ti-plus" style="font-size:.7rem;"></i></button>
-                                </form>
-                                <span class="text-muted ms-1" style="font-size:.75rem;">x {{ number_format((float) $item['unit_price'], 0, ',', ' ') }}</span>
-                            </div>
+            <div class="card-body">
+                @forelse($cart as $item)
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <div>
+                            <div class="fw-semibold">{{ $item['name'] }}</div>
+                            <div class="small text-muted">{{ $item['quantity'] }} x {{ number_format((float) $item['unit_price'], 2) }}</div>
                         </div>
-                        <div class="text-end">
-                            <div class="fw-bold" style="font-size:.85rem;">{{ number_format((float) $item['total'], 0, ',', ' ') }}</div>
-                            <form method="POST" action="{{ route('eshop360.portal.cart.remove', [$slug, $key]) }}" class="d-inline">
-                                @csrf @method('DELETE')
-                                <button type="submit" class="btn btn-link text-danger p-0" style="font-size:.7rem;" title="{{ __('Retirer') }}"><i class="ti ti-trash" style="font-size:.8rem;"></i></button>
-                            </form>
-                        </div>
+                        <div class="fw-semibold">{{ number_format((float) $item['total'], 2) }}</div>
                     </div>
                 @empty
-                    <div class="text-center text-muted py-4">
-                        <i class="ti ti-shopping-cart-off fs-3 d-block mb-1"></i>
-                        <span style="font-size:.85rem;">{{ __('Panier vide') }}</span>
-                    </div>
+                    <div class="text-muted">{{ __('eshop360::eshop.portal_cart_empty') }}</div>
                 @endforelse
             </div>
-            @if(count($cart) > 0)
             <div class="card-footer">
-                <div class="d-flex justify-content-between mb-1"><span class="text-muted">{{ __('Sous-total') }}</span><span>{{ number_format((float) $totals['subtotal'], 0, ',', ' ') }}</span></div>
-                @if($totals['tax'] > 0)
-                <div class="d-flex justify-content-between mb-1"><span class="text-muted">{{ __('Taxes') }}</span><span>{{ number_format((float) $totals['tax'], 0, ',', ' ') }}</span></div>
-                @endif
-                <div class="d-flex justify-content-between fw-bold fs-5 border-top pt-2"><span>{{ __('Total') }}</span><span class="text-primary">{{ number_format((float) $totals['total'], 0, ',', ' ') }}</span></div>
-                <div class="d-grid gap-1 mt-2">
-                    <a href="{{ route('eshop360.portal.cart', $slug) }}" class="btn btn-primary btn-sm"><i class="ti ti-shopping-cart me-1"></i>{{ __('Commander') }}</a>
-                    <form method="POST" action="{{ route('eshop360.portal.cart.clear', $slug) }}">
-                        @csrf @method('DELETE')
-                        <button type="submit" class="btn btn-outline-danger btn-sm w-100" onclick="return confirm('{{ __('Vider le panier ?') }}')"><i class="ti ti-trash me-1"></i>{{ __('Vider') }}</button>
-                    </form>
-                </div>
+                <div class="d-flex justify-content-between"><span>{{ __('eshop360::eshop.subtotal') }}</span><strong>{{ number_format((float) $totals['subtotal'], 2) }}</strong></div>
+                <div class="d-flex justify-content-between"><span>{{ __('eshop360::eshop.tax') }}</span><strong>{{ number_format((float) $totals['tax'], 2) }}</strong></div>
+                <div class="d-flex justify-content-between"><span>{{ __('eshop360::eshop.total') }}</span><strong>{{ number_format((float) $totals['total'], 2) }}</strong></div>
             </div>
-            @endif
         </div>
     </div>
 </div>

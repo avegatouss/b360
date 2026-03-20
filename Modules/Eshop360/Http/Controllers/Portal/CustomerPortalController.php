@@ -27,7 +27,6 @@ class CustomerPortalController extends Controller
     public function catalog(Request $request, string $slug)
     {
         $customer = $this->resolveCustomer();
-        $context = $this->resolvePortalContext($request);
         $instanceId = CurrentInstance::get()?->id;
 
         $products = Product::query()
@@ -49,12 +48,9 @@ class CustomerPortalController extends Controller
             ->paginate(18)
             ->withQueryString();
 
-        $products->getCollection()->transform(function (Product $product) use ($context) {
-            $pricing = $this->pricingService->resolve(
-                $product,
-                $context['channel_id'] ?? null,
-                true,
-            );
+        // Standard Saphir pricing (no channel context)
+        $products->getCollection()->transform(function (Product $product) {
+            $pricing = $this->pricingService->resolve($product, null, true);
 
             $product->setAttribute('display_price', $pricing['unit_price']);
             $product->setAttribute('display_original_price', $pricing['original_price']);
@@ -72,7 +68,6 @@ class CustomerPortalController extends Controller
             ->when($instanceId !== null, fn ($query) => $query->where('instance_id', $instanceId))
             ->orderBy('name')
             ->get();
-        $channels = $this->activeChannels();
         $cart = $this->getCart();
         $totals = $this->calculateTotals($cart);
 
@@ -81,8 +76,6 @@ class CustomerPortalController extends Controller
             'products',
             'categories',
             'brands',
-            'channels',
-            'context',
             'cart',
             'totals',
         ));
@@ -93,10 +86,8 @@ class CustomerPortalController extends Controller
         $customer = $this->resolveCustomer();
         $cart = $this->getCart();
         $totals = $this->calculateTotals($cart);
-        $context = $this->getCartContext();
-        $channels = $this->activeChannels();
 
-        return view('eshop360::portal.cart', compact('customer', 'cart', 'totals', 'context', 'channels'));
+        return view('eshop360::portal.cart', compact('customer', 'cart', 'totals'));
     }
 
     public function addToCart(Request $request, string $slug): RedirectResponse
@@ -107,7 +98,6 @@ class CustomerPortalController extends Controller
         $validated = $request->validate([
             'product_id' => 'required|exists:eshop_products,id',
             'quantity' => 'nullable|integer|min:1',
-            'channel_id' => 'nullable|exists:eshop_distribution_channels,id',
         ]);
 
         $product = Product::query()
@@ -116,20 +106,9 @@ class CustomerPortalController extends Controller
             ->findOrFail($validated['product_id']);
         $quantity = max(1, (int) ($validated['quantity'] ?? 1));
         $cart = $this->getCart();
-        $requestedContext = $this->normalizeContext([
-            'channel_id' => $validated['channel_id'] ?? null,
-        ]);
-        $cartContext = $this->resolveContextForMutation($requestedContext, $this->getCartContext(), ! empty($cart));
 
-        if ($cartContext === false) {
-            return redirect()->back()->with('error', __('This cart already uses another pricing context. Clear it first.'));
-        }
-
-        $pricing = $this->pricingService->resolve(
-            $product,
-            $cartContext['channel_id'] ?? null,
-            true,
-        );
+        // Standard Saphir pricing (no channel)
+        $pricing = $this->pricingService->resolve($product, null, true);
 
         $key = (string) $product->id;
 
@@ -147,13 +126,11 @@ class CustomerPortalController extends Controller
                 'tax_rate' => (float) $product->tax_rate,
                 'quantity' => $quantity,
                 'total' => round($pricing['unit_price'] * $quantity, 2),
-                'channel_id' => $pricing['channel_id'],
                 'price_source' => $pricing['price_source'],
             ];
         }
 
         $this->storeCart($cart);
-        $this->storeCartContext($cartContext);
 
         return redirect()->back()->with('success', __('Product added to online cart.'));
     }
@@ -219,7 +196,6 @@ class CustomerPortalController extends Controller
             'notes' => 'nullable|string|max:1000',
         ]);
 
-        $context = $this->getCartContext();
         $onlineOrder = $this->onlineOrderService->createOrder(
             $customer->instance_id,
             $customer->id,
@@ -230,7 +206,7 @@ class CustomerPortalController extends Controller
             ], array_values($cart)),
             $validated['delivery_address'],
             $validated['notes'] ?? null,
-            $context['channel_id'] ?? null,
+            null, // No channel — direct Saphir order
         );
 
         $this->clearCartState();

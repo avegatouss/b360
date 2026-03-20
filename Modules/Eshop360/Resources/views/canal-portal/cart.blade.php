@@ -1,16 +1,21 @@
 <x-dashboard::layouts.master
-    :title="__('eshop360::eshop.portal_cart') . ' - ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('eshop360::eshop.portal_cart') . ' - ' . $channel->name . ' - ' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    pageTitle="{{ __('eshop360::eshop.portal_cart') }}">
+    :pageTitle="__('eshop360::eshop.portal_cart') . ' - ' . $channel->name">
+
+@php
+    $slug = $instance->slug ?? '';
+    $channelKey = $channel->slug ?? $channel->id;
+@endphp
 
 <div class="page-header">
     <div class="page-title me-auto">
-        <h4 class="fw-bold">{{ __('eshop360::eshop.portal_cart') }}</h4>
+        <h4 class="fw-bold">{{ __('eshop360::eshop.portal_cart') }} &mdash; {{ $channel->name }}</h4>
         <h6>{{ $customer->name }}</h6>
     </div>
     <div class="d-flex gap-2">
-        <a href="{{ route('eshop360.portal.catalog', $instance->slug ?? '') }}" class="btn btn-secondary">{{ __('eshop360::eshop.portal_continue_shopping') }}</a>
-        <a href="{{ route('eshop360.portal.orders.index', $instance->slug ?? '') }}" class="btn btn-outline-primary">{{ __('eshop360::eshop.portal_my_orders') }}</a>
+        <a href="{{ route('eshop360.canal-portal.catalog', [$slug, $channelKey]) }}" class="btn btn-secondary">{{ __('eshop360::eshop.portal_continue_shopping') }}</a>
+        <a href="{{ route('eshop360.canal-portal.orders.index', [$slug, $channelKey]) }}" class="btn btn-outline-primary">{{ __('eshop360::eshop.portal_my_orders') }}</a>
     </div>
 </div>
 
@@ -43,7 +48,7 @@
                                         @endif
                                     </td>
                                     <td style="width: 160px;">
-                                        <form method="POST" action="{{ route('eshop360.portal.cart.update', [$instance->slug ?? '', $item['product_id']]) }}" class="d-flex gap-2">
+                                        <form method="POST" action="{{ route('eshop360.canal-portal.cart.update', [$slug, $channelKey, $item['product_id']]) }}" class="d-flex gap-2">
                                             @csrf
                                             @method('PUT')
                                             <input type="hidden" name="product_id" value="{{ $item['product_id'] }}">
@@ -53,7 +58,7 @@
                                     </td>
                                     <td class="fw-semibold">{{ number_format((float) $item['total'], 2) }}</td>
                                     <td class="text-end">
-                                        <form method="POST" action="{{ route('eshop360.portal.cart.remove', [$instance->slug ?? '', $item['product_id']]) }}">
+                                        <form method="POST" action="{{ route('eshop360.canal-portal.cart.remove', [$slug, $channelKey, $item['product_id']]) }}">
                                             @csrf
                                             @method('DELETE')
                                             <input type="hidden" name="product_id" value="{{ $item['product_id'] }}">
@@ -72,7 +77,7 @@
             </div>
             @if(! empty($cart))
                 <div class="card-footer d-flex justify-content-end">
-                    <form method="POST" action="{{ route('eshop360.portal.cart.clear', $instance->slug ?? '') }}">
+                    <form method="POST" action="{{ route('eshop360.canal-portal.cart.clear', [$slug, $channelKey]) }}">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-outline-danger">{{ __('eshop360::eshop.portal_clear_cart') }}</button>
@@ -92,7 +97,7 @@
                 <div class="d-flex justify-content-between mb-2"><span>{{ __('eshop360::eshop.tax') }}</span><strong>{{ number_format((float) $totals['tax'], 2) }}</strong></div>
                 <div class="d-flex justify-content-between mb-3"><span>{{ __('eshop360::eshop.total') }}</span><strong>{{ number_format((float) $totals['total'], 2) }}</strong></div>
 
-                <form method="POST" action="{{ route('eshop360.portal.checkout', $instance->slug ?? '') }}">
+                <form method="POST" action="{{ route('eshop360.canal-portal.checkout', [$slug, $channelKey]) }}">
                     @csrf
                     <div class="mb-3">
                         <label class="form-label" for="portal-delivery-address">{{ __('eshop360::eshop.portal_delivery_address') }}</label>

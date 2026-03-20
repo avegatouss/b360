@@ -23,8 +23,8 @@
             <div class="row g-3">
                 <div class="col-md-6">
                     <label class="form-label">{{ __('Commande') }}</label>
-                    <select name="order_id" class="form-select" required>
-                        <option value="">{{ __('Selectionner une commande...') }}</option>
+                    <select name="order_id" class="form-select cp-select2" data-placeholder="{{ __('Sélectionner une commande') }}" required>
+                        <option value=""></option>
                         @foreach($completedOrders ?? [] as $order)
                             <option value="{{ $order->id }}">
                                 {{ $order->order_number ?? ('ORD-' . $order->id) }}
