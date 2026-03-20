@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Support\Str;
 use PragmaRX\Google2FA\Google2FA;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
@@ -206,6 +207,14 @@ class User extends Authenticatable
     public function markAsLoggedIn(): void
     {
         $this->update(['last_login_at' => now()]);
+    }
+
+    /**
+     * Resource assignments (eshop360 user-to-resource mapping).
+     */
+    public function resourceAssignments(): HasMany
+    {
+        return $this->hasMany(\Modules\Eshop360\Models\UserAssignment::class);
     }
 
     /*

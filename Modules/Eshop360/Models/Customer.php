@@ -8,10 +8,15 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Modules\Core\Database\Traits\BelongsToInstance;
+use Modules\Eshop360\Database\Traits\ScopedByUserAssignment;
 
 class Customer extends Model
 {
-    use HasFactory, BelongsToInstance;
+    use HasFactory, BelongsToInstance, ScopedByUserAssignment;
+
+    protected static array $userAssignmentConfig = [
+        ['type' => 'customer', 'column' => 'id'],
+    ];
 
     protected $table = 'eshop_customers';
 
@@ -21,6 +26,7 @@ class Customer extends Model
         'user_id',
         'group_id',
         'store_id',
+        'support_team_id',
         'code',
         'name',
         'email',

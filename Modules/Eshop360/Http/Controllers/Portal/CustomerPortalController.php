@@ -29,20 +29,25 @@ class CustomerPortalController extends Controller
         $customer = $this->resolveCustomer();
         $instanceId = CurrentInstance::get()?->id;
 
+        $hasSearch = $request->filled('search');
+
         $products = Product::query()
             ->with(['category', 'brand', 'stocks'])
             ->when($instanceId !== null, fn ($query) => $query->where('instance_id', $instanceId))
             ->active()
             ->when($request->filled('category_id'), fn ($query) => $query->where('category_id', $request->integer('category_id')))
             ->when($request->filled('brand_id'), fn ($query) => $query->where('brand_id', $request->integer('brand_id')))
-            ->when($request->filled('search'), function ($query) use ($request) {
+            ->when($hasSearch, function ($query) use ($request) {
                 $search = (string) $request->string('search');
-
                 $query->where(function ($productQuery) use ($search) {
                     $productQuery->where('name', 'like', "%{$search}%")
                         ->orWhere('sku', 'like', "%{$search}%")
                         ->orWhere('barcode', 'like', "%{$search}%");
                 });
+            })
+            // Without search: hide products with 0 stock
+            ->when(! $hasSearch, function ($query) {
+                $query->whereHas('stocks', fn ($sq) => $sq->where('quantity', '>', 0));
             })
             ->latest()
             ->paginate(18)
@@ -295,6 +300,122 @@ class CustomerPortalController extends Controller
         });
 
         return view('eshop360::portal.orders', compact('customer', 'orders', 'source', 'globalStats'));
+    }
+
+    public function account(Request $request, string $slug)
+    {
+        $customer = $this->resolveCustomer();
+        $instanceId = $customer->instance_id;
+
+        // Wallet transactions (deposits & debits)
+        $transactions = \Modules\Eshop360\Models\CustomerTransaction::where('customer_id', $customer->id)
+            ->latest()
+            ->paginate(20)
+            ->withQueryString();
+
+        // Customer dues (credits/debts)
+        $dues = \Modules\Eshop360\Models\CustomerDue::where('customer_id', $customer->id)
+            ->latest()
+            ->get();
+
+        // Payments received on customer orders
+        $payments = \Illuminate\Support\Facades\DB::table('eshop_orders')
+            ->where('instance_id', $instanceId)
+            ->where('customer_id', $customer->id)
+            ->where('paid_amount', '>', 0)
+            ->select('order_number', 'payment_method', 'paid_amount', 'due_amount', 'total', 'status', 'payment_status', 'created_at')
+            ->latest('created_at')
+            ->limit(50)
+            ->get();
+
+        // KPIs
+        $totalDeposits = \Modules\Eshop360\Models\CustomerTransaction::where('customer_id', $customer->id)
+            ->where('type', 'credit')->sum('amount');
+        $totalDebits = \Modules\Eshop360\Models\CustomerTransaction::where('customer_id', $customer->id)
+            ->where('type', 'debit')->sum('amount');
+        $totalDueAmount = $dues->whereIn('status', ['pending', 'partial'])
+            ->sum(fn ($d) => (float) $d->amount_due - (float) $d->paid_amount);
+        $totalPaid = $payments->sum('paid_amount');
+
+        // Total du from partially paid orders
+        $totalOrderDue = \Illuminate\Support\Facades\DB::table('eshop_orders')
+            ->where('instance_id', $instanceId)
+            ->where('customer_id', $customer->id)
+            ->where('due_amount', '>', 0)
+            ->whereIn('payment_status', ['partial', 'unpaid'])
+            ->sum('due_amount');
+
+        // Payments grouped by method
+        $paymentsByMethod = \Illuminate\Support\Facades\DB::table('eshop_orders')
+            ->where('instance_id', $instanceId)
+            ->where('customer_id', $customer->id)
+            ->where('paid_amount', '>', 0)
+            ->selectRaw('payment_method, COUNT(*) as count, SUM(paid_amount) as total_paid, SUM(due_amount) as total_due')
+            ->groupBy('payment_method')
+            ->orderByDesc('total_paid')
+            ->get();
+
+        $settings = app(\Modules\Eshop360\Services\EshopSettingsService::class)->get('invoice');
+
+        return view('eshop360::portal.account', compact(
+            'customer', 'transactions', 'dues', 'payments',
+            'totalDeposits', 'totalDebits', 'totalDueAmount', 'totalPaid',
+            'totalOrderDue', 'paymentsByMethod', 'settings'
+        ));
+    }
+
+    public function accountExport(Request $request, string $slug, string $format)
+    {
+        $customer = $this->resolveCustomer();
+        $settings = app(\Modules\Eshop360\Services\EshopSettingsService::class)->get('invoice');
+
+        $transactions = \Modules\Eshop360\Models\CustomerTransaction::where('customer_id', $customer->id)->latest()->get();
+        $dues = \Modules\Eshop360\Models\CustomerDue::where('customer_id', $customer->id)->latest()->get();
+        $payments = \Illuminate\Support\Facades\DB::table('eshop_orders')
+            ->where('instance_id', $customer->instance_id)
+            ->where('customer_id', $customer->id)
+            ->where('paid_amount', '>', 0)
+            ->select('order_number', 'payment_method', 'paid_amount', 'due_amount', 'total', 'payment_status', 'created_at')
+            ->latest('created_at')->get();
+
+        if ($format === 'print') {
+            return view('eshop360::portal.account-print', compact('customer', 'transactions', 'dues', 'payments', 'settings'));
+        }
+
+        // CSV export
+        $filename = 'releve-compte-' . $customer->code . '-' . now()->format('Ymd') . '.csv';
+        $headers = ['Content-Type' => 'text/csv', 'Content-Disposition' => "attachment; filename=\"{$filename}\""];
+
+        $callback = function () use ($transactions, $dues, $payments, $customer) {
+            $f = fopen('php://output', 'w');
+            fprintf($f, chr(0xEF) . chr(0xBB) . chr(0xBF)); // BOM UTF-8
+            fputcsv($f, ['Releve de compte - ' . $customer->name . ' (' . $customer->code . ')'], ';');
+            fputcsv($f, [], ';');
+
+            fputcsv($f, ['=== TRANSACTIONS PORTEFEUILLE ==='], ';');
+            fputcsv($f, ['Date', 'Type', 'Montant', 'Notes'], ';');
+            foreach ($transactions as $t) {
+                fputcsv($f, [$t->created_at->format('d/m/Y H:i'), $t->type === 'credit' ? 'Depot' : 'Retrait', $t->amount, $t->notes], ';');
+            }
+
+            fputcsv($f, [], ';');
+            fputcsv($f, ['=== CREDITS / DETTES ==='], ';');
+            fputcsv($f, ['Date', 'Montant', 'Paye', 'Reste', 'Statut', 'Echeance'], ';');
+            foreach ($dues as $d) {
+                fputcsv($f, [$d->created_at->format('d/m/Y'), $d->amount_due, $d->paid_amount, (float) $d->amount_due - (float) $d->paid_amount, $d->status, $d->due_date?->format('d/m/Y')], ';');
+            }
+
+            fputcsv($f, [], ';');
+            fputcsv($f, ['=== PAIEMENTS COMMANDES ==='], ';');
+            fputcsv($f, ['Date', 'Commande', 'Methode', 'Total', 'Paye', 'Restant', 'Statut'], ';');
+            foreach ($payments as $p) {
+                fputcsv($f, [\Carbon\Carbon::parse($p->created_at)->format('d/m/Y'), $p->order_number, $p->payment_method, $p->total, $p->paid_amount, $p->due_amount, $p->payment_status], ';');
+            }
+
+            fclose($f);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 
     public function printStoreOrder(string $slug, \Modules\Eshop360\Models\Order $order)

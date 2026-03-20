@@ -22,6 +22,7 @@ use Modules\Eshop360\Models\Warehouse;
 use Modules\Eshop360\Services\CartService;
 use Modules\Eshop360\Services\CashRegisterService;
 use Modules\Eshop360\Services\HoldingService;
+use Modules\Eshop360\Services\UserResourceScopeService;
 
 class PosController extends Controller
 {
@@ -248,6 +249,8 @@ class PosController extends Controller
         $settings = $this->eshopSettings->get('pos');
         $perPage = $request->integer('per_page', (int) ($settings['products_per_page'] ?? 24));
 
+        $scope = app(UserResourceScopeService::class);
+
         $products = Product::with(['category', 'brand', 'stocks', 'variations' => fn ($q) => $q->where('is_active', true)])
             ->active()
             ->when($request->search, fn ($q, $s) => $q->where('name', 'like', "%{$s}%")
@@ -255,24 +258,45 @@ class PosController extends Controller
                 ->orWhere('barcode', 'like', "%{$s}%"))
             ->when($request->category_id, fn ($q, $c) => $q->where('category_id', $c))
             ->when($request->brand_id, fn ($q, $b) => $q->where('brand_id', $b))
+            ->when(
+                $scope->hasWarehouseAssignments() || $scope->hasStoreAssignments(),
+                function ($query) use ($scope) {
+                    $query->whereHas('stocks', function ($sq) use ($scope) {
+                        $scope->applyWarehouseScope($sq, 'warehouse_id');
+                        if ($scope->hasStoreAssignments()) {
+                            $scope->applyStoreScope($sq, 'store_id');
+                        }
+                    });
+                }
+            )
             ->orderBy('name')
             ->paginate($perPage)
             ->withQueryString();
 
         // Cache reference data (categories, brands, warehouses, stores) — 10 min TTL
-        $categories = Cache::remember("pos:categories:{$instanceId}", 600, fn () =>
+        // Include user ID in cache keys to avoid returning unscoped data to restricted users
+        $userId = auth()->id() ?? 0;
+        $categories = Cache::remember("pos:categories:{$instanceId}:{$userId}", 600, fn () =>
             Category::active()->roots()->orderBy('sort_order')->orderBy('name')->get()
         );
-        $brands = Cache::remember("pos:brands:{$instanceId}", 600, fn () =>
+        $brands = Cache::remember("pos:brands:{$instanceId}:{$userId}", 600, fn () =>
             Brand::where('is_active', true)->orderBy('name')->get()
         );
-        $warehouses = Cache::remember("pos:warehouses:{$instanceId}", 600, fn () =>
-            Warehouse::where('is_active', true)->orderBy('name')->get()
-        );
-        $stores = Cache::remember("pos:stores:{$instanceId}", 600, fn () =>
-            Store::where('is_active', true)->orderBy('name')->get()
-        );
-        $channels = Cache::remember("pos:channels:{$instanceId}", 600, fn () =>
+        $warehouses = Cache::remember("pos:warehouses:{$instanceId}:{$userId}", 600, function () use ($scope) {
+            $query = Warehouse::where('is_active', true)->orderBy('name');
+            if ($scope->hasWarehouseAssignments()) {
+                $query->whereIn('id', $scope->warehouseIds());
+            }
+            return $query->get();
+        });
+        $stores = Cache::remember("pos:stores:{$instanceId}:{$userId}", 600, function () use ($scope) {
+            $query = Store::where('is_active', true)->orderBy('name');
+            if ($scope->hasStoreAssignments()) {
+                $query->whereIn('id', $scope->storeIds());
+            }
+            return $query->get();
+        });
+        $channels = Cache::remember("pos:channels:{$instanceId}:{$userId}", 600, fn () =>
             DistributionChannel::where('instance_id', $instanceId)->where('is_active', true)->orderBy('name')->get()
         );
 

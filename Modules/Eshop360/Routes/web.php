@@ -26,6 +26,7 @@ use Modules\Eshop360\Http\Controllers\Promotion\QuotationController;
 use Modules\Eshop360\Http\Controllers\Report\ReportController;
 use Modules\Eshop360\Http\Controllers\Report\AdvancedReportController;
 use Modules\Eshop360\Http\Controllers\Settings\EshopSettingsController;
+use Modules\Eshop360\Http\Controllers\Settings\UserAssignmentController;
 use Modules\Eshop360\Http\Controllers\Supplier\SupplierController;
 use Modules\Eshop360\Http\Controllers\Import\ImportController;
 use Modules\Eshop360\Http\Controllers\Finance\AccountController;
@@ -92,6 +93,7 @@ Route::middleware([
     'auth',
     'core.instance.member',
     ApplyCurrentInstanceUrlDefaults::class,
+    'eshop.user.assignments',
 ])->prefix('/i/{slug}')->group(function () {
 
     // ─── POS Terminal ──────────────────────────────
@@ -250,6 +252,8 @@ Route::middleware([
         Route::delete('/cart/{itemKey}', [CustomerPortalController::class, 'removeFromCart'])->name('cart.remove');
         Route::delete('/cart', [CustomerPortalController::class, 'clearCart'])->name('cart.clear');
         Route::post('/checkout', [CustomerPortalController::class, 'checkout'])->name('checkout');
+        Route::get('/account', [CustomerPortalController::class, 'account'])->name('account');
+        Route::get('/account/export/{format}', [CustomerPortalController::class, 'accountExport'])->name('account.export');
         Route::get('/orders', [CustomerPortalController::class, 'orders'])->name('orders.index');
         Route::get('/orders/store/{order}', [CustomerPortalController::class, 'showStoreOrder'])->name('orders.store-show');
         Route::get('/orders/store/{order}/print', [CustomerPortalController::class, 'printStoreOrder'])->name('orders.store-print');
@@ -393,6 +397,16 @@ Route::middleware([
         Route::get('/invoice', [EshopSettingsController::class, 'invoice'])->name('invoice');
         Route::put('/invoice', [EshopSettingsController::class, 'updateInvoice'])->name('invoice.update');
     });
+
+    // ─── User Assignments ──────────────────────────────
+    Route::prefix('eshop-settings/user-assignments')
+        ->name('eshop360.settings.user-assignments.')
+        ->middleware('can:eshop.settings.manage')
+        ->group(function () {
+            Route::get('/', [UserAssignmentController::class, 'index'])->name('index');
+            Route::get('/{user}', [UserAssignmentController::class, 'edit'])->name('edit');
+            Route::put('/{user}', [UserAssignmentController::class, 'update'])->name('update');
+        });
 
     // ─── Suppliers ──────────────────────────────────
     Route::prefix('suppliers')->name('eshop360.suppliers.')->middleware('can:eshop.suppliers.view')->group(function () {

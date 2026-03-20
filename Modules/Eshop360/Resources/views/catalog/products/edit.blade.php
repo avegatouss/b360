@@ -109,10 +109,12 @@
                             <label class="form-label">{{ __('Prix de vente') }} <span class="text-danger">*</span></label>
                             <input type="number" name="price" step="0.01" class="form-control" value="{{ old('price', $product->price) }}" required>
                         </div>
+                        @if($canSeePricing ?? false)
                         <div class="col-md-4">
                             <label class="form-label">{{ __('Cout de revient') }}</label>
                             <input type="number" name="cost_price" step="0.01" class="form-control" value="{{ old('cost_price', $product->cost_price) }}">
                         </div>
+                        @endif
                         <div class="col-md-4">
                             <label class="form-label d-block">{{ __('Taxe incluse') }}</label>
                             <div class="form-check form-switch mt-2">

@@ -141,10 +141,12 @@
                             <input type="number" step="0.01" min="0" class="form-control @error('price') is-invalid @enderror" id="price" name="price" value="{{ old('price') }}" required>
                             @error('price') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
+                        @if($canSeePricing ?? false)
                         <div class="col-md-4">
                             <label for="cost_price" class="form-label">{{ __('Cout de revient') }}</label>
                             <input type="number" step="0.01" min="0" class="form-control @error('cost_price') is-invalid @enderror" id="cost_price" name="cost_price" value="{{ old('cost_price') }}">
                         </div>
+                        @endif
                         <div class="col-md-4">
                             <label class="form-label d-block">{{ __('Taxe incluse dans le prix') }}</label>
                             <div class="form-check form-switch mt-2">

@@ -217,7 +217,7 @@
                             <td>{{ $product->category->name ?? '—' }}</td>
                             <td class="text-end">
                                 <div class="fw-bold">{{ number_format($product->price, 0, ',', ' ') }}</div>
-                                @if($product->cost_price > 0)
+                                @if(($canSeePricing ?? false) && $product->cost_price > 0)
                                     <small class="text-muted">{{ __('Cout') }}: {{ number_format($product->cost_price, 0, ',', ' ') }}</small>
                                 @endif
                             </td>

@@ -54,41 +54,41 @@
             <div class="card-body">
                 <div class="row g-3">
                     @forelse($products as $product)
+                        @php $outOfStock = $product->display_stock <= 0; @endphp
                         <div class="col-md-6">
-                            <div class="border rounded p-3 h-100 d-flex flex-column">
+                            <div class="border rounded p-3 h-100 d-flex flex-column {{ $outOfStock ? 'opacity-75' : '' }}">
                                 <div class="d-flex justify-content-between align-items-start mb-2">
                                     <div>
-                                        <h5 class="mb-1">{{ $product->name }}</h5>
-                                        <div class="text-muted small"><code>{{ $product->sku }}</code></div>
+                                        <h6 class="fw-bold mb-1">{{ $product->name }}</h6>
+                                        <span class="text-muted">{{ $product->category->name ?? '—' }}@if($product->brand) · {{ $product->brand->name }}@endif</span>
                                     </div>
-                                    <span class="badge bg-light text-dark">{{ $product->display_stock }} {{ __('eshop360::eshop.in_stock') }}</span>
-                                </div>
-                                <div class="text-muted small mb-3">
-                                    {{ $product->category->name ?? __('eshop360::eshop.portal_no_category') }}
-                                    @if($product->brand)
-                                        · {{ $product->brand->name }}
+                                    @if($outOfStock)
+                                        <span class="badge bg-danger">{{ __('Rupture') }}</span>
+                                    @else
+                                        <span class="badge bg-success">{{ $product->display_stock }} {{ __('en stock') }}</span>
                                     @endif
                                 </div>
                                 <div class="mb-3">
-                                    <div class="fw-bold fs-5">{{ number_format((float) $product->display_price, 2) }}</div>
+                                    <div class="fw-bold fs-4 text-primary">{{ number_format((float) $product->display_price, 0, ',', ' ') }}</div>
                                     @if((float) $product->display_original_price > (float) $product->display_price)
-                                        <div class="text-muted text-decoration-line-through">{{ number_format((float) $product->display_original_price, 2) }}</div>
+                                        <div class="text-muted text-decoration-line-through">{{ number_format((float) $product->display_original_price, 0, ',', ' ') }}</div>
                                     @endif
-                                    <div class="small text-muted text-uppercase">{{ $product->display_price_source }}</div>
                                 </div>
                                 <div class="mt-auto">
-                                    <form method="POST" action="{{ route('eshop360.portal.cart.add', $instance->slug ?? '') }}" class="row g-2">
-                                        @csrf
-                                        <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                        <div class="col-4">
-                                            <input type="number" min="1" name="quantity" value="1" class="form-control">
+                                    @if($outOfStock)
+                                        <div class="alert alert-warning py-2 mb-0 text-center">
+                                            <i class="ti ti-package-off me-1"></i>{{ __('Produit indisponible actuellement') }}
                                         </div>
-                                        <div class="col-8">
-                                            <button type="submit" class="btn btn-primary w-100" {{ $product->display_stock <= 0 ? 'disabled' : '' }}>
-                                                {{ __('eshop360::eshop.portal_add_to_online_cart') }}
+                                    @else
+                                        <form method="POST" action="{{ route('eshop360.portal.cart.add', $slug) }}" class="d-flex gap-2">
+                                            @csrf
+                                            <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                            <input type="number" min="1" name="quantity" value="1" class="form-control" style="width:70px;">
+                                            <button type="submit" class="btn btn-primary flex-grow-1">
+                                                <i class="ti ti-shopping-cart-plus me-1"></i>{{ __('Ajouter') }}
                                             </button>
-                                        </div>
-                                    </form>
+                                        </form>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -117,34 +117,34 @@
                 @forelse($cart as $key => $item)
                     <div class="d-flex align-items-center gap-2 px-3 py-2 border-bottom">
                         <div class="flex-grow-1">
-                            <div class="fw-semibold" style="font-size:.85rem;">{{ $item['name'] }}</div>
+                            <div class="fw-semibold" style="font-size:.9rem;">{{ $item['name'] }}</div>
                             <div class="d-flex align-items-center gap-1 mt-1">
                                 <form method="POST" action="{{ route('eshop360.portal.cart.update', [$slug, $key]) }}" class="d-inline">
                                     @csrf @method('PUT')
                                     <input type="hidden" name="quantity" value="{{ max(1, $item['quantity'] - 1) }}">
-                                    <button type="submit" class="btn btn-outline-secondary px-1 py-0" style="font-size:.7rem;" {{ $item['quantity'] <= 1 ? 'disabled' : '' }}><i class="ti ti-minus" style="font-size:.7rem;"></i></button>
+                                    <button type="submit" class="btn btn-outline-secondary px-1 py-0" style="font-size:.8rem;" {{ $item['quantity'] <= 1 ? 'disabled' : '' }}><i class="ti ti-minus" style="font-size:.8rem;"></i></button>
                                 </form>
                                 <span class="fw-bold" style="min-width:24px; text-align:center; font-size:.85rem;">{{ $item['quantity'] }}</span>
                                 <form method="POST" action="{{ route('eshop360.portal.cart.update', [$slug, $key]) }}" class="d-inline">
                                     @csrf @method('PUT')
                                     <input type="hidden" name="quantity" value="{{ $item['quantity'] + 1 }}">
-                                    <button type="submit" class="btn btn-outline-secondary px-1 py-0" style="font-size:.7rem;"><i class="ti ti-plus" style="font-size:.7rem;"></i></button>
+                                    <button type="submit" class="btn btn-outline-secondary px-1 py-0" style="font-size:.8rem;"><i class="ti ti-plus" style="font-size:.8rem;"></i></button>
                                 </form>
-                                <span class="text-muted ms-1" style="font-size:.75rem;">x {{ number_format((float) $item['unit_price'], 0, ',', ' ') }}</span>
+                                <span class="text-muted ms-1" style="font-size:.9rem;">x {{ number_format((float) $item['unit_price'], 0, ',', ' ') }}</span>
                             </div>
                         </div>
                         <div class="text-end">
-                            <div class="fw-bold" style="font-size:.85rem;">{{ number_format((float) $item['total'], 0, ',', ' ') }}</div>
+                            <div class="fw-bold" style="font-size:.9rem;">{{ number_format((float) $item['total'], 0, ',', ' ') }}</div>
                             <form method="POST" action="{{ route('eshop360.portal.cart.remove', [$slug, $key]) }}" class="d-inline">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="btn btn-link text-danger p-0" style="font-size:.7rem;" title="{{ __('Retirer') }}"><i class="ti ti-trash" style="font-size:.8rem;"></i></button>
+                                <button type="submit" class="btn btn-link text-danger p-0" style="font-size:.8rem;" title="{{ __('Retirer') }}"><i class="ti ti-trash" style="font-size:.8rem;"></i></button>
                             </form>
                         </div>
                     </div>
                 @empty
                     <div class="text-center text-muted py-4">
                         <i class="ti ti-shopping-cart-off fs-3 d-block mb-1"></i>
-                        <span style="font-size:.85rem;">{{ __('Panier vide') }}</span>
+                        <span style="font-size:.9rem;">{{ __('Panier vide') }}</span>
                     </div>
                 @endforelse
             </div>

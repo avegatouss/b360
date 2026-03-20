@@ -3,10 +3,10 @@
     $totalStock = $totalStock ?? $product->stocks->sum('quantity');
     $reservedStock = $reservedStock ?? $product->stocks->sum('reserved_quantity');
     $availableStock = $totalStock - $reservedStock;
-    $margin = (float) $product->price - (float) $product->cost_price;
-    $marginPct = $product->price > 0 ? round($margin / $product->price * 100, 1) : 0;
+    $margin = ($canSeePricing ?? false) ? (float) $product->price - (float) $product->cost_price : 0;
+    $marginPct = ($canSeePricing ?? false) && $product->price > 0 ? round($margin / $product->price * 100, 1) : 0;
     $stockValue = $totalStock * (float) $product->price;
-    $stockCostValue = $totalStock * (float) $product->cost_price;
+    $stockCostValue = ($canSeePricing ?? false) ? $totalStock * (float) $product->cost_price : 0;
     // Map controller variables
     $salesStats = [
         'total_qty_sold' => $totalQuantitySold ?? 0,
@@ -60,7 +60,7 @@
             <div class="card-body text-center">
                 <div class="text-muted mb-1">{{ __('Prix de vente') }}</div>
                 <div class="fs-3 fw-bold text-primary">{{ number_format($product->price, 0, ',', ' ') }}</div>
-                @if($product->cost_price > 0)
+                @if(($canSeePricing ?? false) && $product->cost_price > 0)
                     <small class="text-muted">{{ __('Cout') }}: {{ number_format($product->cost_price, 0, ',', ' ') }}</small>
                 @endif
             </div>
@@ -76,6 +76,7 @@
             </div>
         </div>
     </div>
+    @if($canSeePricing ?? false)
     <div class="col-xl-3 col-sm-6">
         <div class="card border-0 shadow-sm h-100">
             <div class="card-body text-center">
@@ -85,6 +86,7 @@
             </div>
         </div>
     </div>
+    @endif
     <div class="col-xl-3 col-sm-6">
         <div class="card border-0 shadow-sm h-100">
             <div class="card-body text-center">

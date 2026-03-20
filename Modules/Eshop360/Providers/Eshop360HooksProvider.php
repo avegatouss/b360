@@ -165,6 +165,18 @@ final class Eshop360HooksProvider implements RegistersHooks
         ));
 
         $registry->addMenu(new MenuItem(
+            id: 'eshop360.my_orders.account',
+            label: 'Mon compte',
+            route: 'eshop360.portal.account',
+            priority: 775,
+            requiredModule: 'Eshop360',
+            group: 'main',
+            activePattern: 'eshop360.portal.account*',
+            parentId: 'eshop360.my_orders',
+            visibleWhen: fn ($user, $instance) => $user && $user->hasRole('user'),
+        ));
+
+        $registry->addMenu(new MenuItem(
             id: 'eshop360.my_orders.messages',
             label: 'Messagerie',
             route: 'eshop360.messages.inbox',
@@ -842,6 +854,18 @@ final class Eshop360HooksProvider implements RegistersHooks
             requiredModule: 'Eshop360',
             group: 'main',
             activePattern: 'eshop360.portal.*',
+            parentId: 'eshop360.portails',
+        ));
+
+        $registry->addMenu(new MenuItem(
+            id: 'eshop360.portails.user_assignments',
+            label: 'Affectations utilisateurs',
+            route: 'eshop360.settings.user-assignments.index',
+            priority: 780,
+            requiredPermission: 'eshop.settings.manage',
+            requiredModule: 'Eshop360',
+            group: 'main',
+            activePattern: 'eshop360.settings.user-assignments.*',
             parentId: 'eshop360.portails',
         ));
 

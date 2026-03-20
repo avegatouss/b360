@@ -17,6 +17,7 @@ use Modules\Eshop360\Models\Warehouse;
 use Modules\Eshop360\Models\StockMovement;
 use Modules\Eshop360\Models\OrderItem;
 use Modules\Eshop360\Services\ChargesService;
+use Modules\Eshop360\Services\UserResourceScopeService;
 use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
@@ -34,6 +35,19 @@ class ProductController extends Controller
             ->when($request->warehouse_id, fn ($q, $w) => $q->whereHas('stocks', fn ($sq) => $sq->where('warehouse_id', $w)))
             ->when($request->price_min, fn ($q, $min) => $q->where('price', '>=', $min))
             ->when($request->price_max, fn ($q, $max) => $q->where('price', '<=', $max))
+            ->when(
+                app(UserResourceScopeService::class)->hasWarehouseAssignments()
+                || app(UserResourceScopeService::class)->hasStoreAssignments(),
+                function ($query) {
+                    $scope = app(UserResourceScopeService::class);
+                    $query->whereHas('stocks', function ($sq) use ($scope) {
+                        $scope->applyWarehouseScope($sq, 'warehouse_id');
+                        if ($scope->hasStoreAssignments()) {
+                            $scope->applyStoreScope($sq, 'store_id');
+                        }
+                    });
+                }
+            )
             ->latest()
             ->paginate(20)
             ->withQueryString();
@@ -167,11 +181,19 @@ class ProductController extends Controller
     public function show(string $slug, Product $product)
     {
         // 1. Load product with comprehensive relations
+        $scope = app(UserResourceScopeService::class);
         $product->load([
             'category',
             'brand',
-            'stocks.warehouse',
-            'stocks.store',
+            'stocks' => function ($q) use ($scope) {
+                if ($scope->hasWarehouseAssignments()) {
+                    $scope->applyWarehouseScope($q, 'warehouse_id');
+                }
+                if ($scope->hasStoreAssignments()) {
+                    $scope->applyStoreScope($q, 'store_id');
+                }
+                $q->with(['warehouse', 'store']);
+            },
             'creator',
             'variations',
             'productTaxes.tax',

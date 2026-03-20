@@ -6,10 +6,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Modules\Core\Database\Traits\BelongsToInstance;
+use Modules\Eshop360\Database\Traits\ScopedByUserAssignment;
 
 class Warehouse extends Model
 {
-    use HasFactory, BelongsToInstance;
+    use HasFactory, BelongsToInstance, ScopedByUserAssignment;
+
+    protected static array $userAssignmentConfig = [
+        ['type' => 'warehouse', 'column' => 'id'],
+    ];
 
     protected $table = 'eshop_warehouses';
 

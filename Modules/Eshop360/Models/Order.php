@@ -12,10 +12,16 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Core\Database\Traits\BelongsToInstance;
+use Modules\Eshop360\Database\Scopes\OrderUserAssignmentScope;
 
 class Order extends Model
 {
     use HasFactory, BelongsToInstance, SoftDeletes;
+
+    protected static function booted(): void
+    {
+        static::addGlobalScope(new OrderUserAssignmentScope());
+    }
 
     protected $table = 'eshop_orders';
 

@@ -19,6 +19,7 @@ class Message extends Model
         'instance_id',
         'from_user_id',
         'to_user_id',
+        'support_team_id',
         'subject',
         'body',
         'read_at',
@@ -36,6 +37,11 @@ class Message extends Model
     public function receiver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'to_user_id');
+    }
+
+    public function team(): BelongsTo
+    {
+        return $this->belongsTo(SupportTeam::class, 'support_team_id');
     }
 
     public function scopeUnread(Builder $query): Builder

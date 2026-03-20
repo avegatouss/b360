@@ -51,6 +51,7 @@ final class Eshop360ServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__ . '/../Config/config.php', 'eshop360');
 
         // Core services
+        $this->app->singleton(\Modules\Eshop360\Services\UserResourceScopeService::class);
         $this->app->singleton(EshopSettingsService::class);
         $this->app->singleton(WebhookService::class);
         $this->app->singleton(CartService::class);
@@ -123,6 +124,7 @@ final class Eshop360ServiceProvider extends ServiceProvider
         $router->aliasMiddleware('eshop.channel.resolve', \Modules\Eshop360\Http\Middleware\ResolveChannel::class);
         $router->aliasMiddleware('eshop.channel.member', \Modules\Eshop360\Http\Middleware\ChannelMember::class);
         $router->aliasMiddleware('eshop.channel.role', \Modules\Eshop360\Http\Middleware\ChannelRole::class);
+        $router->aliasMiddleware('eshop.user.assignments', \Modules\Eshop360\Http\Middleware\ResolveUserAssignments::class);
 
         // Register console commands
         if ($this->app->runningInConsole()) {
