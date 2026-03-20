@@ -108,8 +108,8 @@
             </div>
             <div class="col-md-2">
                 <label class="form-label small mb-1">{{ __('Statut') }}</label>
-                <select name="is_active" class="form-select form-select-sm">
-                    <option value="">{{ __('Tous') }}</option>
+                <select name="is_active" class="form-select form-select-sm wh-select2" data-placeholder="{{ __('Statut') }}">
+                    <option value=""></option>
                     <option value="1" @selected(request('is_active') === '1')>{{ __('Actif') }}</option>
                     <option value="0" @selected(request('is_active') === '0')>{{ __('Inactif') }}</option>
                 </select>
@@ -455,6 +455,21 @@
         </div>
     </div>
 </div>
+
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
+@endpush
+
+@push('scripts')
+<script>
+jQuery(function ($) {
+    $('.wh-select2').each(function () {
+        $(this).select2({ theme: 'bootstrap-5', allowClear: true, width: '100%', placeholder: $(this).data('placeholder') || '' })
+            .on('select2:select select2:clear', function () { $(this).closest('form')[0].submit(); });
+    });
+});
+</script>
+@endpush
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {

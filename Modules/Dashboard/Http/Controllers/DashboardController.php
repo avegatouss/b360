@@ -5,6 +5,7 @@ namespace Modules\Dashboard\Http\Controllers;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
 use Modules\Core\Hooks\Registry\HookRegistry;
+use Modules\Core\Modules\ModuleManager;
 use Modules\Core\Support\CurrentInstance;
 
 final class DashboardController extends Controller
@@ -32,8 +33,13 @@ final class DashboardController extends Controller
         $registry = app(HookRegistry::class);
         $user = auth()->user();
 
+        $modules = app(ModuleManager::class);
+
         $widgets = $registry->widgets()
-            ->filter(function ($widget) use ($user, $instance) {
+            ->filter(function ($widget) use ($user, $instance, $modules) {
+                if ($widget->requiredModule && !$modules->isEnabled($widget->requiredModule)) {
+                    return false;
+                }
                 if ($widget->requiredPermission && !$user?->can($widget->requiredPermission)) {
                     return false;
                 }

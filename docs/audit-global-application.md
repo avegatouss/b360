@@ -31,7 +31,7 @@ Audit du depot `b360` au 2026-03-16 avec lecture des modules actifs : `Core`, `A
 | Billing / abonnement / plans | 4/5 | coherent et teste |
 | Settings / hooks / module manager | 4/5 | coherent et teste |
 | Internationalisation / currency | 3/5 | base correcte |
-| Eshop360 | 3/5 | coeur transactionnel, portail client online/CODIFARM, contextual pricing et rapports coeur rebranches, peripherie encore incomplete |
+| Eshop360 | 3/5 | coeur transactionnel, portail client online/revendeur, contextual pricing et rapports coeur rebranches, peripherie encore incomplete |
 
 ## Verifications d'execution
 
@@ -46,7 +46,7 @@ Audit du depot `b360` au 2026-03-16 avec lecture des modules actifs : `Core`, `A
 - Chargement de `Modules\Eshop360\Models\Project` : OK apres correction du trait d'instance.
 - Chargement de `Modules\Eshop360\Models\Task` : OK.
 - Verification de routes nommees critiques : `codifarm`, `cinetpay`, `checkout`, `sales.returns`, `purchase-returns`, `online-orders.status` et les routes d'exports sont presentes et raccordees.
-- Couverture de tests Eshop en place sur : compatibilites schema, stock, ajustements, transferts, entrepots, retours fournisseurs, checkout POS, factures, online orders, portail client CODIFARM, panier/POS HTML, retours de vente, caisse/holdings/recus POS, rapports avances, exports CSV/XLSX, prix par canal et marges CODIFARM.
+- Couverture de tests Eshop en place sur : compatibilites schema, stock, ajustements, transferts, entrepots, retours fournisseurs, checkout POS, factures, online orders, portail client revendeur, panier/POS HTML, retours de vente, caisse/holdings/recus POS, rapports avances, exports CSV/XLSX, prix par canal et marges revendeur.
 
 ## Lecture metier
 
@@ -58,15 +58,15 @@ En l'etat, `Eshop360` ressemble a un module a la fois :
 - avance sur certaines vues et migrations
 - incomplet dans ses workflows
 - faiblement protege par les tests
-- non suffisamment aligne sur le plan SAPHIR/CODIFARM
+- non suffisamment aligne sur le plan initial
 
 ## Priorites transverses
 
 1. Poursuivre le sweep des ecrans historiques encore incoherents en `slug + CurrentInstance`.
-2. Durcir le portail client `online order / CODIFARM` maintenant livre, puis completer la logistique, le gating et l'experience grossiste.
+2. Durcir le portail client `online order / revendeur` maintenant livre, puis completer la logistique, le gating et l'experience grossiste.
 3. Requalifier les layouts POS secondaires et les cas caisse plus fins.
-4. Etendre la couverture de tests Eshop aux RH, communication, finance avancee et parcours online/CODIFARM client.
-5. Continuer a requalifier ce qui est reellement livre par rapport au plan SAPHIR/CODIFARM.
+4. Etendre la couverture de tests Eshop aux RH, communication, finance avancee et parcours online/revendeur client.
+5. Continuer a requalifier ce qui est reellement livre par rapport au plan initial.
 
 ## Conclusion
 

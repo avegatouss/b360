@@ -1,27 +1,31 @@
 {{-- POS Register Bar --}}
+@php $registerRequired = !empty($settings['register_required'] ?? false); @endphp
 @if(!$registerOpen)
-<div class="card mb-2 border-warning">
+<div class="card mb-2 {{ $registerRequired ? 'border-danger' : 'border-warning' }}">
     <div class="card-body py-2">
         <div class="d-flex justify-content-between align-items-center">
-            <small class="text-warning"><i class="ti ti-alert-triangle me-1"></i>{{ __('Caisse non ouverte') }}</small>
-            <button class="btn btn-sm btn-warning" data-bs-toggle="collapse" data-bs-target="#register-form">
+            <small class="{{ $registerRequired ? 'text-danger fw-bold' : 'text-warning' }}">
+                <i class="ti ti-alert-triangle me-1"></i>
+                {{ $registerRequired ? __('Caisse requise pour vendre') : __('Caisse non ouverte') }}
+            </small>
+            <button class="btn btn-sm {{ $registerRequired ? 'btn-danger' : 'btn-warning' }}" data-bs-toggle="collapse" data-bs-target="#register-form">
                 <i class="ti ti-lock-open me-1"></i>{{ __('Ouvrir') }}
             </button>
         </div>
-        <div class="collapse mt-2" id="register-form">
+        <div class="collapse {{ $registerRequired ? 'show' : '' }} mt-2" id="register-form">
             <form method="POST" action="{{ route('eshop360.pos.registers.open', $instance->slug ?? '') }}">
                 @csrf
                 <div class="row g-2">
                     <div class="col-6">
-                        <select name="store_id" class="form-select form-select-sm">
-                            <option value="">{{ __('Point de vente') }}</option>
+                        <select name="store_id" class="form-select form-select-sm pos-select2-filter" data-placeholder="{{ __('Point de vente') }}">
+                            <option value=""></option>
                             @foreach($stores as $store)
                                 <option value="{{ $store->id }}">{{ $store->name }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="col-6">
-                        <input type="number" name="opening_amount" class="form-control form-control-sm" min="0" step="1" value="0" placeholder="{{ __('Fond') }}">
+                        <input type="number" name="opening_amount" class="form-control form-control-sm" min="0" step="1" value="0" placeholder="{{ __('Fond de caisse') }}">
                     </div>
                     <div class="col-12 d-grid">
                         <button type="submit" class="btn btn-sm btn-primary">{{ __('Confirmer ouverture') }}</button>

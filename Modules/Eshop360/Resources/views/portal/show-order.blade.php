@@ -55,8 +55,8 @@
                     <tr>
                         <th>{{ __('eshop360::eshop.portal_context') }}</th>
                         <td>
-                            @if($onlineOrder->is_codifarm)
-                                {{ __('eshop360::eshop.portal_codifarm') }}
+                            @if($onlineOrder->is_revendeur)
+                                {{ __('eshop360::eshop.portal_revendeur') }}
                             @elseif($onlineOrder->channel)
                                 {{ $onlineOrder->channel->name }}
                             @else

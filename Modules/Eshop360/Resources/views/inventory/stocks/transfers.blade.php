@@ -53,7 +53,7 @@
             </div>
             <div class="col-md-1">
                 <label class="form-label small mb-1">{{ __('Statut') }}</label>
-                <select name="status" class="form-select form-select-sm">
+                <select name="status" class="form-select form-select-sm select2-filter">
                     <option value="">{{ __('Tous') }}</option>
                     <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>{{ __('En attente') }}</option>
                     <option value="completed" {{ request('status') === 'completed' ? 'selected' : '' }}>{{ __('Termine') }}</option>
@@ -282,25 +282,21 @@
 </div>
 
 @push('styles')
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
 @endpush
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    if (typeof jQuery === 'undefined' || !jQuery.fn.select2) return;
-
+jQuery(function ($) {
     // Filters
-    jQuery('.select2-filter').select2({
+    $('.select2-filter').select2({
         theme: 'bootstrap-5', allowClear: true, width: '100%',
-    }).on('change', function () { this.closest('form').submit(); });
+    }).on('select2:select select2:clear', function () { $(this).closest('form')[0].submit(); });
 
     // Modal warehouse selects
-    var $modal = jQuery('#new-transfer');
-    jQuery('.select2-modal').each(function () {
-        jQuery(this).select2({ theme: 'bootstrap-5', dropdownParent: $modal, width: '100%' });
+    var $modal = $('#new-transfer');
+    $('.select2-modal').each(function () {
+        $(this).select2({ theme: 'bootstrap-5', dropdownParent: $modal, width: '100%' });
     });
 
     // Product AJAX search helper
@@ -327,7 +323,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Init first product select
-    jQuery('.select2-product').each(function () { initProductSelect(jQuery(this)); });
+    $('.select2-product').each(function () { initProductSelect($(this)); });
 
     // Add item row
     var rowIndex = 1;
@@ -360,7 +356,7 @@ document.addEventListener('DOMContentLoaded', function () {
         row.appendChild(colProduct); row.appendChild(colQty); row.appendChild(colBtn);
         container.appendChild(row);
 
-        initProductSelect(jQuery(sel));
+        initProductSelect($(sel));
         rowIndex++;
     });
 

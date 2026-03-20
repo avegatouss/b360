@@ -99,6 +99,7 @@ Route::middleware([
         Route::post('/holdings/{holding}/resume', [PosController::class, 'resumeHolding'])->middleware('can:eshop.pos.access')->name('holdings.resume');
         Route::get('/settings', [PosController::class, 'settings'])->middleware('can:eshop.settings.manage')->name('settings');
         Route::put('/settings', [PosController::class, 'updateSettings'])->middleware('can:eshop.settings.manage')->name('settings.update');
+        Route::get('/customers/{customer}/wallet', [PosController::class, 'customerWalletInfo'])->middleware('can:eshop.pos.access')->name('customer.wallet');
     });
 
     // ─── Products ─────────────────────────────────
@@ -108,6 +109,7 @@ Route::middleware([
         Route::get('/search', [ProductController::class, 'search'])->name('search');
         Route::get('/create', [ProductController::class, 'create'])->middleware('can:eshop.products.manage')->name('create');
         Route::post('/', [ProductController::class, 'store'])->middleware('can:eshop.products.manage')->name('store');
+        Route::post('/bulk-action', [ProductController::class, 'bulkAction'])->middleware('can:eshop.products.manage')->name('bulk-action');
         Route::get('/{product}', [ProductController::class, 'show'])->name('show');
         Route::get('/{product}/edit', [ProductController::class, 'edit'])->middleware('can:eshop.products.manage')->name('edit');
         Route::put('/{product}', [ProductController::class, 'update'])->middleware('can:eshop.products.manage')->name('update');
@@ -197,6 +199,7 @@ Route::middleware([
         Route::get('/returns/list', [SaleController::class, 'returns'])->name('returns');
         Route::post('/returns', [SaleController::class, 'storeReturn'])->middleware('can:eshop.sales.manage')->name('returns.store');
         Route::get('/tax/report', [SaleController::class, 'taxReport'])->name('tax-report');
+        Route::get('/stats', [SaleController::class, 'stats'])->middleware('can:eshop.sales.view')->name('stats');
 
         Route::get('/{order}', [SaleController::class, 'show'])->name('show');
         Route::put('/{order}', [SaleController::class, 'update'])->middleware('can:eshop.sales.manage')->name('update');
@@ -248,6 +251,8 @@ Route::middleware([
     Route::prefix('customers')->name('eshop360.customers.')->middleware('can:eshop.customers.view')->group(function () {
         Route::get('/', [CustomerController::class, 'index'])->name('index');
         Route::post('/', [CustomerController::class, 'store'])->middleware('can:eshop.customers.manage')->name('store');
+        Route::get('/stats', [CustomerController::class, 'stats'])->name('stats');
+        Route::post('/{customer}/create-account', [CustomerController::class, 'createUserAccount'])->middleware('can:eshop.customers.manage')->name('create-account');
         Route::get('/{customer}', [CustomerController::class, 'show'])->name('show');
         Route::put('/{customer}', [CustomerController::class, 'update'])->middleware('can:eshop.customers.manage')->name('update');
         Route::delete('/{customer}', [CustomerController::class, 'destroy'])->middleware('can:eshop.customers.manage')->name('destroy');
@@ -486,7 +491,7 @@ Route::middleware([
     });
 
     // ─── Distribution Channels ──────────────────────────
-    // (Codifarm functionality merged here — see ChannelController)
+    // (Revendeur functionality merged here — see ChannelController)
     Route::prefix('channels')->name('eshop360.channels.')->middleware(['can:eshop.channels.view', 'billing.feature:eshop360.channels'])->group(function () {
         Route::get('/', [ChannelController::class, 'index'])->name('index');
         Route::get('/create', [ChannelController::class, 'create'])->middleware('can:eshop.channels.manage')->name('create');

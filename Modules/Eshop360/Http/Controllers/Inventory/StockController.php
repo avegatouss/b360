@@ -5,6 +5,7 @@ namespace Modules\Eshop360\Http\Controllers\Inventory;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
+use Modules\Core\Support\CurrentInstance;
 use Modules\Eshop360\Models\Product;
 use Modules\Eshop360\Models\Stock;
 use Modules\Eshop360\Models\StockMovement;
@@ -52,23 +53,32 @@ class StockController extends Controller
             'notes' => 'nullable|string|max:500',
         ]);
 
-        DB::transaction(function () use ($validated) {
-            $stock = Stock::firstOrNew([
-                'product_id' => $validated['product_id'],
-                'warehouse_id' => $validated['warehouse_id'],
-                'store_id' => $validated['store_id'] ?? null,
-            ]);
+        $instanceId = CurrentInstance::get()?->id;
 
-            $stock->quantity = ($stock->quantity ?? 0) + $validated['quantity'];
-            $stock->save();
+        DB::transaction(function () use ($validated, $instanceId) {
+            $stock = Stock::firstOrCreate(
+                [
+                    'instance_id'  => $instanceId,
+                    'product_id'   => $validated['product_id'],
+                    'warehouse_id' => $validated['warehouse_id'],
+                    'store_id'     => $validated['store_id'] ?? null,
+                ],
+                [
+                    'quantity'          => 0,
+                    'reserved_quantity' => 0,
+                ]
+            );
+
+            $stock->increment('quantity', $validated['quantity']);
 
             StockMovement::create([
-                'product_id' => $stock->product_id,
+                'instance_id'  => $instanceId,
+                'product_id'   => $stock->product_id,
                 'warehouse_id' => $stock->warehouse_id,
-                'store_id' => $stock->store_id,
-                'type' => 'addition',
-                'quantity' => $validated['quantity'],
-                'notes' => $validated['notes'] ?? 'Stock added',
+                'store_id'     => $stock->store_id,
+                'type'         => 'in',
+                'quantity'     => $validated['quantity'],
+                'notes'        => $validated['notes'] ?? 'Stock added',
                 'performed_by' => auth()->id(),
             ]);
         });

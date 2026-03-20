@@ -28,7 +28,7 @@ Ce document suit la remediation progressive du module `Eshop360` apres l'audit i
 ### Impact fonctionnel
 
 - les redirections post-creation / post-update ne tombent plus sur des noms de routes inexistants pour une grande partie du back-office Eshop
-- les ecrans CODIFARM ne sont plus orphelins de routes
+- les ecrans revendeur ne sont plus orphelins de routes
 - les tickets support et la messagerie n'envoient plus vers des noms de routes invalides
 - les formulaires de changement de statut commande en ligne, de paiement de salaire et de configuration CinetPay sont raccordes au bon endpoint
 - le module projets/taches n'est plus cassant au simple chargement PHP
@@ -36,7 +36,7 @@ Ce document suit la remediation progressive du module `Eshop360` apres l'audit i
 ### Verifications executees
 
 - `php -l` sur tous les fichiers PHP modifies : OK
-- `php artisan route:list --name=codifarm` : 5 routes CODIFARM presentes
+- `php artisan route:list --name=codifarm` : 5 routes revendeur presentes
 - `php artisan route:list --name=eshop360.stocks.destroy` : OK
 - `php artisan route:list --name=eshop360.finance.incomes.sources.update` : OK
 - `php artisan route:list --name=eshop360.tickets` : OK
@@ -97,7 +97,7 @@ Ce lot retire surtout des cassures d'execution et des faux parcours. Il ameliore
 
 - les compatibilites par accessor stabilisent le runtime, mais ne remplacent pas encore un nettoyage complet des vues et services vers un vocabulaire unique
 - `RecurringInvoiceCommand` est mis en attente propre, pas finalise fonctionnellement
-- la logique stock transverse, les retours fournisseurs et plusieurs parcours CODIFARM restent encore a requalifier
+- la logique stock transverse, les retours fournisseurs et plusieurs parcours revendeur restent encore a requalifier
 - la couverture de tests Eshop reste minimale et doit encore couvrir les parcours HTTP bout-en-bout
 - l'echec de test restant est toujours hors Eshop : `Modules/Core/Tests/Unit/MenuItemTest`
 
@@ -265,7 +265,7 @@ Ce lot retire surtout des cassures d'execution et des faux parcours. Il ameliore
 - les layouts POS 2 a 5 restent encore peu requalifies par rapport au layout principal
 - le statut metier de remboursement partiel n'existe pas encore : une vente retournee passe en `refunded`
 - le sweep legacy `slug + CurrentInstance` est encore a poursuivre dans des ecrans secondaires, rapports et integrations
-- les rapports, exports et le parcours CODIFARM client restent en-dessous du niveau cible
+- les rapports, exports et le parcours revendeur client restent en-dessous du niveau cible
 - l'echec de test restant est toujours hors Eshop : `Modules/Core/Tests/Unit/MenuItemTest`
 
 ## Lot 6 termine - 2026-03-15
@@ -281,7 +281,7 @@ Ce lot retire surtout des cassures d'execution et des faux parcours. Il ameliore
   - reprise de panier en session avec restoration des cles legacy et scopees par instance
 - ajout du recu de commande POS et d'un listing dynamique des commandes POS
 - sweep legacy sur les parametres POS / imprimante / facture via `CurrentInstance`
-- requalification du bloc CODIFARM :
+- requalification du bloc revendeur :
   - dashboard et listing commandes bases sur `CodifarmMarginLog`
   - filtres date / statut / recherche
   - vues alignees sur les vrais champs et vraies routes
@@ -303,7 +303,7 @@ Ce lot retire surtout des cassures d'execution et des faux parcours. Il ameliore
   - recu
   - cloture
 - les commandes POS et leurs details portent enfin le contexte de caisse et de magasin exploitable par les vues et rapports
-- CODIFARM n'est plus un sous-module fantome : les ecrans back-office affichent des chiffres coherents et des actions navigables
+- le revendeur n'est plus un sous-module fantome : les ecrans back-office affichent des chiffres coherents et des actions navigables
 - les rapports coeur ne perdent plus les donnees du jour a cause de bornes de dates coupees a minuit
 
 ### Verifications executees
@@ -319,7 +319,7 @@ Ce lot retire surtout des cassures d'execution et des faux parcours. Il ameliore
 
 - les layouts POS 2 a 5 restent encore peu requalifies
 - les rapports secondaires et exports restent heterogenes
-- le portail client `online orders / CODIFARM` du plan n'existe toujours pas
+- le portail client `online orders / revendeur` du plan n'existe toujours pas
 - la repartition tripartite et les prix par canal ne sont pas encore nativement branches au catalogue et aux ventes
 - les cas metier fins de caisse et de remboursement partiel restent simplifies
 
@@ -377,7 +377,7 @@ Ce lot retire surtout des cassures d'execution et des faux parcours. Il ameliore
 
 ### Limites restantes
 
-- le portail client `online order / CODIFARM` du plan n'existe toujours pas
+- le portail client `online order / revendeur` du plan n'existe toujours pas
 - les prix par canal et les marges tripartites ne sont pas encore automatiquement injectes dans le catalogue et les ventes
 - les layouts POS 2 a 5 restent encore peu requalifies
 - `FeatureGate` reste inactif sur les routes Eshop
@@ -399,12 +399,12 @@ Ce lot retire surtout des cassures d'execution et des faux parcours. Il ameliore
 - ajout d'un accessor de compatibilite `ChannelMarginLog::margin`
 - ajout de tests de non-regression sur :
   - vente directe avec prix canal resolu serveur
-  - commande directe CODIFARM avec log de marge
+  - commande directe revendeur avec log de marge
 
 ### Impact fonctionnel
 
-- une commande directe peut maintenant utiliser un prix canal ou CODIFARM sans injecter manuellement `unit_price` depuis le front
-- les marges par canal et CODIFARM cessent d'etre seulement un service disponible : elles sont creees automatiquement lors de la commande
+- une commande directe peut maintenant utiliser un prix canal ou revendeur sans injecter manuellement `unit_price` depuis le front
+- les marges par canal et revendeur cessent d'etre seulement un service disponible : elles sont creees automatiquement lors de la commande
 - les ecrans de canal qui lisaient `margin` retrouvent une valeur exploitable
 
 ### Verifications executees
@@ -423,7 +423,7 @@ Ce lot retire surtout des cassures d'execution et des faux parcours. Il ameliore
 
 ### Limites restantes
 
-- le portail client `online order / CODIFARM` reste absent
+- le portail client `online order / revendeur` reste absent
 - les prix par canal ne sont pas encore pousses jusque dans le panier navigateur et les online orders
 - la double logique `DistributionChannel` / `Codifarm*` reste a unifier
 - les layouts POS secondaires et le gating payant restent ouverts
@@ -437,7 +437,7 @@ Ce lot retire surtout des cassures d'execution et des faux parcours. Il ameliore
   - standard avec remise produit
   - prix manuel par canal
   - fallback `PGHT + buy_rate`
-  - prix CODIFARM
+  - prix revendeur
   - fallback `PGHT + codifarm_buy_rate`
 - propagation du contexte tarifaire `channel_id / is_codifarm` dans les parcours :
   - panier navigateur
@@ -458,7 +458,7 @@ Ce lot retire surtout des cassures d'execution et des faux parcours. Il ameliore
 
 ### Impact fonctionnel
 
-- les prix canal et CODIFARM ne sont plus limites aux commandes directes : ils traversent maintenant le panier navigateur, le POS principal, le checkout et les online orders
+- les prix canal et revendeur ne sont plus limites aux commandes directes : ils traversent maintenant le panier navigateur, le POS principal, le checkout et les online orders
 - les mises en attente POS ne perdent plus le contexte tarifaire lors de la reprise
 - la conversion `online order -> order` conserve le canal et la logique de marge associee
 - les ecrans stock faible, produits expires et entrepots affichent enfin les vraies donnees au lieu de templates statiques
@@ -494,7 +494,7 @@ Ce lot retire surtout des cassures d'execution et des faux parcours. Il ameliore
 
 ### Limites restantes
 
-- le portail client `online order / CODIFARM` dedie reste encore a construire
+- le portail client `online order / revendeur` dedie reste encore a construire
 - les layouts POS 2 a 5 restent en dessous du layout principal
 - `FeatureGate` n'est toujours pas applique de maniere metier sur les fonctions premium
 - la double logique `DistributionChannel` / `Codifarm*` reste a unifier
@@ -524,7 +524,7 @@ Ce lot retire surtout des cassures d'execution et des faux parcours. Il ameliore
 ### Impact fonctionnel
 
 - le parcours `catalogue -> panier -> commande en ligne` existe maintenant cote client authentifie
-- les prix canal et CODIFARM ne restent plus une capacite back-office ou API : ils sont visibles et commandables depuis le portail
+- les prix canal et revendeur ne restent plus une capacite back-office ou API : ils sont visibles et commandables depuis le portail
 - le client ne voit plus que ses propres commandes et peut participer a la cloture du flux via la confirmation de reception
 - les sessions panier portail et POS cessent de se polluer mutuellement
 - la suite globale redevient deterministe avec les nouveaux parcours ajoutes
@@ -564,6 +564,6 @@ L'objectif `98%` est atteignable seulement par lots successifs. Les lots 1 a 7 o
 
 - finir les incoherences schema / services
 - fiabiliser completement les flux secondaires POS / commande / stock / facture
-- finaliser CODIFARM et les commandes en ligne cote client
+- finaliser le revendeur et les commandes en ligne cote client
 - corriger les exports/rapports legacy
 - couvrir le module par des tests fonctionnels et unitaires

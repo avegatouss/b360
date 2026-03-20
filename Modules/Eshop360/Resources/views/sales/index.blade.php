@@ -5,6 +5,10 @@
 
 @php $slug = $instance->slug ?? ''; @endphp
 
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
+@endpush
+
 {{-- Page Header --}}
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
@@ -17,6 +21,9 @@
         </a>
         <a href="{{ route('eshop360.sales.returns', $slug) }}" class="btn btn-outline-warning btn-sm">
             <i class="ti ti-arrow-back-up me-1"></i>{{ __('Retours') }}
+        </a>
+        <a href="{{ route('eshop360.sales.stats', $slug) }}" class="btn btn-outline-success btn-sm">
+            <i class="ti ti-chart-dots me-1"></i>{{ __('Stats') }}
         </a>
         <a href="{{ route('eshop360.sales.dashboard', $slug) }}" class="btn btn-primary btn-sm">
             <i class="ti ti-chart-bar me-1"></i>{{ __('Tableau de bord') }}
@@ -141,8 +148,8 @@
                 {{-- Status --}}
                 <div class="col-md-2">
                     <label class="form-label small mb-1">{{ __('Statut') }}</label>
-                    <select name="status" class="form-select form-select-sm">
-                        <option value="">{{ __('Tous') }}</option>
+                    <select name="status" class="form-select form-select-sm select2-filter" data-placeholder="{{ __('Statut') }}">
+                        <option value=""></option>
                         @foreach([
                             'pending' => __('En attente'),
                             'processing' => __('En cours'),
@@ -158,8 +165,8 @@
                 {{-- Payment Status --}}
                 <div class="col-md-2">
                     <label class="form-label small mb-1">{{ __('Paiement') }}</label>
-                    <select name="payment_status" class="form-select form-select-sm">
-                        <option value="">{{ __('Tous') }}</option>
+                    <select name="payment_status" class="form-select form-select-sm select2-filter" data-placeholder="{{ __('Paiement') }}">
+                        <option value=""></option>
                         <option value="paid" @selected(request('payment_status') === 'paid')>{{ __('Payé') }}</option>
                         <option value="partial" @selected(request('payment_status') === 'partial')>{{ __('Partiel') }}</option>
                         <option value="unpaid" @selected(request('payment_status') === 'unpaid')>{{ __('Impayé') }}</option>
@@ -195,8 +202,8 @@
                     {{-- Source --}}
                     <div class="col-md-2">
                         <label class="form-label small mb-1">{{ __('Source') }}</label>
-                        <select name="source" class="form-select form-select-sm">
-                            <option value="">{{ __('Toutes') }}</option>
+                        <select name="source" class="form-select form-select-sm select2-filter" data-placeholder="{{ __('Source') }}">
+                            <option value=""></option>
                             <option value="pos" @selected(request('source') === 'pos')>{{ __('Point de vente') }}</option>
                             <option value="online" @selected(request('source') === 'online')>{{ __('En ligne') }}</option>
                             <option value="manual" @selected(request('source') === 'manual')>{{ __('Manuel') }}</option>
@@ -220,8 +227,8 @@
                     {{-- Payment Method --}}
                     <div class="col-md-2">
                         <label class="form-label small mb-1">{{ __('Méthode') }}</label>
-                        <select name="payment_method" class="form-select form-select-sm">
-                            <option value="">{{ __('Toutes') }}</option>
+                        <select name="payment_method" class="form-select form-select-sm select2-filter" data-placeholder="{{ __('Methode') }}">
+                            <option value=""></option>
                             @foreach($paymentMethods as $pm)
                                 <option value="{{ $pm }}" @selected(request('payment_method') === $pm)>{{ ucfirst(__($pm)) }}</option>
                             @endforeach
@@ -516,20 +523,27 @@
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    // Init Select2 on filter dropdowns
-    if (typeof $.fn.select2 !== 'undefined') {
-        $('.select2-filter').select2({
+jQuery(function ($) {
+    $('.select2-filter').each(function () {
+        $(this).select2({
             theme: 'bootstrap-5',
             allowClear: true,
             width: '100%',
-            dropdownAutoWidth: false,
-            language: {
-                noResults: function () { return '{{ __("Aucun résultat") }}'; },
-                searching: function () { return '{{ __("Recherche...") }}'; }
-            }
+            placeholder: $(this).data('placeholder') || ''
+        }).on('select2:select select2:clear', function () {
+            $(this).closest('form')[0].submit();
         });
-    }
+    });
+
+    // Search debounce
+    var searchTimer = null;
+    $('[name="search"]').on('input', function () {
+        clearTimeout(searchTimer);
+        var form = $(this).closest('form');
+        searchTimer = setTimeout(function () { form[0].submit(); }, 500);
+    }).on('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); clearTimeout(searchTimer); $(this).closest('form')[0].submit(); }
+    });
 });
 </script>
 @endpush

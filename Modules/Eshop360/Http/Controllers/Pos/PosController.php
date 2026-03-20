@@ -2,6 +2,7 @@
 
 namespace Modules\Eshop360\Http\Controllers\Pos;
 
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -81,12 +82,23 @@ class PosController extends Controller
             'default_warehouse_id' => 'nullable|exists:eshop_warehouses,id',
             'default_customer_id'  => 'nullable|exists:eshop_customers,id',
             'payment_methods'      => 'required|array|min:1',
-            'payment_methods.*'    => 'string|in:cash,card,cheque,paypal,bank_transfer,points,deposit,gift_card,external',
+            'payment_methods.*'    => 'string|in:cash,card,cheque,paypal,bank_transfer,points,deposit,gift_card,wallet,external',
             'tax_inclusive'         => 'boolean',
             'sound_enabled'        => 'boolean',
             'print_receipt'        => 'boolean',
             'products_per_page'    => 'nullable|integer|min:10|max:100',
+            'register_required'        => 'boolean',
+            'customer_account_enabled' => 'boolean',
+            'allow_walkin_customer'    => 'boolean',
         ]);
+
+        // Ensure boolean fields default to false when unchecked
+        $validated['register_required'] = $validated['register_required'] ?? false;
+        $validated['customer_account_enabled'] = $validated['customer_account_enabled'] ?? false;
+        $validated['allow_walkin_customer'] = $validated['allow_walkin_customer'] ?? false;
+        $validated['tax_inclusive'] = $validated['tax_inclusive'] ?? false;
+        $validated['sound_enabled'] = $validated['sound_enabled'] ?? false;
+        $validated['print_receipt'] = $validated['print_receipt'] ?? false;
 
         $this->eshopSettings->set('pos', $validated);
 
@@ -216,6 +228,15 @@ class PosController extends Controller
 
         return redirect()->route('eshop360.pos.index', ['slug' => $slug])
             ->with('success', __('Holding restored to the current cart.'));
+    }
+
+    public function customerWalletInfo(string $slug, Customer $customer): JsonResponse
+    {
+        return response()->json([
+            'wallet_balance' => round((float) $customer->wallet_balance, 2),
+            'credit_limit'   => round((float) $customer->credit_limit, 2),
+            'available'      => round((float) $customer->wallet_balance + (float) $customer->credit_limit, 2),
+        ]);
     }
 
     /**

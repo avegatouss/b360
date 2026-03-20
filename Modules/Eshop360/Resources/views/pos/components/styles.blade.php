@@ -1,4 +1,5 @@
 {{-- POS Shared Styles --}}
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
 <style>
     .pos-wrapper { min-height: calc(100vh - 140px); }
     .pos-product-grid { max-height: calc(100vh - 340px); overflow-y: auto; }
@@ -16,7 +17,13 @@
     .pos-numpad .btn { min-width: 60px; min-height: 48px; font-size: 1.1rem; font-weight: 600; }
     #pos-change-display { transition: color .3s ease; }
     .pos-holding-card { border-left: 3px solid var(--bs-warning); }
-    #pos-filter-form .form-select { max-width: 160px; }
+    #pos-filter-form .form-select { max-width: 200px; }
+    /* Select2 POS harmonisation */
+    .pos-wrapper .select2-container--bootstrap-5 .select2-selection--single { min-height: 32px; padding: .25rem .5rem; font-size: .875rem; }
+    .pos-wrapper .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered { line-height: 1.5; font-size: .875rem; }
+    .pos-wrapper .select2-container--bootstrap-5 .select2-selection--single .select2-selection__arrow { height: 30px; }
+    .select2-container--bootstrap-5 .select2-results__option { font-size: .875rem; padding: .35rem .75rem; }
+    .select2-container--bootstrap-5 .select2-search--dropdown .select2-search__field { font-size: .875rem; }
     .pos-pagination .pagination { margin-bottom: 0; }
     .pos-pagination .page-link { padding: .25rem .5rem; font-size: .75rem; line-height: 1.2; }
     .pos-pagination .page-item .page-link svg,

@@ -1,229 +1,209 @@
 <x-dashboard::layouts.master
-    :title="__('POS Settings') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('POS Settings') . ' — ' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
     :pageTitle="__('POS Settings')">
 
-<div class="page-header settings-pg-header">
-                <div class="add-item d-flex">
-                    <div class="page-title">
-                        <h4>{{ __('Settings') }}</h4>
-                        <h6>{{ __('Manage your settings on portal') }}</h6>
-                    </div>
+@php
+    $paymentMethodOptions = [
+        'cash'          => __('Especes'),
+        'card'          => __('Carte bancaire'),
+        'cheque'        => __('Cheque'),
+        'bank_transfer' => __('Virement bancaire'),
+        'wallet'        => __('Compte client'),
+        'gift_card'     => __('Carte cadeau'),
+        'points'        => __('Points fidelite'),
+        'deposit'       => __('Acompte'),
+        'paypal'        => __('PayPal'),
+        'external'      => __('Externe'),
+    ];
+    $activePaymentMethods = $settings['payment_methods'] ?? ['cash', 'card'];
+    $layoutOptions = [
+        'layout1' => __('Classique'),
+        'layout2' => __('Layout 2'),
+        'layout3' => __('Layout 3'),
+        'layout4' => __('Layout 4'),
+        'layout5' => __('Layout 5'),
+    ];
+@endphp
+
+<div class="page-header">
+    <div class="add-item d-flex">
+        <div class="page-title">
+            <h4>{{ __('Parametres POS') }}</h4>
+            <h6>{{ __('Configurez le point de vente') }}</h6>
+        </div>
+    </div>
+</div>
+
+<form method="POST" action="{{ route('eshop360.pos.settings.update', $instance->slug ?? '') }}">
+    @csrf
+    @method('PUT')
+
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    @if($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <ul class="mb-0">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    <div class="row">
+        {{-- ============================== REGISTRE DE CAISSE ============================== --}}
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="ti ti-cash-register me-2 text-primary"></i>{{ __('Registre de caisse') }}</h5>
                 </div>
-                <ul class="table-top-head">
-                    <li>
-                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Refresh') }}"><i class="ti ti-refresh"></i></a>
-                    </li>
-                    <li>
-                        <a data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Collapse') }}" id="collapse-header"><i class="ti ti-chevron-up"></i></a>
-                    </li>
-                </ul>
-            </div>
-            <div class="row">
-                <div class="col-xl-12">
-                        <div class="settings-wrapper d-flex">
-                        <div class="settings-sidebar" id="sidebar2">
-                            <div class="sidebar-inner slimscroll">
-                                <div id="sidebar-menu5" class="sidebar-menu">
-                                    <h4 class="fw-bold fs-18 mb-2 pb-2">{{ __('Settings') }}</h4>
-                                    <ul>
-                                        <li class="submenu-open">
-                                            <ul>
-                                                <li class="submenu">
-                                                    <a href="javascript:void(0);">
-                                                        <i class="ti ti-settings fs-18"></i>
-                                                        <span class="fs-14 fw-medium ms-2">{{ __('General Settings') }}</span>
-                                                        <span class="menu-arrow"></span>
-                                                    </a>
-                                                    <ul>
-                                                        <li><a href="{{url('general-settings')}}">Profile</a></li>
-                                                        <li><a href="{{url('security-settings')}}">Security</a></li>
-                                                        <li><a href="{{url('notification')}}">Notifications</a></li>
-                                                        <li><a href="{{url('connected-apps')}}">Connected Apps</a></li>
-                                                    </ul>
-                                                </li>
-                                                <li class="submenu">
-                                                    <a href="javascript:void(0);">
-                                                        <i class="ti ti-world fs-18"></i>
-                                                        <span class="fs-14 fw-medium ms-2">{{ __('Website Settings') }}</span>
-                                                        <span class="menu-arrow"></span>
-                                                    </a>
-                                                    <ul>
-                                                        <li><a href="{{url('system-settings')}}">System Settings</a></li>
-                                                        <li><a href="{{url('company-settings')}}">Company Settings </a></li>
-                                                        <li><a href="{{url('localization-settings')}}">Localization</a></li>
-                                                        <li><a href="{{url('prefixes')}}">Prefixes</a></li>
-                                                        <li><a href="{{url('preference')}}">Preference</a></li>
-                                                        <li><a href="{{url('appearance')}}">Appearance</a></li>
-                                                        <li><a href="{{url('social-authentication')}}">Social Authentication</a></li>
-                                                        <li><a href="{{url('language-settings')}}">Language</a></li>
-                                                    </ul>
-                                                </li>
-                                                <li class="submenu">
-                                                    <a href="javascript:void(0);" class="active subdrop">
-                                                        <i class="ti ti-device-mobile fs-18"></i>
-                                                        <span class="fs-14 fw-medium ms-2">{{ __('App Settings') }}</span>
-                                                        <span class="menu-arrow"></span>
-                                                    </a>
-                                                    <ul>
-                                                        <li><a href="{{url('invoice-settings')}}">Invoice Settings</a></li>
-                                                        <li><a href="{{url('invoice-templates')}}">Invoice Templates</a></li>
-                                                        <li><a href="{{url('printer-settings')}}">Printer </a></li>
-                                                        <li><a href="{{url('pos-settings')}}" class="active">POS</a></li>
-                                                        <li><a href="{{url('signatures')}}">Signatures</a></li>
-                                                        <li><a href="{{url('custom-fields')}}">Custom Fields</a></li>
-                                                    </ul>
-                                                </li>
-                                                <li class="submenu">
-                                                    <a href="javascript:void(0);">
-                                                        <i class="ti ti-device-desktop fs-18"></i>
-                                                        <span class="fs-14 fw-medium ms-2">{{ __('System Settings') }}</span>
-                                                        <span class="menu-arrow"></span>
-                                                    </a>
-                                                    <ul>
-                                                        <li class="submenu submenu-two"><a href="javascript:void(0);">{{ __('Email') }}<span class="menu-arrow inside-submenu"></span></a>
-                                                            <ul>
-                                                                <li><a href="{{url('email-settings')}}">Email Settings</a></li>
-                                                                <li><a href="{{url('email-templates')}}">Email Templates</a></li>
-                                                            </ul>
-                                                        </li>
-                                                        <li class="submenu submenu-two"><a href="javascript:void(0);">{{ __('SMS') }}<span class="menu-arrow inside-submenu"></span></a>
-                                                            <ul>
-                                                                <li><a href="{{url('sms-settings')}}">SMS Settings</a></li>
-                                                                <li><a href="{{url('sms-templates')}}">SMS Templates</a></li>
-                                                            </ul>
-                                                        </li>
-                                                        
-                                                        <li><a href="{{url('otp-settings')}}">OTP</a></li>
-                                                        <li><a href="{{url('gdpr-settings')}}">GDPR Cookies</a></li>
-                                                    </ul>
-                                                </li>
-                                                <li class="submenu">
-                                                    <a href="javascript:void(0);">
-                                                        <i class="ti ti-settings-dollar fs-18"></i>
-                                                        <span class="fs-14 fw-medium ms-2">{{ __('Financial Settings') }}</span>
-                                                        <span class="menu-arrow"></span>
-                                                    </a>
-                                                    <ul>
-                                                        <li><a href="{{url('payment-gateway-settings')}}">Payment Gateway</a></li>
-                                                        <li><a href="{{url('bank-settings-grid')}}">Bank Accounts </a></li>
-                                                        <li><a href="{{url('tax-rates')}}">Tax Rates</a></li>
-                                                        <li><a href="{{url('currency-settings')}}">Currencies</a></li>
-                                                    </ul>
-                                                </li>
-                                                <li class="submenu">
-                                                    <a href="javascript:void(0);">
-                                                        <i class="ti ti-settings-2 fs-18"></i>
-                                                        <span class="fs-14 fw-medium ms-2">{{ __('Other Settings') }}</span>
-                                                        <span class="menu-arrow"></span>
-                                                    </a>
-                                                    <ul>
-                                                        <li><a href="{{url('storage-settings')}}">Storage</a></li>
-                                                        <li><a href="{{url('ban-ip-address')}}">Ban IP Address </a></li>
-                                                    </ul>
-                                                </li>
-                                            </ul>								
-                                        </li>
-                                    </ul>
-                                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">{{ __('Caisse obligatoire') }}</h6>
+                                <p class="text-muted mb-0" style="font-size: .85rem;">{{ __('Exiger l\'ouverture d\'une caisse avant de pouvoir effectuer une vente au POS.') }}</p>
+                            </div>
+                            <div class="form-check form-switch ms-3">
+                                <input type="hidden" name="register_required" value="0">
+                                <input class="form-check-input" type="checkbox" role="switch" id="register_required" name="register_required" value="1" {{ !empty($settings['register_required']) ? 'checked' : '' }}>
                             </div>
                         </div>
-                        <div class="card flex-fill mb-0">
-                            <form action="{{url('pos-settings')}}">
-                                <div class="card-header">
-                                    <h4>{{ __('POS Settings') }}</h4>
-                                </div>
-                                <div class="card-body">
-                                    <div class="localization-info">
-                                        <div class="row align-items-center">
-                                            <div class="col-sm-4">
-                                                <div class="setting-info">
-                                                    <h6>{{ __('POS Printer') }}</h6>
-                                                </div>
-                                            </div>
-                                            <div class="col-sm-4">
-                                                <div class="localization-select">
-                                                    <select class="select">
-                                                        <option>{{ __('A4') }}</option>
-                                                        <option>{{ __('A4') }}</option>
-                                                        <option>{{ __('A4') }}</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        </div>	
-                                        <div class="row align-items-center">
-                                            <div class="col-sm-4">
-                                                <div class="setting-info">
-                                                    <h6>{{ __('Payment Method') }}</h6>
-                                                </div>
-                                            </div>
-                                            <div class="col-sm-8">
-                                                <div class="localization-select pos-payment-method d-flex align-items-center mb-0 w-100">
-                                                    <div class="custom-control custom-checkbox">
-                                                        <label class="checkboxs mb-0 pb-0 line-height-1">
-                                                            <input type="checkbox">
-                                                            <span class="checkmarks"></span>COD
-                                                        </label>
-                                                    </div>
-                                                    <div class="custom-control custom-checkbox">
-                                                        <label class="checkboxs mb-0 pb-0 line-height-1">
-                                                            <input type="checkbox">
-                                                            <span class="checkmarks"></span>Cheque
-                                                        </label>
-                                                    </div>
-                                                    <div class="custom-control custom-checkbox">
-                                                        <label class="checkboxs mb-0 pb-0 line-height-1">
-                                                            <input type="checkbox">
-                                                            <span class="checkmarks"></span>Card
-                                                        </label>
-                                                    </div>
-                                                    <div class="custom-control custom-checkbox">
-                                                        <label class="checkboxs mb-0 pb-0 line-height-1">
-                                                            <input type="checkbox">
-                                                            <span class="checkmarks"></span>Paypal
-                                                        </label>
-                                                    </div>
-                                                    <div class="custom-control custom-checkbox">
-                                                        <label class="checkboxs mb-0 pb-0 line-height-1">
-                                                            <input type="checkbox">
-                                                            <span class="checkmarks"></span>Bank Transfer
-                                                        </label>
-                                                    </div>
-                                                    <div class="custom-control custom-checkbox">
-                                                        <label class="checkboxs mb-0 pb-0 line-height-1">
-                                                            <input type="checkbox">
-                                                            <span class="checkmarks"></span>Cash
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>	
-                                        <div class="row align-items-center">
-                                            <div class="col-sm-4">
-                                                <div class="setting-info">
-                                                    <h6>{{ __('Enable Sound Effect') }}</h6>
-                                                </div>
-                                            </div>
-                                            <div class="col-sm-4">
-                                                <div class="localization-select d-flex align-items-center">
-                                                    <div class="status-toggle modal-status d-flex justify-content-between align-items-center me-3">
-                                                        <input type="checkbox" id="user4" class="check" checked>
-                                                        <label for="user4" class="checktoggle"></label>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>									
-                                    </div>
-                                    <div class="d-flex align-items-center justify-content-end">
-                                        <button type="button" class="btn btn-cancel me-2" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
-                                        <button type="submit" class="btn btn-submit">{{ __('Save Changes') }}</button>
-                                    </div>
-                                </div>
-                            </form>
+                    </div>
+                    <hr>
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">{{ __('Client de passage (walk-in)') }}</h6>
+                                <p class="text-muted mb-0" style="font-size: .85rem;">{{ __('Autoriser les ventes sans selectionner de client. Si desactive, un client doit obligatoirement etre selectionne.') }}</p>
+                            </div>
+                            <div class="form-check form-switch ms-3">
+                                <input type="hidden" name="allow_walkin_customer" value="0">
+                                <input class="form-check-input" type="checkbox" role="switch" id="allow_walkin_customer" name="allow_walkin_customer" value="1" {{ ($settings['allow_walkin_customer'] ?? true) ? 'checked' : '' }}>
+                            </div>
                         </div>
                     </div>
-                    
+                    <hr>
+                    <div class="text-muted" style="font-size: .85rem;">
+                        <i class="ti ti-info-circle me-1"></i>
+                        {{ __('Quand active, le caissier devra ouvrir une caisse (avec un fond de caisse) avant de pouvoir valider des ventes. A la fermeture, un ecart sera calcule automatiquement entre le montant theorique et le montant reel.') }}
+                    </div>
                 </div>
             </div>
+        </div>
+
+        {{-- ============================== COMPTE CLIENT ============================== --}}
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="ti ti-wallet me-2 text-success"></i>{{ __('Compte client') }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">{{ __('Activer le paiement par compte') }}</h6>
+                                <p class="text-muted mb-0" style="font-size: .85rem;">{{ __('Permet aux clients disposant d\'un credit de payer leurs achats via leur solde de compte (portefeuille).') }}</p>
+                            </div>
+                            <div class="form-check form-switch ms-3">
+                                <input type="hidden" name="customer_account_enabled" value="0">
+                                <input class="form-check-input" type="checkbox" role="switch" id="customer_account_enabled" name="customer_account_enabled" value="1" {{ !empty($settings['customer_account_enabled']) ? 'checked' : '' }}>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="text-muted" style="font-size: .85rem;">
+                        <i class="ti ti-info-circle me-1"></i>
+                        {{ __('Quand active, le mode de paiement "Compte client" apparait au POS. Le client doit avoir un solde suffisant ou un credit autorise. Le rechargement du compte se fait depuis la fiche client.') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ============================== MOYENS DE PAIEMENT ============================== --}}
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="ti ti-credit-card me-2 text-info"></i>{{ __('Moyens de paiement') }}</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3" style="font-size: .85rem;">{{ __('Selectionnez les moyens de paiement disponibles au POS.') }}</p>
+                    <div class="row g-2">
+                        @foreach($paymentMethodOptions as $value => $label)
+                            <div class="col-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="payment_methods[]" value="{{ $value }}" id="pm_{{ $value }}" {{ in_array($value, $activePaymentMethods) ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="pm_{{ $value }}">{{ $label }}</label>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ============================== GENERAL ============================== --}}
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="ti ti-settings me-2 text-secondary"></i>{{ __('General') }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" for="default_layout">{{ __('Layout par defaut') }}</label>
+                        <select name="default_layout" id="default_layout" class="form-select">
+                            @foreach($layoutOptions as $val => $label)
+                                <option value="{{ $val }}" {{ ($settings['default_layout'] ?? 'layout1') === $val ? 'selected' : '' }}>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" for="products_per_page">{{ __('Produits par page') }}</label>
+                        <input type="number" name="products_per_page" id="products_per_page" class="form-control" min="10" max="100" value="{{ $settings['products_per_page'] ?? 24 }}">
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <label class="form-label fw-semibold mb-0">{{ __('Son') }}</label>
+                        <div class="form-check form-switch">
+                            <input type="hidden" name="sound_enabled" value="0">
+                            <input class="form-check-input" type="checkbox" role="switch" name="sound_enabled" value="1" {{ !empty($settings['sound_enabled']) ? 'checked' : '' }}>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <label class="form-label fw-semibold mb-0">{{ __('Impression ticket') }}</label>
+                        <div class="form-check form-switch">
+                            <input type="hidden" name="print_receipt" value="0">
+                            <input class="form-check-input" type="checkbox" role="switch" name="print_receipt" value="1" {{ !empty($settings['print_receipt']) ? 'checked' : '' }}>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <label class="form-label fw-semibold mb-0">{{ __('Prix TTC') }}</label>
+                        <div class="form-check form-switch">
+                            <input type="hidden" name="tax_inclusive" value="0">
+                            <input class="form-check-input" type="checkbox" role="switch" name="tax_inclusive" value="1" {{ !empty($settings['tax_inclusive']) ? 'checked' : '' }}>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- ============================== SUBMIT ============================== --}}
+    <div class="d-flex justify-content-end gap-2 mb-4">
+        <a href="{{ route('eshop360.pos.index', $instance->slug ?? '') }}" class="btn btn-outline-secondary">
+            <i class="ti ti-arrow-left me-1"></i>{{ __('Retour au POS') }}
+        </a>
+        <button type="submit" class="btn btn-primary">
+            <i class="ti ti-device-floppy me-1"></i>{{ __('Enregistrer') }}
+        </button>
+    </div>
+</form>
 
 </x-dashboard::layouts.master>

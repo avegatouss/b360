@@ -12,17 +12,20 @@ class EshopSettingsService
 
     private static array $defaults = [
         'pos' => [
-            'default_layout'       => 'layout1',
-            'default_warehouse_id' => null,
-            'default_customer_id'  => null,
-            'payment_methods'      => ['cash', 'card'],
-            'tax_inclusive'         => false,
-            'sound_enabled'        => true,
-            'print_receipt'        => true,
-            'products_per_page'    => 24,
-            'default_discount'     => 0,
-            'allow_manual_price'   => false,
-            'barcode_scanner'      => true,
+            'default_layout'          => 'layout1',
+            'default_warehouse_id'    => null,
+            'default_customer_id'     => null,
+            'payment_methods'         => ['cash', 'card'],
+            'tax_inclusive'            => false,
+            'sound_enabled'           => true,
+            'print_receipt'           => true,
+            'products_per_page'       => 24,
+            'default_discount'        => 0,
+            'allow_manual_price'      => false,
+            'barcode_scanner'         => true,
+            'register_required'        => false,
+            'customer_account_enabled' => false,
+            'allow_walkin_customer'    => true,
         ],
         'printer' => [
             'printer_type'         => null,
@@ -41,6 +44,11 @@ class EshopSettingsService
             'barcode_printer'      => '',
             'barcode_label_width'  => 40,
             'barcode_label_height' => 30,
+        ],
+        'customer' => [
+            'allow_multi_user_accounts' => false,
+            'customer_portal_enabled'   => true,
+            'auto_create_user_account'  => false,
         ],
         'invoice' => [
             'company_name'       => '',

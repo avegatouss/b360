@@ -40,10 +40,10 @@ final class DemoChannelsSeeder
     {
         $data = [
             [
-                'name' => '[DEMO] CODIFARM',
-                'slug' => 'demo-codifarm',
-                'code' => 'DEMO-CDF',
-                'description' => 'Canal de distribution CODIFARM - grossiste pharmaceutique',
+                'name' => '[DEMO] Revendeur Principal',
+                'slug' => 'demo-revendeur',
+                'code' => 'DEMO-REV',
+                'description' => 'Canal de distribution Revendeur - grossiste pharmaceutique',
                 'is_active' => true,
                 'margin_rate' => 0.1300,
                 'buy_rate' => 0.2000,

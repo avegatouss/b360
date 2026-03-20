@@ -11,6 +11,8 @@ use Modules\Eshop360\Models\Customer;
 use Modules\Eshop360\Models\DistributionChannel;
 use Modules\Eshop360\Models\GiftCard;
 use Modules\Eshop360\Http\Controllers\Traits\ResolvesPosContext;
+use Modules\Eshop360\Services\CashRegisterService;
+use Modules\Eshop360\Services\EshopSettingsService;
 use Modules\Eshop360\Services\FinanceService;
 use Modules\Eshop360\Services\OrderService;
 
@@ -54,6 +56,28 @@ class CheckoutController extends Controller
                 ->with('error', __('Your cart is empty.'));
         }
 
+        // Block sale if register is required but not open
+        $posSettings = app(EshopSettingsService::class)->get('pos');
+        if (! empty($posSettings['register_required'])) {
+            $currentRegister = app(CashRegisterService::class)->getCurrentRegister();
+            if (! $currentRegister) {
+                return redirect()->route('eshop360.pos.index', ['slug' => $instance?->slug])
+                    ->with('error', __('Vous devez ouvrir une caisse avant de valider une vente.'));
+            }
+        }
+
+        // Block wallet payment if customer account is not enabled
+        if ($request->input('payment_method') === 'wallet' && empty($posSettings['customer_account_enabled'])) {
+            return redirect()->route('eshop360.pos.index', ['slug' => $instance?->slug])
+                ->with('error', __('Le paiement par compte client n\'est pas active.'));
+        }
+
+        // Require customer when walk-in is disabled
+        if (empty($posSettings['allow_walkin_customer']) && ! $request->filled('customer_id')) {
+            return redirect()->route('eshop360.pos.index', ['slug' => $instance?->slug])
+                ->with('error', __('Veuillez selectionner un client avant de valider la vente.'));
+        }
+
         $validated = $request->validate([
             'customer_id'     => 'nullable|exists:eshop_customers,id',
             'channel_id'      => 'nullable|exists:eshop_distribution_channels,id',
@@ -83,8 +107,14 @@ class CheckoutController extends Controller
         // Validate wallet/gift-card before creating order
         if ($validated['payment_method'] === 'wallet') {
             $customer = $customerId ? Customer::find($customerId) : null;
-            if (! $customer || (float) $customer->wallet_balance < (float) $validated['paid_amount']) {
-                return back()->withErrors(['payment_method' => __('Solde portefeuille insuffisant.')])->withInput();
+            if (! $customer) {
+                return back()->withErrors(['payment_method' => __('Veuillez selectionner un client pour le paiement par compte.')])->withInput();
+            }
+            $available = (float) $customer->wallet_balance + (float) $customer->credit_limit;
+            if ($available < (float) $validated['paid_amount']) {
+                return back()->withErrors(['payment_method' => __('Solde insuffisant. Disponible: :amount', [
+                    'amount' => number_format($available, 0, ',', ' '),
+                ])])->withInput();
             }
         }
 

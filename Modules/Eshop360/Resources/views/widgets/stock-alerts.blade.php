@@ -33,24 +33,24 @@
     <div class="card-body">
         <div class="row g-3">
             <div class="col-6">
-                <div class="text-muted small">Produits actifs</div>
-                <div class="fw-bold fs-5">{{ $totalProducts }}</div>
+                <div class="text-muted">Produits actifs</div>
+                <div class="fw-bold fs-4">{{ $totalProducts }}</div>
             </div>
             <div class="col-6">
-                <div class="text-muted small">Stock faible</div>
-                <div class="fw-bold fs-5 {{ $lowStockCount > 0 ? 'text-warning' : 'text-muted' }}">
+                <div class="text-muted">Stock faible</div>
+                <div class="fw-bold fs-4 {{ $lowStockCount > 0 ? 'text-warning' : 'text-muted' }}">
                     <i class="ti ti-alert-triangle me-1"></i>{{ $lowStockCount }}
                 </div>
             </div>
             <div class="col-6">
-                <div class="text-muted small">Expires</div>
-                <div class="fw-bold fs-5 {{ $expiredCount > 0 ? 'text-danger' : 'text-muted' }}">
+                <div class="text-muted">Expires</div>
+                <div class="fw-bold fs-4 {{ $expiredCount > 0 ? 'text-danger' : 'text-muted' }}">
                     <i class="ti ti-clock-off me-1"></i>{{ $expiredCount }}
                 </div>
             </div>
             <div class="col-6">
-                <div class="text-muted small">Expire bientot</div>
-                <div class="fw-bold fs-5 {{ $expiringSoonCount > 0 ? 'text-orange' : 'text-muted' }}">
+                <div class="text-muted">Expire bientot</div>
+                <div class="fw-bold fs-4 {{ $expiringSoonCount > 0 ? 'text-orange' : 'text-muted' }}">
                     <i class="ti ti-clock me-1"></i>{{ $expiringSoonCount }}
                 </div>
             </div>

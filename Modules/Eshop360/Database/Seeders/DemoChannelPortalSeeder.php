@@ -14,7 +14,7 @@ use Modules\Eshop360\Models\Product;
 
 /**
  * Demo seeder: channel portal users + channel orders with margin calculations.
- * Depends on DemoChannelsSeeder (creates [DEMO] CODIFARM and [DEMO] PHARMAPLUS).
+ * Depends on DemoChannelsSeeder (creates [DEMO] Revendeur Principal and [DEMO] PHARMAPLUS).
  */
 final class DemoChannelPortalSeeder
 {
@@ -100,7 +100,7 @@ final class DemoChannelPortalSeeder
             [
                 'email' => "demo-channel-agent-{$slug}@b360.test",
                 'full_name' => "[DEMO] Agent {$channel->name}",
-                'role' => 'agent',
+                'role' => 'operator',
             ],
         ];
 
@@ -139,7 +139,7 @@ final class DemoChannelPortalSeeder
             return;
         }
 
-        $prefix = $channel->slug === 'demo-codifarm' ? 'DEMO-CH-CDF' : 'DEMO-CH-PHP';
+        $prefix = $channel->slug === 'demo-revendeur' ? 'DEMO-CH-REV' : 'DEMO-CH-PHP';
 
         $orders = [
             // Completed sale with full margin calculation

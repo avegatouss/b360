@@ -24,8 +24,8 @@
             @if(($cartContext['channel_id'] ?? null) !== null)
                 <input type="hidden" name="channel_id" value="{{ $cartContext['channel_id'] }}">
             @endif
-            @if($cartContext['is_codifarm'] ?? false)
-                <input type="hidden" name="is_codifarm" value="1">
+            @if($cartContext['is_revendeur'] ?? false)
+                <input type="hidden" name="is_revendeur" value="1">
             @endif
 
             <div class="card">
@@ -33,10 +33,10 @@
                     <h5 class="mb-0">{{ __('Client et paiement') }}</h5>
                 </div>
                 <div class="card-body">
-                    @if(($cartContext['is_codifarm'] ?? false) || $contextChannel)
+                    @if(($cartContext['is_revendeur'] ?? false) || $contextChannel)
                         <div class="alert alert-secondary py-2">
                             Tarification active:
-                            <strong>{{ ($cartContext['is_codifarm'] ?? false) ? 'Mode CODIFARM' : ($contextChannel->name ?? 'Canal') }}</strong>
+                            <strong>{{ ($cartContext['is_revendeur'] ?? false) ? 'Mode Revendeur' : ($contextChannel->name ?? 'Canal') }}</strong>
                         </div>
                     @endif
                     <div class="row g-3">

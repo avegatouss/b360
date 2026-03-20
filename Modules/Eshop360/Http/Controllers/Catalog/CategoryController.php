@@ -8,23 +8,34 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Str;
 use Modules\Eshop360\Models\Category;
+use Modules\Eshop360\Models\Product;
+use Modules\Eshop360\Models\Store;
+use Modules\Eshop360\Models\Warehouse;
 
 class CategoryController extends Controller
 {
     public function index(Request $request)
     {
         $categories = Category::with(['parent', 'children'])
+            ->withCount(['products' => function ($q) use ($request) {
+                $q->when($request->store_id, fn ($sq, $s) => $sq->whereHas('stocks', fn ($ssq) => $ssq->where('store_id', $s)))
+                  ->when($request->warehouse_id, fn ($sq, $w) => $sq->whereHas('stocks', fn ($ssq) => $ssq->where('warehouse_id', $w)));
+            }])
             ->when($request->search, fn ($q, $s) => $q->where('name', 'like', "%{$s}%"))
             ->when($request->boolean('roots_only'), fn ($q) => $q->roots())
             ->when($request->filled('is_active'), fn ($q) => $q->where('is_active', $request->boolean('is_active')))
+            ->when($request->store_id, fn ($q, $s) => $q->whereHas('products.stocks', fn ($sq) => $sq->where('store_id', $s)))
+            ->when($request->warehouse_id, fn ($q, $w) => $q->whereHas('products.stocks', fn ($sq) => $sq->where('warehouse_id', $w)))
             ->orderBy('sort_order')
             ->orderBy('name')
             ->paginate(30)
             ->withQueryString();
 
         $parentCategories = Category::roots()->active()->orderBy('name')->get();
+        $stores = Store::orderBy('name')->get(['id', 'name']);
+        $warehouses = Warehouse::orderBy('name')->get(['id', 'name']);
 
-        return view('eshop360::catalog.categories.index', compact('categories', 'parentCategories'));
+        return view('eshop360::catalog.categories.index', compact('categories', 'parentCategories', 'stores', 'warehouses'));
     }
 
     public function subcategories(Request $request)

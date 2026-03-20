@@ -22,20 +22,20 @@
     <div class="card-body">
         <div class="row g-3">
             <div class="col-6">
-                <div class="text-muted small">Revenus</div>
-                <div class="fw-bold fs-5 text-success">{{ number_format($monthlyIncome, 0, ',', ' ') }}</div>
+                <div class="text-muted">Revenus</div>
+                <div class="fw-bold fs-4 text-success">{{ number_format($monthlyIncome, 0, ',', ' ') }}</div>
             </div>
             <div class="col-6">
-                <div class="text-muted small">Depenses</div>
-                <div class="fw-bold fs-5 text-danger">{{ number_format($monthlyExpense, 0, ',', ' ') }}</div>
+                <div class="text-muted">Depenses</div>
+                <div class="fw-bold fs-4 text-danger">{{ number_format($monthlyExpense, 0, ',', ' ') }}</div>
             </div>
             <div class="col-6">
-                <div class="text-muted small">Resultat net</div>
-                <div class="fw-bold fs-5 {{ $netMonth >= 0 ? 'text-success' : 'text-danger' }}">{{ number_format($netMonth, 0, ',', ' ') }}</div>
+                <div class="text-muted">Resultat net</div>
+                <div class="fw-bold fs-4 {{ $netMonth >= 0 ? 'text-success' : 'text-danger' }}">{{ number_format($netMonth, 0, ',', ' ') }}</div>
             </div>
             <div class="col-6">
-                <div class="text-muted small">Solde comptes</div>
-                <div class="fw-bold fs-5 text-primary">{{ number_format($accountsBalance, 0, ',', ' ') }}</div>
+                <div class="text-muted">Solde comptes</div>
+                <div class="fw-bold fs-4 text-primary">{{ number_format($accountsBalance, 0, ',', ' ') }}</div>
             </div>
         </div>
     </div>

@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        // Per-channel pricing for products (replaces sale_price_codifarm column)
+        // Per-channel pricing for products (replaces per-channel sale_price column)
         Schema::create('eshop_channel_product_prices', function (Blueprint $table) {
             $table->id();
             $table->foreignId('channel_id')->constrained('eshop_distribution_channels')->cascadeOnDelete();

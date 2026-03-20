@@ -1,4 +1,4 @@
-# Audit fonctionnalite - Commandes en ligne, canaux et CODIFARM
+# Audit fonctionnalite - Commandes en ligne, canaux et revendeur
 
 ## Reference plan
 
@@ -10,13 +10,13 @@ Sections `10.4` a `10.7`, `17.1` a `17.3`, `22.2`.
 
 ## Parcours client / utilisateur
 
-1. Le client authentifie commande depuis son portail catalogue en choisissant son contexte canal ou CODIFARM.
+1. Le client authentifie commande depuis son portail catalogue en choisissant son contexte canal ou revendeur.
 2. Le back-office valide la commande en ligne.
 3. L'entrepot prepare, deduit le stock et expedie.
 4. Le client suit sa commande, peut l'annuler avant traitement et confirme la reception une fois livree.
-5. La facture finale et la marge CODIFARM sont calculees.
+5. La facture finale et la marge revendeur sont calculees.
 
-Dans le code actuel, le back-office d'ordres en ligne et les ecrans CODIFARM internes existent vraiment. Un portail client authentifie est maintenant livre pour le catalogue, le panier, le checkout et le suivi, mais le portail grossiste/public complet du plan et l'orchestration logistique restent encore simplifiees.
+Dans le code actuel, le back-office d'ordres en ligne et les ecrans revendeur internes existent vraiment. Un portail client authentifie est maintenant livre pour le catalogue, le panier, le checkout et le suivi, mais le portail grossiste/public complet du plan et l'orchestration logistique restent encore simplifiees.
 
 ## Ce qui est en place
 
@@ -25,13 +25,13 @@ Dans le code actuel, le back-office d'ordres en ligne et les ecrans CODIFARM int
 - Workflow de statuts dans `OnlineOrderService`.
 - Conversion `online order -> order -> invoice` rebranchee sur les vrais services metier.
 - CRUD des canaux de distribution et synthese des marges par canal.
-- Controleur et vues CODIFARM exposes et requalifies.
-- Dashboard CODIFARM et listing commandes bases sur `CodifarmMarginLog`.
+- Controleur et vues revendeur exposes et requalifies.
+- Dashboard revendeur et listing commandes bases sur `CodifarmMarginLog`.
 - Migrations pour `channel_id` sur `Order`, prix par canal et logs de marge.
 - Moteur de commande rebranche sur les prix contextuels :
   - prix manuel par canal via `ChannelProductPrice`
   - fallback calcul a partir de `PGHT + buy_rate`
-  - prix CODIFARM via `sale_price_codifarm`
+  - prix revendeur via `sale_price_codifarm`
 - Propagation du contexte tarifaire dans :
   - panier navigateur
   - POS principal
@@ -67,10 +67,10 @@ Dans le code actuel, le back-office d'ordres en ligne et les ecrans CODIFARM int
 
 - portail client commande en ligne : oui, version authentifiee
 - workflow de traitement : oui cote back-office et API
-- specificites CODIFARM : visibles cote back-office et branchees sur panier / checkout / online orders
+- specificites revendeur : visibles cote back-office et branchees sur panier / checkout / online orders
 - confirmation reception client : oui, version simple
-- repartition tripartite automatique : oui sur les commandes canalisees et CODIFARM, orchestration produit finale encore partielle
+- repartition tripartite automatique : oui sur les commandes canalisees et revendeur, orchestration produit finale encore partielle
 
 ## Impact client
 
-Le module supporte maintenant une gestion credible des commandes en ligne, des canaux et de CODIFARM, avec des prix et marges conserves jusque dans le portail client, le panier, le checkout et les online orders. Le parcours grossiste/client du plan n'est toutefois pas encore complet faute de portail public, de logistique detaillee et de gating produit metier.
+Le module supporte maintenant une gestion credible des commandes en ligne, des canaux et de revendeur, avec des prix et marges conserves jusque dans le portail client, le panier, le checkout et les online orders. Le parcours grossiste/client du plan n'est toutefois pas encore complet faute de portail public, de logistique detaillee et de gating produit metier.

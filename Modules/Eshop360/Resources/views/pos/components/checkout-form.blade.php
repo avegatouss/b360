@@ -1,6 +1,27 @@
 {{-- POS Checkout Form --}}
+@php
+    $registerRequired = !empty($settings['register_required'] ?? false);
+    $registerBlocked = $registerRequired && !$registerOpen;
+    $customerAccountEnabled = !empty($settings['customer_account_enabled'] ?? false);
+@endphp
 <div class="card mb-2">
     <div class="card-body py-2">
+        @if($registerBlocked)
+            <div class="alert alert-danger py-2 mb-2 text-center">
+                <i class="ti ti-lock me-1"></i>{{ __('Ouvrez une caisse pour valider des ventes') }}
+            </div>
+        @endif
+
+        {{-- Wallet balance indicator (hidden by default, shown via JS when wallet selected + customer chosen) --}}
+        @if($customerAccountEnabled)
+        <div id="pos-wallet-info" class="alert alert-info py-1 px-3 mb-2 d-none" style="font-size: .85rem;">
+            <i class="ti ti-wallet me-1"></i>
+            <span>{{ __('Solde') }}: </span><strong id="pos-wallet-balance">0</strong>
+            <span class="ms-2 text-muted">|</span>
+            <span class="ms-2">{{ __('Credit') }}: </span><strong id="pos-wallet-credit">0</strong>
+        </div>
+        @endif
+
         <form method="POST" action="{{ route('eshop360.sales.store', $instance->slug ?? '') }}" id="pos-checkout-form">
             @csrf
             <input type="hidden" name="source" value="pos">
@@ -26,7 +47,7 @@
 
             <div class="row g-2 mb-2">
                 <div class="col-7">
-                    <select name="payment_method" class="form-select form-select-sm" id="pos-payment-method">
+                    <select name="payment_method" class="form-select form-select-sm pos-select2-checkout" id="pos-payment-method" data-placeholder="{{ __('Moyen de paiement') }}" {{ $registerBlocked ? 'disabled' : '' }}>
                         @foreach($paymentMethods as $value => $label)
                             <option value="{{ $value }}">{{ $label }}</option>
                         @endforeach
@@ -35,7 +56,7 @@
                 <div class="col-5">
                     <div class="input-group input-group-sm">
                         <span class="input-group-text">{{ __('Recu') }}</span>
-                        <input type="number" name="paid_amount" id="pos-paid-amount" class="form-control" min="0" step="1" value="{{ (int) $totals['total'] }}" {{ empty($cart) ? 'disabled' : '' }}>
+                        <input type="number" name="paid_amount" id="pos-paid-amount" class="form-control" min="0" step="1" value="{{ (int) $totals['total'] }}" {{ (empty($cart) || $registerBlocked) ? 'disabled' : '' }}>
                     </div>
                 </div>
             </div>
@@ -50,7 +71,7 @@
             </div>
 
             <div class="d-grid gap-1">
-                <button type="submit" class="btn btn-primary btn-lg" {{ empty($cart) ? 'disabled' : '' }} id="pos-validate-btn">
+                <button type="submit" class="btn btn-primary btn-lg" {{ (empty($cart) || $registerBlocked) ? 'disabled' : '' }} id="pos-validate-btn">
                     <i class="ti ti-check me-1"></i>{{ __('Valider la vente') }}
                     <span class="ms-2 fw-bold" id="pos-validate-total">{{ number_format($totals['total'], 0, ',', ' ') }}</span>
                 </button>

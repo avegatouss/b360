@@ -68,7 +68,7 @@ final class DemoFinanceSeeder
 
     private function seedIncomeSources(int $instanceId): void
     {
-        $sources = ['Ventes grossiste', 'Ventes detail', 'Ventes CODIFARM', 'Commissions', 'Interets bancaires', 'Location espace', 'Services conseil', 'Divers'];
+        $sources = ['Ventes grossiste', 'Ventes detail', 'Ventes Revendeur', 'Commissions', 'Interets bancaires', 'Location espace', 'Services conseil', 'Divers'];
 
         foreach ($sources as $name) {
             IncomeSource::withoutGlobalScopes()->updateOrCreate(

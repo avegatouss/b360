@@ -26,20 +26,20 @@
     <div class="card-body">
         <div class="row g-3">
             <div class="col-6">
-                <div class="text-muted small">CA Mois</div>
-                <div class="fw-bold fs-5 text-primary">{{ number_format($totalSales, 0, ',', ' ') }}</div>
+                <div class="text-muted">CA Mois</div>
+                <div class="fw-bold fs-4 text-primary">{{ number_format($totalSales, 0, ',', ' ') }}</div>
             </div>
             <div class="col-6">
-                <div class="text-muted small">Aujourd'hui</div>
-                <div class="fw-bold fs-5 text-success">{{ number_format($todaySales, 0, ',', ' ') }}</div>
+                <div class="text-muted">Aujourd'hui</div>
+                <div class="fw-bold fs-4 text-success">{{ number_format($todaySales, 0, ',', ' ') }}</div>
             </div>
             <div class="col-6">
-                <div class="text-muted small">Commandes</div>
-                <div class="fw-bold fs-5">{{ $orderCount }}</div>
+                <div class="text-muted">Commandes</div>
+                <div class="fw-bold fs-4">{{ $orderCount }}</div>
             </div>
             <div class="col-6">
-                <div class="text-muted small">Impayés</div>
-                <div class="fw-bold fs-5 {{ $totalDue > 0 ? 'text-danger' : 'text-muted' }}">{{ number_format($totalDue, 0, ',', ' ') }}</div>
+                <div class="text-muted">Impayés</div>
+                <div class="fw-bold fs-4 {{ $totalDue > 0 ? 'text-danger' : 'text-muted' }}">{{ number_format($totalDue, 0, ',', ' ') }}</div>
             </div>
         </div>
     </div>

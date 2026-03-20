@@ -77,12 +77,95 @@ final class Eshop360HooksProvider implements RegistersHooks
             requiredPermission: 'eshop.finance.view',
             render: fn () => view('eshop360::widgets.finance-overview')->render(),
         ));
+
+        // ── Customer portal widgets ──
+        // Visible when user has a linked Customer record (portal user)
+        $isPortalUser = fn ($user, $instance) => $user && \Modules\Eshop360\Models\Customer::withoutGlobalScopes()
+            ->where('instance_id', $instance?->id)
+            ->where(fn ($q) => $q->where('user_id', $user->id)->orWhere('email', $user->email))
+            ->exists();
+
+        $registry->addWidget(new DashboardWidget(
+            id: 'eshop360.customer_summary',
+            title: 'Mon compte',
+            priority: 200,
+            requiredModule: 'Eshop360',
+            visibleWhen: $isPortalUser,
+            render: fn () => view('eshop360::widgets.customer-summary')->render(),
+        ));
+
+        $registry->addWidget(new DashboardWidget(
+            id: 'eshop360.customer_orders',
+            title: 'Mes commandes recentes',
+            priority: 190,
+            requiredModule: 'Eshop360',
+            visibleWhen: $isPortalUser,
+            render: fn () => view('eshop360::widgets.customer-orders')->render(),
+        ));
+
+        $registry->addWidget(new DashboardWidget(
+            id: 'eshop360.customer_stats',
+            title: 'Mes statistiques',
+            priority: 180,
+            requiredModule: 'Eshop360',
+            visibleWhen: $isPortalUser,
+            render: fn () => view('eshop360::widgets.customer-stats')->render(),
+        ));
     }
 
     private function registerMenuItems(HookRegistry $registry): void
     {
         // =====================================================================
-        // E-Shop (parent)
+        // Espace Client (visible uniquement pour le role 'user')
+        // =====================================================================
+        $registry->addMenu(new MenuItem(
+            id: 'eshop360.my_orders',
+            label: 'Mes commandes',
+            icon: 'ti ti-shopping-bag',
+            priority: 900,
+            requiredModule: 'Eshop360',
+            group: 'main',
+            visibleWhen: fn ($user, $instance) => $user && $user->hasRole('user'),
+        ));
+
+        $registry->addMenu(new MenuItem(
+            id: 'eshop360.my_orders.catalog',
+            label: 'Catalogue',
+            route: 'eshop360.portal.catalog',
+            priority: 800,
+            requiredModule: 'Eshop360',
+            group: 'main',
+            activePattern: 'eshop360.portal.catalog',
+            parentId: 'eshop360.my_orders',
+            visibleWhen: fn ($user, $instance) => $user && $user->hasRole('user'),
+        ));
+
+        $registry->addMenu(new MenuItem(
+            id: 'eshop360.my_orders.orders',
+            label: 'Mes commandes',
+            route: 'eshop360.portal.orders.index',
+            priority: 790,
+            requiredModule: 'Eshop360',
+            group: 'main',
+            activePattern: 'eshop360.portal.orders.*',
+            parentId: 'eshop360.my_orders',
+            visibleWhen: fn ($user, $instance) => $user && $user->hasRole('user'),
+        ));
+
+        $registry->addMenu(new MenuItem(
+            id: 'eshop360.my_orders.cart',
+            label: 'Mon panier',
+            route: 'eshop360.portal.cart',
+            priority: 780,
+            requiredModule: 'Eshop360',
+            group: 'main',
+            activePattern: 'eshop360.portal.cart*',
+            parentId: 'eshop360.my_orders',
+            visibleWhen: fn ($user, $instance) => $user && $user->hasRole('user'),
+        ));
+
+        // =====================================================================
+        // E-Shop (parent) — hidden from 'user' role
         // =====================================================================
         $registry->addMenu(new MenuItem(
             id: 'eshop360.eshop',
@@ -91,6 +174,7 @@ final class Eshop360HooksProvider implements RegistersHooks
             priority: 800,
             requiredModule: 'Eshop360',
             group: 'main',
+            visibleWhen: fn ($user, $instance) => $user && !$user->hasRole('user'),
         ));
 
         $registry->addMenu(new MenuItem(
@@ -322,6 +406,18 @@ final class Eshop360HooksProvider implements RegistersHooks
         ));
 
         $registry->addMenu(new MenuItem(
+            id: 'eshop360.ventes.stats',
+            label: 'Stats avancées',
+            route: 'eshop360.sales.stats',
+            priority: 755,
+            requiredPermission: 'eshop.sales.view',
+            requiredModule: 'Eshop360',
+            group: 'main',
+            activePattern: 'eshop360.sales.stats',
+            parentId: 'eshop360.ventes',
+        ));
+
+        $registry->addMenu(new MenuItem(
             id: 'eshop360.ventes.create',
             label: 'Nouvelle vente',
             route: 'eshop360.sales.create',
@@ -354,6 +450,18 @@ final class Eshop360HooksProvider implements RegistersHooks
             requiredModule: 'Eshop360',
             group: 'main',
             activePattern: 'eshop360.customers.*',
+            parentId: 'eshop360.clients',
+        ));
+
+        $registry->addMenu(new MenuItem(
+            id: 'eshop360.clients.stats',
+            label: 'Stats clients',
+            route: 'eshop360.customers.stats',
+            priority: 795,
+            requiredPermission: 'eshop.customers.view',
+            requiredModule: 'Eshop360',
+            group: 'main',
+            activePattern: 'eshop360.customers.stats',
             parentId: 'eshop360.clients',
         ));
 
@@ -690,18 +798,39 @@ final class Eshop360HooksProvider implements RegistersHooks
         ));
 
         // =====================================================================
-        // Distribution Channels
+        // Portails & Canaux (parent)
         // =====================================================================
         $registry->addMenu(new MenuItem(
-            id: 'eshop360.channels',
-            label: 'Canaux de distribution',
+            id: 'eshop360.portails',
+            label: 'Portails & Canaux',
             icon: 'ti ti-building-store',
             priority: 700,
+            requiredModule: 'Eshop360',
+            group: 'main',
+        ));
+
+        $registry->addMenu(new MenuItem(
+            id: 'eshop360.portails.channels',
+            label: 'Canaux de distribution',
+            route: 'eshop360.channels.index',
+            priority: 800,
             requiredPermission: 'eshop.channels.view',
             requiredModule: 'Eshop360',
             group: 'main',
-            route: 'eshop360.channels.index',
             activePattern: 'eshop360.channels.*',
+            parentId: 'eshop360.portails',
+        ));
+
+        $registry->addMenu(new MenuItem(
+            id: 'eshop360.portails.customer_portal',
+            label: 'Portail client',
+            route: 'eshop360.portal.catalog',
+            priority: 790,
+            requiredPermission: 'eshop.sales.view',
+            requiredModule: 'Eshop360',
+            group: 'main',
+            activePattern: 'eshop360.portal.*',
+            parentId: 'eshop360.portails',
         ));
 
         // =====================================================================
@@ -1161,7 +1290,7 @@ final class Eshop360HooksProvider implements RegistersHooks
             module: 'Eshop360',
             seederClass: DemoCatalogPharmaSeeder::class,
             priority: 100,
-            description: '10 categories, 20 marques et 100 produits pharmaceutiques avec pricing SAPHIR/CODIFARM.',
+            description: '10 categories, 20 marques et 100 produits pharmaceutiques avec pricing SAPHIR/Revendeur.',
             category: 'catalog',
         ));
 
@@ -1181,7 +1310,7 @@ final class Eshop360HooksProvider implements RegistersHooks
             module: 'Eshop360',
             seederClass: DemoCustomersSeeder::class,
             priority: 90,
-            description: '5 groupes clients, 15 clients (grossistes, pharmacies, ONG, CODIFARM).',
+            description: '5 groupes clients, 15 clients (grossistes, pharmacies, ONG, revendeurs).',
             category: 'crm',
         ));
 
@@ -1241,7 +1370,7 @@ final class Eshop360HooksProvider implements RegistersHooks
             module: 'Eshop360',
             seederClass: DemoChannelsSeeder::class,
             priority: 60,
-            description: '2 canaux (CODIFARM, PHARMAPLUS) avec prix produits et logs de marge.',
+            description: '2 canaux (Revendeur Principal, PHARMAPLUS) avec prix produits et logs de marge.',
             category: 'distribution',
         ));
 

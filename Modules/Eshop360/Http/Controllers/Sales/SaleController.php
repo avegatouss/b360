@@ -411,6 +411,141 @@ class SaleController extends Controller
             ->with('success', __('Return processed successfully.'));
     }
 
+    public function stats(Request $request, string $slug)
+    {
+        $instance = CurrentInstance::get();
+        $instanceId = $instance?->id ?? 0;
+        $from = $request->input('date_from', now()->startOfMonth()->toDateString());
+        $to = $request->input('date_to', now()->toDateString());
+
+        // Base query for completed orders
+        $baseQuery = Order::where('instance_id', $instanceId)
+            ->where('status', 'completed')
+            ->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59']);
+
+        // Global KPIs
+        $globalStats = (clone $baseQuery)->selectRaw('
+            COUNT(*) as total_orders,
+            COALESCE(SUM(total), 0) as total_revenue,
+            COALESCE(SUM(paid_amount), 0) as total_paid,
+            COALESCE(SUM(due_amount), 0) as total_due,
+            COALESCE(SUM(tax_amount), 0) as total_tax,
+            COALESCE(SUM(discount_amount), 0) as total_discount,
+            COALESCE(AVG(total), 0) as avg_order
+        ')->first();
+
+        // Sales by channel
+        $byChannel = (clone $baseQuery)
+            ->leftJoin('eshop_distribution_channels', 'eshop_orders.channel_id', '=', 'eshop_distribution_channels.id')
+            ->selectRaw('COALESCE(eshop_distribution_channels.name, "Direct") as channel_name, COUNT(*) as orders, SUM(eshop_orders.total) as revenue')
+            ->groupBy('eshop_orders.channel_id', 'eshop_distribution_channels.name')
+            ->orderByDesc('revenue')
+            ->get();
+
+        // Sales by customer (top 20)
+        $byCustomer = (clone $baseQuery)
+            ->join('eshop_customers', 'eshop_orders.customer_id', '=', 'eshop_customers.id')
+            ->selectRaw('eshop_customers.name as customer_name, eshop_customers.id as customer_id, COUNT(*) as orders, SUM(eshop_orders.total) as revenue, SUM(eshop_orders.due_amount) as due')
+            ->groupBy('eshop_orders.customer_id', 'eshop_customers.name', 'eshop_customers.id')
+            ->orderByDesc('revenue')
+            ->limit(20)
+            ->get();
+
+        // Sales by store
+        $byStore = (clone $baseQuery)
+            ->leftJoin('eshop_stores', 'eshop_orders.store_id', '=', 'eshop_stores.id')
+            ->selectRaw('COALESCE(eshop_stores.name, "N/A") as store_name, COUNT(*) as orders, SUM(eshop_orders.total) as revenue')
+            ->groupBy('eshop_orders.store_id', 'eshop_stores.name')
+            ->orderByDesc('revenue')
+            ->get();
+
+        // Sales by warehouse
+        $byWarehouse = (clone $baseQuery)
+            ->leftJoin('eshop_warehouses', 'eshop_orders.warehouse_id', '=', 'eshop_warehouses.id')
+            ->selectRaw('COALESCE(eshop_warehouses.name, "N/A") as warehouse_name, COUNT(*) as orders, SUM(eshop_orders.total) as revenue')
+            ->groupBy('eshop_orders.warehouse_id', 'eshop_warehouses.name')
+            ->orderByDesc('revenue')
+            ->get();
+
+        // Sales by source
+        $bySource = (clone $baseQuery)
+            ->selectRaw('source, COUNT(*) as orders, SUM(total) as revenue')
+            ->groupBy('source')
+            ->orderByDesc('revenue')
+            ->get();
+
+        // Sales by payment method
+        $byPaymentMethod = (clone $baseQuery)
+            ->selectRaw('payment_method, COUNT(*) as orders, SUM(total) as revenue')
+            ->groupBy('payment_method')
+            ->orderByDesc('revenue')
+            ->get();
+
+        // Top products
+        $topProducts = DB::table('eshop_order_items')
+            ->join('eshop_orders', 'eshop_order_items.order_id', '=', 'eshop_orders.id')
+            ->leftJoin('eshop_products', 'eshop_order_items.product_id', '=', 'eshop_products.id')
+            ->where('eshop_orders.instance_id', $instanceId)
+            ->where('eshop_orders.status', 'completed')
+            ->whereBetween('eshop_orders.created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])
+            ->selectRaw('
+                eshop_order_items.product_id,
+                COALESCE(eshop_products.name, eshop_order_items.product_name) as product_name,
+                eshop_products.sku,
+                eshop_products.price as current_price,
+                eshop_products.cost_price,
+                eshop_products.purchase_price_factory,
+                SUM(eshop_order_items.quantity) as qty_sold,
+                SUM(eshop_order_items.total) as revenue,
+                SUM(eshop_order_items.tax) as tax_collected,
+                SUM(eshop_order_items.discount) as discount_given
+            ')
+            ->groupBy('eshop_order_items.product_id', 'eshop_products.name', 'eshop_order_items.product_name', 'eshop_products.sku', 'eshop_products.price', 'eshop_products.cost_price', 'eshop_products.purchase_price_factory')
+            ->orderByDesc('revenue')
+            ->limit(50)
+            ->get();
+
+        // Margin analysis
+        $marginData = $topProducts->map(function ($p) {
+            $costPrice = (float) ($p->cost_price ?? 0);
+            $revenue = (float) $p->revenue;
+            $qtySold = (int) $p->qty_sold;
+            $totalCost = $costPrice * $qtySold;
+            $grossMargin = $revenue - $totalCost;
+            $marginPct = $revenue > 0 ? round($grossMargin / $revenue * 100, 1) : 0;
+            return (object) array_merge((array) $p, [
+                'total_cost' => $totalCost,
+                'gross_margin' => $grossMargin,
+                'margin_pct' => $marginPct,
+            ]);
+        });
+
+        // Monthly trend (last 12 months)
+        $monthlyTrend = Order::where('instance_id', $instanceId)
+            ->where('status', 'completed')
+            ->where('created_at', '>=', now()->subMonths(12)->startOfMonth())
+            ->selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, COUNT(*) as orders, SUM(total) as revenue, SUM(paid_amount) as paid')
+            ->groupByRaw('YEAR(created_at), MONTH(created_at)')
+            ->orderByRaw('YEAR(created_at), MONTH(created_at)')
+            ->get();
+
+        // Charges for Saphir section
+        $chargesService = app(\Modules\Eshop360\Services\ChargesService::class);
+        $monthlyCharges = $chargesService->getTotalCostPerSecond($instanceId) * \Modules\Eshop360\Services\ChargesService::SECONDS_PER_MONTH;
+
+        // Channels and stores for filters
+        $channels = \Modules\Eshop360\Models\DistributionChannel::where('instance_id', $instanceId)->where('is_active', true)->orderBy('name')->get();
+        $stores = \Modules\Eshop360\Models\Store::where('is_active', true)->orderBy('name')->get(['id', 'name']);
+        $warehouses = \Modules\Eshop360\Models\Warehouse::where('is_active', true)->orderBy('name')->get(['id', 'name']);
+
+        return view('eshop360::sales.stats', compact(
+            'globalStats', 'byChannel', 'byCustomer', 'byStore', 'byWarehouse',
+            'bySource', 'byPaymentMethod', 'topProducts', 'marginData',
+            'monthlyTrend', 'monthlyCharges', 'channels', 'stores', 'warehouses',
+            'from', 'to'
+        ));
+    }
+
     public function taxReport(Request $request)
     {
         $dateFrom = $request->date_from ?? now()->startOfMonth()->toDateString();

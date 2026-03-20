@@ -10,8 +10,8 @@ return new class extends Migration {
         Schema::create('eshop_distribution_channels', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('instance_id')->index();
-            $table->string('name');              // e.g. "CODIFARM", "Wholesale B", etc.
-            $table->string('slug')->index();     // e.g. "codifarm", "wholesale-b"
+            $table->string('name');              // e.g. "Revendeur", "Wholesale B", etc.
+            $table->string('slug')->index();     // e.g. "revendeur", "wholesale-b"
             $table->string('code')->nullable();  // short code for references
             $table->text('description')->nullable();
             $table->boolean('is_active')->default(true);

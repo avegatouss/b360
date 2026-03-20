@@ -50,8 +50,8 @@
                             <td class="fw-semibold">{{ $order->reference }}</td>
                             <td>{{ $order->created_at->format('Y-m-d H:i') }}</td>
                             <td>
-                                @if($order->is_codifarm)
-                                    <span class="badge bg-info">{{ __('eshop360::eshop.portal_codifarm') }}</span>
+                                @if($order->is_revendeur)
+                                    <span class="badge bg-info">{{ __('eshop360::eshop.portal_revendeur') }}</span>
                                 @elseif($order->channel)
                                     <span class="badge bg-secondary">{{ $order->channel->name }}</span>
                                 @else

@@ -4,8 +4,9 @@
     pageTitle="Tableau de bord">
 
     {{-- ============================================================ --}}
-    {{-- Stat Cards (DreamPos dash-widget style)                     --}}
+    {{-- Stat Cards — Admin only                                     --}}
     {{-- ============================================================ --}}
+    @if(auth()->user()?->hasRole('super-admin') || auth()->user()?->hasRole('instance-admin') || auth()->user()?->hasRole('manager'))
     <div class="row">
 
         <div class="col-xl-3 col-sm-6 col-12 d-flex">
@@ -66,11 +67,12 @@
     {{-- ============================================================ --}}
     {{-- /Stat Cards                                                  --}}
     {{-- ============================================================ --}}
-
+    @endif
 
     {{-- ============================================================ --}}
-    {{-- Instance info card                                          --}}
+    {{-- Instance info card — Admin/Super-Admin only                  --}}
     {{-- ============================================================ --}}
+    @if(auth()->user()?->hasRole('super-admin') || auth()->user()?->hasRole('instance-admin'))
     <div class="card mb-0">
         <div class="card-header">
             <h5 class="card-title">Instance courante</h5>
@@ -119,7 +121,7 @@
     {{-- ============================================================ --}}
     {{-- /Instance info card                                         --}}
     {{-- ============================================================ --}}
-
+    @endif
 
     {{-- ============================================================ --}}
     {{-- Module Widgets (registered via HookRegistry)                --}}
@@ -137,6 +139,7 @@
     {{-- ============================================================ --}}
     {{-- Quick links                                                  --}}
     {{-- ============================================================ --}}
+    @if(auth()->user()?->hasRole('super-admin') || auth()->user()?->hasRole('instance-admin'))
     <div class="card mt-3 mb-0">
         <div class="card-header">
             <h5 class="card-title">Acces rapides</h5>
@@ -148,6 +151,7 @@
             </a>
         </div>
     </div>
+    @endif
     {{-- ============================================================ --}}
     {{-- /Quick links                                                 --}}
     {{-- ============================================================ --}}

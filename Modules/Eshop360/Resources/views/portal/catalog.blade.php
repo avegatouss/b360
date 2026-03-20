@@ -5,9 +5,9 @@
 
 @php
     $activeChannelId = (string) (($context['channel_id'] ?? '') ?: request('channel_id', ''));
-    $activeIsCodifarm = (bool) (($context['is_codifarm'] ?? false) || request()->boolean('is_codifarm'));
-    $activeContextLabel = $activeIsCodifarm
-        ? 'Mode CODIFARM'
+    $activeIsRevendeur = (bool) (($context['is_revendeur'] ?? false) || request()->boolean('is_revendeur'));
+    $activeContextLabel = $activeIsRevendeur
+        ? 'Mode Revendeur'
         : ($channels->firstWhere('id', $activeChannelId !== '' ? (int) $activeChannelId : null)?->name ?? null);
 @endphp
 
@@ -63,7 +63,7 @@
 
                     <div class="col-md-6">
                         <label class="form-label" for="portal-channel">{{ __('eshop360::eshop.portal_distribution_channel') }}</label>
-                        <select id="portal-channel" name="channel_id" class="form-select" {{ $activeIsCodifarm ? 'disabled' : '' }}>
+                        <select id="portal-channel" name="channel_id" class="form-select" {{ $activeIsRevendeur ? 'disabled' : '' }}>
                             <option value="">{{ __('eshop360::eshop.portal_standard_pricing') }}</option>
                             @foreach($channels as $channel)
                                 <option value="{{ $channel->id }}" @selected($activeChannelId === (string) $channel->id)>{{ $channel->name }}</option>
@@ -72,8 +72,8 @@
                     </div>
                     <div class="col-md-3 d-flex align-items-end">
                         <div class="form-check mb-2">
-                            <input id="portal-codifarm" type="checkbox" name="is_codifarm" value="1" class="form-check-input" {{ $activeIsCodifarm ? 'checked' : '' }}>
-                            <label class="form-check-label" for="portal-codifarm">{{ __('eshop360::eshop.portal_codifarm_pricing') }}</label>
+                            <input id="portal-revendeur" type="checkbox" name="is_revendeur" value="1" class="form-check-input" {{ $activeIsRevendeur ? 'checked' : '' }}>
+                            <label class="form-check-label" for="portal-revendeur">{{ __('eshop360::eshop.portal_revendeur_pricing') }}</label>
                         </div>
                     </div>
                     <div class="col-md-3 d-flex align-items-end">
@@ -110,11 +110,11 @@
                                     <form method="POST" action="{{ route('eshop360.portal.cart.add', $instance->slug ?? '') }}" class="row g-2">
                                         @csrf
                                         <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                        @if($activeChannelId !== '' && ! $activeIsCodifarm)
+                                        @if($activeChannelId !== '' && ! $activeIsRevendeur)
                                             <input type="hidden" name="channel_id" value="{{ $activeChannelId }}">
                                         @endif
-                                        @if($activeIsCodifarm)
-                                            <input type="hidden" name="is_codifarm" value="1">
+                                        @if($activeIsRevendeur)
+                                            <input type="hidden" name="is_revendeur" value="1">
                                         @endif
                                         <div class="col-4">
                                             <input type="number" min="1" name="quantity" value="1" class="form-control">

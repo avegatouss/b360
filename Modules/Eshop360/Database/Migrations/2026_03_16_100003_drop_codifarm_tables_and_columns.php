@@ -21,7 +21,7 @@ return new class extends Migration {
 
     public function down(): void
     {
-        // Recreate codifarm_margin_config
+        // Recreate revendeur margin_config
         Schema::create('eshop_codifarm_margin_config', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('instance_id')->index();
@@ -33,7 +33,7 @@ return new class extends Migration {
             $table->timestamps();
         });
 
-        // Recreate codifarm_margin_logs
+        // Recreate revendeur margin_logs
         Schema::create('eshop_codifarm_margin_logs', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('instance_id')->index();
@@ -45,12 +45,12 @@ return new class extends Migration {
             $table->timestamps();
         });
 
-        // Re-add is_codifarm to orders
+        // Re-add is_revendeur flag to orders
         Schema::table('eshop_orders', function (Blueprint $table) {
             $table->boolean('is_codifarm')->default(false)->after('holding_id');
         });
 
-        // Re-add sale_price_codifarm to products
+        // Re-add sale_price for revendeur channel to products
         Schema::table('eshop_products', function (Blueprint $table) {
             $table->decimal('sale_price_codifarm', 15, 4)->nullable()->after('cost_price_real');
         });

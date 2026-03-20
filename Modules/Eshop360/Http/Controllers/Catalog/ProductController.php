@@ -11,7 +11,13 @@ use Modules\Eshop360\Models\Brand;
 use Modules\Eshop360\Models\Category;
 use Modules\Eshop360\Models\Product;
 use Modules\Eshop360\Models\Store;
+use Modules\Eshop360\Models\Stock;
+use Modules\Eshop360\Models\Tax;
 use Modules\Eshop360\Models\Warehouse;
+use Modules\Eshop360\Models\StockMovement;
+use Modules\Eshop360\Models\OrderItem;
+use Modules\Eshop360\Services\ChargesService;
+use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
@@ -24,6 +30,8 @@ class ProductController extends Controller
             ->when($request->category_id, fn ($q, $c) => $q->where('category_id', $c))
             ->when($request->brand_id, fn ($q, $b) => $q->where('brand_id', $b))
             ->when($request->filled('is_active'), fn ($q) => $q->where('is_active', $request->boolean('is_active')))
+            ->when($request->store_id, fn ($q, $s) => $q->whereHas('stocks', fn ($sq) => $sq->where('store_id', $s)))
+            ->when($request->warehouse_id, fn ($q, $w) => $q->whereHas('stocks', fn ($sq) => $sq->where('warehouse_id', $w)))
             ->when($request->price_min, fn ($q, $min) => $q->where('price', '>=', $min))
             ->when($request->price_max, fn ($q, $max) => $q->where('price', '<=', $max))
             ->latest()
@@ -32,8 +40,10 @@ class ProductController extends Controller
 
         $categories = Category::active()->orderBy('name')->get();
         $brands = Brand::where('is_active', true)->orderBy('name')->get();
+        $stores = Store::orderBy('name')->get(['id', 'name']);
+        $warehouses = Warehouse::orderBy('name')->get(['id', 'name']);
 
-        return view('eshop360::catalog.products.index', compact('products', 'categories', 'brands'));
+        return view('eshop360::catalog.products.index', compact('products', 'categories', 'brands', 'stores', 'warehouses'));
     }
 
     public function create()
@@ -42,8 +52,9 @@ class ProductController extends Controller
         $brands = Brand::where('is_active', true)->orderBy('name')->get();
         $stores = Store::orderBy('name')->get(['id', 'name']);
         $warehouses = Warehouse::orderBy('name')->get(['id', 'name']);
+        $taxes = Tax::where('is_active', true)->orderBy('name')->get();
 
-        return view('eshop360::catalog.products.create', compact('categories', 'brands', 'stores', 'warehouses'));
+        return view('eshop360::catalog.products.create', compact('categories', 'brands', 'stores', 'warehouses', 'taxes'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -53,10 +64,11 @@ class ProductController extends Controller
             'sku'               => 'required|string|max:100|unique:eshop_products,sku',
             'category_id'       => 'nullable|exists:eshop_categories,id',
             'brand_id'          => 'nullable|exists:eshop_brands,id',
-            'description'       => 'nullable|string|max:5000',
+            'description'       => 'nullable|string|max:50000',
             'price'             => 'required|numeric|min:0',
             'cost_price'        => 'nullable|numeric|min:0',
             'tax_rate'          => 'nullable|numeric|min:0|max:100',
+            'tax_inclusive'     => 'boolean',
             'discount_type'     => 'nullable|in:none,percentage,fixed',
             'discount_value'    => 'nullable|numeric|min:0',
             'unit'              => 'nullable|string|max:20',
@@ -74,10 +86,19 @@ class ProductController extends Controller
             'pght'                       => 'nullable|numeric|min:0',
             'cost_price_real'            => 'nullable|numeric|min:0',
             'selling_type'               => 'nullable|in:pos,online,both',
+            'taxes'                      => 'nullable|array',
+            'taxes.*'                    => 'exists:eshop_taxes,id',
+            'stocks'                     => 'nullable|array',
+            'stocks.*.store_id'          => 'nullable|exists:eshop_stores,id',
+            'stocks.*.warehouse_id'      => 'nullable|exists:eshop_warehouses,id',
+            'stocks.*.quantity'          => 'nullable|integer|min:0',
+            'stocks.*.alert_quantity'    => 'nullable|integer|min:0',
+            'stocks.*.min_quantity'      => 'nullable|integer|min:0',
         ]);
 
         $validated['slug'] = Str::slug($validated['name']);
-        $validated['instance_id'] = CurrentInstance::get()?->id ?? $request->route('instance_id') ?? session('instance_id');
+        $instanceId = CurrentInstance::get()?->id ?? $request->route('instance_id') ?? session('instance_id');
+        $validated['instance_id'] = $instanceId;
         $validated['created_by'] = auth()->id();
         $validated['cost_price'] = $validated['cost_price'] ?? 0;
         $validated['tax_rate'] = $validated['tax_rate'] ?? 0;
@@ -98,7 +119,46 @@ class ProductController extends Controller
             $validated['images'] = $paths;
         }
 
-        Product::create($validated);
+        $taxes = $validated['taxes'] ?? [];
+        $stocks = $validated['stocks'] ?? [];
+        unset($validated['taxes'], $validated['stocks']);
+
+        $product = Product::create($validated);
+
+        // Create stock records per store/warehouse
+        foreach ($stocks as $stockRow) {
+            if (empty($stockRow['store_id']) && empty($stockRow['warehouse_id'])) {
+                continue;
+            }
+            Stock::create([
+                'instance_id'  => $instanceId,
+                'product_id'   => $product->id,
+                'store_id'     => $stockRow['store_id'] ?: null,
+                'warehouse_id' => $stockRow['warehouse_id'] ?: null,
+                'quantity'     => (int) ($stockRow['quantity'] ?? 0),
+            ]);
+        }
+        // Save alert/min from first stock row to product
+        if (! empty($stocks[0])) {
+            $product->update([
+                'alert_quantity' => $stocks[0]['alert_quantity'] ?? $product->alert_quantity,
+                'min_quantity'   => $stocks[0]['min_quantity'] ?? $product->min_quantity,
+            ]);
+        }
+
+        if (!empty($taxes)) {
+            $taxData = [];
+            foreach ($taxes as $taxId) {
+                $taxData[$taxId] = ['type' => $validated['tax_inclusive'] ? 'inclusive' : 'exclusive'];
+            }
+            foreach ($taxData as $taxId => $pivot) {
+                \Modules\Eshop360\Models\ProductTax::create([
+                    'product_id' => $product->id,
+                    'tax_id' => $taxId,
+                    'type' => $pivot['type'],
+                ]);
+            }
+        }
 
         return redirect()->route('eshop360.products.index', ['slug' => $request->route('slug')])
             ->with('success', __('Produit cree avec succes.'));
@@ -106,30 +166,160 @@ class ProductController extends Controller
 
     public function show(string $slug, Product $product)
     {
-        $product->load(['category', 'brand', 'stocks.warehouse', 'stocks.store', 'creator', 'variations']);
+        // 1. Load product with comprehensive relations
+        $product->load([
+            'category',
+            'brand',
+            'stocks.warehouse',
+            'stocks.store',
+            'creator',
+            'variations',
+            'productTaxes.tax',
+        ]);
 
+        // 2. Total and reserved stock
         $totalStock = $product->stocks->sum('quantity');
         $reservedStock = $product->stocks->sum('reserved_quantity');
 
+        // 3. Stock movements history (last 50)
+        $stockMovements = StockMovement::where('product_id', $product->id)
+            ->with(['warehouse', 'store', 'performer'])
+            ->latest()
+            ->limit(50)
+            ->get();
+
+        // 4. Sales statistics from completed orders
+        $salesStats = DB::table('eshop_order_items')
+            ->join('eshop_orders', 'eshop_order_items.order_id', '=', 'eshop_orders.id')
+            ->where('eshop_order_items.product_id', $product->id)
+            ->where('eshop_orders.status', 'completed')
+            ->selectRaw('
+                COALESCE(SUM(eshop_order_items.quantity), 0) as total_quantity_sold,
+                COALESCE(SUM(eshop_order_items.total), 0) as total_revenue,
+                COUNT(DISTINCT eshop_order_items.order_id) as order_count
+            ')
+            ->first();
+
+        $totalQuantitySold = (int) $salesStats->total_quantity_sold;
+        $totalRevenue = (float) $salesStats->total_revenue;
+        $orderCount = (int) $salesStats->order_count;
+        $averageSellingPrice = $totalQuantitySold > 0
+            ? round($totalRevenue / $totalQuantitySold, 2)
+            : 0;
+
+        // Monthly sales for last 6 months
+        $monthlySales = DB::table('eshop_order_items')
+            ->join('eshop_orders', 'eshop_order_items.order_id', '=', 'eshop_orders.id')
+            ->where('eshop_order_items.product_id', $product->id)
+            ->where('eshop_orders.status', 'completed')
+            ->where('eshop_orders.created_at', '>=', now()->subMonths(6)->startOfMonth())
+            ->selectRaw('
+                YEAR(eshop_orders.created_at) as year,
+                MONTH(eshop_orders.created_at) as month,
+                COALESCE(SUM(eshop_order_items.quantity), 0) as quantity,
+                COALESCE(SUM(eshop_order_items.total), 0) as revenue
+            ')
+            ->groupByRaw('YEAR(eshop_orders.created_at), MONTH(eshop_orders.created_at)')
+            ->orderByRaw('YEAR(eshop_orders.created_at), MONTH(eshop_orders.created_at)')
+            ->get();
+
+        // 5. Charges coverage analysis
+        $instanceId = CurrentInstance::get()?->id ?? session('instance_id');
+        $chargesService = app(ChargesService::class);
+        $totalMonthlyCharges = $chargesService->getTotalCostPerSecond((int) $instanceId) * ChargesService::SECONDS_PER_MONTH;
+
+        $totalStockValue = $totalStock * (float) $product->price;
+        $costStockValue = $totalStock * (float) $product->cost_price;
+        $marginPerUnit = (float) $product->price - (float) $product->cost_price;
+
+        // Average monthly revenue from this product (last 3 months)
+        $revenueLastThreeMonths = DB::table('eshop_order_items')
+            ->join('eshop_orders', 'eshop_order_items.order_id', '=', 'eshop_orders.id')
+            ->where('eshop_order_items.product_id', $product->id)
+            ->where('eshop_orders.status', 'completed')
+            ->where('eshop_orders.created_at', '>=', now()->subMonths(3)->startOfMonth())
+            ->sum('eshop_order_items.total');
+
+        $monthlyRevenueAvg = (float) $revenueLastThreeMonths / 3;
+
+        $chargeCoveragePercentage = $totalMonthlyCharges > 0
+            ? round(($monthlyRevenueAvg / $totalMonthlyCharges) * 100, 2)
+            : 0;
+
+        $projectedRevenueAllStock = $totalStock * (float) $product->price;
+        $projectedChargeCoverage = $totalMonthlyCharges > 0
+            ? round(($projectedRevenueAllStock / $totalMonthlyCharges) * 100, 2)
+            : 0;
+
+        $chargesCoverage = [
+            'total_monthly_charges'     => round($totalMonthlyCharges, 2),
+            'total_stock_value'         => round($totalStockValue, 2),
+            'cost_stock_value'          => round($costStockValue, 2),
+            'margin_per_unit'           => round($marginPerUnit, 2),
+            'monthly_revenue_avg'       => round($monthlyRevenueAvg, 2),
+            'charge_coverage_pct'       => $chargeCoveragePercentage,
+            'projected_revenue_all'     => round($projectedRevenueAllStock, 2),
+            'projected_charge_coverage' => $projectedChargeCoverage,
+        ];
+
+        // 6. Stock by store/warehouse breakdown
+        $stockByLocation = $product->stocks->map(fn ($stock) => [
+            'id'             => $stock->id,
+            'store'          => $stock->store?->name,
+            'store_id'       => $stock->store_id,
+            'warehouse'      => $stock->warehouse?->name,
+            'warehouse_id'   => $stock->warehouse_id,
+            'quantity'       => $stock->quantity,
+            'reserved'       => $stock->reserved_quantity ?? 0,
+        ]);
+
+        // JSON response for AJAX
         if (request()->ajax() || request()->wantsJson()) {
             return response()->json([
-                'product' => $product,
-                'total_stock' => $totalStock,
-                'reserved_stock' => $reservedStock,
+                'product'           => $product,
+                'total_stock'       => $totalStock,
+                'reserved_stock'    => $reservedStock,
+                'stock_movements'   => $stockMovements,
+                'sales_stats'       => [
+                    'total_qty_sold' => $totalQuantitySold,
+                ],
+                'sales_statistics'  => [
+                    'total_quantity_sold'  => $totalQuantitySold,
+                    'total_revenue'        => $totalRevenue,
+                    'average_selling_price' => $averageSellingPrice,
+                    'order_count'          => $orderCount,
+                    'monthly_sales'        => $monthlySales,
+                ],
+                'charges_coverage'  => $chargesCoverage,
+                'stock_by_location' => $stockByLocation,
             ]);
         }
 
-        return view('eshop360::catalog.products.show', compact('product', 'totalStock', 'reservedStock'));
+        return view('eshop360::catalog.products.show', compact(
+            'product',
+            'totalStock',
+            'reservedStock',
+            'stockMovements',
+            'totalQuantitySold',
+            'totalRevenue',
+            'averageSellingPrice',
+            'orderCount',
+            'monthlySales',
+            'chargesCoverage',
+            'stockByLocation',
+        ));
     }
 
     public function edit(string $slug, Product $product)
     {
+        $product->load('productTaxes');
         $categories = Category::active()->orderBy('name')->get();
         $brands = Brand::where('is_active', true)->orderBy('name')->get();
         $stores = Store::orderBy('name')->get(['id', 'name']);
         $warehouses = Warehouse::orderBy('name')->get(['id', 'name']);
+        $taxes = Tax::where('is_active', true)->orderBy('name')->get();
 
-        return view('eshop360::catalog.products.edit', compact('product', 'categories', 'brands', 'stores', 'warehouses'));
+        return view('eshop360::catalog.products.edit', compact('product', 'categories', 'brands', 'stores', 'warehouses', 'taxes'));
     }
 
     public function update(Request $request, string $slug, Product $product): RedirectResponse
@@ -139,10 +329,11 @@ class ProductController extends Controller
             'sku'               => 'required|string|max:100|unique:eshop_products,sku,' . $product->id,
             'category_id'       => 'nullable|exists:eshop_categories,id',
             'brand_id'          => 'nullable|exists:eshop_brands,id',
-            'description'       => 'nullable|string|max:5000',
+            'description'       => 'nullable|string|max:50000',
             'price'             => 'required|numeric|min:0',
             'cost_price'        => 'nullable|numeric|min:0',
             'tax_rate'          => 'nullable|numeric|min:0|max:100',
+            'tax_inclusive'     => 'boolean',
             'discount_type'     => 'nullable|in:none,percentage,fixed',
             'discount_value'    => 'nullable|numeric|min:0',
             'unit'              => 'nullable|string|max:20',
@@ -159,6 +350,8 @@ class ProductController extends Controller
             'purchase_price_provisional' => 'nullable|numeric|min:0',
             'pght'                       => 'nullable|numeric|min:0',
             'cost_price_real'            => 'nullable|numeric|min:0',
+            'taxes'                      => 'nullable|array',
+            'taxes.*'                    => 'exists:eshop_taxes,id',
         ]);
 
         $validated['slug'] = Str::slug($validated['name']);
@@ -179,7 +372,26 @@ class ProductController extends Controller
             $validated['images'] = $paths;
         }
 
+        $taxes = $validated['taxes'] ?? [];
+        unset($validated['taxes']);
+
         $product->update($validated);
+
+        // Sync product taxes
+        \Modules\Eshop360\Models\ProductTax::where('product_id', $product->id)->delete();
+        if (!empty($taxes)) {
+            $taxData = [];
+            foreach ($taxes as $taxId) {
+                $taxData[$taxId] = ['type' => $validated['tax_inclusive'] ? 'inclusive' : 'exclusive'];
+            }
+            foreach ($taxData as $taxId => $pivot) {
+                \Modules\Eshop360\Models\ProductTax::create([
+                    'product_id' => $product->id,
+                    'tax_id' => $taxId,
+                    'type' => $pivot['type'],
+                ]);
+            }
+        }
 
         return redirect()->route('eshop360.products.index')
             ->with('success', __('Product updated successfully.'));
@@ -305,5 +517,47 @@ class ProductController extends Controller
 
         return redirect()->route('eshop360.products.variations', [request()->route('slug'), $product])
             ->with('success', __('Variation deleted.'));
+    }
+
+    /**
+     * Bulk actions on products.
+     */
+    public function bulkAction(Request $request, string $slug): RedirectResponse
+    {
+        $validated = $request->validate([
+            'product_ids'   => 'required|array|min:1',
+            'product_ids.*' => 'exists:eshop_products,id',
+            'action'        => 'required|in:activate,deactivate,delete,change_category',
+            'category_id'   => 'nullable|exists:eshop_categories,id',
+        ]);
+
+        $ids = $validated['product_ids'];
+        $count = count($ids);
+
+        switch ($validated['action']) {
+            case 'activate':
+                Product::whereIn('id', $ids)->update(['is_active' => true]);
+                $msg = __(':count produit(s) active(s).', ['count' => $count]);
+                break;
+            case 'deactivate':
+                Product::whereIn('id', $ids)->update(['is_active' => false]);
+                $msg = __(':count produit(s) desactive(s).', ['count' => $count]);
+                break;
+            case 'delete':
+                Product::whereIn('id', $ids)->delete();
+                $msg = __(':count produit(s) supprime(s).', ['count' => $count]);
+                break;
+            case 'change_category':
+                if (empty($validated['category_id'])) {
+                    return redirect()->back()->with('error', __('Veuillez selectionner une categorie.'));
+                }
+                Product::whereIn('id', $ids)->update(['category_id' => $validated['category_id']]);
+                $msg = __(':count produit(s) deplace(s).', ['count' => $count]);
+                break;
+            default:
+                $msg = __('Action inconnue.');
+        }
+
+        return redirect()->route('eshop360.products.index', ['slug' => $slug])->with('success', $msg);
     }
 }

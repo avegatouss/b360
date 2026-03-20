@@ -2,7 +2,7 @@
 
 ## Reference plan
 
-Sections SAPHIR/CODIFARM : `10.1`, `10.3`, `10.4`, `11.1`, `11.2`, `11.4`.
+Sections SAPHIR/revendeur : `10.1`, `10.3`, `10.4`, `11.1`, `11.2`, `11.4`.
 
 ## Niveau d'implementation
 
@@ -23,12 +23,12 @@ Parcours client final : aucun portail public catalogue n'est present dans le mod
 - Filtres de recherche et vues dediees.
 - Upload image principale et galerie.
 - Relations de base produit -> categorie / marque / stock.
-- Migrations supplementaires pour le pricing SAPHIR/CODIFARM (`purchase_price_factory`, `purchase_price_provisional`, `pght`, `cost_price_real`, `sale_price_codifarm`).
+- Migrations supplementaires pour le pricing SAPHIR/revendeur (`purchase_price_factory`, `purchase_price_provisional`, `pght`, `cost_price_real`, `sale_price_codifarm`).
 
 ## Manquements et anomalies
 
 - Les controleurs catalogue redirigent vers des routes inexistantes comme `products.index`, `categories.index`, `brands.index` au lieu de `eshop360.*`.
-- Le modele `Product` n'expose pas dans son `fillable` les colonnes avancees du pricing SAPHIR/CODIFARM ajoutees en migration.
+- Le modele `Product` n'expose pas dans son `fillable` les colonnes avancees du pricing SAPHIR/revendeur ajoutees en migration.
 - Le calcul PGHT / prix canal existe dans `CostCalculatorService`, mais il n'est pas branche au CRUD produit.
 - Les variations, taxes produit, groupes produit et prix par canal existent en modeles, mais pas dans le parcours back-office principal.
 - La fonctionnalite codes-barres se limite a des vues. Aucun service de generation ni integration d'une librairie barcode/QR n'apparait dans le code.
@@ -37,7 +37,7 @@ Parcours client final : aucun portail public catalogue n'est present dans le mod
 ## Niveau reel face au plan
 
 - CRUD catalogue : oui
-- double niveau de prix SAPHIR/CODIFARM : partiel
+- double niveau de prix SAPHIR/revendeur : partiel
 - tarification par store / canal : embryonnaire
 - codes-barres / QR : visuel present, moteur incomplet
 

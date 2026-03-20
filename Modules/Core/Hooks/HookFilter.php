@@ -23,6 +23,11 @@ final class HookFilter
                     $item->children,
                     fn ($child) => $this->isVisible($child, $user, $instance)
                 ));
+
+                // Hide parent if all children were filtered out
+                if (empty($item->children) && !$item->route) {
+                    return false;
+                }
             }
 
             return true;

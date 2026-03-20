@@ -40,7 +40,9 @@ class WarehouseController extends Controller
         $activeWarehouses = Warehouse::where('is_active', true)->count();
         $totalStockUnits = \Modules\Eshop360\Models\Stock::sum('quantity');
         $totalProducts = \Modules\Eshop360\Models\Stock::where('quantity', '>', 0)->distinct('product_id')->count('product_id');
-        $lowStockCount = \Modules\Eshop360\Models\Stock::where('quantity', '>', 0)->where('quantity', '<=', 5)->count();
+        $lowStockCount = \Modules\Eshop360\Models\Stock::where('quantity', '>', 0)
+            ->whereRaw('quantity <= (SELECT COALESCE(alert_quantity, 5) FROM eshop_products WHERE eshop_products.id = eshop_stocks.product_id)')
+            ->count();
 
         return view('eshop360::inventory.warehouses.index', compact(
             'warehouses', 'totalWarehouses', 'activeWarehouses', 'totalStockUnits', 'totalProducts', 'lowStockCount'

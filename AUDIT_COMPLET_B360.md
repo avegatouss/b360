@@ -2,7 +2,7 @@
 
 **Date :** 2026-03-15
 **Branche auditee :** `eshop360`
-**Base de reference :** SAPHIR_CODIFARM_Plan_Dev.md (orientative, certaines specs ont evolue)
+**Base de reference :** plan de developpement initial (orientatif, certaines specs ont evolue)
 
 ---
 
@@ -29,7 +29,7 @@
 19. [Ressources Humaines](#19-ressources-humaines)
 20. [Charges en Temps Reel](#20-charges-en-temps-reel)
 21. [Canaux de Distribution & Marges](#21-canaux-de-distribution)
-22. [CODIFARM (Espace dedie)](#22-codifarm)
+22. [Revendeur (Espace dedie)](#22-revendeur)
 23. [Commandes en Ligne](#23-commandes-en-ligne)
 24. [Communication (Messages, Tickets, Email, SMS)](#24-communication)
 25. [Rapports & Analytiques](#25-rapports--analytiques)
@@ -46,7 +46,7 @@
 
 ### Stack technique reelle (vs plan)
 
-| Element | Plan SAPHIR-CODIFARM | Implementation reelle |
+| Element | Plan initial | Implementation reelle |
 |---------|---------------------|----------------------|
 | Framework | CodeIgniter 4 / Laravel 11 | **Laravel 12** |
 | PHP | 8.4 | **8.2+** |
@@ -144,7 +144,7 @@ Requete HTTP
 - [x] LoginRedirector (service de redirection post-auth)
 - [x] 5 tests (LoginFlow, Logout, InstanceSelection, LoginRedirector)
 
-### Manquements vs plan SAPHIR-CODIFARM
+### Manquements vs plan initial
 - [ ] **2FA / Google Authenticator** (TOTP) — NON IMPLEMENTE
 - [ ] **reCAPTCHA Google v3** — NON IMPLEMENTE
 - [ ] **Remember Me** (cookie chiffre) — NON IMPLEMENTE
@@ -283,7 +283,7 @@ Requete HTTP
 - [x] Branding dynamique (logo, favicon, nom)
 - [x] 2 tests
 
-### Manquements vs plan SAPHIR-CODIFARM
+### Manquements vs plan initial
 - [ ] **Ventes du jour** (CA + nb transactions) — NON IMPLEMENTE
 - [ ] **Marge du jour** (niveau 1 gerant / niveau 2 DG) — NON IMPLEMENTE
 - [ ] **Compteur charges temps reel** (websocket) — NON IMPLEMENTE
@@ -295,7 +295,7 @@ Requete HTTP
 - [ ] **Revenus vs depenses** (graphique) — NON IMPLEMENTE
 - [ ] **Evolution CA 12 mois** (graphique) — NON IMPLEMENTE
 - [ ] **Top clients** — NON IMPLEMENTE
-- [ ] **Dashboard CODIFARM separe** — NON IMPLEMENTE (vue existe mais minimale)
+- [ ] **Dashboard revendeur separe** — NON IMPLEMENTE (vue existe mais minimale)
 
 ---
 
@@ -910,21 +910,21 @@ Requete HTTP
 
 ---
 
-## 22. CODIFARM (Espace dedie)
+## 22. Revendeur (Espace dedie)
 
 ### Niveau d'implementation : 40%
 
 ### Parcours client prevu
 
 ```
-1. Gerant CODIFARM accede a /codifarm (ou via canal dedie)
-2. Dashboard CODIFARM (ventes, marges, stock)
+1. Gerant revendeur accede a /revendeur (ou via canal dedie)
+2. Dashboard revendeur (ventes, marges, stock)
 3. Commandes a SAPHIR
-4. Stock CODIFARM
-5. Ventes CODIFARM
-6. Clients CODIFARM
-7. Marges CODIFARM (PGHT x 1.20)
-8. Repartition tripartite (1/3 dette, 1/3 CODIFARM, 1/3 SAPHIR)
+4. Stock revendeur
+5. Ventes revendeur
+6. Clients revendeur
+7. Marges revendeur (PGHT x 1.20)
+8. Repartition tripartite (1/3 dette, 1/3 revendeur, 1/3 SAPHIR)
 ```
 
 ### Implemente
@@ -932,18 +932,18 @@ Requete HTTP
 - [x] CodifarmController (dashboard, marges, config, commandes)
 - [x] Vues : dashboard, margins, config, orders
 - [x] Migrations : codifarm_margin_config, codifarm_margin_logs
-- [x] MarginService (calculs CODIFARM)
+- [x] MarginService (calculs revendeur)
 
 ### Manquements
-- [ ] **Espace separe** (/codifarm) — Route dans le contexte Eshop360, pas un espace autonome
+- [ ] **Espace separe** (/revendeur) — Route dans le contexte Eshop360, pas un espace autonome
 - [ ] **Prix auto PGHT x 1.20** — Config existe, automatisme a verifier
 - [ ] **Repartition tripartite automatique** a chaque vente — NON VERIFIE
-- [ ] **Portail client CODIFARM** — NON IMPLEMENTE
+- [ ] **Portail client revendeur** — NON IMPLEMENTE
 - [ ] **Portail clients grossistes** — NON IMPLEMENTE
 - [ ] **Confirmation reception** cote client — NON IMPLEMENTE
-- [ ] **Stock CODIFARM independant** — Via instance separation (pas company_id)
-- [ ] **Restriction acces** (gerant CODIFARM ne voit pas SAPHIR) — A verifier
-- [ ] **Tests** — AUCUN test CODIFARM
+- [ ] **Stock revendeur independant** — Via instance separation (pas company_id)
+- [ ] **Restriction acces** (gerant revendeur ne voit pas SAPHIR) — A verifier
+- [ ] **Tests** — AUCUN test revendeur
 
 ---
 
@@ -1064,7 +1064,7 @@ Requete HTTP
 - [x] Permissions : `eshop.reports.view`, `profit_loss_real`, `profit_loss_provisional`
 
 ### Manquements vs plan (26 rapports prevus)
-- [ ] **Rapport CODIFARM** (marges separees) — Vue existe, donnees a verifier
+- [ ] **Rapport revendeur** (marges separees) — Vue existe, donnees a verifier
 - [ ] **Rentabilite reelle** (DG) — Permission existe, rapport a verifier
 - [ ] **Importations & couts** — NON IMPLEMENTE en rapport dedie
 - [ ] **Commissions employes** — NON IMPLEMENTE en rapport
@@ -1214,7 +1214,7 @@ POST   /api/eshop360/inetpay/callback
 - [ ] **POST /stock/movement** — NON IMPLEMENTE
 - [ ] **POST /clients** — NON IMPLEMENTE
 - [ ] **POST /sales** — NON IMPLEMENTE
-- [ ] **API v2** (dashboard, codifarm, charges) — NON IMPLEMENTE
+- [ ] **API v2** (dashboard, revendeur, charges) — NON IMPLEMENTE
 - [ ] **Cles API** (generation, revocation) — NON IMPLEMENTE
 - [ ] **Rate limiting par cle** — NON IMPLEMENTE
 - [ ] **Logs appels API** — NON IMPLEMENTE
@@ -1279,7 +1279,7 @@ POST   /api/eshop360/inetpay/callback
 | 19 | RH | 60% | 0 | Basse |
 | 20 | Charges temps reel | 50% | 0 | Moyenne |
 | 21 | Canaux & Marges | 60% | 0 | Haute |
-| 22 | CODIFARM | 40% | 0 | **CRITIQUE** |
+| 22 | Revendeur | 40% | 0 | **CRITIQUE** |
 | 23 | Commandes en ligne | 50% | 0 | Haute |
 | 24 | Communication | 45% | 0 | Moyenne |
 | 25 | Rapports | 55% | 0 | Haute |
@@ -1292,7 +1292,7 @@ POST   /api/eshop360/inetpay/callback
 ### Top 5 des chantiers prioritaires
 
 1. **Tests Eshop360** — 0 tests sur 45 controllers et 74 modeles. Risque de regression majeur.
-2. **CODIFARM** — Fonctionnalite metier centrale a 40% seulement. Espace dedie, repartition tripartite, portail client non implementes.
+2. **Revendeur** — Fonctionnalite metier centrale a 40% seulement. Espace dedie, repartition tripartite, portail client non implementes.
 3. **Dashboard temps reel** — 50% seulement. Aucun widget metier (ventes, marges, charges, graphiques). C'est la premiere chose que voit l'utilisateur.
 4. **Securite avancee** — 2FA, reCAPTCHA, rate limiting, IP whitelist absents. Critique pour un ERP financier.
 5. **Front-end POS** — Backend solide mais 0 JavaScript dans le module. Pas de recherche temps reel, pas de raccourcis clavier, pas de scan code-barres.

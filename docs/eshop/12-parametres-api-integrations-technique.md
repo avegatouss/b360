@@ -45,7 +45,7 @@ Sections `6`, `7`, `25`, `26`, `27`, `29`, `30`, `31`.
   - `eshop360.products.index = yes`
   - `eshop360.orders.show = yes`
   - `eshop360.pos.index = yes`
-- `php artisan test Modules/Eshop360/Tests` : non-regressions Eshop sur flux coeur, POS, portail client CODIFARM, rapports et exports.
+- `php artisan test Modules/Eshop360/Tests` : non-regressions Eshop sur flux coeur, POS, portail client revendeur, rapports et exports.
 - `php artisan test` : `396 passed`, `3 skipped`, `0 failed`.
 
 ## Niveau reel face au plan

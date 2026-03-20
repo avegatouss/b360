@@ -4,8 +4,8 @@
     pageTitle="{{ __('eshop360::eshop.portal_cart') }}">
 
 @php
-    $activeContextLabel = ($context['is_codifarm'] ?? false)
-        ? __('eshop360::eshop.portal_codifarm_pricing')
+    $activeContextLabel = ($context['is_revendeur'] ?? false)
+        ? __('eshop360::eshop.portal_revendeur_pricing')
         : ($channels->firstWhere('id', $context['channel_id'] ?? null)?->name ?? null);
 @endphp
 

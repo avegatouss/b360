@@ -14,7 +14,7 @@ return new class extends Migration {
         $configs = DB::table('eshop_codifarm_margin_config')->get();
 
         foreach ($configs as $config) {
-            // Check if a CODIFARM channel already exists for this instance
+            // Check if a Revendeur channel already exists for this instance
             $existing = DB::table('eshop_distribution_channels')
                 ->where('instance_id', $config->instance_id)
                 ->where('slug', 'codifarm')
@@ -23,7 +23,7 @@ return new class extends Migration {
             if ($existing) {
                 $channelId = $existing->id;
 
-                // Update existing channel with codifarm rates
+                // Update existing channel with revendeur rates
                 DB::table('eshop_distribution_channels')
                     ->where('id', $channelId)
                     ->update([
@@ -51,7 +51,7 @@ return new class extends Migration {
                 ]);
             }
 
-            // Migrate codifarm margin logs into channel margin logs
+            // Migrate revendeur margin logs into channel margin logs
             $logs = DB::table('eshop_codifarm_margin_logs')
                 ->where('instance_id', $config->instance_id)
                 ->get();
@@ -70,7 +70,7 @@ return new class extends Migration {
                 ]);
             }
 
-            // Update orders: set channel_id where is_codifarm = true
+            // Update orders: set channel_id where is_revendeur = true
             DB::table('eshop_orders')
                 ->where('instance_id', $config->instance_id)
                 ->where('is_codifarm', true)
@@ -85,18 +85,18 @@ return new class extends Migration {
             return;
         }
 
-        // For each instance that has a CODIFARM channel, reverse the migration
+        // For each instance that has a Revendeur channel, reverse the migration
         $channels = DB::table('eshop_distribution_channels')
             ->where('slug', 'codifarm')
             ->get();
 
         foreach ($channels as $channel) {
-            // Remove migrated margin logs (those matching codifarm channel)
+            // Remove migrated margin logs (those matching revendeur channel)
             DB::table('eshop_channel_margin_logs')
                 ->where('channel_id', $channel->id)
                 ->delete();
 
-            // Reset channel_id on orders that were linked to codifarm
+            // Reset channel_id on orders that were linked to revendeur
             DB::table('eshop_orders')
                 ->where('channel_id', $channel->id)
                 ->update(['channel_id' => null]);

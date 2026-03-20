@@ -413,7 +413,7 @@
                 </div>
             @endif
 
-            {{-- Page header --}}
+            {{-- Page header
             @if(isset($pageTitle))
             <div class="page-header">
                 <div class="page-title">
@@ -423,7 +423,7 @@
                     @endif
                 </div>
             </div>
-            @endif
+            @endif--}}
 
             {{ $slot }}
 

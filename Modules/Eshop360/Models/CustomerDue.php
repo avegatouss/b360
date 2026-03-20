@@ -17,13 +17,15 @@ class CustomerDue extends Model
         'order_id',
         'invoice_id',
         'amount_due',
+        'paid_amount',
         'due_date',
         'status',
     ];
 
     protected $casts = [
-        'amount_due' => 'decimal:2',
-        'due_date' => 'date',
+        'amount_due'  => 'decimal:2',
+        'paid_amount' => 'decimal:2',
+        'due_date'    => 'date',
     ];
 
     public function customer(): BelongsTo

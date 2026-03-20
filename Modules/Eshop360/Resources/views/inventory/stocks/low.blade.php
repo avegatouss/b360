@@ -150,19 +150,15 @@
 </div>
 
 @push('styles')
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
 @endpush
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    if (typeof jQuery !== 'undefined' && jQuery.fn.select2) {
-        jQuery('.select2-filter').select2({
-            theme: 'bootstrap-5', allowClear: true, width: '100%',
-        }).on('change', function () { this.closest('form').submit(); });
-    }
+jQuery(function ($) {
+    $('.select2-filter').select2({
+        theme: 'bootstrap-5', allowClear: true, width: '100%',
+    }).on('select2:select select2:clear', function () { $(this).closest('form')[0].submit(); });
 });
 </script>
 @endpush

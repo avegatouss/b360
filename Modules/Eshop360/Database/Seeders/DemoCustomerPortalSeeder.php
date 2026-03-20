@@ -136,6 +136,12 @@ final class DemoCustomerPortalSeeder
                 ['status' => 'active', 'created_at' => now(), 'updated_at' => now()]
             );
 
+            // Assign 'user' role for portal access
+            app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId($instanceId);
+            if (!$user->hasRole('user')) {
+                $user->assignRole('user');
+            }
+
             // Create customer linked to user
             $customer = Customer::withoutGlobalScopes()->updateOrCreate(
                 ['instance_id' => $instanceId, 'code' => $d['code']],

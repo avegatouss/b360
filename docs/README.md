@@ -15,7 +15,7 @@ Derniere verification globale apres le sous-lot 8c :
 
 ## Methodologie
 
-- lecture du plan `SAPHIR_CODIFARM_Plan_Dev.md`
+- lecture du plan de developpement initial
 - lecture des routes, controleurs, services, modeles, migrations et vues
 - verification du bootstrap Laravel via `php artisan route:list --name=eshop360`
 - verification de routes nommees via bootstrap applicatif
@@ -42,7 +42,7 @@ Derniere verification globale apres le sous-lot 8c :
 - `eshop/05-fournisseurs-achats-retours.md`
 - `eshop/06-importations-couts.md`
 - `eshop/07-facturation-devis-promotions.md`
-- `eshop/08-commandes-en-ligne-canaux-codifarm.md`
+- `eshop/08-commandes-en-ligne-canaux-revendeur.md`
 - `eshop/09-finance-comptabilite-charges.md`
 - `eshop/10-rapports-exports.md`
 - `eshop/11-rh-projets-communication.md`

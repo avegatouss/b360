@@ -52,4 +52,4 @@ Sections `15.1` a `15.7`, `16.1` a `16.3`, `22.1`.
 
 ## Impact client
 
-Le POS principal est maintenant exploitable pour un usage back-office robuste et couvre la caisse principale, la mise en attente et le recu. La marge de progression restante se situe surtout sur l'ergonomie avancee et les cas caisse les plus fins du plan SAPHIR/CODIFARM.
+Le POS principal est maintenant exploitable pour un usage back-office robuste et couvre la caisse principale, la mise en attente et le recu. La marge de progression restante se situe surtout sur l'ergonomie avancee et les cas caisse les plus fins du plan SAPHIR/revendeur.

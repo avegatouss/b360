@@ -17,25 +17,25 @@
     </div>
     <div class="card-body p-0">
         @if($recentOrders->isEmpty())
-            <div class="text-center text-muted py-4 small">Aucune commande</div>
+            <div class="text-center text-muted py-4">Aucune commande</div>
         @else
             <div class="table-responsive">
                 <table class="table table-sm table-hover mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th class="small">Ref</th>
-                            <th class="small">Client</th>
-                            <th class="small text-end">Total</th>
-                            <th class="small text-center">Statut</th>
+                            <th class="">Ref</th>
+                            <th class="">Client</th>
+                            <th class=" text-end">Total</th>
+                            <th class=" text-center">Statut</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($recentOrders as $order)
                             <tr>
-                                <td class="small fw-medium">{{ $order->reference }}</td>
-                                <td class="small text-truncate" style="max-width:120px;">{{ $order->customer->name ?? '—' }}</td>
-                                <td class="small text-end fw-bold">{{ number_format($order->total, 0, ',', ' ') }}</td>
-                                <td class="small text-center">
+                                <td class=" fw-medium">{{ $order->reference }}</td>
+                                <td class=" text-truncate" style="max-width:120px;">{{ $order->customer->name ?? '—' }}</td>
+                                <td class=" text-end fw-bold">{{ number_format($order->total, 0, ',', ' ') }}</td>
+                                <td class=" text-center">
                                     @php
                                         $statusClass = match($order->status) {
                                             'completed' => 'bg-success',
@@ -44,7 +44,7 @@
                                             default => 'bg-secondary',
                                         };
                                     @endphp
-                                    <span class="badge {{ $statusClass }} rounded-pill" style="font-size:.65rem;">{{ ucfirst($order->status) }}</span>
+                                    <span class="badge {{ $statusClass }} rounded-pill" style="font-size:.8rem;">{{ ucfirst($order->status) }}</span>
                                 </td>
                             </tr>
                         @endforeach

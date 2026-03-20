@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->foreignId('order_id')->nullable()->constrained('eshop_orders')->nullOnDelete();
             $table->decimal('total_margin', 15, 2);
             $table->decimal('debt_part', 15, 2);
-            $table->decimal('channel_part', 15, 2);  // was codifarm_part
+            $table->decimal('channel_part', 15, 2);  // was revendeur_part
             $table->decimal('owner_part', 15, 2);     // was saphir_part
             $table->timestamps();
         });

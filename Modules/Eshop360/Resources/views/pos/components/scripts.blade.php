@@ -388,3 +388,132 @@
     });
 })();
 </script>
+@push('scripts')
+<script>
+jQuery(function ($) {
+    var walletInfoEl = document.getElementById('pos-wallet-info');
+    var walletBalanceEl = document.getElementById('pos-wallet-balance');
+    var walletCreditEl = document.getElementById('pos-wallet-credit');
+    var paymentMethodSelect = document.getElementById('pos-payment-method');
+    var customerAccountEnabled = {{ !empty($settings['customer_account_enabled'] ?? false) ? 'true' : 'false' }};
+    var allowWalkin = {{ ($settings['allow_walkin_customer'] ?? true) ? 'true' : 'false' }};
+    var walletBaseUrl = '/i/' + @json($instance->slug ?? '') + '/pos/customers/';
+    var currentWalletAvailable = 0;
+
+    // ── Wallet balance fetch ──
+    function fetchWalletBalance(customerId) {
+        if (!customerId || !customerAccountEnabled) {
+            if (walletInfoEl) walletInfoEl.classList.add('d-none');
+            currentWalletAvailable = 0;
+            return;
+        }
+        fetch(walletBaseUrl + customerId + '/wallet', {
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (data) {
+            if (!data) return;
+            currentWalletAvailable = data.available || 0;
+            if (walletBalanceEl) walletBalanceEl.textContent = Math.round(data.wallet_balance).toLocaleString('fr-FR');
+            if (walletCreditEl) walletCreditEl.textContent = Math.round(data.credit_limit).toLocaleString('fr-FR');
+            toggleWalletInfo();
+        })
+        .catch(function () {});
+    }
+
+    function toggleWalletInfo() {
+        if (!walletInfoEl || !paymentMethodSelect) return;
+        var isWallet = paymentMethodSelect.value === 'wallet';
+        var customerId = document.getElementById('pos-checkout-customer')?.value;
+        walletInfoEl.classList.toggle('d-none', !(isWallet && customerId));
+    }
+
+    // ── Payment method Select2 ──
+    if (paymentMethodSelect) {
+        $(paymentMethodSelect).select2({
+            theme: 'bootstrap-5',
+            minimumResultsForSearch: Infinity,
+            width: '100%'
+        }).on('select2:select', function () {
+            toggleWalletInfo();
+        });
+    }
+
+    // ── Filter & customer Select2 ──
+    $('.pos-select2-filter').each(function () {
+        var $el = $(this);
+        var isCustomer = $el.attr('id') === 'pos-customer-select';
+        $el.select2({
+            theme: 'bootstrap-5',
+            allowClear: isCustomer ? allowWalkin : true,
+            width: '100%',
+            placeholder: $el.data('placeholder') || ''
+        }).on('select2:select select2:clear', function () {
+            if (isCustomer) {
+                var val = $el.val() || '';
+                var checkoutCustomer = document.getElementById('pos-checkout-customer');
+                if (checkoutCustomer) checkoutCustomer.value = val;
+                fetchWalletBalance(val);
+            } else {
+                var form = $el.closest('form');
+                if (form.length) form[0].submit();
+            }
+        });
+    });
+
+    // ── Auto-search with debounce ──
+    var searchInput = document.getElementById('pos-search-input');
+    var searchTimer = null;
+    if (searchInput) {
+        searchInput.addEventListener('input', function () {
+            clearTimeout(searchTimer);
+            var val = this.value.trim();
+            searchTimer = setTimeout(function () {
+                var form = searchInput.closest('form');
+                if (form) form.submit();
+            }, 500);
+        });
+        // Submit on Enter too
+        searchInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                clearTimeout(searchTimer);
+                var form = searchInput.closest('form');
+                if (form) form.submit();
+            }
+        });
+    }
+
+    // ── Checkout form validation ──
+    var checkoutForm = document.getElementById('pos-checkout-form');
+    if (checkoutForm) {
+        checkoutForm.addEventListener('submit', function (e) {
+            var customerId = document.getElementById('pos-checkout-customer')?.value;
+
+            // Customer required when walk-in is disabled
+            if (!allowWalkin && !customerId) {
+                e.preventDefault();
+                alert(@json(__('Veuillez selectionner un client avant de valider la vente.')));
+                $('#pos-customer-select').select2('open');
+                return;
+            }
+
+            // Wallet validation
+            if (paymentMethodSelect && paymentMethodSelect.value === 'wallet') {
+                if (!customerId) {
+                    e.preventDefault();
+                    alert(@json(__('Veuillez selectionner un client pour le paiement par compte.')));
+                    return;
+                }
+                var paidAmount = parseFloat(document.getElementById('pos-paid-amount')?.value) || 0;
+                if (paidAmount > currentWalletAvailable) {
+                    e.preventDefault();
+                    alert(@json(__('Solde insuffisant. Disponible: ')) + Math.round(currentWalletAvailable).toLocaleString('fr-FR'));
+                    return;
+                }
+            }
+        });
+    }
+});
+</script>
+@endpush

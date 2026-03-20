@@ -53,7 +53,7 @@ Section `22.1` a `22.3`.
 - volume de rapports : important
 - fiabilite des indicateurs : bonne sur le coeur et nettement meilleure sur les rapports avances testes
 - exports : `CSV` et `XLSX`
-- dashboard CODIFARM : accessible hors bloc rapports, pas encore integre comme cockpit unifie
+- dashboard revendeur : accessible hors bloc rapports, pas encore integre comme cockpit unifie
 
 ## Impact client
 

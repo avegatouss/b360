@@ -1,15 +1,15 @@
 <x-dashboard::layouts.master
-    :title="__('CODIFARM') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :title="__('Revendeur') . ' —' . ($instance->name ?? $instance->slug ?? 'B360')"
     :instance="$instance"
-    :pageTitle="__('CODIFARM')">
+    :pageTitle="__('Revendeur')">
 
     <div class="page-wrapper">
         <div class="content">
             <div class="page-header">
                 <div class="add-item d-flex">
                     <div class="page-title">
-                        <h4>{{ __('Rapport CODIFARM') }}</h4>
-                        <h6>{{ __('Resume des marges CODIFARM') }}</h6>
+                        <h4>{{ __('Rapport Revendeur') }}</h4>
+                        <h6>{{ __('Résumé des marges Revendeur') }}</h6>
                     </div>
                 </div>
                 <ul class="table-top-head">
@@ -65,7 +65,7 @@
                             <thead class="thead-light">
                                 <tr>
                                     <th>{{ __('Produit') }}</th>
-                                    <th>{{ __('Code CODIFARM') }}</th>
+                                    <th>{{ __('Code Revendeur') }}</th>
                                     <th>{{ __('Qte vendue') }}</th>
                                     <th>{{ __('Prix vente') }}</th>
                                     <th>{{ __('Prix achat') }}</th>
@@ -78,7 +78,7 @@
                                 @forelse($data['products'] ?? $data['items'] ?? [] as $row)
                                 <tr>
                                     <td>{{ $row['product'] ?? $row['name'] ?? '---' }}</td>
-                                    <td><code>{{ $row['codifarm'] ?? $row['code'] ?? '---' }}</code></td>
+                                    <td><code>{{ $row['revendeur'] ?? $row['code'] ?? '---' }}</code></td>
                                     <td>{{ $row['quantity'] ?? 0 }}</td>
                                     <td>{{ number_format($row['selling_price'] ?? 0, 2) }}</td>
                                     <td>{{ number_format($row['cost_price'] ?? 0, 2) }}</td>

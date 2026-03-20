@@ -313,7 +313,15 @@ class CustomerPortalController extends Controller
             })
             ->first();
 
-        abort_if(! $customer, 403, 'No customer profile is linked to this account.');
+        // Admin bypass: if user is admin, use first active customer or create a virtual context
+        if (! $customer && ($user->hasRole('super-admin') || $user->hasRole('instance-admin'))) {
+            $customer = Customer::query()
+                ->where('instance_id', $instance->id)
+                ->where('is_active', true)
+                ->first();
+        }
+
+        abort_if(! $customer, 403, 'No customer profile is linked to this account. Please create a customer with your email address or user ID.');
 
         return $customer;
     }

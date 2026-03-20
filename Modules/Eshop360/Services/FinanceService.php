@@ -7,6 +7,8 @@ use Modules\Eshop360\Models\Account;
 use Modules\Eshop360\Models\AccountTransaction;
 use Modules\Eshop360\Models\AccountTransfer;
 use Modules\Eshop360\Models\Customer;
+use Modules\Eshop360\Models\CustomerDue;
+use Modules\Eshop360\Models\CustomerTransaction;
 use Modules\Eshop360\Models\GiftCard;
 use Modules\Eshop360\Models\GiftCardTopup;
 use Modules\Eshop360\Models\InstallmentPlan;
@@ -127,14 +129,90 @@ class FinanceService
     }
 
     /**
-     * Debit customer wallet balance for a payment
+     * Debit customer wallet balance for a payment.
+     * If wallet_balance is insufficient but credit_limit allows, the difference
+     * is recorded as a CustomerDue (debt).
      */
     public function debitWallet(Customer $customer, float $amount, ?int $orderId = null): float
     {
         return DB::transaction(function () use ($customer, $amount, $orderId) {
-            $deducted = min((float) $customer->wallet_balance, $amount);
-            $customer->decrement('wallet_balance', $deducted);
-            return $deducted;
+            $walletBalance = (float) $customer->wallet_balance;
+            $deductedFromWallet = min($walletBalance, $amount);
+            $creditUsed = round($amount - $deductedFromWallet, 2);
+
+            if ($deductedFromWallet > 0) {
+                $customer->decrement('wallet_balance', $deductedFromWallet);
+            }
+
+            // Record the wallet transaction
+            CustomerTransaction::create([
+                'instance_id'    => $customer->instance_id,
+                'customer_id'    => $customer->id,
+                'type'           => 'debit',
+                'amount'         => $amount,
+                'reference_type' => $orderId ? Order::class : null,
+                'reference_id'   => $orderId,
+                'notes'          => $orderId ? "Paiement commande #$orderId" : 'Debit portefeuille',
+                'created_by'     => auth()->id(),
+            ]);
+
+            // If credit was used, create a CustomerDue for the debt portion
+            if ($creditUsed > 0) {
+                CustomerDue::create([
+                    'customer_id'  => $customer->id,
+                    'order_id'     => $orderId,
+                    'amount_due'   => $creditUsed,
+                    'paid_amount'  => 0,
+                    'status'       => 'pending',
+                    'due_date'     => now()->addDays(30),
+                ]);
+            }
+
+            return $amount;
+        });
+    }
+
+    /**
+     * Credit customer wallet (recharge / top-up).
+     */
+    public function creditWallet(Customer $customer, float $amount, ?string $notes = null, ?string $refType = null, ?int $refId = null): void
+    {
+        DB::transaction(function () use ($customer, $amount, $notes, $refType, $refId) {
+            $customer->increment('wallet_balance', $amount);
+
+            CustomerTransaction::create([
+                'instance_id'    => $customer->instance_id,
+                'customer_id'    => $customer->id,
+                'type'           => 'credit',
+                'amount'         => $amount,
+                'reference_type' => $refType,
+                'reference_id'   => $refId,
+                'notes'          => $notes ?? 'Rechargement portefeuille',
+                'created_by'     => auth()->id(),
+            ]);
+
+            // Auto-pay pending dues with the new balance
+            $pendingDues = CustomerDue::where('customer_id', $customer->id)
+                ->whereIn('status', ['pending', 'partial'])
+                ->orderBy('due_date')
+                ->get();
+
+            $remaining = $amount;
+            foreach ($pendingDues as $due) {
+                if ($remaining <= 0) {
+                    break;
+                }
+                $owed = (float) $due->amount_due - (float) $due->paid_amount;
+                $payment = min($remaining, $owed);
+                $due->increment('paid_amount', $payment);
+                $customer->decrement('wallet_balance', $payment);
+                if ((float) $due->paid_amount + $payment >= (float) $due->amount_due) {
+                    $due->update(['status' => 'paid']);
+                } else {
+                    $due->update(['status' => 'partial']);
+                }
+                $remaining = round($remaining - $payment, 2);
+            }
         });
     }
 

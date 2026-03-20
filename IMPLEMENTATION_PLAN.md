@@ -1,24 +1,24 @@
 # Plan d'implémentation — B360 vers 100%
 
-Référence : `SAPHIR_CODIFARM_Plan_Dev.md`
+Référence : plan de développement initial
 Date : 2026-03-16
 Avancement actuel estimé : **~100%** (toutes les phases implémentées le 2026-03-16)
 
 ---
 
-## Principe architectural : CODIFARM → Canaux de distribution génériques
+## Principe architectural : Revendeur → Canaux de distribution génériques
 
-Le plan SAPHIR-CODIFARM mentionne "CODIFARM" comme client interne.
+Le plan initial mentionne "revendeur" comme client interne.
 Dans B360, **`DistributionChannel`** est déjà le modèle générique :
 - Chaque canal a son `name`, `slug`, `margin_rate`, `buy_rate`, partage tripartite configurable
 - Le modèle `CodifarmMarginConfig` et le flag `is_codifarm` sur Order sont **à supprimer** au profit de `channel_id` + `ChannelMarginLog` (déjà existants)
-- Un canal = un "client interne" (CODIFARM, PHARMAPLUS, etc.) avec son propre portail, stock virtuel, marges
+- Un canal = un "client interne" (revendeur, PHARMAPLUS, etc.) avec son propre portail, stock virtuel, marges
 
-**Convention** : partout dans ce plan, "canal" = ancien concept "CODIFARM" mais généralisé.
+**Convention** : partout dans ce plan, "canal" = ancien concept "revendeur" mais généralisé.
 
 ---
 
-## PHASE 0 — Refactoring CODIFARM → Canaux génériques (Pré-requis)
+## PHASE 0 — Refactoring Revendeur → Canaux génériques (Pré-requis)
 
 **Durée estimée : 3-4 jours**
 
@@ -119,7 +119,7 @@ Dans B360, **`DistributionChannel`** est déjà le modèle générique :
 
 **Avancement actuel : 30% → Cible : 100%**
 
-### 2.1 Architecture portail canal (générique, remplace "espace CODIFARM")
+### 2.1 Architecture portail canal (générique, remplace "espace revendeur")
 - [ ] Nouveau prefix de routes : `/i/{slug}/channel/{channelSlug}/portal/...`
 - [ ] Middleware `ResolveChannel` : résout le canal depuis `{channelSlug}`, injecte dans request
 - [ ] Middleware `ChannelMember` : vérifie que l'user est associé au canal
@@ -161,7 +161,7 @@ Dans B360, **`DistributionChannel`** est déjà le modèle générique :
   - Clients associés au canal
   - CRUD limité (pas de suppression, seulement ajout/modification)
 
-### 2.7 Portail clients du canal (remplace "Portail clients CODIFARM")
+### 2.7 Portail clients du canal (remplace "Portail clients revendeur")
 - [ ] Routes : `/i/{slug}/channel/{channelSlug}/shop/...`
 - [ ] Réutiliser `CustomerPortalController` existant avec filtre canal :
   - Catalogue : produits du canal uniquement, prix canal
@@ -489,7 +489,7 @@ Vérifier/compléter les endpoints v1 :
 
 Endpoints v2 :
 - [ ] `GET /api/v2/dashboard` — données dashboard
-- [ ] `GET /api/v2/channels/{id}/margins` — marges d'un canal (remplace codifarm/margins)
+- [ ] `GET /api/v2/channels/{id}/margins` — marges d'un canal (remplace revendeur/margins)
 - [ ] `GET /api/v2/charges/realtime` — charges temps réel
 
 ### 9.3 Logs API
@@ -634,7 +634,7 @@ Les rôles actuels (super-admin, instance-admin, manager, agent, user) doivent �
 
 | Phase | Sujet | Priorité | Effort |
 |-------|-------|----------|--------|
-| **0** | Refactoring CODIFARM → Canaux | CRITIQUE | 3-4 jours |
+| **0** | Refactoring Revendeur → Canaux | CRITIQUE | 3-4 jours |
 | **1** | Sécurité avancée | HAUTE | 5-7 jours |
 | **2** | Portails canaux génériques | HAUTE | 7-10 jours |
 | **3** | Communication complète | MOYENNE | 5-7 jours |
@@ -655,16 +655,16 @@ Les rôles actuels (super-admin, instance-admin, manager, agent, user) doivent �
 
 ## Checklist de validation finale (100%)
 
-- [ ] Tous les modules du plan SAPHIR-CODIFARM implémentés
-- [ ] "CODIFARM" remplacé par canaux de distribution génériques
+- [ ] Tous les modules du plan initial implémentés
+- [ ] "Revendeur" remplacé par canaux de distribution génériques
 - [ ] 2FA + reCAPTCHA + IP whitelist fonctionnels
 - [ ] 9 passerelles de paiement actives
 - [ ] 7 passerelles SMS configurables
 - [ ] Impression ESCPOS fonctionnelle
 - [ ] 10 templates PDF disponibles
 - [ ] 26 rapports exportables
-- [ ] Portail canal générique (remplace espace CODIFARM)
-- [ ] Portail clients canal (remplace portail clients CODIFARM)
+- [ ] Portail canal générique (remplace espace revendeur)
+- [ ] Portail clients canal (remplace portail clients revendeur)
 - [ ] Tâches cron configurées et monitorées
 - [ ] Backup/restauration fonctionnel
 - [ ] Tests couvrant les modules critiques (>60% coverage)
