@@ -134,8 +134,73 @@ class EshopSettingsService
         Cache::forget($this->cacheKey($group, $instanceId));
     }
 
+    /**
+     * Get settings for a group scoped to a channel, with fallback to instance-level.
+     */
+    public function getForChannel(string $group, int $channelId, ?int $instanceId = null): array
+    {
+        $instanceId ??= CurrentInstance::get()?->id ?? 0;
+        $cacheKey = $this->channelCacheKey($group, $instanceId, $channelId);
+
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($group, $instanceId, $channelId) {
+            $channelRecord = EshopModuleSetting::where('instance_id', $instanceId)
+                ->where('group', $group)
+                ->where('channel_id', $channelId)
+                ->first();
+
+            if ($channelRecord) {
+                $defaults = self::$defaults[$group] ?? [];
+                return array_merge($defaults, $channelRecord->data);
+            }
+
+            // Fallback to instance-level settings
+            return $this->get($group, $instanceId);
+        });
+    }
+
+    /**
+     * Save settings for a group scoped to a channel.
+     */
+    public function setForChannel(string $group, array $data, int $channelId, ?int $instanceId = null): void
+    {
+        $instanceId ??= CurrentInstance::get()?->id ?? 0;
+
+        EshopModuleSetting::updateOrCreate(
+            ['instance_id' => $instanceId, 'group' => $group, 'channel_id' => $channelId],
+            ['data' => $data],
+        );
+
+        $cacheKey = $this->channelCacheKey($group, $instanceId, $channelId);
+        $defaults = self::$defaults[$group] ?? [];
+        Cache::put($cacheKey, array_merge($defaults, $data), self::CACHE_TTL);
+    }
+
+    /**
+     * Get a single value from channel-scoped settings.
+     */
+    public function channelValue(string $group, string $key, int $channelId, mixed $default = null): mixed
+    {
+        $settings = $this->getForChannel($group, $channelId);
+
+        return $settings[$key] ?? $default;
+    }
+
+    /**
+     * Forget cached channel settings.
+     */
+    public function forgetChannel(string $group, int $channelId, ?int $instanceId = null): void
+    {
+        $instanceId ??= CurrentInstance::get()?->id ?? 0;
+        Cache::forget($this->channelCacheKey($group, $instanceId, $channelId));
+    }
+
     private function cacheKey(string $group, int $instanceId): string
     {
         return "eshop_settings_{$group}_{$instanceId}";
+    }
+
+    private function channelCacheKey(string $group, int $instanceId, int $channelId): string
+    {
+        return "eshop_settings_{$group}_{$instanceId}_ch_{$channelId}";
     }
 }

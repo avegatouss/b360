@@ -5,6 +5,10 @@
     $sidebarBg = $portalSettings['sidebar_bg'] ?? '#1e293b';
     $instance = \Modules\Core\Support\CurrentInstance::get();
     $slug = $instance->slug ?? '';
+    $channelUserRole = request()->channel_user_role ?? 'viewer';
+    $isManager = $channelUserRole === 'manager';
+    $isOperatorOrAbove = in_array($channelUserRole, ['manager', 'operator']);
+    $chParam = $channel->slug ?? $channel->id;
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
@@ -161,41 +165,88 @@
     </div>
     <ul class="cp-nav">
         <li>
-            <a href="{{ route('eshop360.channel-portal.dashboard', [$slug, $channel->slug ?? $channel->id]) }}"
+            <a href="{{ route('eshop360.channel-portal.dashboard', [$slug, $chParam]) }}"
                class="{{ request()->routeIs('eshop360.channel-portal.dashboard') ? 'active' : '' }}">
                 <i class="ti ti-dashboard"></i> Tableau de bord
             </a>
         </li>
+
+        @if($isOperatorOrAbove)
         <li>
-            <a href="{{ route('eshop360.channel-portal.orders.index', [$slug, $channel->slug ?? $channel->id]) }}"
+            <a href="{{ route('eshop360.channel-portal.pos.index', [$slug, $chParam]) }}"
+               class="{{ request()->routeIs('eshop360.channel-portal.pos.*') ? 'active' : '' }}">
+                <i class="ti ti-device-desktop"></i> Terminal POS
+            </a>
+        </li>
+        @endif
+
+        <li>
+            <a href="{{ route('eshop360.channel-portal.orders.index', [$slug, $chParam]) }}"
                class="{{ request()->routeIs('eshop360.channel-portal.orders.*') ? 'active' : '' }}">
                 <i class="ti ti-shopping-cart"></i> Commandes
             </a>
         </li>
         <li>
-            <a href="{{ route('eshop360.channel-portal.stock.index', [$slug, $channel->slug ?? $channel->id]) }}"
-               class="{{ request()->routeIs('eshop360.channel-portal.stock.*') ? 'active' : '' }}">
-                <i class="ti ti-package"></i> Stock
-            </a>
-        </li>
-        <li>
-            <a href="{{ route('eshop360.channel-portal.sales.index', [$slug, $channel->slug ?? $channel->id]) }}"
+            <a href="{{ route('eshop360.channel-portal.sales.index', [$slug, $chParam]) }}"
                class="{{ request()->routeIs('eshop360.channel-portal.sales.*') ? 'active' : '' }}">
                 <i class="ti ti-receipt"></i> Ventes
             </a>
         </li>
         <li>
-            <a href="{{ route('eshop360.channel-portal.customers.index', [$slug, $channel->slug ?? $channel->id]) }}"
+            <a href="{{ route('eshop360.channel-portal.stock.index', [$slug, $chParam]) }}"
+               class="{{ request()->routeIs('eshop360.channel-portal.stock.index') ? 'active' : '' }}">
+                <i class="ti ti-package"></i> Stock
+            </a>
+        </li>
+
+        @if($isOperatorOrAbove)
+        <li>
+            <a href="{{ route('eshop360.channel-portal.stock.adjustments', [$slug, $chParam]) }}"
+               class="{{ request()->routeIs('eshop360.channel-portal.stock.adjustments*') ? 'active' : '' }}">
+                <i class="ti ti-adjustments"></i> Ajustements stock
+            </a>
+        </li>
+        <li>
+            <a href="{{ route('eshop360.channel-portal.returns.index', [$slug, $chParam]) }}"
+               class="{{ request()->routeIs('eshop360.channel-portal.returns.*') ? 'active' : '' }}">
+                <i class="ti ti-arrow-back-up"></i> Retours
+            </a>
+        </li>
+        @endif
+
+        <li>
+            <a href="{{ route('eshop360.channel-portal.customers.index', [$slug, $chParam]) }}"
                class="{{ request()->routeIs('eshop360.channel-portal.customers.*') ? 'active' : '' }}">
                 <i class="ti ti-users"></i> Clients
             </a>
         </li>
+
+        @if($isManager)
         <li>
-            <a href="{{ route('eshop360.channel-portal.margins.index', [$slug, $channel->slug ?? $channel->id]) }}"
+            <a href="{{ route('eshop360.channel-portal.margins.index', [$slug, $chParam]) }}"
                class="{{ request()->routeIs('eshop360.channel-portal.margins.*') ? 'active' : '' }}">
                 <i class="ti ti-chart-bar"></i> Marges
             </a>
         </li>
+        <li>
+            <a href="{{ route('eshop360.channel-portal.promotions.coupons.index', [$slug, $chParam]) }}"
+               class="{{ request()->routeIs('eshop360.channel-portal.promotions.*') ? 'active' : '' }}">
+                <i class="ti ti-discount"></i> Promotions
+            </a>
+        </li>
+        <li>
+            <a href="{{ route('eshop360.channel-portal.reports.sales', [$slug, $chParam]) }}"
+               class="{{ request()->routeIs('eshop360.channel-portal.reports.*') ? 'active' : '' }}">
+                <i class="ti ti-report-analytics"></i> Rapports
+            </a>
+        </li>
+        <li>
+            <a href="{{ route('eshop360.channel-portal.settings.pos', [$slug, $chParam]) }}"
+               class="{{ request()->routeIs('eshop360.channel-portal.settings.*') ? 'active' : '' }}">
+                <i class="ti ti-settings"></i> Paramètres
+            </a>
+        </li>
+        @endif
     </ul>
 
     {{-- Back to main app --}}

@@ -122,6 +122,7 @@ final class Eshop360ServiceProvider extends ServiceProvider
         // Channel portal middlewares
         $router->aliasMiddleware('eshop.channel.resolve', \Modules\Eshop360\Http\Middleware\ResolveChannel::class);
         $router->aliasMiddleware('eshop.channel.member', \Modules\Eshop360\Http\Middleware\ChannelMember::class);
+        $router->aliasMiddleware('eshop.channel.role', \Modules\Eshop360\Http\Middleware\ChannelRole::class);
 
         // Register console commands
         if ($this->app->runningInConsole()) {

@@ -114,4 +114,24 @@ class DistributionChannel extends Model
     {
         return round($pght * (1 + $this->buy_rate), 4);
     }
+
+    public function customers(): HasMany
+    {
+        return $this->hasMany(Customer::class, 'channel_id');
+    }
+
+    public function cashRegisters(): HasMany
+    {
+        return $this->hasMany(CashRegister::class, 'channel_id');
+    }
+
+    public function holdings(): HasMany
+    {
+        return $this->hasMany(Holding::class, 'channel_id');
+    }
+
+    public function coupons(): HasMany
+    {
+        return $this->hasMany(Coupon::class, 'channel_id');
+    }
 }

@@ -17,6 +17,7 @@ class Customer extends Model
 
     protected $fillable = [
         'instance_id',
+        'channel_id',
         'user_id',
         'group_id',
         'store_id',
@@ -50,6 +51,22 @@ class Customer extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function channel(): BelongsTo
+    {
+        return $this->belongsTo(DistributionChannel::class, 'channel_id');
+    }
+
+    /**
+     * Scope: customers visible to a given channel (channel's own + shared).
+     */
+    public function scopeVisibleToChannel($query, int $channelId)
+    {
+        return $query->where(function ($q) use ($channelId) {
+            $q->where('channel_id', $channelId)
+              ->orWhereNull('channel_id');
+        });
     }
 
     public function orders(): HasMany

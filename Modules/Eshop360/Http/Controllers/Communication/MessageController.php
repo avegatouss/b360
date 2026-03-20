@@ -3,7 +3,9 @@
 namespace Modules\Eshop360\Http\Controllers\Communication;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Modules\Eshop360\Models\Message;
 use Modules\Core\Support\CurrentInstance;
 
@@ -15,7 +17,9 @@ class MessageController extends Controller
             ->with('sender')
             ->latest()
             ->paginate(20);
-        return view('eshop360::communication.inbox', compact('messages'));
+        $users = $this->getRecipients();
+        $unreadCount = Message::where('to_user_id', auth()->id())->whereNull('read_at')->count();
+        return view('eshop360::communication.inbox', compact('messages', 'users', 'unreadCount'));
     }
 
     public function sent()
@@ -24,7 +28,23 @@ class MessageController extends Controller
             ->with('receiver')
             ->latest()
             ->paginate(20);
-        return view('eshop360::communication.sent', compact('messages'));
+        $users = $this->getRecipients();
+        return view('eshop360::communication.sent', compact('messages', 'users'));
+    }
+
+    private function getRecipients()
+    {
+        $instance = CurrentInstance::get();
+        $userIds = DB::connection('system')->table('instance_user')
+            ->where('instance_id', $instance->id)
+            ->where('status', 'active')
+            ->where('user_id', '!=', auth()->id())
+            ->pluck('user_id');
+
+        return User::whereIn('id', $userIds)
+            ->where('is_active', true)
+            ->orderBy('full_name')
+            ->get(['id', 'full_name', 'email']);
     }
 
     public function show(Message $message)

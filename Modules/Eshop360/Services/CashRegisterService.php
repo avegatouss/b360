@@ -10,15 +10,18 @@ class CashRegisterService
     /**
      * Open a cash register
      */
-    public function open(int $instanceId, float $openingAmount, ?int $storeId = null): CashRegister
+    public function open(int $instanceId, float $openingAmount, ?int $storeId = null, ?int $channelId = null): CashRegister
     {
-        // Close any previously open register for this user
-        CashRegister::where('user_id', auth()->id())
-            ->where('status', 'open')
-            ->update(['status' => 'closed', 'closed_at' => now()]);
+        // Close any previously open register for this user (same channel scope)
+        $query = CashRegister::where('user_id', auth()->id())->where('status', 'open');
+        if ($channelId) {
+            $query->where('channel_id', $channelId);
+        }
+        $query->update(['status' => 'closed', 'closed_at' => now()]);
 
         return CashRegister::create([
             'instance_id' => $instanceId,
+            'channel_id' => $channelId,
             'store_id' => $storeId,
             'user_id' => auth()->id(),
             'opening_amount' => $openingAmount,
@@ -49,13 +52,20 @@ class CashRegisterService
     /**
      * Get the current open register for the authenticated user
      */
-    public function getCurrentRegister(): ?CashRegister
+    public function getCurrentRegister(?int $channelId = null): ?CashRegister
     {
-        return CashRegister::where('user_id', auth()->id())
+        $query = CashRegister::where('user_id', auth()->id())
             ->where('status', 'open')
             ->with('store')
-            ->latest('opened_at')
-            ->first();
+            ->latest('opened_at');
+
+        if ($channelId) {
+            $query->where('channel_id', $channelId);
+        } else {
+            $query->whereNull('channel_id');
+        }
+
+        return $query->first();
     }
 
     public function expectedAmount(CashRegister $register): float

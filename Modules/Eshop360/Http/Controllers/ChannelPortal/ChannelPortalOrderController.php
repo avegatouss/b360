@@ -7,12 +7,15 @@ use Illuminate\Http\Request;
 use Modules\Core\Support\CurrentInstance;
 use Modules\Eshop360\Models\Order;
 use Modules\Eshop360\Models\OrderItem;
+use Modules\Eshop360\Models\Product;
 use Modules\Eshop360\Services\MarginService;
+use Modules\Eshop360\Services\StockService;
 
 class ChannelPortalOrderController extends Controller
 {
     public function __construct(
-        private MarginService $marginService
+        private MarginService $marginService,
+        private StockService $stockService,
     ) {}
 
     /**
@@ -164,6 +167,25 @@ class ChannelPortalOrderController extends Controller
 
         // Trigger margin calculation
         $this->marginService->syncOrderMargins($order);
+
+        // Auto-increment stock in channel's warehouse
+        if ($channel->warehouse_id) {
+            $order->load('items.product');
+            foreach ($order->items as $item) {
+                if ($item->product) {
+                    $this->stockService->adjustStock(
+                        $item->product,
+                        $channel->warehouse_id,
+                        $item->quantity,
+                        'in',
+                        "Réception canal: Commande #{$order->order_number}",
+                        auth()->id(),
+                        Order::class,
+                        $order->id,
+                    );
+                }
+            }
+        }
 
         return redirect()->route('eshop360.channel-portal.orders.show', [
             $instance->slug,

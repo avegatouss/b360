@@ -164,6 +164,18 @@ final class Eshop360HooksProvider implements RegistersHooks
             visibleWhen: fn ($user, $instance) => $user && $user->hasRole('user'),
         ));
 
+        $registry->addMenu(new MenuItem(
+            id: 'eshop360.my_orders.messages',
+            label: 'Messagerie',
+            route: 'eshop360.messages.inbox',
+            priority: 770,
+            requiredModule: 'Eshop360',
+            group: 'main',
+            activePattern: 'eshop360.messages.*',
+            parentId: 'eshop360.my_orders',
+            visibleWhen: fn ($user, $instance) => $user && $user->hasRole('user'),
+        ));
+
         // =====================================================================
         // E-Shop (parent) — hidden from 'user' role
         // =====================================================================

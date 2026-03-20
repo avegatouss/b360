@@ -11,7 +11,7 @@ class HoldingService
     /**
      * Create a holding from current cart
      */
-    public function createFromCart(CartService $cart, int $instanceId, ?int $customerId = null, ?string $notes = null): Holding
+    public function createFromCart(CartService $cart, int $instanceId, ?int $customerId = null, ?string $notes = null, ?int $channelId = null): Holding
     {
         return $this->createFromSnapshot(
             $cart->getCart(),
@@ -26,6 +26,7 @@ class HoldingService
             $instanceId,
             $customerId,
             $notes,
+            $channelId,
         );
     }
 
@@ -43,9 +44,11 @@ class HoldingService
         int $instanceId,
         ?int $customerId = null,
         ?string $notes = null,
+        ?int $channelId = null,
     ): Holding {
         return Holding::create([
             'instance_id' => $instanceId,
+            'channel_id' => $channelId,
             'customer_id' => $customerId,
             'reference' => 'HLD-' . strtoupper(Str::random(6)),
             'items' => [
@@ -86,12 +89,19 @@ class HoldingService
     /**
      * Get all active holdings for an instance
      */
-    public function getActiveHoldings(int $instanceId): \Illuminate\Database\Eloquent\Collection
+    public function getActiveHoldings(int $instanceId, ?int $channelId = null): \Illuminate\Database\Eloquent\Collection
     {
-        return Holding::where('instance_id', $instanceId)
+        $query = Holding::where('instance_id', $instanceId)
             ->with('customer')
-            ->latest()
-            ->get();
+            ->latest();
+
+        if ($channelId) {
+            $query->where('channel_id', $channelId);
+        } else {
+            $query->whereNull('channel_id');
+        }
+
+        return $query->get();
     }
 
     /**

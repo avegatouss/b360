@@ -5,6 +5,7 @@ namespace Modules\Eshop360\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Modules\Core\Database\Traits\BelongsToInstance;
 
 class Coupon extends Model
@@ -15,6 +16,7 @@ class Coupon extends Model
 
     protected $fillable = [
         'instance_id',
+        'channel_id',
         'name',
         'code',
         'description',
@@ -35,6 +37,24 @@ class Coupon extends Model
         'valid_until' => 'date',
         'is_active' => 'boolean',
     ];
+
+    public function channel(): BelongsTo
+    {
+        return $this->belongsTo(DistributionChannel::class, 'channel_id');
+    }
+
+    /**
+     * Scope: coupons visible to a channel (channel's own + instance-wide).
+     */
+    public function scopeVisibleToChannel(Builder $query, ?int $channelId): Builder
+    {
+        return $query->where(function ($q) use ($channelId) {
+            $q->whereNull('channel_id');
+            if ($channelId) {
+                $q->orWhere('channel_id', $channelId);
+            }
+        });
+    }
 
     public function scopeValid(Builder $query): Builder
     {

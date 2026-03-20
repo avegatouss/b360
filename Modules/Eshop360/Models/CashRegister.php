@@ -18,6 +18,7 @@ class CashRegister extends Model
 
     protected $fillable = [
         'instance_id',
+        'channel_id',
         'store_id',
         'user_id',
         'opening_amount',
@@ -42,6 +43,11 @@ class CashRegister extends Model
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
+    }
+
+    public function channel(): BelongsTo
+    {
+        return $this->belongsTo(DistributionChannel::class, 'channel_id');
     }
 
     public function user(): BelongsTo

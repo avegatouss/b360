@@ -170,11 +170,11 @@
                     <div class="modal-body">
                         <div class="mb-3">
                             <label class="form-label">{{ __('Destinataire') }}</label>
-                            <select name="recipient_id" class="form-select select2" required>
+                            <select name="to_user_id" class="form-select select2" required>
                                 <option value="">{{ __('Selectionner un destinataire') }}</option>
                                 @if(isset($users))
                                     @foreach($users as $user)
-                                        <option value="{{ $user->id }}">{{ $user->name }}</option>
+                                        <option value="{{ $user->id }}">{{ $user->full_name }} ({{ $user->email }})</option>
                                     @endforeach
                                 @endif
                             </select>

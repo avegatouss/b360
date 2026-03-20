@@ -242,17 +242,122 @@ class CustomerPortalController extends Controller
     public function orders(Request $request, string $slug)
     {
         $customer = $this->resolveCustomer();
+        $source = $request->input('source', 'all');
+        $instanceId = $customer->instance_id;
+        $customerId = $customer->id;
 
-        $orders = OnlineOrder::query()
-            ->where('instance_id', $customer->instance_id)
-            ->where('customer_id', $customer->id)
-            ->with(['items.product', 'channel'])
-            ->when($request->filled('status'), fn ($query) => $query->where('status', (string) $request->string('status')))
-            ->latest()
+        // ── Stats globales (toujours sur TOUTES les donnees, pas la page courante) ──
+        $statsOnline = \Illuminate\Support\Facades\DB::table('eshop_online_orders')
+            ->where('instance_id', $instanceId)
+            ->where('customer_id', $customerId)
+            ->selectRaw("
+                COUNT(*) as total,
+                SUM(CASE WHEN status IN ('pending_validation','validated','preparing') THEN 1 ELSE 0 END) as pending,
+                COALESCE(SUM(total), 0) as revenue
+            ")->first();
+
+        $statsStore = \Illuminate\Support\Facades\DB::table('eshop_orders')
+            ->where('instance_id', $instanceId)
+            ->where('customer_id', $customerId)
+            ->selectRaw("
+                COUNT(*) as total,
+                SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
+                COALESCE(SUM(total), 0) as revenue,
+                COALESCE(SUM(paid_amount), 0) as paid,
+                COALESCE(SUM(due_amount), 0) as due
+            ")->first();
+
+        $globalStats = (object) [
+            'total' => (int) $statsOnline->total + (int) $statsStore->total,
+            'online_count' => (int) $statsOnline->total,
+            'store_count' => (int) $statsStore->total,
+            'pending_count' => (int) $statsOnline->pending + (int) $statsStore->pending,
+            'total_revenue' => (float) $statsOnline->revenue + (float) $statsStore->revenue,
+            'total_paid' => (float) ($statsStore->paid ?? 0),
+            'total_due' => (float) ($statsStore->due ?? 0),
+        ];
+
+        // ── Union query pour pagination DB ──
+        $onlineQuery = \Illuminate\Support\Facades\DB::table('eshop_online_orders as o')
+            ->leftJoin('eshop_distribution_channels as ch', 'o.channel_id', '=', 'ch.id')
+            ->where('o.instance_id', $instanceId)
+            ->where('o.customer_id', $customerId)
+            ->when($request->filled('status') && $source !== 'store', fn ($q) => $q->where('o.status', $request->input('status')))
+            ->selectRaw("o.id, o.reference as reference, o.total, o.status, 'online' as source_type, NULL as payment_status, ch.name as channel_name, o.created_at");
+
+        $storeQuery = \Illuminate\Support\Facades\DB::table('eshop_orders as o')
+            ->where('o.instance_id', $instanceId)
+            ->where('o.customer_id', $customerId)
+            ->when($request->filled('status') && $source !== 'online', fn ($q) => $q->where('o.status', $request->input('status')))
+            ->selectRaw("o.id, COALESCE(o.order_number, CONCAT('ORD-', o.id)) as reference, o.total, o.status, o.source as source_type, o.payment_status, NULL as channel_name, o.created_at");
+
+        if ($source === 'online') {
+            $combinedQuery = $onlineQuery;
+        } elseif ($source === 'store') {
+            $combinedQuery = $storeQuery;
+        } else {
+            $combinedQuery = $onlineQuery->unionAll($storeQuery);
+        }
+
+        $orders = \Illuminate\Support\Facades\DB::query()
+            ->fromSub($combinedQuery, 'combined')
+            ->orderByDesc('created_at')
             ->paginate(15)
             ->withQueryString();
 
-        return view('eshop360::portal.orders', compact('customer', 'orders'));
+        // Map to objects with proper labels and URLs
+        $orders->getCollection()->transform(function ($row) use ($slug) {
+            $row->total = (float) $row->total;
+            $row->created_at = \Carbon\Carbon::parse($row->created_at);
+            $isOnline = $row->source_type === 'online';
+            $row->source_label = $isOnline ? __('Portail') : ($row->source_type === 'pos' ? __('Magasin') : __('Manuel'));
+            $row->show_url = $isOnline
+                ? route('eshop360.portal.orders.show', [$slug, $row->id])
+                : route('eshop360.portal.orders.store-show', [$slug, $row->id]);
+            $row->source_type = $isOnline ? 'online' : 'store';
+            return $row;
+        });
+
+        return view('eshop360::portal.orders', compact('customer', 'orders', 'source', 'globalStats'));
+    }
+
+    public function printStoreOrder(string $slug, \Modules\Eshop360\Models\Order $order)
+    {
+        $customer = $this->resolveCustomer();
+        abort_unless((int) $order->customer_id === (int) $customer->id, 403);
+        $order->loadMissing(['items.product', 'store', 'customer']);
+
+        $settings = app(\Modules\Eshop360\Services\EshopSettingsService::class)->get('invoice');
+        $instance = CurrentInstance::get();
+
+        return view('eshop360::portal.print-order', compact('order', 'customer', 'settings', 'instance'));
+    }
+
+    public function printOnlineOrder(string $slug, OnlineOrder $onlineOrder)
+    {
+        $customer = $this->resolveCustomer();
+        abort_unless((int) $onlineOrder->customer_id === (int) $customer->id, 403);
+        $onlineOrder->loadMissing(['items.product', 'channel']);
+
+        $settings = app(\Modules\Eshop360\Services\EshopSettingsService::class)->get('invoice');
+        $instance = CurrentInstance::get();
+
+        return view('eshop360::portal.print-online-order', compact('onlineOrder', 'customer', 'settings', 'instance'));
+    }
+
+    public function showStoreOrder(string $slug, \Modules\Eshop360\Models\Order $order)
+    {
+        $customer = $this->resolveCustomer();
+
+        abort_unless(
+            (int) $order->customer_id === (int) $customer->id && (int) $order->instance_id === (int) $customer->instance_id,
+            403,
+            'This order does not belong to you.'
+        );
+
+        $order->loadMissing(['items.product', 'store', 'warehouse']);
+
+        return view('eshop360::portal.show-store-order', compact('customer', 'order'));
     }
 
     public function showOrder(string $slug, OnlineOrder $onlineOrder)

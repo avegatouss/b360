@@ -10,21 +10,41 @@ use Modules\Eshop360\Models\ProductVariation;
 
 class CartService
 {
+    private ?int $channelId = null;
+
+    /**
+     * Create a cart service scoped to a specific channel.
+     */
+    public static function forChannel(int $channelId): static
+    {
+        $service = new static();
+        $service->channelId = $channelId;
+        return $service;
+    }
+
+    public function getChannelId(): ?int
+    {
+        return $this->channelId;
+    }
+
     // ─── Session Keys ────────────────────────────────
 
     public function cartKey(): string
     {
-        return 'eshop_cart_instance_' . $this->instanceId();
+        $key = 'eshop_cart_instance_' . $this->instanceId();
+        return $this->channelId ? $key . '_channel_' . $this->channelId : $key;
     }
 
     public function couponKey(): string
     {
-        return 'eshop_cart_coupon_instance_' . $this->instanceId();
+        $key = 'eshop_cart_coupon_instance_' . $this->instanceId();
+        return $this->channelId ? $key . '_channel_' . $this->channelId : $key;
     }
 
     public function contextKey(): string
     {
-        return 'eshop_cart_context_instance_' . $this->instanceId();
+        $key = 'eshop_cart_context_instance_' . $this->instanceId();
+        return $this->channelId ? $key . '_channel_' . $this->channelId : $key;
     }
 
     private function instanceId(): int
@@ -346,12 +366,18 @@ class CartService
 
         $instanceId = $this->instanceId();
 
+        $where = ['instance_id' => $instanceId, 'user_id' => $userId];
+        if ($this->channelId) {
+            $where['channel_id'] = $this->channelId;
+        }
+
         PersistentCart::updateOrCreate(
-            ['instance_id' => $instanceId, 'user_id' => $userId],
+            $where,
             [
                 'items' => $this->getCart(),
                 'coupon' => $this->getCoupon(),
                 'context' => $this->getContext(),
+                'channel_id' => $this->channelId,
                 'expires_at' => now()->addDays(7),
             ],
         );
@@ -375,12 +401,19 @@ class CartService
 
         $instanceId = $this->instanceId();
 
-        $saved = PersistentCart::where('instance_id', $instanceId)
+        $query = PersistentCart::where('instance_id', $instanceId)
             ->where('user_id', $userId)
-            ->where(function ($query) {
-                $query->whereNull('expires_at')->orWhere('expires_at', '>', now());
-            })
-            ->first();
+            ->where(function ($q) {
+                $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
+            });
+
+        if ($this->channelId) {
+            $query->where('channel_id', $this->channelId);
+        } else {
+            $query->whereNull('channel_id');
+        }
+
+        $saved = $query->first();
 
         if (!$saved || empty($saved->items)) {
             return false;
@@ -409,8 +442,15 @@ class CartService
             return;
         }
 
-        PersistentCart::where('instance_id', $this->instanceId())
-            ->where('user_id', $userId)
-            ->delete();
+        $query = PersistentCart::where('instance_id', $this->instanceId())
+            ->where('user_id', $userId);
+
+        if ($this->channelId) {
+            $query->where('channel_id', $this->channelId);
+        } else {
+            $query->whereNull('channel_id');
+        }
+
+        $query->delete();
     }
 }

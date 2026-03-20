@@ -58,6 +58,14 @@ use Modules\Eshop360\Http\Controllers\ChannelPortal\ChannelPortalStockController
 use Modules\Eshop360\Http\Controllers\ChannelPortal\ChannelPortalSaleController;
 use Modules\Eshop360\Http\Controllers\ChannelPortal\ChannelPortalCustomerController;
 use Modules\Eshop360\Http\Controllers\ChannelPortal\ChannelPortalMarginController;
+use Modules\Eshop360\Http\Controllers\ChannelPortal\ChannelPortalPosController;
+use Modules\Eshop360\Http\Controllers\ChannelPortal\ChannelPortalCartController;
+use Modules\Eshop360\Http\Controllers\ChannelPortal\ChannelPortalCheckoutController;
+use Modules\Eshop360\Http\Controllers\ChannelPortal\ChannelPortalCashRegisterController;
+use Modules\Eshop360\Http\Controllers\ChannelPortal\ChannelPortalSettingsController;
+use Modules\Eshop360\Http\Controllers\ChannelPortal\ChannelPortalPromotionController;
+use Modules\Eshop360\Http\Controllers\ChannelPortal\ChannelPortalReturnController;
+use Modules\Eshop360\Http\Controllers\ChannelPortal\ChannelPortalReportController;
 use Modules\Eshop360\Http\Controllers\ChannelPortal\ChannelShopController;
 use Modules\Eshop360\Http\Controllers\Notification\NotificationController;
 use Modules\Eshop360\Http\Controllers\Printing\ReceiptTemplateController;
@@ -242,6 +250,9 @@ Route::middleware([
         Route::delete('/cart', [CustomerPortalController::class, 'clearCart'])->name('cart.clear');
         Route::post('/checkout', [CustomerPortalController::class, 'checkout'])->name('checkout');
         Route::get('/orders', [CustomerPortalController::class, 'orders'])->name('orders.index');
+        Route::get('/orders/store/{order}', [CustomerPortalController::class, 'showStoreOrder'])->name('orders.store-show');
+        Route::get('/orders/store/{order}/print', [CustomerPortalController::class, 'printStoreOrder'])->name('orders.store-print');
+        Route::get('/orders/{onlineOrder}/print', [CustomerPortalController::class, 'printOnlineOrder'])->name('orders.print');
         Route::get('/orders/{onlineOrder}', [CustomerPortalController::class, 'showOrder'])->name('orders.show');
         Route::match(['put', 'patch'], '/orders/{onlineOrder}/received', [CustomerPortalController::class, 'confirmReceived'])->name('orders.received');
         Route::match(['put', 'patch'], '/orders/{onlineOrder}/cancel', [CustomerPortalController::class, 'cancelOrder'])->name('orders.cancel');
@@ -515,8 +526,8 @@ Route::middleware([
         Route::delete('/{onlineOrder}', [OnlineOrderController::class, 'destroy'])->middleware('can:eshop.sales.manage')->name('destroy');
     });
 
-    // ─── Communication: Messages ─────────────────────
-    Route::prefix('messages')->name('eshop360.messages.')->middleware('can:eshop.customers.view')->group(function () {
+    // ─── Communication: Messages (accessible by all authenticated users including clients) ──
+    Route::prefix('messages')->name('eshop360.messages.')->group(function () {
         Route::get('/inbox', [MessageController::class, 'inbox'])->name('inbox');
         Route::get('/sent', [MessageController::class, 'sent'])->name('sent');
         Route::get('/{message}', [MessageController::class, 'show'])->name('show');
@@ -686,6 +697,7 @@ Route::middleware([
         ->group(function () {
             Route::get('/', [ChannelPortalDashboardController::class, 'index'])->name('dashboard');
 
+            // ─── Existing routes (all roles) ───
             Route::get('/orders', [ChannelPortalOrderController::class, 'index'])->name('orders.index');
             Route::get('/orders/create', [ChannelPortalOrderController::class, 'create'])->name('orders.create');
             Route::post('/orders', [ChannelPortalOrderController::class, 'store'])->name('orders.store');
@@ -700,7 +712,70 @@ Route::middleware([
             Route::get('/customers', [ChannelPortalCustomerController::class, 'index'])->name('customers.index');
             Route::get('/customers/{customer}', [ChannelPortalCustomerController::class, 'show'])->name('customers.show');
 
-            Route::get('/margins', [ChannelPortalMarginController::class, 'index'])->name('margins.index');
+            // ─── POS + Cart + Checkout (operator+) ───
+            Route::middleware('eshop.channel.role:operator')->group(function () {
+                Route::get('/pos', [ChannelPortalPosController::class, 'index'])->name('pos.index');
+                Route::post('/pos/checkout', [ChannelPortalCheckoutController::class, 'process'])->name('pos.checkout');
+                Route::post('/pos/registers/open', [ChannelPortalCashRegisterController::class, 'open'])->name('pos.registers.open');
+                Route::post('/pos/registers/{register}/close', [ChannelPortalCashRegisterController::class, 'close'])->name('pos.registers.close');
+                Route::post('/pos/holdings', [ChannelPortalPosController::class, 'storeHolding'])->name('pos.holdings.store');
+                Route::post('/pos/holdings/{holding}/resume', [ChannelPortalPosController::class, 'resumeHolding'])->name('pos.holdings.resume');
+
+                Route::prefix('cart')->name('cart.')->group(function () {
+                    Route::post('/add', [ChannelPortalCartController::class, 'add'])->name('add');
+                    Route::put('/{itemKey}', [ChannelPortalCartController::class, 'update'])->name('update');
+                    Route::delete('/{itemKey}', [ChannelPortalCartController::class, 'remove'])->name('remove');
+                    Route::delete('/', [ChannelPortalCartController::class, 'clear'])->name('clear');
+                });
+            });
+
+            // ─── Customer CRUD (operator+) ───
+            Route::middleware('eshop.channel.role:operator')->group(function () {
+                Route::post('/customers', [ChannelPortalCustomerController::class, 'store'])->name('customers.store');
+                Route::put('/customers/{customer}', [ChannelPortalCustomerController::class, 'update'])->name('customers.update');
+                Route::delete('/customers/{customer}', [ChannelPortalCustomerController::class, 'destroy'])->name('customers.destroy');
+                Route::post('/customers/{customer}/wallet-topup', [ChannelPortalCustomerController::class, 'walletTopup'])->name('customers.wallet-topup');
+            });
+
+            // ─── Stock adjustments (operator+) ───
+            Route::middleware('eshop.channel.role:operator')->group(function () {
+                Route::get('/stock/adjustments', [ChannelPortalStockController::class, 'adjustments'])->name('stock.adjustments');
+                Route::post('/stock/adjustments', [ChannelPortalStockController::class, 'storeAdjustment'])->name('stock.adjustments.store');
+            });
+
+            // ─── Returns (operator+) ───
+            Route::middleware('eshop.channel.role:operator')->group(function () {
+                Route::get('/returns', [ChannelPortalReturnController::class, 'index'])->name('returns.index');
+                Route::post('/returns', [ChannelPortalReturnController::class, 'store'])->name('returns.store');
+            });
+
+            // ─── Promotions (manager only) ───
+            Route::middleware('eshop.channel.role:manager')->prefix('promotions')->name('promotions.')->group(function () {
+                Route::get('/coupons', [ChannelPortalPromotionController::class, 'index'])->name('coupons.index');
+                Route::post('/coupons', [ChannelPortalPromotionController::class, 'store'])->name('coupons.store');
+                Route::put('/coupons/{coupon}', [ChannelPortalPromotionController::class, 'update'])->name('coupons.update');
+                Route::delete('/coupons/{coupon}', [ChannelPortalPromotionController::class, 'destroy'])->name('coupons.destroy');
+            });
+
+            // ─── Settings (manager only) ───
+            Route::middleware('eshop.channel.role:manager')->prefix('settings')->name('settings.')->group(function () {
+                Route::get('/pos', [ChannelPortalSettingsController::class, 'pos'])->name('pos');
+                Route::put('/pos', [ChannelPortalSettingsController::class, 'updatePos'])->name('pos.update');
+                Route::get('/printer', [ChannelPortalSettingsController::class, 'printer'])->name('printer');
+                Route::put('/printer', [ChannelPortalSettingsController::class, 'updatePrinter'])->name('printer.update');
+                Route::get('/invoice', [ChannelPortalSettingsController::class, 'invoice'])->name('invoice');
+                Route::put('/invoice', [ChannelPortalSettingsController::class, 'updateInvoice'])->name('invoice.update');
+            });
+
+            // ─── Reports (manager only) ───
+            Route::middleware('eshop.channel.role:manager')->prefix('reports')->name('reports.')->group(function () {
+                Route::get('/sales', [ChannelPortalReportController::class, 'sales'])->name('sales');
+                Route::get('/products', [ChannelPortalReportController::class, 'products'])->name('products');
+                Route::get('/customers', [ChannelPortalReportController::class, 'customers'])->name('customers');
+            });
+
+            // ─── Margins (manager only) ───
+            Route::get('/margins', [ChannelPortalMarginController::class, 'index'])->middleware('eshop.channel.role:manager')->name('margins.index');
         });
 
     // ─── Notifications ───

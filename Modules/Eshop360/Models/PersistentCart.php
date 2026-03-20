@@ -10,6 +10,7 @@ class PersistentCart extends Model
 
     protected $fillable = [
         'instance_id',
+        'channel_id',
         'user_id',
         'items',
         'coupon',

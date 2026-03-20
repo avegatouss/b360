@@ -15,6 +15,7 @@
     </div>
     <div class="d-flex gap-2">
         <a href="{{ route('eshop360.portal.orders.index', $instance->slug ?? '') }}" class="btn btn-secondary">{{ __('eshop360::eshop.portal_back_to_orders') }}</a>
+        <a href="{{ route('eshop360.portal.orders.print', [$instance->slug ?? '', $onlineOrder]) }}" target="_blank" class="btn btn-outline-info"><i class="ti ti-printer me-1"></i>{{ __('Imprimer') }}</a>
         <a href="{{ route('eshop360.portal.catalog', $instance->slug ?? '') }}" class="btn btn-outline-primary">{{ __('eshop360::eshop.portal_catalog') }}</a>
     </div>
 </div>

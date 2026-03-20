@@ -17,6 +17,7 @@ class Holding extends Model
 
     protected $fillable = [
         'instance_id',
+        'channel_id',
         'customer_id',
         'reference',
         'items',
@@ -35,6 +36,11 @@ class Holding extends Model
         'discount_amount' => 'decimal:2',
         'total' => 'decimal:2',
     ];
+
+    public function channel(): BelongsTo
+    {
+        return $this->belongsTo(DistributionChannel::class, 'channel_id');
+    }
 
     public function customer(): BelongsTo
     {
