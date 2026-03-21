@@ -11,9 +11,10 @@
         </div>
     </div>
     <div class="page-btn d-flex gap-2">
-        <a href="{{ route('eshop360.orders.receipt', [$instance->slug ?? '', $order]) }}" class="btn btn-white border">
+        @include('eshop360::fne._sign-button', ['order' => $order])
+        <button class="btn btn-white border" data-bs-toggle="modal" data-bs-target="#receipt-modal">
             <i class="ti ti-printer me-1"></i>{{ __('Recu') }}
-        </a>
+        </button>
         <a href="{{ route('eshop360.orders.index', $instance->slug ?? '') }}" class="btn btn-secondary"><i class="ti ti-arrow-left me-1"></i>{{ __('Retour') }}</a>
     </div>
 </div>
@@ -98,6 +99,27 @@
                         @endforelse
                     </tbody>
                 </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Receipt Modal --}}
+<div class="modal fade" id="receipt-modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:380px;">
+        <div class="modal-content">
+            <div class="modal-header py-2">
+                <h6 class="modal-title"><i class="ti ti-receipt me-1"></i>{{ __('Recu de commande') }}</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0" style="max-height:70vh;overflow-y:auto;">
+                @include('eshop360::pdf.order-receipt-inline', ['order' => $order])
+            </div>
+            <div class="modal-footer py-2 justify-content-between">
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">{{ __('Fermer') }}</button>
+                <a href="{{ route('eshop360.orders.receipt', [$instance->slug ?? '', $order]) }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                    <i class="ti ti-printer me-1"></i>{{ __('Imprimer PDF') }}
+                </a>
             </div>
         </div>
     </div>

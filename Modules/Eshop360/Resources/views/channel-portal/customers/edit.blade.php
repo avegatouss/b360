@@ -80,7 +80,7 @@
                     <div class="input-group">
                         <input type="number" name="credit_limit" class="form-control @error('credit_limit') is-invalid @enderror"
                                value="{{ old('credit_limit', $customer->credit_limit ?? 0) }}" min="0" step="1">
-                        <span class="input-group-text">XAF</span>
+                        <span class="input-group-text">{{ $eshopCurrency ?? 'FCFA' }}</span>
                     </div>
                     @error('credit_limit') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>

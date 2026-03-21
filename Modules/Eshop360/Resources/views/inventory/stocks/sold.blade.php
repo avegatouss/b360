@@ -134,8 +134,8 @@
                                         <td>
                                             100					
                                         </td>
-                                        <td>$300</td>
-                                        <td>$300</td>
+                                        <td>300 {{ $eshopCurrency ?? 'FCFA' }}</td>
+                                        <td>300 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                     </tr>
                                     <tr>
                                         <td>
@@ -155,8 +155,8 @@
                                         <td>
                                             140				
                                         </td>
-                                        <td>$10</td>
-                                        <td>$1600</td>
+                                        <td>10 {{ $eshopCurrency ?? 'FCFA' }}</td>
+                                        <td>1600 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                     </tr>
                 
                                     <tr>
@@ -177,8 +177,8 @@
                                         <td>
                                             300			
                                         </td>
-                                        <td>$80</td>
-                                        <td>$880</td>
+                                        <td>80 {{ $eshopCurrency ?? 'FCFA' }}</td>
+                                        <td>880 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                     </tr>
                 
                                     <tr>
@@ -199,8 +199,8 @@
                                         <td>
                                             450		
                                         </td>
-                                        <td>$100</td>
-                                        <td>$1200</td>
+                                        <td>100 {{ $eshopCurrency ?? 'FCFA' }}</td>
+                                        <td>1200 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                     </tr>
                 
                                     <tr>
@@ -221,8 +221,8 @@
                                         <td>
                                             320		
                                         </td>
-                                        <td>$400</td>
-                                        <td>$400</td>
+                                        <td>400 {{ $eshopCurrency ?? 'FCFA' }}</td>
+                                        <td>400 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                     </tr>
                                     
                                     <tr>
@@ -243,8 +243,8 @@
                                         <td>
                                             650	
                                         </td>
-                                        <td>$220</td>
-                                        <td>$2240</td>
+                                        <td>220 {{ $eshopCurrency ?? 'FCFA' }}</td>
+                                        <td>2240 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                     </tr>
                                     <tr>
                                         <td>
@@ -264,8 +264,8 @@
                                         <td>
                                             700
                                         </td>
-                                        <td>$90</td>
-                                        <td>$900</td>
+                                        <td>90 {{ $eshopCurrency ?? 'FCFA' }}</td>
+                                        <td>900 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                     </tr>
                                     <tr>
                                         <td>
@@ -285,8 +285,8 @@
                                         <td>
                                             630
                                         </td>
-                                        <td>$680</td>
-                                        <td>$6480</td>
+                                        <td>680 {{ $eshopCurrency ?? 'FCFA' }}</td>
+                                        <td>6480 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                     </tr>
                                     <tr>
                                         <td>
@@ -306,8 +306,8 @@
                                         <td>
                                             410
                                         </td>
-                                        <td>$200</td>
-                                        <td>$2000</td>
+                                        <td>200 {{ $eshopCurrency ?? 'FCFA' }}</td>
+                                        <td>2000 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                     </tr>
                                     <tr>
                                         <td>
@@ -327,8 +327,8 @@
                                         <td>
                                             550
                                         </td>
-                                        <td>$400</td>
-                                        <td>$900</td>
+                                        <td>400 {{ $eshopCurrency ?? 'FCFA' }}</td>
+                                        <td>900 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                     </tr>
                                 </tbody>
                             </table>

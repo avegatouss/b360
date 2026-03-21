@@ -58,7 +58,7 @@
                         <td><code>{{ $product->sku ?? '—' }}</code></td>
                         <td>{{ $product->category->name ?? '—' }}</td>
                         <td>{{ $product->brand->name ?? '—' }}</td>
-                        <td class="fw-bold">{{ number_format($product->pivot->sale_price ?? 0, 0, ',', ' ') }} XAF</td>
+                        <td class="fw-bold">{{ number_format($product->pivot->sale_price ?? 0, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</td>
                         <td class="text-center">
                             @if($warehouseId)
                                 @if($qty !== null)

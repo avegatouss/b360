@@ -44,16 +44,16 @@
                                     <div class="fw-medium">{{ $item->product->name ?? __('Produit supprime') }}</div>
                                     <small class="text-muted">{{ $item->product->sku ?? '' }}</small>
                                 </td>
-                                <td class="text-end">{{ number_format($item->price, 0, ',', ' ') }} XAF</td>
+                                <td class="text-end">{{ number_format($item->price, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</td>
                                 <td class="text-center">{{ $item->quantity }}</td>
-                                <td class="text-end fw-bold">{{ number_format($item->total, 0, ',', ' ') }} XAF</td>
+                                <td class="text-end fw-bold">{{ number_format($item->total, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</td>
                             </tr>
                             @endforeach
                         </tbody>
                         <tfoot class="table-light">
                             <tr>
                                 <td colspan="3" class="text-end fw-bold fs-5">{{ __('Total') }}</td>
-                                <td class="text-end fw-bold fs-5">{{ number_format($order->total, 0, ',', ' ') }} XAF</td>
+                                <td class="text-end fw-bold fs-5">{{ number_format($order->total, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</td>
                             </tr>
                         </tfoot>
                     </table>
@@ -93,16 +93,16 @@
             <div class="card-body">
                 <dl class="row mb-0">
                     <dt class="col-6 text-muted">{{ __('Marge totale') }}</dt>
-                    <dd class="col-6 fw-bold text-primary">{{ number_format($marginLog->total_margin, 0, ',', ' ') }} XAF</dd>
+                    <dd class="col-6 fw-bold text-primary">{{ number_format($marginLog->total_margin, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</dd>
 
                     <dt class="col-6 text-muted">{{ __('Part canal') }}</dt>
-                    <dd class="col-6 fw-bold text-success">{{ number_format($marginLog->channel_part, 0, ',', ' ') }} XAF</dd>
+                    <dd class="col-6 fw-bold text-success">{{ number_format($marginLog->channel_part, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</dd>
 
                     <dt class="col-6 text-muted">{{ __('Part proprietaire') }}</dt>
-                    <dd class="col-6 fw-bold text-info">{{ number_format($marginLog->owner_part, 0, ',', ' ') }} XAF</dd>
+                    <dd class="col-6 fw-bold text-info">{{ number_format($marginLog->owner_part, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</dd>
 
                     <dt class="col-6 text-muted">{{ __('Part dette') }}</dt>
-                    <dd class="col-6 fw-bold text-danger">{{ number_format($marginLog->debt_part, 0, ',', ' ') }} XAF</dd>
+                    <dd class="col-6 fw-bold text-danger">{{ number_format($marginLog->debt_part, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</dd>
                 </dl>
             </div>
         </div>

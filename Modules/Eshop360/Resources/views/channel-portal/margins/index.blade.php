@@ -17,7 +17,7 @@
         <div class="card border-0 shadow-sm">
             <div class="card-body text-center">
                 <h6 class="text-muted small">{{ __('Marge totale') }}</h6>
-                <h4 class="fw-bold text-primary mb-0">{{ number_format($summary->total_margin ?? 0, 0, ',', ' ') }} XAF</h4>
+                <h4 class="fw-bold text-primary mb-0">{{ number_format($summary->total_margin ?? 0, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</h4>
             </div>
         </div>
     </div>
@@ -25,7 +25,7 @@
         <div class="card border-0 shadow-sm">
             <div class="card-body text-center">
                 <h6 class="text-muted small">{{ __('Part canal') }}</h6>
-                <h4 class="fw-bold text-success mb-0">{{ number_format($summary->channel_part ?? 0, 0, ',', ' ') }} XAF</h4>
+                <h4 class="fw-bold text-success mb-0">{{ number_format($summary->channel_part ?? 0, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</h4>
             </div>
         </div>
     </div>
@@ -33,7 +33,7 @@
         <div class="card border-0 shadow-sm">
             <div class="card-body text-center">
                 <h6 class="text-muted small">{{ __('Part proprietaire') }}</h6>
-                <h4 class="fw-bold text-info mb-0">{{ number_format($summary->owner_part ?? 0, 0, ',', ' ') }} XAF</h4>
+                <h4 class="fw-bold text-info mb-0">{{ number_format($summary->owner_part ?? 0, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</h4>
             </div>
         </div>
     </div>
@@ -41,7 +41,7 @@
         <div class="card border-0 shadow-sm">
             <div class="card-body text-center">
                 <h6 class="text-muted small">{{ __('Part dette') }}</h6>
-                <h4 class="fw-bold text-danger mb-0">{{ number_format($summary->debt_part ?? 0, 0, ',', ' ') }} XAF</h4>
+                <h4 class="fw-bold text-danger mb-0">{{ number_format($summary->debt_part ?? 0, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</h4>
             </div>
         </div>
     </div>
@@ -100,10 +100,10 @@
                             @endif
                         </td>
                         <td>{{ $log->order->customer->name ?? '—' }}</td>
-                        <td class="text-end fw-bold">{{ number_format($log->total_margin, 0, ',', ' ') }} XAF</td>
-                        <td class="text-end text-success">{{ number_format($log->channel_part, 0, ',', ' ') }} XAF</td>
-                        <td class="text-end text-info">{{ number_format($log->owner_part, 0, ',', ' ') }} XAF</td>
-                        <td class="text-end text-danger">{{ number_format($log->debt_part, 0, ',', ' ') }} XAF</td>
+                        <td class="text-end fw-bold">{{ number_format($log->total_margin, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</td>
+                        <td class="text-end text-success">{{ number_format($log->channel_part, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</td>
+                        <td class="text-end text-info">{{ number_format($log->owner_part, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</td>
+                        <td class="text-end text-danger">{{ number_format($log->debt_part, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</td>
                     </tr>
                     @empty
                     <tr>

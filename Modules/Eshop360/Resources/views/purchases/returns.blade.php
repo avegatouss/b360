@@ -29,7 +29,7 @@
                     </div>
                     <div class="ms-3">
                         <h3 class="fw-bold mb-0">{{ $kpiCount }}</h3>
-                        <span class="text-muted small">{{ __('Total retours') }}</span>
+                        <span class="text-muted">{{ __('Total retours') }}</span>
                     </div>
                 </div>
             </div>
@@ -44,7 +44,7 @@
                     </div>
                     <div class="ms-3">
                         <h3 class="fw-bold mb-0">{{ number_format($kpiTotal, 0, ',', ' ') }}</h3>
-                        <span class="text-muted small">{{ __('Valeur retours') }}</span>
+                        <span class="text-muted">{{ __('Valeur retours') }}</span>
                     </div>
                 </div>
             </div>
@@ -59,7 +59,7 @@
                     </div>
                     <div class="ms-3">
                         <h3 class="fw-bold mb-0 text-success">{{ number_format($kpiReimbursed, 0, ',', ' ') }}</h3>
-                        <span class="text-muted small">{{ __('Remboursé') }}</span>
+                        <span class="text-muted">{{ __('Remboursé') }}</span>
                     </div>
                 </div>
             </div>
@@ -71,11 +71,11 @@
                 <div class="d-flex align-items-center gap-3">
                     <div>
                         <span class="badge bg-warning-subtle text-warning px-2 py-1 d-block mb-1"><i class="ti ti-clock me-1"></i>{{ $kpiPending }}</span>
-                        <small class="text-muted" style="font-size:10px;">{{ __('En attente') }}</small>
+                        <span class="text-muted">{{ __('En attente') }}</small>
                     </div>
                     <div>
                         <span class="badge bg-success-subtle text-success px-2 py-1 d-block mb-1"><i class="ti ti-check me-1"></i>{{ $kpiProcessed }}</span>
-                        <small class="text-muted" style="font-size:10px;">{{ __('Traités') }}</small>
+                        <span class="text-muted">{{ __('Traités') }}</small>
                     </div>
                 </div>
             </div>
@@ -175,7 +175,7 @@
                         <tr>
                             <td class="align-middle px-2"><span class="d-inline-block rounded-circle {{ $dotColor }}" style="width:8px;height:8px;"></span></td>
                             <td class="align-middle fw-semibold">{{ $ret->reference }}</td>
-                            <td class="align-middle small">
+                            <td class="align-middle">
                                 @if($ret->purchaseOrder)
                                     <a href="{{ route('eshop360.purchases.show', [$slug, $ret->purchaseOrder]) }}" class="text-decoration-none">{{ $ret->purchaseOrder->reference }}</a>
                                 @else
@@ -186,10 +186,10 @@
                             <td class="align-middle small text-muted">{{ $ret->warehouse?->name ?? '—' }}</td>
                             <td class="text-center align-middle"><span class="badge bg-light text-dark">{{ $ret->items_count ?? 0 }}</span></td>
                             <td class="text-end align-middle fw-bold">{{ number_format($ret->total, 0, ',', ' ') }}</td>
-                            <td class="text-end align-middle small text-success">{{ number_format($ret->paid_amount, 0, ',', ' ') }}</td>
-                            <td class="text-end align-middle small {{ $due > 0 ? 'text-danger fw-medium' : 'text-muted' }}">{{ $due > 0 ? number_format($due, 0, ',', ' ') : '—' }}</td>
+                            <td class="text-end align-middle text-success">{{ number_format($ret->paid_amount, 0, ',', ' ') }}</td>
+                            <td class="text-end align-middle {{ $due > 0 ? 'text-danger fw-medium' : 'text-muted' }}">{{ $due > 0 ? number_format($due, 0, ',', ' ') : '—' }}</td>
                             <td class="text-center align-middle"><span class="badge {{ $sc }} rounded-pill">{{ $statusLabel }}</span></td>
-                            <td class="align-middle"><small class="text-muted">{{ $ret->created_at?->format('d/m/Y') }}</small></td>
+                            <td class="align-middle"><span class="text-muted">{{ $ret->created_at?->format('d/m/Y') }}</small></td>
                             <td class="text-end align-middle">
                                 @if(!$ret->processed_at)
                                 <form action="{{ route('eshop360.purchase-returns.destroy', [$slug, $ret]) }}" method="POST" class="d-inline" onsubmit="return confirm('{{ __('Supprimer ce retour ?') }}')">
@@ -197,7 +197,7 @@
                                     <button class="btn btn-sm btn-outline-danger"><i class="ti ti-trash"></i></button>
                                 </form>
                                 @else
-                                    <span class="badge bg-success-subtle text-success" style="font-size:9px;"><i class="ti ti-check me-1"></i>{{ __('Traité') }}</span>
+                                    <span class="badge bg-success-subtle text-success" style=""><i class="ti ti-check me-1"></i>{{ __('Traité') }}</span>
                                 @endif
                             </td>
                         </tr>
@@ -211,10 +211,10 @@
                 @if($returns->count() > 0)
                 <tfoot class="table-light">
                     <tr>
-                        <td colspan="6" class="text-end fw-bold small">{{ __('Total page') }}:</td>
+                        <td colspan="6" class="text-end fw-bold">{{ __('Total page') }}:</td>
                         <td class="text-end fw-bold">{{ number_format($returns->sum('total'), 0, ',', ' ') }}</td>
-                        <td class="text-end fw-bold text-success small">{{ number_format($returns->sum('paid_amount'), 0, ',', ' ') }}</td>
-                        <td class="text-end fw-bold text-danger small">{{ number_format($returns->sum('due_amount'), 0, ',', ' ') }}</td>
+                        <td class="text-end fw-bold text-success">{{ number_format($returns->sum('paid_amount'), 0, ',', ' ') }}</td>
+                        <td class="text-end fw-bold text-danger">{{ number_format($returns->sum('due_amount'), 0, ',', ' ') }}</td>
                         <td colspan="3"></td>
                     </tr>
                 </tfoot>
@@ -223,7 +223,7 @@
         </div>
         @if($returns->hasPages())
             <div class="p-3 border-top d-flex justify-content-between align-items-center">
-                <small class="text-muted">{{ __('Affichage') }} {{ $returns->firstItem() }}-{{ $returns->lastItem() }} {{ __('sur') }} {{ $returns->total() }}</small>
+                <span class="text-muted">{{ __('Affichage') }} {{ $returns->firstItem() }}-{{ $returns->lastItem() }} {{ __('sur') }} {{ $returns->total() }}</small>
                 {{ $returns->links() }}
             </div>
         @endif

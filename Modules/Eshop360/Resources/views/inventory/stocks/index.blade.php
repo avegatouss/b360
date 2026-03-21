@@ -184,7 +184,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">{{ __('Magasin') }}</label>
-                            <select name="store_id" class="form-select">
+                            <select name="store_id" class="form-select select2-modal">
                                 <option value="">{{ __('Aucun') }}</option>
                                 @foreach($stores as $store)
                                     <option value="{{ $store->id }}">{{ $store->name }}</option>

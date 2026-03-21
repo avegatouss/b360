@@ -17,7 +17,7 @@
         <div class="card border-0 shadow-sm">
             <div class="card-body text-center">
                 <h6 class="text-muted small">{{ __('Total des ventes') }}</h6>
-                <h4 class="fw-bold text-success mb-0">{{ number_format($totalSales ?? 0, 0, ',', ' ') }} XAF</h4>
+                <h4 class="fw-bold text-success mb-0">{{ number_format($totalSales ?? 0, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</h4>
             </div>
         </div>
     </div>
@@ -33,7 +33,7 @@
         <div class="card border-0 shadow-sm">
             <div class="card-body text-center">
                 <h6 class="text-muted small">{{ __('Panier moyen') }}</h6>
-                <h4 class="fw-bold text-info mb-0">{{ $sales->total() > 0 ? number_format(($totalSales ?? 0) / $sales->total(), 0, ',', ' ') : 0 }} XAF</h4>
+                <h4 class="fw-bold text-info mb-0">{{ $sales->total() > 0 ? number_format(($totalSales ?? 0) / $sales->total(), 0, ',', ' ') : 0 }} {{ $eshopCurrency ?? 'FCFA' }}</h4>
             </div>
         </div>
     </div>
@@ -79,7 +79,7 @@
                         <td class="fw-medium">{{ $sale->order_number ?? ('ORD-' . $sale->id) }}</td>
                         <td>{{ $sale->customer->name ?? '—' }}</td>
                         <td>{{ $sale->items->count() }}</td>
-                        <td class="fw-bold">{{ number_format($sale->total, 0, ',', ' ') }} XAF</td>
+                        <td class="fw-bold">{{ number_format($sale->total, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</td>
                         <td>{{ $sale->created_at->format('d/m/Y H:i') }}</td>
                         <td>
                             <a href="{{ route('eshop360.channel-portal.sales.show', [$slug, $channel->slug ?? $channel->id, $sale->id]) }}" class="btn btn-sm btn-outline-primary">

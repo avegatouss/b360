@@ -26,20 +26,46 @@ class InvoiceController extends Controller
 
     public function index(Request $request)
     {
-        $invoices = Invoice::with(['customer', 'order'])
-            ->when($request->status, fn ($q, $s) => $q->where('status', $s))
-            ->when($request->search, fn ($q, $s) => $q->where('invoice_number', 'like', "%{$s}%")
-                ->orWhereHas('customer', fn ($cq) => $cq->where('name', 'like', "%{$s}%")))
-            ->when($request->customer_id, fn ($q, $c) => $q->where('customer_id', $c))
-            ->when($request->date_from, fn ($q, $d) => $q->whereDate('created_at', '>=', $d))
-            ->when($request->date_to, fn ($q, $d) => $q->whereDate('created_at', '<=', $d))
-            ->when($request->overdue, fn ($q) => $q->where('status', 'overdue')
-                ->orWhere(fn ($sq) => $sq->where('status', '!=', 'paid')->where('due_date', '<', now())))
-            ->latest()
-            ->paginate(20)
-            ->withQueryString();
+        $instance = CurrentInstance::get();
 
-        return view('eshop360::invoices.index', compact('invoices'));
+        $query = Invoice::with(['customer'])
+            ->when($request->status, fn ($q, $s) => $q->where('status', $s))
+            ->when($request->customer_id, fn ($q, $c) => $q->where('customer_id', $c))
+            ->when($request->date_from, fn ($q, $d) => $q->whereDate('eshop_invoices.created_at', '>=', $d))
+            ->when($request->date_to, fn ($q, $d) => $q->whereDate('eshop_invoices.created_at', '<=', $d))
+            ->when($request->overdue, fn ($q) => $q->where(function ($sq) {
+                $sq->where('status', 'overdue')
+                    ->orWhere(fn ($sq2) => $sq2->where('status', '!=', 'paid')->whereNotNull('due_date')->where('due_date', '<', now()));
+            }))
+            ->when($request->search, fn ($q, $s) => $q->where(function ($qq) use ($s) {
+                $qq->where('invoice_number', 'like', "%{$s}%")
+                    ->orWhereHas('customer', fn ($cq) => $cq->where('name', 'like', "%{$s}%"));
+            }));
+
+        // KPIs
+        $fq = clone $query;
+        $kpi = (object) [
+            'total'      => (clone $fq)->count(),
+            'amount'     => round((float) (clone $fq)->sum('total'), 0),
+            'paid'       => round((float) (clone $fq)->where('status', 'paid')->sum('total'), 0),
+            'due'        => round((float) (clone $fq)->whereIn('status', ['unpaid', 'partial', 'overdue'])->sum('due_amount'), 0),
+            'overdue'    => (clone $fq)->where(function ($sq) {
+                $sq->where('status', 'overdue')
+                    ->orWhere(fn ($sq2) => $sq2->where('status', '!=', 'paid')->whereNotNull('due_date')->where('due_date', '<', now()));
+            })->count(),
+            'draft'      => (clone $fq)->where('status', 'draft')->count(),
+            'paid_count' => (clone $fq)->where('status', 'paid')->count(),
+        ];
+
+        $invoices = $query->latest()->paginate(25)->withQueryString();
+
+        // Lookups
+        $customers = Customer::where('instance_id', $instance->id)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'code']);
+
+        return view('eshop360::invoices.index', compact('invoices', 'kpi', 'customers'));
     }
 
     public function create(Request $request)
@@ -138,6 +164,47 @@ class InvoiceController extends Controller
             'invoice' => $invoice,
         ])
             ->with('success', __('Invoice updated successfully.'));
+    }
+
+    public function recordPayment(Request $request, string $slug, Invoice $invoice): RedirectResponse
+    {
+        $validated = $request->validate([
+            'amount'  => 'required|numeric|min:1',
+            'method'  => 'required|string|in:cash,card,cheque,paypal,bank_transfer,points,deposit,gift_card,external,manual',
+            'notes'   => 'nullable|string|max:500',
+        ]);
+
+        $amount = (float) $validated['amount'];
+        $maxPayable = (float) $invoice->due_amount;
+
+        if ($amount > $maxPayable && $maxPayable > 0) {
+            $amount = $maxPayable;
+        }
+
+        $newPaid = (float) $invoice->paid_amount + $amount;
+
+        $this->invoiceService->syncPaidAmount(
+            $invoice,
+            $newPaid,
+            $validated['method'],
+            'INV-PAY',
+            $validated['notes'] ?? __('Paiement facture')
+        );
+
+        // Also update the linked order if exists
+        if ($invoice->order_id) {
+            $order = $invoice->order;
+            if ($order) {
+                $order->update([
+                    'paid_amount' => $newPaid,
+                    'due_amount' => max(0, (float) $order->total - $newPaid),
+                    'payment_status' => $newPaid >= (float) $order->total ? 'paid' : ($newPaid > 0 ? 'partial' : 'unpaid'),
+                ]);
+            }
+        }
+
+        return redirect()->route('eshop360.invoices.show', [$slug, $invoice])
+            ->with('success', __('Paiement de :amount enregistre.', ['amount' => number_format($amount, 0, ',', ' ')]));
     }
 
     public function destroy(string $slug, Invoice $invoice): RedirectResponse

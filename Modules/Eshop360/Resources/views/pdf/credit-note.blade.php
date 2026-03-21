@@ -93,8 +93,8 @@
     <table class="items">
         <thead>
             <tr>
-                <th>#</th>
-                <th>{{ __('Designation') }}</th>
+                <th style="background-color:#1e40af; color:#fff; padding:10px 12px;">#</th>
+                <th style="background-color:#1e40af; color:#fff; padding:10px 12px;">{{ __('Designation') }}</th>
                 <th class="text-center">{{ __('Qte') }}</th>
                 <th class="text-right">{{ __('Prix Unit.') }}</th>
                 <th class="text-right">{{ __('Total') }}</th>

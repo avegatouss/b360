@@ -156,7 +156,7 @@
                                                 <td>
                                                     151.00.1.22							
                                                 </td>
-                                                <td>$200</td>
+                                                <td>200 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                                 <td class="action-table-data">
                                                     <div class="edit-delete-action">
                                                         <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-printer">
@@ -179,7 +179,7 @@
                                                 <td>
                                                     151.00.2.20							
                                                 </td>
-                                                <td>$50</td>
+                                                <td>50 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                                 <td class="action-table-data">
                                                     <div class="edit-delete-action">
                                                         <a class="me-2 p-2" href="#" data-bs-toggle="modal" data-bs-target="#edit-printer">

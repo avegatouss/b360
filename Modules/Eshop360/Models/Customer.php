@@ -104,4 +104,9 @@ class Customer extends Model
     {
         return $this->hasMany(SupportTicket::class);
     }
+
+    public function onlineOrders(): HasMany
+    {
+        return $this->hasMany(OnlineOrder::class);
+    }
 }

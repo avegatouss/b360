@@ -84,11 +84,11 @@
     <table class="items">
         <thead>
             <tr>
-                <th style="width:30px;">#</th>
-                <th>{{ __('Designation') }}</th>
-                <th class="text-center" style="width:60px;">{{ __('Ref.') }}</th>
-                <th class="text-center" style="width:60px;">{{ __('Qte Cmd') }}</th>
-                <th class="text-center" style="width:60px;">{{ __('Qte Liv.') }}</th>
+                <th style="background-color:#1e40af; color:#fff; width:30px;">#</th>
+                <th style="background-color:#1e40af; color:#fff; padding:10px 12px;">{{ __('Designation') }}</th>
+                <th class="text-center" style="background-color:#1e40af; color:#fff; width:60px;">{{ __('Ref.') }}</th>
+                <th class="text-center" style="background-color:#1e40af; color:#fff; width:60px;">{{ __('Qte Cmd') }}</th>
+                <th class="text-center" style="background-color:#1e40af; color:#fff; width:60px;">{{ __('Qte Liv.') }}</th>
                 <th class="check-col">{{ __('Conforme') }}</th>
             </tr>
         </thead>

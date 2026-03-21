@@ -307,25 +307,33 @@ class SaleController extends Controller
     public function storeReturn(Request $request, string $slug): RedirectResponse
     {
         $validated = $request->validate([
-            'order_id'           => 'required|exists:eshop_orders,id',
-            'items'              => 'required|array|min:1',
-            'items.*.product_id' => 'required|exists:eshop_products,id',
-            'items.*.quantity'   => 'required|integer|min:1',
-            'items.*.reason'     => 'nullable|string|max:500',
-            'refund_amount'      => 'required|numeric|min:0',
-            'refund_method'      => 'nullable|in:cash,wallet,original',
-            'notes'              => 'nullable|string|max:1000',
+            'order_id'              => 'required|exists:eshop_orders,id',
+            'items'                 => 'required|array|min:1',
+            'items.*.selected'      => 'nullable',
+            'items.*.product_id'    => 'required|exists:eshop_products,id',
+            'items.*.quantity'      => 'required|integer|min:1',
+            'items.*.stock_action'  => 'nullable|in:return_stock,adjustment',
+            'items.*.reason'        => 'nullable|string|max:500',
+            'refund_amount'         => 'required|numeric|min:0',
+            'refund_method'         => 'nullable|in:cash,wallet,original',
+            'notes'                 => 'nullable|string|max:1000',
         ]);
+
+        // Filter only selected items
+        $selectedItems = collect($validated['items'])->filter(fn ($item) => !empty($item['selected']));
+
+        if ($selectedItems->isEmpty()) {
+            return redirect()->back()->with('error', __('Veuillez selectionner au moins un article a retourner.'));
+        }
 
         $instance = CurrentInstance::get();
 
-        DB::transaction(function () use ($validated, $instance) {
+        DB::transaction(function () use ($validated, $selectedItems, $instance) {
             $originalOrder = Order::with('items')->findOrFail($validated['order_id']);
             $originalOrder->update(['status' => 'refunded']);
 
             $stockService = app(StockService::class);
 
-            // Record refund as negative order
             $returnOrder = Order::create([
                 'instance_id'     => $instance?->id,
                 'customer_id'     => $originalOrder->customer_id,
@@ -342,13 +350,13 @@ class SaleController extends Controller
                 'biller_id'       => auth()->id(),
             ]);
 
-            foreach ($validated['items'] as $item) {
+            foreach ($selectedItems as $item) {
                 $product = Product::findOrFail($item['product_id']);
                 $orderItem = $originalOrder->items->firstWhere('product_id', $item['product_id']);
 
                 if (! $orderItem) {
                     throw ValidationException::withMessages([
-                        'items' => ['Un produit du retour n\'appartient pas a la vente selectionnee.'],
+                        'items' => [__('Un produit du retour n\'appartient pas a la vente selectionnee.')],
                     ]);
                 }
 
@@ -357,7 +365,7 @@ class SaleController extends Controller
 
                 if ($returnQuantity > $maxQuantity) {
                     throw ValidationException::withMessages([
-                        'items' => ['La quantite retournee depasse la quantite vendue.'],
+                        'items' => [__('La quantite retournee depasse la quantite vendue.')],
                     ]);
                 }
 
@@ -376,21 +384,38 @@ class SaleController extends Controller
                     'total'        => -$lineTotal,
                 ]);
 
-                $stockService->adjustStock(
-                    $product,
-                    null,
-                    $returnQuantity,
-                    'return',
-                    "Sales return #{$returnOrder->order_number}",
-                    auth()->id(),
-                    Order::class,
-                    $returnOrder->id,
-                );
+                $stockAction = $item['stock_action'] ?? 'return_stock';
+                $reason = $item['reason'] ?? 'return';
+
+                if ($stockAction === 'adjustment') {
+                    // Stock adjustment — record with the chosen reason (e.g. damaged, lost...)
+                    $stockService->adjustStock(
+                        $product,
+                        null,
+                        $returnQuantity,
+                        'adjustment',
+                        "[{$reason}] Retour vente #{$returnOrder->order_number}",
+                        auth()->id(),
+                        Order::class,
+                        $returnOrder->id,
+                    );
+                } else {
+                    // Standard return to stock
+                    $stockService->adjustStock(
+                        $product,
+                        null,
+                        $returnQuantity,
+                        'return',
+                        "[{$reason}] Retour vente #{$returnOrder->order_number}",
+                        auth()->id(),
+                        Order::class,
+                        $returnOrder->id,
+                    );
+                }
             }
 
             $refundMethod = $validated['refund_method'] ?? 'cash';
 
-            // If refund to wallet, credit customer balance
             if ($refundMethod === 'wallet' && $originalOrder->customer_id) {
                 Customer::where('id', $originalOrder->customer_id)
                     ->increment('wallet_balance', (float) $validated['refund_amount']);
@@ -418,10 +443,10 @@ class SaleController extends Controller
         $from = $request->input('date_from', now()->startOfMonth()->toDateString());
         $to = $request->input('date_to', now()->toDateString());
 
-        // Base query for completed orders
-        $baseQuery = Order::where('instance_id', $instanceId)
-            ->where('status', 'completed')
-            ->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59']);
+        // Base query for completed orders — prefix columns to avoid ambiguity in JOINs
+        $baseQuery = Order::where('eshop_orders.instance_id', $instanceId)
+            ->where('eshop_orders.status', 'completed')
+            ->whereBetween('eshop_orders.created_at', [$from . ' 00:00:00', $to . ' 23:59:59']);
 
         // Global KPIs
         $globalStats = (clone $baseQuery)->selectRaw('

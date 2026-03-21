@@ -50,7 +50,7 @@
                         <td class="text-center">
                             <span class="badge bg-primary">{{ $orderCountsNum[$customer->id] ?? 0 }}</span>
                         </td>
-                        <td class="text-end fw-bold">{{ number_format($orderCounts[$customer->id] ?? 0, 0, ',', ' ') }} XAF</td>
+                        <td class="text-end fw-bold">{{ number_format($orderCounts[$customer->id] ?? 0, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</td>
                         <td>
                             <a href="{{ route('eshop360.channel-portal.customers.show', [$slug, $channel->slug ?? $channel->id, $customer->id]) }}" class="btn btn-sm btn-outline-primary">
                                 <i class="ti ti-eye"></i>

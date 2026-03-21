@@ -39,7 +39,7 @@
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <p class="text-muted mb-1 small">{{ __('Ventes totales') }}</p>
-                        <h4 class="fw-bold mb-0">{{ number_format($stats['total_sales'] ?? 0, 0, ',', ' ') }} <small class="text-muted fs-6">XAF</small></h4>
+                        <h4 class="fw-bold mb-0">{{ number_format($stats['total_sales'] ?? 0, 0, ',', ' ') }} <small class="text-muted fs-6">{{ $eshopCurrency ?? 'FCFA' }}</small></h4>
                     </div>
                     <div class="rounded-circle bg-primary bg-opacity-10 p-3">
                         <i class="ti ti-currency-dollar fs-4 text-primary"></i>
@@ -54,7 +54,7 @@
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <p class="text-muted mb-1 small">{{ __('Total encaisse') }}</p>
-                        <h4 class="fw-bold mb-0 text-success">{{ number_format($stats['total_paid'] ?? 0, 0, ',', ' ') }} <small class="text-muted fs-6">XAF</small></h4>
+                        <h4 class="fw-bold mb-0 text-success">{{ number_format($stats['total_paid'] ?? 0, 0, ',', ' ') }} <small class="text-muted fs-6">{{ $eshopCurrency ?? 'FCFA' }}</small></h4>
                     </div>
                     <div class="rounded-circle bg-success bg-opacity-10 p-3">
                         <i class="ti ti-cash fs-4 text-success"></i>
@@ -69,7 +69,7 @@
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <p class="text-muted mb-1 small">{{ __('Total du') }}</p>
-                        <h4 class="fw-bold mb-0 text-danger">{{ number_format($stats['total_due'] ?? 0, 0, ',', ' ') }} <small class="text-muted fs-6">XAF</small></h4>
+                        <h4 class="fw-bold mb-0 text-danger">{{ number_format($stats['total_due'] ?? 0, 0, ',', ' ') }} <small class="text-muted fs-6">{{ $eshopCurrency ?? 'FCFA' }}</small></h4>
                     </div>
                     <div class="rounded-circle bg-danger bg-opacity-10 p-3">
                         <i class="ti ti-alert-triangle fs-4 text-danger"></i>
@@ -143,7 +143,7 @@
                     <tr>
                         <td>{{ $day->date ?? '---' }}</td>
                         <td class="text-center">{{ $day->count ?? 0 }}</td>
-                        <td class="text-end fw-bold">{{ number_format($day->total ?? 0, 0, ',', ' ') }} XAF</td>
+                        <td class="text-end fw-bold">{{ number_format($day->total ?? 0, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</td>
                     </tr>
                     @empty
                     <tr>
@@ -182,7 +182,7 @@
                     <tr>
                         <td class="fw-medium">{{ $order->order_number ?? ('ORD-' . $order->id) }}</td>
                         <td>{{ $order->customer->name ?? '---' }}</td>
-                        <td class="fw-bold">{{ number_format($order->total, 0, ',', ' ') }} XAF</td>
+                        <td class="fw-bold">{{ number_format($order->total, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</td>
                         <td>
                             <span class="badge bg-{{ $statusColors[$order->status] ?? 'secondary' }}">
                                 {{ $statusLabels[$order->status] ?? $order->status }}

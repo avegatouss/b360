@@ -9,13 +9,13 @@
 
         {{-- Main counter --}}
         <div class="text-center py-3">
-            <div id="charges-counter" class="display-6 fw-bold text-danger">{{ __('0 XAF') }}</div>
+            <div id="charges-counter" class="display-6 fw-bold text-danger">0 {{ $eshopCurrency ?? 'FCFA' }}</div>
             <small class="text-muted">{{ __('Accumule ce mois') }}</small>
         </div>
 
         {{-- Per-second rate --}}
         <div class="text-center mb-3">
-            <span class="badge bg-secondary" id="charges-rate">{{ __('-- XAF/s') }}</span>
+            <span class="badge bg-secondary" id="charges-rate">-- {{ $eshopCurrency ?? 'FCFA' }}/s</span>
         </div>
 
         {{-- Breakdown by category --}}
@@ -110,7 +110,7 @@
             .then(function(r) { return r.json(); })
             .then(function(data) {
                 chargesData = data;
-                rateEl.textContent = fmtDecimal.format(data.cost_per_second) + ' XAF/s';
+                rateEl.textContent = fmtDecimal.format(data.cost_per_second) + ' {{ $eshopCurrency ?? "FCFA" }}/s';
                 renderBreakdown();
             })
             .catch(function(err) {

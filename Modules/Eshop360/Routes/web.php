@@ -67,8 +67,10 @@ use Modules\Eshop360\Http\Controllers\ChannelPortal\ChannelPortalCashRegisterCon
 use Modules\Eshop360\Http\Controllers\ChannelPortal\ChannelPortalSettingsController;
 use Modules\Eshop360\Http\Controllers\ChannelPortal\ChannelPortalPromotionController;
 use Modules\Eshop360\Http\Controllers\ChannelPortal\ChannelPortalReturnController;
+use Modules\Eshop360\Http\Controllers\ChannelPortal\ChannelPortalOnlineOrderController;
 use Modules\Eshop360\Http\Controllers\ChannelPortal\ChannelPortalReportController;
 use Modules\Eshop360\Http\Controllers\ChannelPortal\ChannelShopController;
+use Modules\Eshop360\Http\Controllers\Fne\FneController;
 use Modules\Eshop360\Http\Controllers\Notification\NotificationController;
 use Modules\Eshop360\Http\Controllers\Printing\ReceiptTemplateController;
 use Modules\Eshop360\Http\Controllers\Printing\PrinterController;
@@ -344,6 +346,7 @@ Route::middleware([
 
         Route::get('/{invoice}', [InvoiceController::class, 'show'])->name('show');
         Route::put('/{invoice}', [InvoiceController::class, 'update'])->middleware('can:eshop.invoices.manage')->name('update');
+        Route::post('/{invoice}/record-payment', [InvoiceController::class, 'recordPayment'])->middleware('can:eshop.invoices.manage')->name('record-payment');
         Route::delete('/{invoice}', [InvoiceController::class, 'destroy'])->middleware('can:eshop.invoices.manage')->name('destroy');
     });
 
@@ -396,6 +399,8 @@ Route::middleware([
         Route::put('/printer', [EshopSettingsController::class, 'updatePrinter'])->name('printer.update');
         Route::get('/invoice', [EshopSettingsController::class, 'invoice'])->name('invoice');
         Route::put('/invoice', [EshopSettingsController::class, 'updateInvoice'])->name('invoice.update');
+        Route::get('/fne', [EshopSettingsController::class, 'fne'])->name('fne');
+        Route::put('/fne', [EshopSettingsController::class, 'updateFne'])->name('fne.update');
     });
 
     // ─── User Assignments ──────────────────────────────
@@ -456,6 +461,7 @@ Route::middleware([
         Route::delete('/{expense}', [ExpenseController::class, 'destroy'])->middleware('can:eshop.finance.manage')->name('destroy');
         Route::get('/categories', [ExpenseController::class, 'categories'])->name('categories');
         Route::post('/categories', [ExpenseController::class, 'storeCategory'])->middleware('can:eshop.finance.manage')->name('categories.store');
+        Route::put('/categories/{category}', [ExpenseController::class, 'updateCategory'])->middleware('can:eshop.finance.manage')->name('categories.update');
         Route::delete('/categories/{category}', [ExpenseController::class, 'destroyCategory'])->middleware('can:eshop.finance.manage')->name('categories.destroy');
     });
 
@@ -506,6 +512,7 @@ Route::middleware([
         Route::get('/{employee}/edit', [EmployeeController::class, 'edit'])->middleware('can:eshop.hr.manage')->name('edit');
         Route::put('/{employee}', [EmployeeController::class, 'update'])->middleware('can:eshop.hr.manage')->name('update');
         Route::delete('/{employee}', [EmployeeController::class, 'destroy'])->middleware('can:eshop.hr.manage')->name('destroy');
+        Route::post('/{employee}/create-account', [EmployeeController::class, 'createUserAccount'])->middleware('can:eshop.hr.manage')->name('create-account');
     });
 
     // ─── HR: Salaries ────────────────────────────────
@@ -559,7 +566,17 @@ Route::middleware([
         Route::get('/', [OnlineOrderController::class, 'index'])->name('index');
         Route::get('/{onlineOrder}', [OnlineOrderController::class, 'show'])->name('show');
         Route::match(['put', 'patch'], '/{onlineOrder}/status', [OnlineOrderController::class, 'updateStatus'])->middleware('can:eshop.sales.manage')->name('status');
+        Route::post('/{onlineOrder}/fast-deliver', [OnlineOrderController::class, 'fastDeliver'])->middleware('can:eshop.online-orders.fast-deliver')->name('fast-deliver');
+        Route::post('/{onlineOrder}/fast-complete', [OnlineOrderController::class, 'fastComplete'])->middleware('can:eshop.online-orders.fast-complete')->name('fast-complete');
         Route::delete('/{onlineOrder}', [OnlineOrderController::class, 'destroy'])->middleware('can:eshop.sales.manage')->name('destroy');
+    });
+
+    // ─── FNE (Facture Normalisee Electronique) ────
+    Route::prefix('fne')->name('eshop360.fne.')->middleware('can:eshop.fne.manage')->group(function () {
+        Route::get('/', [FneController::class, 'index'])->name('index');
+        Route::get('/{fneInvoice}', [FneController::class, 'show'])->name('show');
+        Route::post('/sign-order/{order}', [FneController::class, 'signOrder'])->name('sign-order');
+        Route::post('/sign-invoice/{invoice}', [FneController::class, 'signInvoice'])->name('sign-invoice');
     });
 
     // ─── Communication: Messages (accessible by all authenticated users including clients) ──
@@ -739,6 +756,13 @@ Route::middleware([
             Route::post('/orders', [ChannelPortalOrderController::class, 'store'])->name('orders.store');
             Route::get('/orders/{order}', [ChannelPortalOrderController::class, 'show'])->name('orders.show');
             Route::post('/orders/{order}/confirm-reception', [ChannelPortalOrderController::class, 'confirmReception'])->name('orders.confirm-reception');
+
+            // ─── Online Orders (commandes clients en ligne du canal) ───
+            Route::prefix('online-orders')->name('online-orders.')->group(function () {
+                Route::get('/', [ChannelPortalOnlineOrderController::class, 'index'])->name('index');
+                Route::get('/{onlineOrder}', [ChannelPortalOnlineOrderController::class, 'show'])->name('show');
+                Route::match(['put', 'patch'], '/{onlineOrder}/status', [ChannelPortalOnlineOrderController::class, 'updateStatus'])->name('status');
+            });
 
             Route::get('/stock', [ChannelPortalStockController::class, 'index'])->name('stock.index');
 

@@ -48,7 +48,7 @@
         <div class="card border-0 shadow-sm mt-3">
             <div class="card-body text-center">
                 <h6 class="text-muted small">{{ __('Total depense sur ce canal') }}</h6>
-                <h3 class="fw-bold text-primary mb-0">{{ number_format($totalSpent ?? 0, 0, ',', ' ') }} XAF</h3>
+                <h3 class="fw-bold text-primary mb-0">{{ number_format($totalSpent ?? 0, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</h3>
             </div>
         </div>
     </div>
@@ -75,7 +75,7 @@
                             @forelse($orders as $order)
                             <tr>
                                 <td class="fw-medium">{{ $order->order_number ?? ('ORD-' . $order->id) }}</td>
-                                <td class="fw-bold">{{ number_format($order->total, 0, ',', ' ') }} XAF</td>
+                                <td class="fw-bold">{{ number_format($order->total, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</td>
                                 <td>
                                     <span class="badge bg-{{ $statusColors[$order->status] ?? 'secondary' }}">
                                         {{ $statusLabels[$order->status] ?? $order->status }}

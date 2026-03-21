@@ -91,8 +91,8 @@
     <table class="items">
         <thead>
             <tr>
-                <th>#</th>
-                <th>{{ __('Designation') }}</th>
+                <th style="background-color:#1e40af; color:#fff; padding:10px 12px;">#</th>
+                <th style="background-color:#1e40af; color:#fff; padding:10px 12px;">{{ __('Designation') }}</th>
                 <th class="text-center">{{ __('Qte') }}</th>
                 <th class="text-right">{{ __('P.U. HT') }}</th>
                 <th class="text-right">{{ __('Montant HT') }}</th>
@@ -133,7 +133,7 @@
     <div class="tax-summary">
         <h4>{{ __('Recapitulatif des taxes') }}</h4>
         <table>
-            <thead><tr><th>{{ __('Taux') }}</th><th class="text-right">{{ __('Base HT') }}</th><th class="text-right">{{ __('CGST') }}</th><th class="text-right">{{ __('SGST') }}</th><th class="text-right">{{ __('Total Taxe') }}</th></tr></thead>
+            <thead><tr style="background-color:#1e40af; color:#fff;"><th style="background-color:#1e40af; color:#fff; padding:10px 12px;">{{ __('Taux') }}</th><th class="text-right">{{ __('Base HT') }}</th><th class="text-right">{{ __('CGST') }}</th><th class="text-right">{{ __('SGST') }}</th><th class="text-right">{{ __('Total Taxe') }}</th></tr></thead>
             <tbody>
                 @php
                     $taxGroups = collect($items)->groupBy(fn($it) => $it->tax_rate ?? 0);

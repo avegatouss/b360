@@ -25,7 +25,7 @@
                 Facture : <strong>{{ $invoice->invoice_number }}</strong>
             </p>
             <p class="text-muted">
-                Montant : <strong>{{ number_format($invoice->total, 0, ',', ' ') }} FCFA</strong>
+                Montant : <strong>{{ number_format($invoice->total, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</strong>
             </p>
                 @if($invoice->status === 'paid')
                     <span class="badge bg-success py-2 px-3 fs-6">{{ __('Payee') }}</span>

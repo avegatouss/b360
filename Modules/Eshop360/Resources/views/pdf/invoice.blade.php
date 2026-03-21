@@ -188,14 +188,14 @@
     {{-- Items table --}}
     <table>
         <thead>
-            <tr>
-                <th style="width:30px;">#</th>
-                <th>{{ __('Désignation') }}</th>
-                <th class="text-center" style="width:60px;">{{ __('Qté') }}</th>
-                <th class="text-right" style="width:100px;">{{ __('Prix Unit.') }}</th>
-                <th class="text-right" style="width:60px;">{{ __('TVA') }}</th>
-                <th class="text-right" style="width:100px;">{{ __('Remise') }}</th>
-                <th class="text-right" style="width:110px;">{{ __('Total HT') }}</th>
+            <tr style="background-color:#1e40af; color:#fff;">
+                <th style="width:30px; background-color:#1e40af; color:#fff; padding:10px 12px;">#</th>
+                <th style="background-color:#1e40af; color:#fff; padding:10px 12px;">{{ __('Désignation') }}</th>
+                <th style="width:60px; background-color:#1e40af; color:#fff; padding:10px 12px; text-align:center;">{{ __('Qté') }}</th>
+                <th style="width:100px; background-color:#1e40af; color:#fff; padding:10px 12px; text-align:right;">{{ __('Prix Unit.') }}</th>
+                <th style="width:60px; background-color:#1e40af; color:#fff; padding:10px 12px; text-align:right;">{{ __('TVA') }}</th>
+                <th style="width:100px; background-color:#1e40af; color:#fff; padding:10px 12px; text-align:right;">{{ __('Remise') }}</th>
+                <th style="width:110px; background-color:#1e40af; color:#fff; padding:10px 12px; text-align:right;">{{ __('Total HT') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -249,9 +249,9 @@
                 <td class="text-right" style="padding:7px 12px;">{{ number_format($invoice->shipping_amount, 2, ',', ' ') }}</td>
             </tr>
             @endif
-            <tr class="total-row">
-                <td colspan="6" class="text-right">{{ __('TOTAL TTC') }}</td>
-                <td class="text-right">{{ number_format($invoice->total, 2, ',', ' ') }} {{ $instance->settings['currency'] ?? 'FCFA' }}</td>
+            <tr class="total-row" style="background-color:#1e40af; color:#fff; font-size:14px;">
+                <td colspan="6" class="text-right" style="background-color:#1e40af; color:#fff; padding:11px 12px; font-weight:700;">{{ __('TOTAL TTC') }}</td>
+                <td class="text-right" style="background-color:#1e40af; color:#fff; padding:11px 12px; font-weight:700;">{{ number_format($invoice->total, 2, ',', ' ') }} {{ $instance->settings['currency'] ?? 'FCFA' }}</td>
             </tr>
             @if(($invoice->paid_amount ?? 0) > 0)
             <tr style="background:#dcfce7;">

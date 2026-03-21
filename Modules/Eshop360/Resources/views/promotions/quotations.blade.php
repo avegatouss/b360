@@ -29,7 +29,7 @@
             <div class="col-md-2">
                 <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
                     <option value="">{{ __('Tous les statuts') }}</option>
-                    @foreach(['draft' => 'Brouillon', 'sent' => 'Envoye', 'accepted' => 'Accepte', 'rejected' => 'Rejete', 'expired' => 'Expire', 'converted' => 'Converti'] as $val => $label)
+                    @foreach(['draft' => 'Brouillon', 'sent' => 'Envoye', 'pending' => 'En attente', 'ordered' => 'Commande', 'cancelled' => 'Annule'] as $val => $label)
                         <option value="{{ $val }}" {{ request('status') === $val ? 'selected' : '' }}>{{ __($label) }}</option>
                     @endforeach
                 </select>
@@ -75,13 +75,13 @@
                         @php
                             $statusColors = [
                                 'draft' => 'bg-secondary', 'sent' => 'bg-info',
-                                'accepted' => 'bg-success', 'rejected' => 'bg-danger',
-                                'expired' => 'bg-warning text-dark', 'converted' => 'bg-primary',
+                                'pending' => 'bg-warning text-dark', 'ordered' => 'bg-success',
+                                'cancelled' => 'bg-danger',
                             ];
                             $statusLabels = [
                                 'draft' => 'Brouillon', 'sent' => 'Envoye',
-                                'accepted' => 'Accepte', 'rejected' => 'Rejete',
-                                'expired' => 'Expire', 'converted' => 'Converti',
+                                'pending' => 'En attente', 'ordered' => 'Commande',
+                                'cancelled' => 'Annule',
                             ];
                         @endphp
                         <tr>
@@ -109,7 +109,7 @@
                                     <a href="{{ route('eshop360.quotations.show', [$instance->slug ?? '', $quotation]) }}" class="btn btn-sm btn-outline-primary" title="{{ __('Voir') }}">
                                         <i class="ti ti-eye"></i>
                                     </a>
-                                    @if($quotation->status !== 'converted')
+                                    @if($quotation->status !== 'ordered')
                                     <a href="{{ route('eshop360.quotations.pdf', [$instance->slug ?? '', $quotation]) }}" class="btn btn-sm btn-outline-secondary" title="{{ __('PDF') }}" target="_blank">
                                         <i class="ti ti-file-type-pdf"></i>
                                     </a>
@@ -119,18 +119,18 @@
                                         <button type="submit" class="btn btn-sm btn-outline-info" title="{{ __('Email') }}"><i class="ti ti-mail-forward"></i></button>
                                     </form>
                                     @endif
-                                    @if(in_array($quotation->status, ['draft', 'sent', 'accepted']))
-                                    <form method="POST" action="{{ route('eshop360.quotations.convert', [$instance->slug ?? '', $quotation]) }}" class="d-inline" onsubmit="return confirm('Convertir ce devis en facture ?')">
+                                    @if(in_array($quotation->status, ['draft', 'sent', 'pending']))
+                                    <form method="POST" action="{{ route('eshop360.quotations.convert', [$instance->slug ?? '', $quotation]) }}" class="d-inline" onsubmit="return confirm('{{ __('Convertir ce devis en facture ?') }}')">
                                         @csrf
                                         <button type="submit" class="btn btn-sm btn-outline-success" title="{{ __('Convertir en facture') }}"><i class="ti ti-file-invoice"></i></button>
                                     </form>
                                     @endif
-                                    <form method="POST" action="{{ route('eshop360.quotations.destroy', [$instance->slug ?? '', $quotation]) }}" class="d-inline" onsubmit="return confirm('Supprimer ce devis ?')">
+                                    <form method="POST" action="{{ route('eshop360.quotations.destroy', [$instance->slug ?? '', $quotation]) }}" class="d-inline" onsubmit="return confirm('{{ __('Supprimer ce devis ?') }}')">
                                         @csrf @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-outline-danger" title="{{ __('Supprimer') }}"><i class="ti ti-trash"></i></button>
                                     </form>
                                     @else
-                                        <span class="badge bg-primary-subtle text-primary">{{ __('Facture creee') }}</span>
+                                        <span class="badge bg-success-subtle text-success">{{ __('Commande creee') }}</span>
                                     @endif
                                 </div>
                             </td>
@@ -166,10 +166,10 @@
                     <div class="row g-3 mb-4">
                         <div class="col-md-4">
                             <label class="form-label">{{ __('Client') }}</label>
-                            <select name="customer_id" class="form-select">
+                            <select name="customer_id" class="form-select select2-quotation-modal" data-placeholder="{{ __('Sans client') }}">
                                 <option value="">{{ __('Sans client') }}</option>
                                 @foreach($customers as $customer)
-                                    <option value="{{ $customer->id }}">{{ $customer->name }}</option>
+                                    <option value="{{ $customer->id }}">{{ $customer->name }}{{ $customer->code ? ' (' . $customer->code . ')' : '' }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -247,6 +247,26 @@
     @endforeach
 </template>
 
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
+@endpush
+
+@push('scripts')
+<script>
+jQuery(function ($) {
+    var $modal = $('#create-quotation-modal');
+    $('.select2-quotation-modal').each(function () {
+        $(this).select2({ theme: 'bootstrap-5', allowClear: true, width: '100%', placeholder: $(this).data('placeholder') || '', dropdownParent: $modal });
+    });
+
+    // Init Select2 on dynamically added product selects
+    $(document).on('quotation:row-added', function (e, $sel) {
+        $sel.select2({ theme: 'bootstrap-5', width: '100%', placeholder: '-- Choisir --', dropdownParent: $modal });
+    });
+});
+</script>
+@endpush
+
 <script>
 (function() {
     'use strict';
@@ -313,15 +333,29 @@
         tr.appendChild(td4); tr.appendChild(td5); tr.appendChild(td6);
         tbody.appendChild(tr);
 
-        sel.addEventListener('change', function() {
-            var opt = sel.options[sel.selectedIndex];
-            priceInput.value = Math.round(parseFloat(opt.getAttribute('data-price')) || 0);
-            recalc();
-        });
+        // Use jQuery change for Select2 compatibility
+        if (typeof jQuery !== 'undefined') {
+            jQuery(sel).on('change', function() {
+                var opt = sel.options[sel.selectedIndex];
+                priceInput.value = Math.round(parseFloat(opt ? opt.getAttribute('data-price') : 0) || 0);
+                recalc();
+            });
+            jQuery(document).trigger('quotation:row-added', [jQuery(sel)]);
+        } else {
+            sel.addEventListener('change', function() {
+                var opt = sel.options[sel.selectedIndex];
+                priceInput.value = Math.round(parseFloat(opt.getAttribute('data-price')) || 0);
+                recalc();
+            });
+        }
         qtyInput.addEventListener('input', recalc);
         priceInput.addEventListener('input', recalc);
         discInput.addEventListener('input', recalc);
-        rmBtn.addEventListener('click', function() { tr.remove(); recalc(); });
+        rmBtn.addEventListener('click', function() {
+            if (typeof jQuery !== 'undefined') jQuery(sel).select2('destroy');
+            tr.remove();
+            recalc();
+        });
 
         recalc();
     }

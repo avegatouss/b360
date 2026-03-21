@@ -12,20 +12,38 @@ use Modules\Core\Support\CurrentInstance;
 
 class IncomeController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $instance = CurrentInstance::get();
-        $incomes = Income::where('instance_id', $instance->id)
+
+        $query = Income::where('instance_id', $instance->id)
             ->with('source', 'account', 'user')
-            ->latest('date')
-            ->paginate(20);
-        $sources = IncomeSource::where('instance_id', $instance->id)->get();
-        $accounts = Account::where('instance_id', $instance->id)->where('is_active', true)->get();
-        $totalIncomes = Income::where('instance_id', $instance->id)
-            ->whereMonth('date', now()->month)
-            ->whereYear('date', now()->year)
-            ->sum('amount');
-        return view('eshop360::finance.incomes.index', compact('incomes', 'sources', 'accounts', 'totalIncomes'));
+            ->when($request->source_id, fn ($q, $s) => $q->where('source_id', $s))
+            ->when($request->account_id, fn ($q, $a) => $q->where('account_id', $a))
+            ->when($request->date_from, fn ($q, $d) => $q->whereDate('date', '>=', $d))
+            ->when($request->date_to, fn ($q, $d) => $q->whereDate('date', '<=', $d))
+            ->when($request->search, fn ($q, $s) => $q->where('description', 'like', "%{$s}%"));
+
+        $fq = clone $query;
+        $kpi = (object) [
+            'total'       => (int) (clone $fq)->sum('amount'),
+            'count'       => (clone $fq)->count(),
+            'month_total' => (int) Income::where('instance_id', $instance->id)->whereMonth('date', now()->month)->whereYear('date', now()->year)->sum('amount'),
+            'avg'         => (int) (clone $fq)->avg('amount'),
+            'by_source'   => IncomeSource::where('instance_id', $instance->id)
+                ->withCount('incomes')
+                ->withSum('incomes', 'amount')
+                ->having('incomes_count', '>', 0)
+                ->orderByDesc('incomes_sum_amount')
+                ->limit(5)
+                ->get(),
+        ];
+
+        $incomes = $query->latest('date')->paginate(25)->withQueryString();
+        $sources = IncomeSource::where('instance_id', $instance->id)->orderBy('name')->get();
+        $accounts = Account::where('instance_id', $instance->id)->where('is_active', true)->orderBy('name')->get();
+
+        return view('eshop360::finance.incomes.index', compact('incomes', 'sources', 'accounts', 'kpi'));
     }
 
     public function store(Request $request)
@@ -91,8 +109,16 @@ class IncomeController extends Controller
     public function sources()
     {
         $instance = CurrentInstance::get();
-        $sources = IncomeSource::where('instance_id', $instance->id)->withCount('incomes')->get();
-        return view('eshop360::finance.incomes.sources', compact('sources'));
+        $sources = IncomeSource::where('instance_id', $instance->id)
+            ->withCount('incomes')
+            ->withSum('incomes', 'amount')
+            ->orderBy('name')
+            ->get();
+
+        $totalRevenue = Income::where('instance_id', $instance->id)->sum('amount');
+        $totalSources = $sources->count();
+
+        return view('eshop360::finance.incomes.sources', compact('sources', 'totalRevenue', 'totalSources'));
     }
 
     public function storeSource(Request $request)

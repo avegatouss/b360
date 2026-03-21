@@ -115,10 +115,7 @@
                             <td class="small">{{ $adj->performer?->name ?? $adj->performer?->full_name ?? '—' }}</td>
                             <td class="small text-muted">{{ $adj->created_at?->format('d/m/Y H:i') }}</td>
                             <td class="text-end">
-                                <form action="{{ route('eshop360.stock-adjustments.destroy', [$slug, $adj]) }}" method="POST" class="d-inline" onsubmit="return confirm('{{ __('Annuler cet ajustement ? La quantite sera inversee.') }}')">
-                                    @csrf @method('DELETE')
-                                    <button class="btn btn-sm btn-outline-danger" title="{{ __('Annuler l\'ajustement') }}"><i class="ti ti-arrow-back-up"></i></button>
-                                </form>
+                                <button class="btn btn-sm btn-outline-danger" title="{{ __('Annuler l\'ajustement') }}" data-bs-toggle="modal" data-bs-target="#cancel-adj-{{ $adj->id }}"><i class="ti ti-arrow-back-up"></i></button>
                             </td>
                         </tr>
                     @empty
@@ -172,7 +169,7 @@
                         </div>
                         <div class="col-12">
                             <label class="form-label">{{ __('Raison') }} <span class="text-danger">*</span></label>
-                            <select name="reason" class="form-select" required>
+                            <select name="reason" class="form-select select2-modal" required>
                                 <option value="">{{ __('Selectionner une raison') }}</option>
                                 <option value="damaged">{{ __('Produit endommage') }}</option>
                                 <option value="lost">{{ __('Perte / Vol') }}</option>
@@ -241,5 +238,44 @@ jQuery(function ($) {
 });
 </script>
 @endpush
+
+{{-- Cancel Adjustment Modals --}}
+@foreach($adjustments as $adj)
+<div class="modal fade" id="cancel-adj-{{ $adj->id }}" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title"><i class="ti ti-arrow-back-up me-2"></i>{{ __('Annuler l\'ajustement') }}</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ route('eshop360.stock-adjustments.destroy', [$slug, $adj]) }}">
+                @csrf @method('DELETE')
+                <div class="modal-body">
+                    <div class="mb-2 small text-muted">
+                        <strong>{{ $adj->product?->name ?? '—' }}</strong> — {{ $adj->quantity > 0 ? '+' : '' }}{{ $adj->quantity }}
+                    </div>
+                    <div class="alert alert-warning small py-2 mb-3">
+                        <i class="ti ti-alert-triangle me-1"></i>{{ __('La quantite sera inversee dans le stock.') }}
+                    </div>
+                    <label class="form-label">{{ __('Motif d\'annulation') }} <span class="text-danger">*</span></label>
+                    <select name="cancellation_reason" class="form-select" required>
+                        <option value="">{{ __('Selectionner un motif') }}</option>
+                        <option value="erreur_saisie">{{ __('Erreur de saisie') }}</option>
+                        <option value="doublon">{{ __('Doublon') }}</option>
+                        <option value="correction">{{ __('Correction d\'inventaire') }}</option>
+                        <option value="annulation_commande">{{ __('Annulation de commande') }}</option>
+                        <option value="retour_fournisseur">{{ __('Retour fournisseur') }}</option>
+                        <option value="autre">{{ __('Autre') }}</option>
+                    </select>
+                </div>
+                <div class="modal-footer py-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">{{ __('Fermer') }}</button>
+                    <button type="submit" class="btn btn-sm btn-danger"><i class="ti ti-arrow-back-up me-1"></i>{{ __('Confirmer l\'annulation') }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endforeach
 
 </x-dashboard::layouts.master>

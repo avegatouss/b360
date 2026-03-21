@@ -53,16 +53,16 @@
                         @endif
                         <tr class="border-top">
                             <td colspan="2" class="text-end fw-bold">{{ __('Total') }}</td>
-                            <td class="text-end fw-bold fs-5">{{ number_format($invoice->total, 0, ',', ' ') }} FCFA</td>
+                            <td class="text-end fw-bold fs-5">{{ number_format($invoice->total, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</td>
                         </tr>
                         @if((float)$invoice->paid_amount > 0)
                         <tr>
                             <td colspan="2" class="text-end text-muted">{{ __('Deja paye') }}</td>
-                            <td class="text-end text-success">{{ number_format($invoice->paid_amount, 0, ',', ' ') }} FCFA</td>
+                            <td class="text-end text-success">{{ number_format($invoice->paid_amount, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</td>
                         </tr>
                         <tr>
                             <td colspan="2" class="text-end fw-bold text-danger">{{ __('Restant') }}</td>
-                            <td class="text-end fw-bold text-danger">{{ number_format($invoice->due_amount, 0, ',', ' ') }} FCFA</td>
+                            <td class="text-end fw-bold text-danger">{{ number_format($invoice->due_amount, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</td>
                         </tr>
                         @endif
                     </tfoot>
@@ -112,7 +112,7 @@
 
                         <button type="submit" class="btn btn-primary btn-lg w-100">
                             <i class="ti ti-lock me-2"></i>Payer
-                            {{ number_format((float)$invoice->due_amount > 0 ? $invoice->due_amount : $invoice->total, 0, ',', ' ') }} FCFA
+                            {{ number_format((float)$invoice->due_amount > 0 ? $invoice->due_amount : $invoice->total, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}
                         </button>
                     </form>
                 </div>

@@ -33,24 +33,65 @@ class CustomerController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'name'    => 'required|string|max:255',
-            'email'   => 'nullable|email|max:255',
-            'phone'   => 'nullable|string|max:30',
-            'address' => 'nullable|string|max:500',
-            'city'    => 'nullable|string|max:100',
-            'country' => 'nullable|string|max:100',
-            'user_id' => 'nullable|exists:users,id',
-        ]);
+        $rules = [
+            'name'                => 'required|string|max:255',
+            'email'               => 'nullable|email|max:255',
+            'phone'               => 'nullable|string|max:30',
+            'address'             => 'nullable|string|max:500',
+            'city'                => 'nullable|string|max:100',
+            'country'             => 'nullable|string|max:100',
+            'company_name'        => 'nullable|string|max:255',
+            'credit_limit'        => 'nullable|numeric|min:0',
+            'is_active'           => 'boolean',
+            'create_user_account' => 'nullable|boolean',
+        ];
+
+        if ($request->boolean('create_user_account')) {
+            $rules['email'] = 'required|email|max:255|unique:system.users,email';
+            $rules['password'] = 'required|string|min:8|confirmed';
+        }
+
+        $validated = $request->validate($rules);
 
         $instance = CurrentInstance::get();
         $validated['instance_id'] = $instance?->id;
         $validated['code'] = 'CUS-' . str_pad(Customer::where('instance_id', $instance?->id)->count() + 1, 6, '0', STR_PAD_LEFT);
 
-        Customer::create($validated);
+        // Remove non-model fields
+        $createAccount = $request->boolean('create_user_account');
+        $password = $validated['password'] ?? null;
+        unset($validated['create_user_account'], $validated['password'], $validated['password_confirmation']);
+
+        $customer = Customer::create($validated);
+
+        // Optionally create user account
+        if ($createAccount && $customer->email) {
+            $user = \App\Models\User::create([
+                'full_name' => $customer->name,
+                'email'     => $customer->email,
+                'password'  => \Illuminate\Support\Facades\Hash::make($password),
+                'phone'     => $customer->phone,
+                'is_active' => true,
+            ]);
+
+            DB::connection('system')->table('instance_user')->insert([
+                'instance_id' => $instance->id,
+                'user_id'     => $user->id,
+                'status'      => 'active',
+                'created_at'  => now(),
+                'updated_at'  => now(),
+            ]);
+
+            $customer->update(['user_id' => $user->id]);
+        }
+
+        $msg = __('Client cree avec succes.');
+        if ($createAccount) {
+            $msg .= ' ' . __('Compte utilisateur cree.');
+        }
 
         return redirect()->route('eshop360.customers.index', $request->route('slug'))
-            ->with('success', __('Customer created successfully.'));
+            ->with('success', $msg);
     }
 
     public function show(string $slug, Customer $customer)

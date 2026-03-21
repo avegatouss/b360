@@ -65,7 +65,7 @@
                                 <option value="{{ $invoice->id }}"
                                     @selected(old('template_invoice_id', $recurringInvoice?->template_invoice_id) == $invoice->id)>
                                     {{ $invoice->invoice_number }}
-                                    — {{ number_format($invoice->total, 0, ',', ' ') }} XAF
+                                    — {{ number_format($invoice->total, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}
                                     @if($invoice->customer) — {{ $invoice->customer->name }} @endif
                                 </option>
                             @endforeach

@@ -129,7 +129,7 @@
                                     </td>
                                     <td>michael@example.com</td>
                                     <td>{{ __('12 Sep 2024') }}</td>
-                                    <td>$200</td>
+                                    <td>200 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                     <td>{{ __('Credit Card') }}</td>
                                     <td>
                                         <span class="badge badge-success d-flex align-items-center badge-xs">
@@ -163,7 +163,7 @@
                                     </td>
                                     <td>sophie@example.com</td>
                                     <td>{{ __('24 Oct 2024') }}</td>
-                                    <td>$600</td>
+                                    <td>600 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                     <td>{{ __('Paypal') }}</td>
                                     <td>
                                         <span class="badge badge-success d-flex align-items-center badge-xs">
@@ -197,7 +197,7 @@
                                     </td>
                                     <td>cameron@example.com</td>
                                     <td>{{ __('18 Feb 2024') }}</td>
-                                    <td>$200</td>
+                                    <td>200 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                     <td>{{ __('Debit Card') }}</td>
                                     <td>
                                         <span class="badge badge-success d-flex align-items-center badge-xs">
@@ -231,7 +231,7 @@
                                     </td>
                                     <td>doris@example.com</td>
                                     <td>{{ __('17 Oct 2024') }}</td>
-                                    <td>$200</td>
+                                    <td>200 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                     <td>{{ __('Paypal') }}</td>
                                     <td>
                                         <span class="badge badge-success d-flex align-items-center badge-xs">
@@ -265,7 +265,7 @@
                                     </td>
                                     <td>thomas@example.com</td>
                                     <td>{{ __('20 Jul 2024') }}</td>
-                                    <td>$400</td>
+                                    <td>400 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                     <td>{{ __('Credit Card') }}</td>
                                     <td>
                                         <span class="badge badge-success d-flex align-items-center badge-xs">
@@ -299,7 +299,7 @@
                                     </td>
                                     <td>kathleen@example.com</td>
                                     <td>{{ __('10 Apr 2024') }}</td>
-                                    <td>$200</td>
+                                    <td>200 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                     <td>{{ __('Paypal') }}</td>
                                     <td>
                                         <span class="badge badge-success d-flex align-items-center badge-xs">
@@ -333,7 +333,7 @@
                                     </td>
                                     <td>bruce@example.com</td>
                                     <td>{{ __('29 Aug 2024') }}</td>
-                                    <td>$4800</td>
+                                    <td>4800 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                     <td>{{ __('Credit Card') }}</td>
                                     <td>
                                         <span class="badge badge-success d-flex align-items-center badge-xs">
@@ -367,7 +367,7 @@
                                     </td>
                                     <td>estelle@example.com</td>
                                     <td>{{ __('22 Feb 2024') }}</td>
-                                    <td>$50</td>
+                                    <td>50 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                     <td>{{ __('Credit Card') }}</td>
                                     <td>
                                         <span class="badge badge-danger d-flex align-items-center badge-xs">
@@ -401,7 +401,7 @@
                                     </td>
                                     <td>stephen@example.com</td>
                                     <td>{{ __('03 Nov 2024') }}</td>
-                                    <td>$600</td>
+                                    <td>600 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                     <td>{{ __('Paypal') }}</td>
                                     <td>
                                         <span class="badge badge-success d-flex align-items-center badge-xs">
@@ -435,7 +435,7 @@
                                     </td>
                                     <td>angela@example.com</td>
                                     <td>{{ __('17 Dec 2024') }}</td>
-                                    <td>$200</td>
+                                    <td>200 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                     <td>{{ __('Credit Card') }}</td>
                                     <td>
                                         <span class="badge badge-success d-flex align-items-center badge-xs">

@@ -32,7 +32,7 @@
                     </div>
                     <div class="ms-3">
                         <h3 class="fw-bold mb-0">{{ $kpiTotal }}</h3>
-                        <span class="text-muted small">{{ __('Total imports') }}</span>
+                        <span class="text-muted">{{ __('Total imports') }}</span>
                     </div>
                 </div>
             </div>
@@ -47,7 +47,7 @@
                     </div>
                     <div class="ms-3">
                         <h3 class="fw-bold mb-0">{{ $kpiDraft }}</h3>
-                        <span class="text-muted small">{{ __('Brouillons') }}</span>
+                        <span class="text-muted">{{ __('Brouillons') }}</span>
                     </div>
                 </div>
             </div>
@@ -62,7 +62,7 @@
                     </div>
                     <div class="ms-3">
                         <h3 class="fw-bold mb-0 {{ $kpiInTransit > 0 ? 'text-info' : '' }}">{{ $kpiInTransit }}</h3>
-                        <span class="text-muted small">{{ __('En transit') }}</span>
+                        <span class="text-muted">{{ __('En transit') }}</span>
                     </div>
                 </div>
             </div>
@@ -77,7 +77,7 @@
                     </div>
                     <div class="ms-3">
                         <h3 class="fw-bold mb-0 text-success">{{ $kpiReceived }}</h3>
-                        <span class="text-muted small">{{ __('Réceptionnés') }}</span>
+                        <span class="text-muted">{{ __('Réceptionnés') }}</span>
                     </div>
                 </div>
             </div>
@@ -222,7 +222,7 @@
                         @endphp
                         <div class="flex-fill text-center">
                             <div class="rounded {{ $active ? 'bg-success' : 'bg-light' }} mb-1" style="height:6px;"></div>
-                            <small class="{{ $isCurrent ? 'fw-bold text-success' : 'text-muted' }}" style="font-size:10px;">{{ $stepLabel }}</small>
+                            <span class="{{ $isCurrent ? 'fw-bold text-success' : 'text-muted' }}">{{ $stepLabel }}</span>
                         </div>
                     @endforeach
                 </div>
@@ -249,9 +249,9 @@
                                 <span class="{{ $import->eta->isPast() && $import->status !== 'received' ? 'text-danger fw-medium' : '' }}">
                                     {{ $import->eta->format('d/m/Y') }}
                                     @if($import->eta->isFuture())
-                                        <small class="text-muted">({{ $import->eta->diffForHumans() }})</small>
+                                        <span class="text-muted">({{ $import->eta->diffForHumans() }})</span>
                                     @elseif($import->status !== 'received')
-                                        <small class="text-danger">({{ __('en retard') }})</small>
+                                        <span class="text-danger">({{ __('en retard') }})</span>
                                     @endif
                                 </span>
                             </div>
@@ -270,25 +270,25 @@
                             <div class="col-3">
                                 <div class="border rounded-3 p-2 h-100">
                                     <h5 class="fw-bold mb-0 text-primary">{{ $import->items_count ?? 0 }}</h5>
-                                    <small class="text-muted">{{ __('Articles') }}</small>
+                                    <span class="text-muted">{{ __('Articles') }}</span>
                                 </div>
                             </div>
                             <div class="col-3">
                                 <div class="border rounded-3 p-2 h-100">
                                     <h5 class="fw-bold mb-0">{{ number_format($import->total_factory ?? 0, 0, ',', ' ') }}</h5>
-                                    <small class="text-muted">{{ __('Valeur usine') }}</small>
+                                    <span class="text-muted">{{ __('Valeur usine') }}</span>
                                 </div>
                             </div>
                             <div class="col-3">
                                 <div class="border rounded-3 p-2 h-100">
                                     <h5 class="fw-bold mb-0 text-info">{{ number_format($import->total_costs ?? 0, 0, ',', ' ') }}</h5>
-                                    <small class="text-muted">{{ __('Coûts') }}</small>
+                                    <span class="text-muted">{{ __('Couts') }}</span>
                                 </div>
                             </div>
                             <div class="col-3">
                                 <div class="border rounded-3 p-2 h-100">
                                     <h5 class="fw-bold mb-0 text-success">{{ number_format(($import->total_factory ?? 0) + ($import->total_costs ?? 0), 0, ',', ' ') }}</h5>
-                                    <small class="text-muted">{{ __('Coût total') }}</small>
+                                    <span class="text-muted">{{ __('Cout total') }}</span>
                                 </div>
                             </div>
                         </div>
@@ -297,7 +297,7 @@
 
                 {{-- Footer --}}
                 <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top">
-                    <small class="text-muted">{{ $import->notes ? Str::limit($import->notes, 80) : '' }}</small>
+                    <span class="text-muted">{{ $import->notes ? Str::limit($import->notes, 80) : '' }}</span>
                     <div class="d-flex gap-1">
                         <a href="{{ route('eshop360.imports.show', [$slug, $import]) }}" class="btn btn-sm btn-outline-primary">
                             <i class="ti ti-eye me-1"></i>{{ __('Détail') }}
@@ -325,7 +325,7 @@
     </div>
     @if($imports->hasPages())
         <div class="card-footer bg-transparent d-flex justify-content-between align-items-center">
-            <small class="text-muted">{{ __('Affichage') }} {{ $imports->firstItem() }}-{{ $imports->lastItem() }} {{ __('sur') }} {{ $imports->total() }}</small>
+            <span class="text-muted">{{ __('Affichage') }} {{ $imports->firstItem() }}-{{ $imports->lastItem() }} {{ __('sur') }} {{ $imports->total() }}</span>
             {{ $imports->links() }}
         </div>
     @endif

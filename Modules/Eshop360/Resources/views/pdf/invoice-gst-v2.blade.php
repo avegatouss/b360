@@ -83,19 +83,19 @@
     <table class="items">
         <thead>
             <tr>
-                <th>#</th>
-                <th>{{ __('Description') }}</th>
-                <th>{{ __('HSN/SAC') }}</th>
-                <th>{{ __('Qte') }}</th>
-                <th>{{ __('P.U.') }}</th>
-                <th>{{ __('Montant') }}</th>
+                <th style="background-color:#1e40af; color:#fff; padding:10px 12px;">#</th>
+                <th style="background-color:#1e40af; color:#fff; padding:10px 12px;">{{ __('Description') }}</th>
+                <th style="background-color:#1e40af; color:#fff; padding:10px 12px;">{{ __('HSN/SAC') }}</th>
+                <th style="background-color:#1e40af; color:#fff; padding:10px 12px;">{{ __('Qte') }}</th>
+                <th style="background-color:#1e40af; color:#fff; padding:10px 12px;">{{ __('P.U.') }}</th>
+                <th style="background-color:#1e40af; color:#fff; padding:10px 12px;">{{ __('Montant') }}</th>
                 <th colspan="2">{{ __('CGST') }}</th>
                 <th colspan="2">{{ __('SGST/UTGST') }}</th>
-                <th>{{ __('Total') }}</th>
+                <th style="background-color:#1e40af; color:#fff; padding:10px 12px;">{{ __('Total') }}</th>
             </tr>
             <tr>
-                <th></th><th></th><th></th><th></th><th></th><th></th>
-                <th>%</th><th>{{ __('Mnt') }}</th><th>%</th><th>{{ __('Mnt') }}</th><th></th>
+                <th style="background-color:#1e40af; color:#fff; padding:10px 12px;"></th><th style="background-color:#1e40af; color:#fff; padding:10px 12px;"></th><th style="background-color:#1e40af; color:#fff; padding:10px 12px;"></th><th style="background-color:#1e40af; color:#fff; padding:10px 12px;"></th><th style="background-color:#1e40af; color:#fff; padding:10px 12px;"></th><th style="background-color:#1e40af; color:#fff; padding:10px 12px;"></th>
+                <th style="background-color:#1e40af; color:#fff; padding:10px 12px;">%</th><th style="background-color:#1e40af; color:#fff; padding:10px 12px;">{{ __('Mnt') }}</th><th style="background-color:#1e40af; color:#fff; padding:10px 12px;">%</th><th style="background-color:#1e40af; color:#fff; padding:10px 12px;">{{ __('Mnt') }}</th><th style="background-color:#1e40af; color:#fff; padding:10px 12px;"></th>
             </tr>
         </thead>
         <tbody>

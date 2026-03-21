@@ -13,20 +13,38 @@ use Modules\Core\Support\CurrentInstance;
 
 class ExpenseController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $instance = CurrentInstance::get();
-        $expenses = Expense::where('instance_id', $instance->id)
+
+        $query = Expense::where('instance_id', $instance->id)
             ->with('category', 'account', 'user')
-            ->latest('date')
-            ->paginate(20);
-        $categories = ExpenseCategory::where('instance_id', $instance->id)->get();
-        $accounts = Account::where('instance_id', $instance->id)->where('is_active', true)->get();
-        $totalExpenses = Expense::where('instance_id', $instance->id)
-            ->whereMonth('date', now()->month)
-            ->whereYear('date', now()->year)
-            ->sum('amount');
-        return view('eshop360::finance.expenses.index', compact('expenses', 'categories', 'accounts', 'totalExpenses'));
+            ->when($request->category_id, fn ($q, $c) => $q->where('category_id', $c))
+            ->when($request->account_id, fn ($q, $a) => $q->where('account_id', $a))
+            ->when($request->date_from, fn ($q, $d) => $q->whereDate('date', '>=', $d))
+            ->when($request->date_to, fn ($q, $d) => $q->whereDate('date', '<=', $d))
+            ->when($request->search, fn ($q, $s) => $q->where('description', 'like', "%{$s}%"));
+
+        $fq = clone $query;
+        $kpi = (object) [
+            'total'       => (int) (clone $fq)->sum('amount'),
+            'count'       => (clone $fq)->count(),
+            'month_total' => (int) Expense::where('instance_id', $instance->id)->whereMonth('date', now()->month)->whereYear('date', now()->year)->sum('amount'),
+            'avg'         => (int) (clone $fq)->avg('amount'),
+            'by_category' => ExpenseCategory::where('instance_id', $instance->id)
+                ->withCount('expenses')
+                ->withSum('expenses', 'amount')
+                ->having('expenses_count', '>', 0)
+                ->orderByDesc('expenses_sum_amount')
+                ->limit(5)
+                ->get(),
+        ];
+
+        $expenses = $query->latest('date')->paginate(25)->withQueryString();
+        $categories = ExpenseCategory::where('instance_id', $instance->id)->orderBy('name')->get();
+        $accounts = Account::where('instance_id', $instance->id)->where('is_active', true)->orderBy('name')->get();
+
+        return view('eshop360::finance.expenses.index', compact('expenses', 'categories', 'accounts', 'kpi'));
     }
 
     public function store(Request $request)
@@ -100,8 +118,16 @@ class ExpenseController extends Controller
     public function categories()
     {
         $instance = CurrentInstance::get();
-        $categories = ExpenseCategory::where('instance_id', $instance->id)->withCount('expenses')->get();
-        return view('eshop360::finance.expenses.categories', compact('categories'));
+        $categories = ExpenseCategory::where('instance_id', $instance->id)
+            ->withCount('expenses')
+            ->withSum('expenses', 'amount')
+            ->orderBy('name')
+            ->get();
+
+        $totalExpenses = Expense::where('instance_id', $instance->id)->sum('amount');
+        $totalCategories = $categories->count();
+
+        return view('eshop360::finance.expenses.categories', compact('categories', 'totalExpenses', 'totalCategories'));
     }
 
     public function storeCategory(Request $request)
@@ -112,9 +138,16 @@ class ExpenseController extends Controller
         return redirect()->back()->with('success', 'Category created.');
     }
 
+    public function updateCategory(Request $request, string $slug, ExpenseCategory $category)
+    {
+        $validated = $request->validate(['name' => 'required|string|max:255']);
+        $category->update($validated);
+        return redirect()->back()->with('success', __('Categorie mise a jour.'));
+    }
+
     public function destroyCategory(string $slug, ExpenseCategory $category)
     {
         $category->delete();
-        return redirect()->back()->with('success', 'Category deleted.');
+        return redirect()->back()->with('success', __('Categorie supprimee.'));
     }
 }

@@ -133,7 +133,7 @@
                                         </td>
                                         <td>05</td>
                                         <td>
-                                            $500
+                                            5 {{ $eshopCurrency ?? 'FCFA' }}00
                                         </td>
                                     </tr>
                                     <tr>
@@ -163,7 +163,7 @@
                                         </td>
                                         <td>10</td>
                                         <td>
-                                            $1500
+                                            1 {{ $eshopCurrency ?? 'FCFA' }}500
                                         </td>
                                     </tr>
                                     <tr>
@@ -193,7 +193,7 @@
                                         </td>
                                         <td>08</td>
                                         <td>
-                                            $600
+                                            6 {{ $eshopCurrency ?? 'FCFA' }}00
                                         </td>
                                     </tr>
                                     <tr>
@@ -223,7 +223,7 @@
                                         </td>
                                         <td>10</td>
                                         <td>
-                                            $1000
+                                            1 {{ $eshopCurrency ?? 'FCFA' }}000
                                         </td>
                                     </tr>
                                     <tr>
@@ -253,7 +253,7 @@
                                         </td>
                                         <td>05</td>
                                         <td>
-                                            $1200
+                                            1 {{ $eshopCurrency ?? 'FCFA' }}200
                                         </td>
                                     </tr>
                                     <tr>
@@ -283,7 +283,7 @@
                                         </td>
                                         <td>07</td>
                                         <td>
-                                            $800
+                                            8 {{ $eshopCurrency ?? 'FCFA' }}00
                                         </td>
                                     </tr>
                                     <tr>
@@ -313,7 +313,7 @@
                                         </td>
                                         <td>15</td>
                                         <td>
-                                            $2000
+                                            2 {{ $eshopCurrency ?? 'FCFA' }}000
                                         </td>
                                     </tr>
                                     <tr>
@@ -343,7 +343,7 @@
                                         </td>
                                         <td>12</td>
                                         <td>
-                                            $2000
+                                            2 {{ $eshopCurrency ?? 'FCFA' }}000
                                         </td>
                                     </tr>
                                     <tr>
@@ -373,7 +373,7 @@
                                         </td>
                                         <td>10</td>
                                         <td>
-                                            $300
+                                            3 {{ $eshopCurrency ?? 'FCFA' }}00
                                         </td>
                                     </tr>
                                     <tr>
@@ -403,7 +403,7 @@
                                         </td>
                                         <td>20</td>
                                         <td>
-                                            $5000
+                                            5 {{ $eshopCurrency ?? 'FCFA' }}000
                                         </td>
                                     </tr>
                                 </tbody>

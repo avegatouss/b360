@@ -19,7 +19,7 @@
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <p class="text-muted mb-1 small">{{ __('Ventes aujourd\'hui') }}</p>
-                        <h4 class="fw-bold mb-0">{{ number_format($todaySales ?? 0, 0, ',', ' ') }} <small class="text-muted fs-6">{{ __('XAF') }}</small></h4>
+                        <h4 class="fw-bold mb-0">{{ number_format($todaySales ?? 0, 0, ',', ' ') }} <small class="text-muted fs-6">{{ $eshopCurrency ?? 'FCFA' }}</small></h4>
                     </div>
                     <div class="rounded-circle bg-primary bg-opacity-10 p-3">
                         <i class="ti ti-currency-dollar fs-4 text-primary"></i>
@@ -81,7 +81,7 @@
         <div class="card border-0 shadow-sm">
             <div class="card-body text-center">
                 <h6 class="text-muted small">{{ __('Marge totale (mois)') }}</h6>
-                <h4 class="fw-bold text-primary mb-0">{{ number_format($monthlyMargins->total_margin ?? 0, 0, ',', ' ') }} XAF</h4>
+                <h4 class="fw-bold text-primary mb-0">{{ number_format($monthlyMargins->total_margin ?? 0, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</h4>
             </div>
         </div>
     </div>
@@ -89,7 +89,7 @@
         <div class="card border-0 shadow-sm">
             <div class="card-body text-center">
                 <h6 class="text-muted small">{{ __('Part canal') }}</h6>
-                <h4 class="fw-bold text-success mb-0">{{ number_format($monthlyMargins->channel_part ?? 0, 0, ',', ' ') }} XAF</h4>
+                <h4 class="fw-bold text-success mb-0">{{ number_format($monthlyMargins->channel_part ?? 0, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</h4>
             </div>
         </div>
     </div>
@@ -97,7 +97,7 @@
         <div class="card border-0 shadow-sm">
             <div class="card-body text-center">
                 <h6 class="text-muted small">{{ __('Part proprietaire') }}</h6>
-                <h4 class="fw-bold text-info mb-0">{{ number_format($monthlyMargins->owner_part ?? 0, 0, ',', ' ') }} XAF</h4>
+                <h4 class="fw-bold text-info mb-0">{{ number_format($monthlyMargins->owner_part ?? 0, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</h4>
             </div>
         </div>
     </div>
@@ -105,7 +105,7 @@
         <div class="card border-0 shadow-sm">
             <div class="card-body text-center">
                 <h6 class="text-muted small">{{ __('Part dette') }}</h6>
-                <h4 class="fw-bold text-danger mb-0">{{ number_format($monthlyMargins->debt_part ?? 0, 0, ',', ' ') }} XAF</h4>
+                <h4 class="fw-bold text-danger mb-0">{{ number_format($monthlyMargins->debt_part ?? 0, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</h4>
             </div>
         </div>
     </div>
@@ -138,7 +138,7 @@
                             </a>
                         </td>
                         <td>{{ $order->customer->name ?? '—' }}</td>
-                        <td class="fw-bold">{{ number_format($order->total, 0, ',', ' ') }} XAF</td>
+                        <td class="fw-bold">{{ number_format($order->total, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</td>
                         <td>
                             @php
                                 $statusColors = ['pending' => 'warning', 'processing' => 'info', 'completed' => 'success', 'cancelled' => 'danger'];

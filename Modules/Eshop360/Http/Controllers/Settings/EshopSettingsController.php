@@ -120,4 +120,42 @@ class EshopSettingsController extends Controller
         return redirect()->route('eshop360.settings.invoice')
             ->with('success', __('Invoice settings updated successfully.'));
     }
+
+    public function fne()
+    {
+        $settings = $this->settings->get('fne');
+        $fneService = app(\Modules\Eshop360\Services\FneService::class);
+        $fneSettings = $fneService->getSettings();
+
+        return view('eshop360::settings.fne', compact('settings', 'fneSettings'));
+    }
+
+    public function updateFne(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'enabled'             => 'boolean',
+            'sandbox'             => 'boolean',
+            'api_url'             => 'nullable|url|max:500',
+            'api_key'             => 'nullable|string|max:500',
+            'ncc'                 => 'nullable|string|max:50',
+            'establishment'       => 'nullable|string|max:255',
+            'point_of_sale'       => 'nullable|string|max:255',
+            'default_template'    => 'nullable|in:B2B,B2C,B2G,B2F',
+            'default_tax'         => 'nullable|in:TVA,TVAB,TVAC,TVAD',
+            'commercial_message'  => 'nullable|string|max:500',
+            'footer'              => 'nullable|string|max:500',
+        ]);
+
+        $validated['enabled'] = $request->boolean('enabled');
+        $validated['sandbox'] = $request->boolean('sandbox');
+
+        if ($validated['sandbox'] && empty($validated['api_url'])) {
+            $validated['api_url'] = 'http://54.247.95.108/ws';
+        }
+
+        $this->settings->set('fne', $validated);
+
+        return redirect()->route('eshop360.settings.fne')
+            ->with('success', __('Parametres FNE mis a jour.'));
+    }
 }

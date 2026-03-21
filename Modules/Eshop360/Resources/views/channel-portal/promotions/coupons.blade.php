@@ -50,7 +50,7 @@
                             @if($coupon->type === 'percentage')
                                 {{ $coupon->value }}%
                             @else
-                                {{ number_format($coupon->value, 0, ',', ' ') }} XAF
+                                {{ number_format($coupon->value, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}
                             @endif
                         </td>
                         <td>

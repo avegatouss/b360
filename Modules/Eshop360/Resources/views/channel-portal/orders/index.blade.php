@@ -69,7 +69,7 @@
                         <td class="fw-medium">{{ $order->order_number ?? ('ORD-' . $order->id) }}</td>
                         <td>{{ $order->customer->name ?? '—' }}</td>
                         <td>{{ $order->items->count() }}</td>
-                        <td class="fw-bold">{{ number_format($order->total, 0, ',', ' ') }} XAF</td>
+                        <td class="fw-bold">{{ number_format($order->total, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</td>
                         <td>
                             <span class="badge bg-{{ $statusColors[$order->status] ?? 'secondary' }}">
                                 {{ $statusLabels[$order->status] ?? $order->status }}

@@ -130,100 +130,100 @@
                                         <td>{{ __('Carl Evans') }}</td>
                                         <td>{{ __('24 Dec 2024') }}</td>
                                         <td>{{ __('Electro Mart') }}</td>
-                                        <td>$200</td>
+                                        <td>200 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                         <td>{{ __('Stripe') }}</td>
-                                        <td>$200</td>
-                                        <td>$200</td>
+                                        <td>200 {{ $eshopCurrency ?? 'FCFA' }}</td>
+                                        <td>200 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                     </tr>
                                     <tr>
                                         <td><a href="#">#7590325</a></td>
                                         <td>{{ __('Minerva Rameriz') }}</td>
                                         <td>{{ __('10 Dec 2024') }}</td>
                                         <td>{{ __('Quantum Gadgets') }}</td>
-                                        <td>$50</td>
+                                        <td>50 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                         <td>{{ __('Paypal') }}</td>
-                                        <td>$50</td>
-                                        <td>$50</td>
+                                        <td>50 {{ $eshopCurrency ?? 'FCFA' }}</td>
+                                        <td>50 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                     </tr>
                                     <tr>
                                         <td><a href="#">#9814521</a></td>
                                         <td>{{ __('Robert Lamon') }}</td>
                                         <td>{{ __('27 Nov 2024') }}</td>
                                         <td>{{ __('Prime Bazaar') }}</td>
-                                        <td>$800</td>
+                                        <td>800 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                         <td>{{ __('Cash') }}</td>
-                                        <td>$800</td>
-                                        <td>$800</td>
+                                        <td>800 {{ $eshopCurrency ?? 'FCFA' }}</td>
+                                        <td>800 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                     </tr>
                                     <tr>
                                         <td><a href="#">#8745225</a></td>
                                         <td>{{ __('Patricia Lewis') }}</td>
                                         <td>{{ __('18 Nov 2024') }}</td>
                                         <td>{{ __('Gadget World') }}</td>
-                                        <td>$100</td>
+                                        <td>100 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                         <td>{{ __('Paypal') }}</td>
-                                        <td>$100</td>
-                                        <td>$100</td>
+                                        <td>100 {{ $eshopCurrency ?? 'FCFA' }}</td>
+                                        <td>100 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                     </tr>
                                     <tr>
                                         <td><a href="#">#4237022</a></td>
                                         <td>{{ __('Mark Joslyn') }}</td>
                                         <td>{{ __('06 Nov 2024') }}</td>
                                         <td>{{ __('Volt Vault') }}</td>
-                                        <td>$700</td>
+                                        <td>700 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                         <td>{{ __('Cash') }}</td>
-                                        <td>$700</td>
-                                        <td>$700</td>
+                                        <td>700 {{ $eshopCurrency ?? 'FCFA' }}</td>
+                                        <td>700 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                     </tr>
                                     <tr>
                                         <td><a href="#">#8744439</a></td>
                                         <td>{{ __('Marsha Betts') }}</td>
                                         <td>{{ __('25 Oct 2024') }}</td>
                                         <td>{{ __('Elite Retail') }}</td>
-                                        <td>$1000</td>
+                                        <td>1000 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                         <td>{{ __('Cash') }}</td>
-                                        <td>$1000</td>
-                                        <td>$1000</td>
+                                        <td>1000 {{ $eshopCurrency ?? 'FCFA' }}</td>
+                                        <td>1000 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                     </tr>
                                     <tr>
                                         <td><a href="#">#7590365</a></td>
                                         <td>{{ __('Daniel Jude') }}</td>
                                         <td>{{ __('14 Oct 2024') }}</td>
                                         <td>{{ __('Prime Mart') }}</td>
-                                        <td>$1200</td>
+                                        <td>1200 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                         <td>{{ __('Paypal') }}</td>
-                                        <td>$1200</td>
-                                        <td>$1200</td>
+                                        <td>1200 {{ $eshopCurrency ?? 'FCFA' }}</td>
+                                        <td>1200 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                     </tr>
                                     <tr>
                                         <td><a href="#">#8745478</a></td>
                                         <td>{{ __('Emma Bates') }}</td>
                                         <td>{{ __('03 Oct 2024') }}</td>
                                         <td>{{ __('NeoTech Store') }}</td>
-                                        <td>$750</td>
+                                        <td>750 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                         <td>{{ __('Stripe') }}</td>
-                                        <td>$750</td>
-                                        <td>$750</td>
+                                        <td>750 {{ $eshopCurrency ?? 'FCFA' }}</td>
+                                        <td>750 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                     </tr>
                                     <tr>
                                         <td><a href="#">#7590321</a></td>
                                         <td>{{ __('Richard Fralick') }}</td>
                                         <td>{{ __('20 Sep 2024') }}</td>
                                         <td>{{ __('Urban Mart') }}</td>
-                                        <td>$450</td>
+                                        <td>450 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                         <td>{{ __('Stripe') }}</td>
-                                        <td>$450</td>
-                                        <td>$450</td>
+                                        <td>450 {{ $eshopCurrency ?? 'FCFA' }}</td>
+                                        <td>450 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                     </tr>
                                     <tr>
                                         <td><a href="#">#8745245</a></td>
                                         <td>{{ __('Michelle Robison') }}</td>
                                         <td>{{ __('10 Sep 2024') }}</td>
                                         <td>{{ __('Travel Mart') }}</td>
-                                        <td>$300</td>
+                                        <td>300 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                         <td>{{ __('Cash') }}</td>
-                                        <td>$300</td>
-                                        <td>$300</td>
+                                        <td>300 {{ $eshopCurrency ?? 'FCFA' }}</td>
+                                        <td>300 {{ $eshopCurrency ?? 'FCFA' }}</td>
                                     </tr>
                                 </tbody>
                             </table>

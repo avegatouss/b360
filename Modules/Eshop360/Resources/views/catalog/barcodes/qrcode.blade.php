@@ -228,7 +228,7 @@
                             </div>
                             <div class="col-4">
                                 <label class="form-label">{{ __('Devise') }}</label>
-                                <input type="text" class="form-control form-control-sm" id="qr-opt-currency" value="FCFA">
+                                <input type="text" class="form-control form-control-sm" id="qr-opt-currency" value="{{ $eshopCurrency ?? 'FCFA' }}">
                             </div>
                         </div>
                         <h6 class="fw-bold mb-2">{{ __('Afficher') }}</h6>

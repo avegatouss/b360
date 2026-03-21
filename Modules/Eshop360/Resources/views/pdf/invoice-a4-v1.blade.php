@@ -124,13 +124,13 @@
     <table class="items">
         <thead>
             <tr>
-                <th style="width:30px;">#</th>
-                <th>{{ __('Designation') }}</th>
-                <th class="text-center" style="width:50px;">{{ __('Qte') }}</th>
-                <th class="text-right" style="width:90px;">{{ __('Prix Unit.') }}</th>
-                <th class="text-right" style="width:60px;">{{ __('TVA') }}</th>
-                <th class="text-right" style="width:90px;">{{ __('Remise') }}</th>
-                <th class="text-right" style="width:100px;">{{ __('Total HT') }}</th>
+                <th style="background-color:#1e40af; color:#fff; width:30px;">#</th>
+                <th style="background-color:#1e40af; color:#fff; padding:10px 12px;">{{ __('Designation') }}</th>
+                <th class="text-center" style="background-color:#1e40af; color:#fff; width:50px;">{{ __('Qte') }}</th>
+                <th class="text-right" style="background-color:#1e40af; color:#fff; width:90px;">{{ __('Prix Unit.') }}</th>
+                <th class="text-right" style="background-color:#1e40af; color:#fff; width:60px;">{{ __('TVA') }}</th>
+                <th class="text-right" style="background-color:#1e40af; color:#fff; width:90px;">{{ __('Remise') }}</th>
+                <th class="text-right" style="background-color:#1e40af; color:#fff; width:100px;">{{ __('Total HT') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -170,7 +170,7 @@
                 <td class="text-right" style="color:#dc2626;">-{{ number_format($invoice->discount_amount, 2, ',', ' ') }}</td>
             </tr>
             @endif
-            <tr class="total-row">
+            <tr class="total-row" style="background-color:#1e40af; color:#fff; font-size:14px;">
                 <td colspan="6" class="text-right">{{ __('TOTAL TTC') }}</td>
                 <td class="text-right">{{ number_format($invoice->total, 2, ',', ' ') }} {{ $settings['currency'] ?? __('FCFA') }}</td>
             </tr>

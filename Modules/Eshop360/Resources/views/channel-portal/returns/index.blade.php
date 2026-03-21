@@ -29,7 +29,7 @@
                             <option value="{{ $order->id }}">
                                 {{ $order->order_number ?? ('ORD-' . $order->id) }}
                                 &mdash; {{ $order->customer->name ?? __('Client anonyme') }}
-                                &mdash; {{ number_format($order->total, 0, ',', ' ') }} XAF
+                                &mdash; {{ number_format($order->total, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}
                             </option>
                         @endforeach
                     </select>
@@ -71,7 +71,7 @@
                         <td class="fw-medium">{{ $ret->order_number ?? ('ORD-' . $ret->id) }}</td>
                         <td>{{ $ret->customer->name ?? '---' }}</td>
                         <td>{{ $ret->updated_at ? $ret->updated_at->format('d/m/Y H:i') : '---' }}</td>
-                        <td class="fw-bold">{{ number_format($ret->total ?? 0, 0, ',', ' ') }} XAF</td>
+                        <td class="fw-bold">{{ number_format($ret->total ?? 0, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</td>
                         <td class="small text-muted">{{ $ret->return_reason ?? $ret->notes ?? '---' }}</td>
                     </tr>
                     @empty

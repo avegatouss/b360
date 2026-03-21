@@ -35,7 +35,7 @@
                         <td class="fw-semibold">{{ $order->reference ?? $order->order_number ?? '—' }}</td>
                         <td>{{ $order->created_at->format('d/m/Y H:i') }}</td>
                         <td>{{ $order->customer->name ?? $order->customer_name ?? '—' }}</td>
-                        <td class="fw-bold">{{ number_format($order->total ?? 0, 0, ',', ' ') }} XAF</td>
+                        <td class="fw-bold">{{ number_format($order->total ?? 0, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</td>
                         <td>
                             @switch($order->status ?? '')
                                 @case('completed')

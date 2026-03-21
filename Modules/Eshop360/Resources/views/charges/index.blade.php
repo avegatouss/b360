@@ -41,7 +41,7 @@
             <div class="card-body text-center py-3">
                 <div class="small text-white-50 mb-1">{{ __('Accumule ce mois') }}</div>
                 <h3 id="charges-counter" class="fw-bold mb-0">{{ number_format($accumulated, 0, ',', ' ') }}</h3>
-                <div class="small text-white-50 mt-1">XAF</div>
+                <div class="small text-white-50 mt-1">{{ $eshopCurrency ?? 'FCFA' }}</div>
             </div>
         </div>
     </div>
@@ -50,7 +50,7 @@
             <div class="card-body text-center py-3">
                 <div class="small text-muted mb-1">{{ __('Cout par heure') }}</div>
                 <h3 class="fw-bold mb-0">{{ number_format($costPerSecond * 3600, 0, ',', ' ') }}</h3>
-                <div class="small text-muted mt-1">XAF/h</div>
+                <div class="small text-muted mt-1">{{ $eshopCurrency ?? 'FCFA' }}/h</div>
             </div>
         </div>
     </div>
@@ -59,7 +59,7 @@
             <div class="card-body text-center py-3">
                 <div class="small text-muted mb-1">{{ __('Cout par jour') }}</div>
                 <h3 class="fw-bold mb-0">{{ number_format($costPerSecond * 86400, 0, ',', ' ') }}</h3>
-                <div class="small text-muted mt-1">XAF/j</div>
+                <div class="small text-muted mt-1">{{ $eshopCurrency ?? 'FCFA' }}/j</div>
             </div>
         </div>
     </div>
@@ -154,8 +154,8 @@
                         <td>
                             <span class="badge bg-light text-dark">{{ $categoryLabels[$charge->category] ?? ucfirst($charge->category) }}</span>
                         </td>
-                        <td class="text-end fw-bold">{{ number_format($charge->amount_monthly, 0, ',', ' ') }} XAF</td>
-                        <td class="text-end text-muted">{{ number_format($charge->amount_monthly / 30, 0, ',', ' ') }} XAF</td>
+                        <td class="text-end fw-bold">{{ number_format($charge->amount_monthly, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</td>
+                        <td class="text-end text-muted">{{ number_format($charge->amount_monthly / 30, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</td>
                         <td>
                             @if($charge->is_active)
                                 <span class="badge bg-success">{{ __('Active') }}</span>
@@ -212,7 +212,7 @@
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">{{ __('Montant mensuel (XAF)') }} <span class="text-danger">*</span></label>
+                        <label class="form-label">{{ __('Montant mensuel ({{ $eshopCurrency ?? 'FCFA' }})') }} <span class="text-danger">*</span></label>
                         <input type="number" name="amount_monthly" class="form-control" step="1" min="0" required>
                     </div>
                     <div class="mb-3">
@@ -258,7 +258,7 @@
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">{{ __('Montant mensuel (XAF)') }} <span class="text-danger">*</span></label>
+                        <label class="form-label">{{ __('Montant mensuel ({{ $eshopCurrency ?? 'FCFA' }})') }} <span class="text-danger">*</span></label>
                         <input type="number" name="amount_monthly" class="form-control" step="1" min="0" value="{{ $charge->amount_monthly }}" required>
                     </div>
                     <div class="mb-3">

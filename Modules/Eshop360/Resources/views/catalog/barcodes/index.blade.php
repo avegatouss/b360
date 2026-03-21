@@ -263,7 +263,7 @@
                             </div>
                             <div class="col-3">
                                 <label class="form-label">{{ __('Devise') }}</label>
-                                <input type="text" class="form-control form-control-sm" id="opt-currency" value="FCFA">
+                                <input type="text" class="form-control form-control-sm" id="opt-currency" value="{{ $eshopCurrency ?? 'FCFA' }}">
                             </div>
                             <div class="col-3">
                                 <label class="form-label">{{ __('Magasin') }}</label>

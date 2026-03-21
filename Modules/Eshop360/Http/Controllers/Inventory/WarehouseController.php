@@ -7,6 +7,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\Core\Support\CurrentInstance;
+use Modules\Eshop360\Models\Employee;
 use Modules\Eshop360\Models\Store;
 use Modules\Eshop360\Models\Warehouse;
 
@@ -22,7 +23,7 @@ class WarehouseController extends Controller
     {
         $warehouses = Warehouse::withCount(['stocks', 'stores'])
             ->withSum('stocks', 'quantity')
-            ->with('stores')
+            ->with(['stores', 'manager'])
             ->when($request->search, function ($q, $s) {
                 $q->where(function ($warehouseQuery) use ($s) {
                     $warehouseQuery->where('name', 'like', "%{$s}%")
@@ -44,8 +45,10 @@ class WarehouseController extends Controller
             ->whereRaw('quantity <= (SELECT COALESCE(alert_quantity, 5) FROM eshop_products WHERE eshop_products.id = eshop_stocks.product_id)')
             ->count();
 
+        $employees = Employee::where('status', 'active')->orderBy('name')->get();
+
         return view('eshop360::inventory.warehouses.index', compact(
-            'warehouses', 'totalWarehouses', 'activeWarehouses', 'totalStockUnits', 'totalProducts', 'lowStockCount'
+            'warehouses', 'totalWarehouses', 'activeWarehouses', 'totalStockUnits', 'totalProducts', 'lowStockCount', 'employees'
         ));
     }
 
@@ -98,6 +101,7 @@ class WarehouseController extends Controller
             'phone'        => 'nullable|string|max:30',
             'email'        => 'nullable|email|max:255',
             'manager_name' => 'nullable|string|max:255',
+            'manager_id'   => 'nullable|exists:eshop_employees,id',
             'is_active'    => 'boolean',
             'stores'              => 'nullable|array',
             'stores.*.name'       => 'required_with:stores|string|max:255',
@@ -140,6 +144,7 @@ class WarehouseController extends Controller
             'phone'        => 'nullable|string|max:30',
             'email'        => 'nullable|email|max:255',
             'manager_name' => 'nullable|string|max:255',
+            'manager_id'   => 'nullable|exists:eshop_employees,id',
             'is_active'    => 'boolean',
         ]);
 

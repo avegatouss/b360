@@ -43,7 +43,7 @@
                                     <button type="submit" class="dropdown-item">
                                         <i class="ti ti-player-play me-1"></i>
                                         {{ $holding->customer->name ?? __('Client anonyme') }}
-                                        &mdash; {{ number_format($holding->total ?? 0, 0, ',', ' ') }} XAF
+                                        &mdash; {{ number_format($holding->total ?? 0, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}
                                     </button>
                                 </form>
                             </li>
@@ -96,7 +96,7 @@
                         <div class="card-body p-2 text-center">
                             <h6 class="fw-bold mb-1 small text-truncate" title="{{ $product->name }}">{{ $product->name }}</h6>
                             <p class="text-muted mb-1" style="font-size:.75rem;"><code>{{ $product->sku ?? '---' }}</code></p>
-                            <p class="fw-bold text-primary mb-2">{{ number_format($product->pivot->sale_price ?? $product->price ?? 0, 0, ',', ' ') }} XAF</p>
+                            <p class="fw-bold text-primary mb-2">{{ number_format($product->pivot->sale_price ?? $product->price ?? 0, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</p>
                             <form method="POST" action="{{ route('eshop360.channel-portal.cart.add', [$slug, $channelKey]) }}">
                                 @csrf
                                 <input type="hidden" name="product_id" value="{{ $product->id }}">
@@ -139,7 +139,7 @@
                     <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom">
                         <div class="flex-grow-1">
                             <div class="fw-medium small">{{ $item['name'] ?? '---' }}</div>
-                            <div class="text-muted" style="font-size:.75rem;">{{ number_format($item['price'] ?? 0, 0, ',', ' ') }} XAF</div>
+                            <div class="text-muted" style="font-size:.75rem;">{{ number_format($item['price'] ?? 0, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</div>
                         </div>
                         <div class="d-flex align-items-center gap-1">
                             <form method="POST" action="{{ route('eshop360.channel-portal.cart.update', [$slug, $channelKey]) }}" class="d-inline">
@@ -167,7 +167,7 @@
             <div class="card-footer bg-white">
                 <div class="d-flex justify-content-between fw-bold mb-3">
                     <span>{{ __('Total') }}</span>
-                    <span class="text-primary fs-5">{{ number_format($cartTotal, 0, ',', ' ') }} XAF</span>
+                    <span class="text-primary fs-5">{{ number_format($cartTotal, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</span>
                 </div>
                 <div class="d-flex gap-2">
                     @if(!empty($cartItems) && count($cartItems) > 0)

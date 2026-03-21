@@ -61,7 +61,7 @@ class EshopSettingsService
             'default_footer'     => '',
             'default_due_days'   => 30,
             'default_template'   => 'default',
-            'currency_symbol'    => '$',
+            'currency_symbol'    => 'FCFA',
             'currency_position'  => 'before',
             'show_tax_breakdown' => true,
             'show_payment_info'  => true,

@@ -10,8 +10,16 @@
             <h6>Code: {{ $customer->code }}</h6>
         </div>
     </div>
-    <div class="page-btn">
-        <a href="{{ route('eshop360.customers.index', $instance->slug ?? '') }}" class="btn btn-secondary"><i class="ti ti-arrow-left me-1"></i>Retour</a>
+    <div class="page-btn d-flex gap-2">
+        @if(($stats['total_due'] ?? 0) > 0)
+            <a href="{{ route('eshop360.invoices.index', [$instance->slug ?? '', 'customer_id' => $customer->id, 'status' => 'unpaid']) }}" class="btn btn-danger">
+                <i class="ti ti-cash me-1"></i>{{ __('Regler les creances') }} ({{ number_format($stats['total_due'], 0, ',', ' ') }})
+            </a>
+        @endif
+        <a href="{{ route('eshop360.orders.index', [$instance->slug ?? '', 'customer_id' => $customer->id]) }}" class="btn btn-outline-info">
+            <i class="ti ti-shopping-cart me-1"></i>{{ __('Commandes') }}
+        </a>
+        <a href="{{ route('eshop360.customers.index', $instance->slug ?? '') }}" class="btn btn-secondary"><i class="ti ti-arrow-left me-1"></i>{{ __('Retour') }}</a>
     </div>
 </div>
 
@@ -67,9 +75,11 @@
                     $totalOwed = $pendingDues->sum(fn ($d) => (float) $d->amount_due - (float) $d->paid_amount);
                 @endphp
                 @if($totalOwed > 0)
-                    <div class="alert alert-warning py-2 mb-3">
-                        <i class="ti ti-alert-triangle me-1"></i>
-                        {{ __('Dette en cours') }}: <strong>{{ number_format($totalOwed, 0, ',', ' ') }}</strong>
+                    <div class="alert alert-warning py-2 mb-3 d-flex justify-content-between align-items-center">
+                        <span><i class="ti ti-alert-triangle me-1"></i>{{ __('Dette en cours') }}: <strong>{{ number_format($totalOwed, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</strong></span>
+                        <a href="{{ route('eshop360.invoices.index', [$instance->slug ?? '', 'customer_id' => $customer->id, 'status' => 'unpaid']) }}" class="btn btn-sm btn-warning">
+                            <i class="ti ti-cash me-1"></i>{{ __('Regler') }}
+                        </a>
                     </div>
                 @endif
 

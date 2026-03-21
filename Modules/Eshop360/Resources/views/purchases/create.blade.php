@@ -104,10 +104,10 @@
                                     <td>
                                         <div class="input-group input-group-sm">
                                             <input type="number" name="items[0][unit_cost]" class="form-control form-control-sm item-price" step="0.01" min="0" value="0" required>
-                                            <span class="input-group-text">XAF</span>
+                                            <span class="input-group-text">{{ $eshopCurrency ?? 'FCFA' }}</span>
                                         </div>
                                     </td>
-                                    <td class="text-end align-middle"><span class="item-subtotal fw-bold">0</span> <span class="text-muted">XAF</span></td>
+                                    <td class="text-end align-middle"><span class="item-subtotal fw-bold">0</span> <span class="text-muted">{{ $eshopCurrency ?? 'FCFA' }}</span></td>
                                     <td class="align-middle"><button type="button" class="btn btn-sm btn-outline-danger remove-row"><i class="ti ti-x"></i></button></td>
                                 </tr>
                             </tbody>
@@ -115,7 +115,7 @@
                                 <tr>
                                     <td class="fw-bold text-end" colspan="1"><span id="totalItems">1</span> {{ __('produit(s)') }}</td>
                                     <td class="fw-bold text-end" colspan="2">{{ __('Total') }} :</td>
-                                    <td class="text-end"><span id="grandTotal" class="fw-bold text-primary fs-6">0</span> <span class="text-muted">XAF</span></td>
+                                    <td class="text-end"><span id="grandTotal" class="fw-bold text-primary fs-6">0</span> <span class="text-muted">{{ $eshopCurrency ?? 'FCFA' }}</span></td>
                                     <td></td>
                                 </tr>
                             </tfoot>
@@ -136,7 +136,7 @@
                         <label class="form-label">{{ __('Montant payé') }}</label>
                         <div class="input-group">
                             <input type="number" name="paid_amount" class="form-control" step="0.01" min="0" value="{{ old('paid_amount', 0) }}">
-                            <span class="input-group-text">XAF</span>
+                            <span class="input-group-text">{{ $eshopCurrency ?? 'FCFA' }}</span>
                         </div>
                         <span class="text-muted">{{ __('Laisser à 0 si non payé') }}</span>
                     </div>
@@ -155,7 +155,7 @@
             <div class="card border-0 shadow-sm bg-primary-subtle mb-3">
                 <div class="card-body text-center py-3">
                     <span class="text-muted">{{ __('Total commande') }}</span>
-                    <h3 class="fw-bold text-primary mb-0" id="summaryTotal">0 XAF</h3>
+                    <h3 class="fw-bold text-primary mb-0" id="summaryTotal">0 {{ $eshopCurrency ?? 'FCFA' }}</h3>
                     <span class="text-muted"><span id="summaryItems">0</span> {{ __('produit(s)') }}</span>
                 </div>
             </div>
@@ -261,7 +261,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var f = Math.round(total).toLocaleString('fr-FR');
         document.getElementById('grandTotal').textContent = f;
         document.getElementById('totalItems').textContent = count;
-        document.getElementById('summaryTotal').textContent = f + ' XAF';
+        document.getElementById('summaryTotal').textContent = f + ' {{ $eshopCurrency ?? "FCFA" }}';
         document.getElementById('summaryItems').textContent = count;
     }
 

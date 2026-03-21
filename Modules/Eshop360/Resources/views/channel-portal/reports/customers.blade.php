@@ -62,8 +62,8 @@
                         <td class="text-center">
                             <span class="badge bg-primary">{{ $customer->order_count ?? 0 }}</span>
                         </td>
-                        <td class="text-end fw-bold">{{ number_format($customer->total_spent ?? 0, 0, ',', ' ') }} XAF</td>
-                        <td class="text-end fw-bold text-success">{{ number_format($customer->total_paid ?? 0, 0, ',', ' ') }} XAF</td>
+                        <td class="text-end fw-bold">{{ number_format($customer->total_spent ?? 0, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</td>
+                        <td class="text-end fw-bold text-success">{{ number_format($customer->total_paid ?? 0, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</td>
                     </tr>
                     @empty
                     <tr>

@@ -187,13 +187,13 @@
     <table>
         <thead>
             <tr>
-                <th style="width:30px;">#</th>
-                <th>{{ __('Désignation') }}</th>
-                <th class="text-center" style="width:60px;">{{ __('Qté') }}</th>
-                <th class="text-right" style="width:100px;">{{ __('Prix Unit.') }}</th>
-                <th class="text-right" style="width:60px;">{{ __('TVA') }}</th>
-                <th class="text-right" style="width:100px;">{{ __('Remise') }}</th>
-                <th class="text-right" style="width:110px;">{{ __('Total HT') }}</th>
+                <th style="background-color:#1e40af; color:#fff; width:30px;">#</th>
+                <th style="background-color:#1e40af; color:#fff; padding:10px 12px;">{{ __('Désignation') }}</th>
+                <th class="text-center" style="background-color:#1e40af; color:#fff; width:60px;">{{ __('Qté') }}</th>
+                <th class="text-right" style="background-color:#1e40af; color:#fff; width:100px;">{{ __('Prix Unit.') }}</th>
+                <th class="text-right" style="background-color:#1e40af; color:#fff; width:60px;">{{ __('TVA') }}</th>
+                <th class="text-right" style="background-color:#1e40af; color:#fff; width:100px;">{{ __('Remise') }}</th>
+                <th class="text-right" style="background-color:#1e40af; color:#fff; width:110px;">{{ __('Total HT') }}</th>
             </tr>
         </thead>
         <tbody>

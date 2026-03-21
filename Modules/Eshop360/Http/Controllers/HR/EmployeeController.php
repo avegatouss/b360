@@ -3,7 +3,11 @@
 namespace Modules\Eshop360\Http\Controllers\HR;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Modules\Eshop360\Models\Employee;
 use Modules\Eshop360\Services\HRService;
 use Modules\Core\Support\CurrentInstance;
@@ -15,7 +19,7 @@ class EmployeeController extends Controller
     public function index()
     {
         $instance = CurrentInstance::get();
-        $employees = Employee::where('instance_id', $instance->id)->latest()->paginate(20);
+        $employees = Employee::with('user')->where('instance_id', $instance->id)->latest()->paginate(20);
         return view('eshop360::hr.employees.index', compact('employees'));
     }
 
@@ -44,7 +48,7 @@ class EmployeeController extends Controller
 
     public function show(string $slug, Employee $employee)
     {
-        $employee->load('salaries', 'commissions.order', 'attendance');
+        $employee->load('user', 'salaries', 'commissions.order', 'attendances');
         return view('eshop360::hr.employees.show', compact('employee'));
     }
 
@@ -73,5 +77,41 @@ class EmployeeController extends Controller
     {
         $employee->delete();
         return redirect()->back()->with('success', 'Employee deleted.');
+    }
+
+    public function createUserAccount(Request $request, string $slug, Employee $employee)
+    {
+        if ($employee->user_id) {
+            return redirect()->back()->with('error', __('Cet employe possede deja un compte utilisateur.'));
+        }
+
+        $validated = $request->validate([
+            'email'    => 'required|email|unique:system.users,email',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $instance = CurrentInstance::get();
+
+        $user = User::create([
+            'full_name' => $employee->name,
+            'email'     => $validated['email'],
+            'password'  => Hash::make($validated['password']),
+            'phone'     => $employee->phone,
+            'is_active' => true,
+        ]);
+
+        // Attach user to current instance
+        DB::connection('system')->table('instance_user')->insert([
+            'instance_id' => $instance->id,
+            'user_id'     => $user->id,
+            'status'      => 'active',
+            'created_at'  => now(),
+            'updated_at'  => now(),
+        ]);
+
+        // Link employee to user
+        $employee->update(['user_id' => $user->id]);
+
+        return redirect()->back()->with('success', __('Compte utilisateur cree avec succes pour :name.', ['name' => $employee->name]));
     }
 }

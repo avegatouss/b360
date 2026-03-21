@@ -106,18 +106,18 @@
                                     <td>
                                         <div class="input-group input-group-sm">
                                             <input type="number" name="items[0][unit_price]" class="form-control form-control-sm item-price" step="1" min="0" value="0" required>
-                                            <span class="input-group-text">XAF</span>
+                                            <span class="input-group-text">{{ $eshopCurrency ?? 'FCFA' }}</span>
                                         </div>
                                         <input type="hidden" name="items[0][original_price]" class="item-original-price" value="0">
                                     </td>
                                     <td>
                                         <div class="input-group input-group-sm">
                                             <input type="number" name="items[0][discount]" class="form-control form-control-sm item-discount" step="1" min="0" value="0">
-                                            <span class="input-group-text">XAF</span>
+                                            <span class="input-group-text">{{ $eshopCurrency ?? 'FCFA' }}</span>
                                         </div>
                                     </td>
                                     <td class="text-end align-middle">
-                                        <span class="item-subtotal fw-bold">0</span> <small class="text-muted">XAF</small>
+                                        <span class="item-subtotal fw-bold">0</span> <small class="text-muted">{{ $eshopCurrency ?? 'FCFA' }}</small>
                                     </td>
                                     <td class="align-middle">
                                         <button type="button" class="btn btn-sm btn-outline-danger remove-row" title="{{ __('Supprimer') }}">
@@ -130,7 +130,7 @@
                                 <tr>
                                     <td colspan="2" class="fw-bold"><span id="totalItems">1</span> {{ __('article(s)') }}</td>
                                     <td colspan="2" class="text-end fw-bold">{{ __('Sous-total') }} :</td>
-                                    <td class="text-end"><span id="subtotal" class="fw-bold">0</span> <small class="text-muted">XAF</small></td>
+                                    <td class="text-end"><span id="subtotal" class="fw-bold">0</span> <small class="text-muted">{{ $eshopCurrency ?? 'FCFA' }}</small></td>
                                     <td></td>
                                 </tr>
                             </tfoot>
@@ -160,14 +160,14 @@
                         <label class="form-label">{{ __('Remise globale') }}</label>
                         <div class="input-group">
                             <input type="number" name="discount_amount" id="globalDiscount" class="form-control" step="1" min="0" value="{{ old('discount_amount', 0) }}">
-                            <span class="input-group-text">XAF</span>
+                            <span class="input-group-text">{{ $eshopCurrency ?? 'FCFA' }}</span>
                         </div>
                     </div>
                     <div>
                         <label class="form-label">{{ __('Frais de livraison') }}</label>
                         <div class="input-group">
                             <input type="number" name="shipping_amount" id="shippingAmount" class="form-control" step="1" min="0" value="{{ old('shipping_amount', 0) }}">
-                            <span class="input-group-text">XAF</span>
+                            <span class="input-group-text">{{ $eshopCurrency ?? 'FCFA' }}</span>
                         </div>
                     </div>
                 </div>
@@ -196,7 +196,7 @@
                         <label class="form-label">{{ __('Montant payé') }} <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <input type="number" name="paid_amount" id="paidAmount" class="form-control" step="1" min="0" value="{{ old('paid_amount', 0) }}" required>
-                            <span class="input-group-text">XAF</span>
+                            <span class="input-group-text">{{ $eshopCurrency ?? 'FCFA' }}</span>
                         </div>
                         <div class="d-flex gap-1 mt-2">
                             <button type="button" class="btn btn-sm btn-outline-success pay-full-btn">{{ __('Payer total') }}</button>
@@ -224,11 +224,11 @@
                     <hr class="my-2">
                     <div class="d-flex justify-content-between">
                         <span class="fw-bold fs-6">{{ __('TOTAL') }}</span>
-                        <span id="summaryTotal" class="fw-bold fs-5 text-primary">0 XAF</span>
+                        <span id="summaryTotal" class="fw-bold fs-5 text-primary">0 {{ $eshopCurrency ?? 'FCFA' }}</span>
                     </div>
                     <div class="d-flex justify-content-between mt-1">
                         <span class="text-muted small">{{ __('Reste à payer') }}</span>
-                        <span id="summaryDue" class="fw-medium text-danger">0 XAF</span>
+                        <span id="summaryDue" class="fw-medium text-danger">0 {{ $eshopCurrency ?? 'FCFA' }}</span>
                     </div>
                 </div>
             </div>
@@ -340,11 +340,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
         document.getElementById('subtotal').textContent = Math.round(subtotal).toLocaleString('fr-FR');
         document.getElementById('totalItems').textContent = count;
-        document.getElementById('summarySubtotal').textContent = Math.round(subtotal).toLocaleString('fr-FR') + ' XAF';
-        document.getElementById('summaryDiscount').textContent = '-' + Math.round(globalDisc).toLocaleString('fr-FR') + ' XAF';
-        document.getElementById('summaryShipping').textContent = '+' + Math.round(shipping).toLocaleString('fr-FR') + ' XAF';
-        document.getElementById('summaryTotal').textContent = total.toLocaleString('fr-FR') + ' XAF';
-        document.getElementById('summaryDue').textContent = due.toLocaleString('fr-FR') + ' XAF';
+        document.getElementById('summarySubtotal').textContent = Math.round(subtotal).toLocaleString('fr-FR') + ' {{ $eshopCurrency ?? "FCFA" }}';
+        document.getElementById('summaryDiscount').textContent = '-' + Math.round(globalDisc).toLocaleString('fr-FR') + ' {{ $eshopCurrency ?? "FCFA" }}';
+        document.getElementById('summaryShipping').textContent = '+' + Math.round(shipping).toLocaleString('fr-FR') + ' {{ $eshopCurrency ?? "FCFA" }}';
+        document.getElementById('summaryTotal').textContent = total.toLocaleString('fr-FR') + ' {{ $eshopCurrency ?? "FCFA" }}';
+        document.getElementById('summaryDue').textContent = due.toLocaleString('fr-FR') + ' {{ $eshopCurrency ?? "FCFA" }}';
         document.getElementById('summaryDue').classList.toggle('text-danger', due > 0);
         document.getElementById('summaryDue').classList.toggle('text-success', due === 0);
 

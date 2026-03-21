@@ -62,7 +62,7 @@
                                 <a href="javascript:void(0);">{{ __('Lenovo IdeaPad 3') }}</a>
                             </div>												
                         </td>
-                        <td>$600</td>
+                        <td>600 {{ $eshopCurrency ?? 'FCFA' }}</td>
                         <td>
                             <div class="product-quantity border-0 bg-secondary-transparent">
                                 <span class="quantity-btn"><i data-feather="minus-circle" class="feather-search"></i></span>
@@ -70,7 +70,7 @@
                                 <span class="quantity-btn">+<i data-feather="plus-circle" class="plus-circle"></i></span>
                             </div>
                         </td>
-                        <td>$160</td>
+                        <td>160 {{ $eshopCurrency ?? 'FCFA' }}</td>
                         <td>
                             <div class="edit-delete-action d-flex align-items-center">
                                 <a class="p-2 d-flex align-items-center border rounded" href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#delete">
@@ -95,7 +95,7 @@
                                 <a href="javascript:void(0);">{{ __('Beats Pro') }}</a>
                             </div>												
                         </td>
-                        <td>$160</td>
+                        <td>160 {{ $eshopCurrency ?? 'FCFA' }}</td>
                         <td>
                             <div class="product-quantity border-0 bg-secondary-transparent">
                                 <span class="quantity-btn"><i data-feather="minus-circle" class="feather-search"></i></span>
@@ -103,7 +103,7 @@
                                 <span class="quantity-btn">+<i data-feather="plus-circle" class="plus-circle"></i></span>
                             </div>
                         </td>
-                        <td>$1200</td>
+                        <td>1200 {{ $eshopCurrency ?? 'FCFA' }}</td>
                         <td>
                             <div class="edit-delete-action d-flex align-items-center">
                                 <a class="p-2 d-flex align-items-center border rounded" href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#delete">
@@ -128,7 +128,7 @@
                                 <a href="javascript:void(0);">{{ __('Nike Jordan') }}</a>
                             </div>												
                         </td>
-                        <td>$110</td>
+                        <td>110 {{ $eshopCurrency ?? 'FCFA' }}</td>
                         <td>
                             <div class="product-quantity border-0 bg-secondary-transparent">
                                 <span class="quantity-btn"><i data-feather="minus-circle" class="feather-search"></i></span>
@@ -136,7 +136,7 @@
                                 <span class="quantity-btn">+<i data-feather="plus-circle" class="plus-circle"></i></span>
                             </div>
                         </td>
-                        <td>$330</td>
+                        <td>330 {{ $eshopCurrency ?? 'FCFA' }}</td>
                         <td>
                             <div class="edit-delete-action d-flex align-items-center">
                                 <a class="p-2 d-flex align-items-center border rounded" href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#delete">
@@ -161,7 +161,7 @@
                                 <a href="javascript:void(0);">{{ __('Apple Series 5 Watch') }}</a>
                             </div>												
                         </td>
-                        <td>$120</td>
+                        <td>120 {{ $eshopCurrency ?? 'FCFA' }}</td>
                         <td>
                             <div class="product-quantity border-0 bg-secondary-transparent">
                                 <span class="quantity-btn"><i data-feather="minus-circle" class="feather-search"></i></span>
@@ -169,7 +169,7 @@
                                 <span class="quantity-btn">+<i data-feather="plus-circle" class="plus-circle"></i></span>
                             </div>
                         </td>
-                        <td>$1420</td>
+                        <td>1420 {{ $eshopCurrency ?? 'FCFA' }}</td>
                         <td>
                             <div class="edit-delete-action d-flex align-items-center">
                                 <a class="p-2 d-flex align-items-center border rounded" href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#delete">
@@ -194,7 +194,7 @@
                                 <a href="javascript:void(0);">{{ __('Amazon Echo Dot') }}</a>
                             </div>												
                         </td>
-                        <td>$80</td>
+                        <td>80 {{ $eshopCurrency ?? 'FCFA' }}</td>
                         <td>
                             <div class="product-quantity border-0 bg-secondary-transparent">
                                 <span class="quantity-btn"><i data-feather="minus-circle" class="feather-search"></i></span>
@@ -202,7 +202,7 @@
                                 <span class="quantity-btn">+<i data-feather="plus-circle" class="plus-circle"></i></span>
                             </div>
                         </td>
-                        <td>$1200</td>
+                        <td>1200 {{ $eshopCurrency ?? 'FCFA' }}</td>
                         <td>
                             <div class="edit-delete-action d-flex align-items-center">
                                 <a class="p-2 d-flex align-items-center border rounded" href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#delete">

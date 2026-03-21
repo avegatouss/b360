@@ -46,6 +46,11 @@ class Eshop360PermissionsSeeder extends Seeder
                 'eshop.sales.manage',
                 'eshop.sales.delete',
                 'eshop.sales.real_margin',
+                // Online Orders — fast actions
+                'eshop.online-orders.fast-deliver',
+                'eshop.online-orders.fast-complete',
+                // FNE
+                'eshop.fne.manage',
                 // Customers
                 'eshop.customers.view',
                 'eshop.customers.manage',

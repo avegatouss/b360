@@ -128,14 +128,14 @@
                                     <td>
                                         <div class="input-group input-group-sm">
                                             <input type="number" name="items[0][unit_price_factory]" class="form-control form-control-sm item-price" step="0.01" min="0" value="0" required>
-                                            <span class="input-group-text">XAF</span>
+                                            <span class="input-group-text">{{ $eshopCurrency ?? 'FCFA' }}</span>
                                         </div>
                                     </td>
                                     <td>
                                         <input type="number" name="items[0][weight]" class="form-control form-control-sm" step="0.01" min="0" value="0">
                                     </td>
                                     <td class="text-end align-middle">
-                                        <span class="item-subtotal fw-bold">0</span> <small class="text-muted">XAF</small>
+                                        <span class="item-subtotal fw-bold">0</span> <small class="text-muted">{{ $eshopCurrency ?? 'FCFA' }}</small>
                                     </td>
                                     <td class="align-middle">
                                         <button type="button" class="btn btn-sm btn-outline-danger remove-row" title="{{ __('Supprimer') }}">
@@ -151,7 +151,7 @@
                                     </td>
                                     <td class="fw-bold text-end" colspan="2">{{ __('Total valeur usine') }} :</td>
                                     <td class="text-end">
-                                        <span id="grandTotal" class="fw-bold text-primary fs-6">0</span> <small class="text-muted">XAF</small>
+                                        <span id="grandTotal" class="fw-bold text-primary fs-6">0</span> <small class="text-muted">{{ $eshopCurrency ?? 'FCFA' }}</small>
                                     </td>
                                     <td></td>
                                 </tr>
@@ -201,7 +201,7 @@
             <div class="card border-0 shadow-sm bg-primary-subtle mb-3">
                 <div class="card-body text-center py-3">
                     <small class="text-muted">{{ __('Valeur totale usine') }}</small>
-                    <h3 class="fw-bold text-primary mb-0" id="summaryTotal">0 XAF</h3>
+                    <h3 class="fw-bold text-primary mb-0" id="summaryTotal">0 {{ $eshopCurrency ?? 'FCFA' }}</h3>
                     <small class="text-muted"><span id="summaryItems">0</span> {{ __('produit(s)') }}</small>
                 </div>
             </div>
@@ -343,7 +343,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var formatted = Math.round(total).toLocaleString('fr-FR');
         document.getElementById('grandTotal').textContent = formatted;
         document.getElementById('totalItems').textContent = count;
-        document.getElementById('summaryTotal').textContent = formatted + ' XAF';
+        document.getElementById('summaryTotal').textContent = formatted + ' {{ $eshopCurrency ?? "FCFA" }}';
         document.getElementById('summaryItems').textContent = count;
     }
 

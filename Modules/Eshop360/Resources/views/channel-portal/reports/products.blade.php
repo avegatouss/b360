@@ -63,7 +63,7 @@
                         <td class="text-center">
                             <span class="badge bg-primary fs-6">{{ $product->total_qty ?? 0 }}</span>
                         </td>
-                        <td class="text-end fw-bold">{{ number_format($product->total_revenue ?? 0, 0, ',', ' ') }} XAF</td>
+                        <td class="text-end fw-bold">{{ number_format($product->total_revenue ?? 0, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</td>
                     </tr>
                     @empty
                     <tr>

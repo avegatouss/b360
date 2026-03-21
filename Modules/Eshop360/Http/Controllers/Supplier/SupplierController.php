@@ -87,9 +87,29 @@ class SupplierController extends Controller
 
     public function show(string $slug, Supplier $supplier, SupplierService $service)
     {
-        $supplier->load('purchaseOrders', 'importOrders');
+        $supplier->load('purchaseOrders.items', 'importOrders.items');
+
+        $purchases = $supplier->purchaseOrders()
+            ->where('status', '!=', 'cancelled')
+            ->latest()
+            ->paginate(15, ['*'], 'purchases_page');
+
+        $importOrders = $supplier->importOrders()
+            ->latest()
+            ->paginate(15, ['*'], 'imports_page');
+
         $history = $service->getPurchaseHistory($supplier);
-        return view('eshop360::suppliers.show', compact('supplier', 'history'));
+
+        $stats = [
+            'total_purchases' => $history['total_purchases'],
+            'total_paid'      => $history['total_paid'],
+            'balance'         => $history['total_due'],
+            'order_count'     => $history['count'],
+            'import_count'    => $supplier->importOrders()->count(),
+            'product_count'   => \Modules\Eshop360\Models\Product::where('supplier_id', $supplier->id)->count(),
+        ];
+
+        return view('eshop360::suppliers.show', compact('supplier', 'purchases', 'importOrders', 'stats'));
     }
 
     public function edit(string $slug, Supplier $supplier)
@@ -120,13 +140,107 @@ class SupplierController extends Controller
         return redirect()->route('eshop360.suppliers.index', $slug)->with('success', __('Fournisseur supprime.'));
     }
 
-    public function statement(string $slug, Supplier $supplier, SupplierService $service)
+    public function statement(Request $request, string $slug, Supplier $supplier)
     {
-        $history = $service->getPurchaseHistory(
-            $supplier,
-            request('from'),
-            request('to')
-        );
-        return view('eshop360::suppliers.statement', compact('supplier', 'history'));
+        $dateFrom = $request->input('date_from');
+        $dateTo = $request->input('date_to');
+
+        // Build transactions from purchase orders + payments
+        $purchaseQuery = \Modules\Eshop360\Models\PurchaseOrder::where('supplier_id', $supplier->id)
+            ->where('status', '!=', 'cancelled')
+            ->when($dateFrom, fn ($q, $d) => $q->whereDate('created_at', '>=', $d))
+            ->when($dateTo, fn ($q, $d) => $q->whereDate('created_at', '<=', $d));
+
+        $purchases = $purchaseQuery->latest()->get();
+
+        // Get payments on these purchase orders
+        $purchaseIds = $purchases->pluck('id');
+        $payments = \Illuminate\Support\Facades\DB::table('eshop_payments')
+            ->where('payable_type', \Modules\Eshop360\Models\PurchaseOrder::class)
+            ->whereIn('payable_id', $purchaseIds)
+            ->where('status', 'completed')
+            ->when($dateFrom, fn ($q, $d) => $q->whereDate('created_at', '>=', $d))
+            ->when($dateTo, fn ($q, $d) => $q->whereDate('created_at', '<=', $d))
+            ->orderBy('created_at')
+            ->get();
+
+        // Build unified transaction list
+        $transactions = collect();
+
+        foreach ($purchases as $po) {
+            $transactions->push((object) [
+                'date'        => $po->created_at,
+                'reference'   => $po->reference,
+                'type'        => 'purchase',
+                'description' => __('Bon de commande') . ' — ' . ($po->items_count ?? $po->items()->count()) . ' ' . __('articles'),
+                'amount'      => (float) $po->total,
+            ]);
+        }
+
+        foreach ($payments as $pay) {
+            $po = $purchases->firstWhere('id', $pay->payable_id);
+            $transactions->push((object) [
+                'date'        => \Carbon\Carbon::parse($pay->created_at),
+                'reference'   => $pay->reference ?? ($po?->reference ?? '—'),
+                'type'        => 'payment',
+                'description' => __('Paiement') . ' — ' . ucfirst(str_replace('_', ' ', $pay->method ?? 'cash')),
+                'amount'      => (float) $pay->amount,
+            ]);
+        }
+
+        // Also include import orders
+        $imports = $supplier->importOrders()
+            ->when($dateFrom, fn ($q, $d) => $q->whereDate('created_at', '>=', $d))
+            ->when($dateTo, fn ($q, $d) => $q->whereDate('created_at', '<=', $d))
+            ->get();
+
+        foreach ($imports as $imp) {
+            $impTotal = (float) ($imp->items()->sum('total_factory') ?? 0);
+            if ($impTotal > 0) {
+                $transactions->push((object) [
+                    'date'        => $imp->created_at,
+                    'reference'   => $imp->reference,
+                    'type'        => 'import',
+                    'description' => __('Ordre d\'importation') . ' — ' . \Modules\Eshop360\Support\UiLabel::enum($imp->shipping_type ?? 'sea'),
+                    'amount'      => $impTotal,
+                ]);
+            }
+        }
+
+        // Sort by date
+        $transactions = $transactions->sortBy('date')->values();
+
+        // Calculate running balance
+        $openingBalance = 0;
+        if ($dateFrom) {
+            $openingBalance = \Modules\Eshop360\Models\PurchaseOrder::where('supplier_id', $supplier->id)
+                ->where('status', '!=', 'cancelled')
+                ->whereDate('created_at', '<', $dateFrom)
+                ->sum('due_amount');
+        }
+
+        $balance = $openingBalance;
+        foreach ($transactions as $txn) {
+            if ($txn->type === 'payment') {
+                $balance -= $txn->amount;
+            } else {
+                $balance += $txn->amount;
+            }
+            $txn->running_balance = $balance;
+        }
+
+        $totalDebit = $transactions->whereIn('type', ['purchase', 'import'])->sum('amount');
+        $totalCredit = $transactions->where('type', 'payment')->sum('amount');
+
+        $totals = [
+            'purchases'       => $totalDebit,
+            'payments'        => $totalCredit,
+            'balance'         => $totalDebit - $totalCredit + $openingBalance,
+            'opening_balance' => $openingBalance,
+            'total_debit'     => $totalDebit,
+            'total_credit'    => $totalCredit,
+        ];
+
+        return view('eshop360::suppliers.statement', compact('supplier', 'transactions', 'totals', 'dateFrom', 'dateTo'));
     }
 }

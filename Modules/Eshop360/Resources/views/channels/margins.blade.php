@@ -42,7 +42,7 @@
         <div class="card">
             <div class="card-body text-center">
                 <h6 class="text-muted">{{ __('Marge totale') }}</h6>
-                <h3 class="fw-bold text-primary mb-0">{{ number_format($summary['total_margin'] ?? 0, 0, ',', ' ') }} XAF</h3>
+                <h3 class="fw-bold text-primary mb-0">{{ number_format($summary['total_margin'] ?? 0, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</h3>
             </div>
         </div>
     </div>
@@ -50,7 +50,7 @@
         <div class="card">
             <div class="card-body text-center">
                 <h6 class="text-muted">{{ __('Part dette') }}</h6>
-                <h3 class="fw-bold text-danger mb-0">{{ number_format($summary['total_debt'] ?? 0, 0, ',', ' ') }} XAF</h3>
+                <h3 class="fw-bold text-danger mb-0">{{ number_format($summary['total_debt'] ?? 0, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</h3>
             </div>
         </div>
     </div>
@@ -58,7 +58,7 @@
         <div class="card">
             <div class="card-body text-center">
                 <h6 class="text-muted">Part {{ $channel->name }}</h6>
-                <h3 class="fw-bold text-success mb-0">{{ number_format($summary['total_channel'] ?? 0, 0, ',', ' ') }} XAF</h3>
+                <h3 class="fw-bold text-success mb-0">{{ number_format($summary['total_channel'] ?? 0, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</h3>
             </div>
         </div>
     </div>
@@ -66,7 +66,7 @@
         <div class="card">
             <div class="card-body text-center">
                 <h6 class="text-muted">{{ __('Part propriétaire') }}</h6>
-                <h3 class="fw-bold text-info mb-0">{{ number_format($summary['total_owner'] ?? 0, 0, ',', ' ') }} XAF</h3>
+                <h3 class="fw-bold text-info mb-0">{{ number_format($summary['total_owner'] ?? 0, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</h3>
             </div>
         </div>
     </div>
@@ -97,9 +97,9 @@
                         <td>{{ \Carbon\Carbon::parse($log->created_at)->format('d/m/Y H:i') }}</td>
                         <td>{{ $log->description ?? '—' }}</td>
                         <td>{{ $log->order_ref ?? '—' }}</td>
-                        <td class="fw-bold">{{ number_format($log->margin ?? 0, 0, ',', ' ') }} XAF</td>
-                        <td>{{ number_format($log->channel_part ?? 0, 0, ',', ' ') }} XAF</td>
-                        <td>{{ number_format($log->owner_part ?? 0, 0, ',', ' ') }} XAF</td>
+                        <td class="fw-bold">{{ number_format($log->margin ?? 0, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</td>
+                        <td>{{ number_format($log->channel_part ?? 0, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</td>
+                        <td>{{ number_format($log->owner_part ?? 0, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</td>
                         <td><span class="badge bg-secondary">{{ $log->type ?? '—' }}</span></td>
                     </tr>
                     @empty

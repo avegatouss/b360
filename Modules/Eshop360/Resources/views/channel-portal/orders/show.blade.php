@@ -58,32 +58,32 @@
                                     <div class="fw-medium">{{ $item->product->name ?? __('Produit supprime') }}</div>
                                     <small class="text-muted">{{ $item->product->sku ?? '' }}</small>
                                 </td>
-                                <td class="text-end">{{ number_format($item->price, 0, ',', ' ') }} XAF</td>
+                                <td class="text-end">{{ number_format($item->price, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</td>
                                 <td class="text-center">{{ $item->quantity }}</td>
-                                <td class="text-end fw-bold">{{ number_format($item->total, 0, ',', ' ') }} XAF</td>
+                                <td class="text-end fw-bold">{{ number_format($item->total, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</td>
                             </tr>
                             @endforeach
                         </tbody>
                         <tfoot class="table-light">
                             <tr>
                                 <td colspan="3" class="text-end fw-bold">{{ __('Sous-total') }}</td>
-                                <td class="text-end fw-bold">{{ number_format($order->subtotal, 0, ',', ' ') }} XAF</td>
+                                <td class="text-end fw-bold">{{ number_format($order->subtotal, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</td>
                             </tr>
                             @if($order->tax_amount > 0)
                             <tr>
                                 <td colspan="3" class="text-end">{{ __('Taxes') }}</td>
-                                <td class="text-end">{{ number_format($order->tax_amount, 0, ',', ' ') }} XAF</td>
+                                <td class="text-end">{{ number_format($order->tax_amount, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</td>
                             </tr>
                             @endif
                             @if($order->discount_amount > 0)
                             <tr>
                                 <td colspan="3" class="text-end">{{ __('Remise') }}</td>
-                                <td class="text-end text-danger">-{{ number_format($order->discount_amount, 0, ',', ' ') }} XAF</td>
+                                <td class="text-end text-danger">-{{ number_format($order->discount_amount, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</td>
                             </tr>
                             @endif
                             <tr>
                                 <td colspan="3" class="text-end fw-bold fs-5">{{ __('Total') }}</td>
-                                <td class="text-end fw-bold fs-5">{{ number_format($order->total, 0, ',', ' ') }} XAF</td>
+                                <td class="text-end fw-bold fs-5">{{ number_format($order->total, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</td>
                             </tr>
                         </tfoot>
                     </table>
@@ -115,10 +115,10 @@
                     </dd>
 
                     <dt class="col-5 text-muted">{{ __('Montant paye') }}</dt>
-                    <dd class="col-7">{{ number_format($order->paid_amount, 0, ',', ' ') }} XAF</dd>
+                    <dd class="col-7">{{ number_format($order->paid_amount, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</dd>
 
                     <dt class="col-5 text-muted">{{ __('Reste du') }}</dt>
-                    <dd class="col-7">{{ number_format($order->due_amount, 0, ',', ' ') }} XAF</dd>
+                    <dd class="col-7">{{ number_format($order->due_amount, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</dd>
 
                     <dt class="col-5 text-muted">{{ __('Source') }}</dt>
                     <dd class="col-7">{{ $order->source ?? '—' }}</dd>

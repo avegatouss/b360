@@ -243,7 +243,7 @@
                             <label class="form-label">{{ __('Limite de credit') }}</label>
                             <div class="input-group">
                                 <input type="number" name="credit_limit" class="form-control" min="0" step="1" placeholder="0">
-                                <span class="input-group-text">FCFA</span>
+                                <span class="input-group-text">{{ $eshopCurrency ?? 'FCFA' }}</span>
                             </div>
                         </div>
                         <div class="col-md-6 d-flex align-items-end">
@@ -251,6 +251,30 @@
                                 <input type="hidden" name="is_active" value="0">
                                 <input class="form-check-input" type="checkbox" name="is_active" value="1" checked id="add-cust-active">
                                 <label class="form-check-label" for="add-cust-active">{{ __('Client actif') }}</label>
+                            </div>
+                        </div>
+
+                        {{-- Create user account --}}
+                        <div class="col-12 border-top pt-3 mt-2">
+                            <div class="form-check form-switch mb-2">
+                                <input type="hidden" name="create_user_account" value="0">
+                                <input class="form-check-input" type="checkbox" name="create_user_account" value="1" id="create-user-toggle">
+                                <label class="form-check-label fw-bold" for="create-user-toggle">
+                                    <i class="ti ti-user-plus me-1"></i>{{ __('Creer un compte utilisateur') }}
+                                </label>
+                            </div>
+                            <span class="text-muted mb-2 d-block">{{ __('Permet au client de se connecter au portail en ligne.') }}</span>
+                            <div id="user-account-fields" style="display:none;">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">{{ __('Mot de passe') }} <span class="text-danger">*</span></label>
+                                        <input type="password" name="password" class="form-control" minlength="8" placeholder="{{ __('Minimum 8 caracteres') }}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">{{ __('Confirmer') }} <span class="text-danger">*</span></label>
+                                        <input type="password" name="password_confirmation" class="form-control" minlength="8">
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -267,6 +291,12 @@
 @push('scripts')
 <script>
 jQuery(function ($) {
+    // ── Toggle user account fields ──
+    $('#create-user-toggle').on('change', function () {
+        $('#user-account-fields').toggle(this.checked);
+        $('#user-account-fields input').prop('required', this.checked);
+    });
+
     // ── Select2 filters with auto-submit ──
     $('.idx-select2').each(function () {
         $(this).select2({

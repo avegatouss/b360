@@ -298,7 +298,7 @@
         </h6>
         <div class="d-flex align-items-center gap-2">
             <small class="text-muted">{{ __('Total filtré') }}:</small>
-            <span class="fw-bold text-primary">{{ number_format($kpiTotal, 0, ',', ' ') }} XAF</span>
+            <span class="fw-bold text-primary">{{ number_format($kpiTotal, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</span>
         </div>
     </div>
     <div class="card-body p-0">

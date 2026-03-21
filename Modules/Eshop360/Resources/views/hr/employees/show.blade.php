@@ -10,8 +10,13 @@
             <h6>{{ __('Employee details and history') }}</h6>
         </div>
     </div>
-    <div class="page-btn">
-        <a href="{{ route('eshop360.hr.employees.index', $instance->slug ?? '') }}" class="btn btn-secondary"><i class="ti ti-arrow-left me-1"></i>Back</a>
+    <div class="page-btn d-flex gap-2">
+        @if(!$employee->user_id)
+            <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#create-account"><i class="ti ti-user-plus me-1"></i>{{ __('Creer un compte') }}</button>
+        @else
+            <span class="btn btn-success-subtle text-success"><i class="ti ti-user-check me-1"></i>{{ __('Compte actif') }} — {{ $employee->user->email ?? '' }}</span>
+        @endif
+        <a href="{{ route('eshop360.hr.employees.index', $instance->slug ?? '') }}" class="btn btn-secondary"><i class="ti ti-arrow-left me-1"></i>{{ __('Retour') }}</a>
     </div>
 </div>
 
@@ -74,7 +79,7 @@
                         <strong>Department:</strong> {{ $employee->department ?? '—' }}
                     </div>
                     <div class="col-md-6 mb-3">
-                        <strong>Base Salary:</strong> {{ number_format($employee->salary ?? 0, 0, ',', ' ') }} XAF
+                        <strong>Base Salary:</strong> {{ number_format($employee->salary ?? 0, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}
                     </div>
                     <div class="col-md-6 mb-3">
                         <strong>Hire Date:</strong> {{ $employee->hire_date ? \Carbon\Carbon::parse($employee->hire_date)->format('d/m/Y') : '—' }}
@@ -109,10 +114,10 @@
                             @forelse($employee->salaries ?? [] as $salary)
                             <tr>
                                 <td>{{ $salary->period ?? '—' }}</td>
-                                <td>{{ number_format($salary->base_amount ?? 0, 0, ',', ' ') }} XAF</td>
-                                <td>{{ number_format($salary->bonuses ?? 0, 0, ',', ' ') }} XAF</td>
-                                <td>{{ number_format($salary->deductions ?? 0, 0, ',', ' ') }} XAF</td>
-                                <td class="fw-bold">{{ number_format($salary->net_pay ?? 0, 0, ',', ' ') }} XAF</td>
+                                <td>{{ number_format($salary->base_amount ?? 0, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</td>
+                                <td>{{ number_format($salary->bonuses ?? 0, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</td>
+                                <td>{{ number_format($salary->deductions ?? 0, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</td>
+                                <td class="fw-bold">{{ number_format($salary->net_pay ?? 0, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</td>
                                 <td>
                                     @if(($salary->status ?? '') === 'paid')
                                         <span class="badge bg-success">{{ __('Paid') }}</span>
@@ -150,7 +155,7 @@
                             <tr>
                                 <td>{{ \Carbon\Carbon::parse($commission->created_at)->format('d/m/Y') }}</td>
                                 <td>{{ $commission->description ?? '—' }}</td>
-                                <td class="fw-bold">{{ number_format($commission->amount ?? 0, 0, ',', ' ') }} XAF</td>
+                                <td class="fw-bold">{{ number_format($commission->amount ?? 0, 0, ',', ' ') }} {{ $eshopCurrency ?? 'FCFA' }}</td>
                                 <td>{{ $commission->source ?? '—' }}</td>
                                 <td>
                                     @if(($commission->status ?? '') === 'paid')
@@ -214,5 +219,42 @@
         </div>
     </div>
 </div>
+
+@if(!$employee->user_id)
+<div class="modal fade" id="create-account" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="ti ti-user-plus me-2"></i>{{ __('Creer un compte pour :name', ['name' => $employee->name]) }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ route('eshop360.hr.employees.create-account', [$instance->slug ?? '', $employee]) }}">
+                @csrf
+                <div class="modal-body">
+                    <div class="alert alert-info small py-2">
+                        <i class="ti ti-info-circle me-1"></i>{{ __('Un compte utilisateur sera cree et lie a cet employe. Il pourra se connecter a l\'application.') }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{{ __('Email') }} <span class="text-danger">*</span></label>
+                        <input type="email" name="email" class="form-control" required value="{{ $employee->email }}" placeholder="{{ __('adresse@email.com') }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{{ __('Mot de passe') }} <span class="text-danger">*</span></label>
+                        <input type="password" name="password" class="form-control" required minlength="8" placeholder="{{ __('Minimum 8 caracteres') }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{{ __('Confirmer le mot de passe') }} <span class="text-danger">*</span></label>
+                        <input type="password" name="password_confirmation" class="form-control" required minlength="8">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{{ __('Annuler') }}</button>
+                    <button type="submit" class="btn btn-primary"><i class="ti ti-user-plus me-1"></i>{{ __('Creer le compte') }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endif
 
 </x-dashboard::layouts.master>

@@ -18,20 +18,56 @@ class OrderController extends Controller
 
     public function index(Request $request)
     {
-        $orders = Order::with(['customer', 'items'])
+        $instance = CurrentInstance::get();
+
+        $query = Order::with(['customer'])
             ->when($request->status, fn ($q, $s) => $q->where('status', $s))
             ->when($request->payment_status, fn ($q, $s) => $q->where('payment_status', $s))
             ->when($request->source, fn ($q, $s) => $q->where('source', $s))
-            ->when($request->search, fn ($q, $s) => $q->where('order_number', 'like', "%{$s}%")
-                ->orWhereHas('customer', fn ($cq) => $cq->where('name', 'like', "%{$s}%")))
+            ->when($request->payment_method, fn ($q, $m) => $q->where('payment_method', $m))
             ->when($request->customer_id, fn ($q, $c) => $q->where('customer_id', $c))
-            ->when($request->date_from, fn ($q, $d) => $q->whereDate('created_at', '>=', $d))
-            ->when($request->date_to, fn ($q, $d) => $q->whereDate('created_at', '<=', $d))
-            ->latest()
-            ->paginate(20)
-            ->withQueryString();
+            ->when($request->channel_id, fn ($q, $c) => $q->where('channel_id', $c))
+            ->when($request->min_total, fn ($q, $m) => $q->where('total', '>=', $m))
+            ->when($request->max_total, fn ($q, $m) => $q->where('total', '<=', $m))
+            ->when($request->date_from, fn ($q, $d) => $q->whereDate('eshop_orders.created_at', '>=', $d))
+            ->when($request->date_to, fn ($q, $d) => $q->whereDate('eshop_orders.created_at', '<=', $d))
+            ->when($request->search, fn ($q, $s) => $q->where(function ($qq) use ($s) {
+                $qq->where('order_number', 'like', "%{$s}%")
+                    ->orWhereHas('customer', fn ($cq) => $cq->where('name', 'like', "%{$s}%"));
+            }));
 
-        return view('eshop360::sales.orders.index', compact('orders'));
+        // KPIs from filtered query
+        $fq = clone $query;
+        $kpi = (object) [
+            'total'     => (clone $fq)->count(),
+            'revenue'   => round((float) (clone $fq)->sum('total'), 0),
+            'paid'      => round((float) (clone $fq)->sum('paid_amount'), 0),
+            'due'       => round((float) (clone $fq)->where('payment_status', '!=', 'paid')->sum('due_amount'), 0),
+            'completed' => (clone $fq)->where('status', 'completed')->count(),
+            'pending'   => (clone $fq)->where('status', 'pending')->count(),
+            'cancelled' => (clone $fq)->whereIn('status', ['cancelled', 'refunded'])->count(),
+            'avg'       => round((float) (clone $fq)->avg('total'), 0),
+        ];
+
+        $orders = $query->latest()->paginate(25)->withQueryString();
+
+        // Filter lookups
+        $customers = \Modules\Eshop360\Models\Customer::where('instance_id', $instance->id)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'code']);
+
+        $channels = \Modules\Eshop360\Models\DistributionChannel::where('instance_id', $instance->id)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        $paymentMethods = Order::where('instance_id', $instance->id)
+            ->whereNotNull('payment_method')
+            ->distinct()
+            ->pluck('payment_method');
+
+        return view('eshop360::sales.orders.index', compact('orders', 'kpi', 'customers', 'channels', 'paymentMethods'));
     }
 
     public function store(Request $request): RedirectResponse

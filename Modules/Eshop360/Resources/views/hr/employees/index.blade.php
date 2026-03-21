@@ -142,6 +142,11 @@
                             </div>
                         </div>
                         <div class="card-footer bg-transparent border-top d-flex gap-1 justify-content-end py-2">
+                            @if($employee->user_id)
+                                <span class="btn btn-sm btn-success-subtle text-success me-auto" title="{{ __('Compte utilisateur lie') }}"><i class="ti ti-user-check me-1"></i>{{ __('Compte actif') }}</span>
+                            @else
+                                <button class="btn btn-sm btn-outline-warning me-auto" data-bs-toggle="modal" data-bs-target="#create-account-{{ $employee->id }}" title="{{ __('Creer un compte utilisateur') }}"><i class="ti ti-user-plus me-1"></i>{{ __('Creer compte') }}</button>
+                            @endif
                             <a href="{{ route('eshop360.hr.employees.show', [$slug, $employee]) }}" class="btn btn-sm btn-outline-info" title="{{ __('Voir detail') }}"><i class="ti ti-eye"></i></a>
                             <a href="{{ route('eshop360.hr.employees.edit', [$slug, $employee]) }}" class="btn btn-sm btn-outline-primary" title="{{ __('Modifier') }}"><i class="ti ti-edit"></i></a>
                             <form action="{{ route('eshop360.hr.employees.destroy', [$slug, $employee]) }}" method="POST" class="d-inline" onsubmit="return confirm('{{ __('Supprimer cet employe ?') }}')">
@@ -164,5 +169,45 @@
         @endif
     </div>
 </div>
+
+{{-- Modals: Creer compte utilisateur --}}
+@foreach($employees as $employee)
+    @if(!$employee->user_id)
+    <div class="modal fade" id="create-account-{{ $employee->id }}" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="ti ti-user-plus me-2"></i>{{ __('Creer un compte pour :name', ['name' => $employee->name]) }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="POST" action="{{ route('eshop360.hr.employees.create-account', [$slug, $employee]) }}">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="alert alert-info small py-2">
+                            <i class="ti ti-info-circle me-1"></i>{{ __('Un compte utilisateur sera cree et lie a cet employe. Il pourra se connecter a l\'application.') }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">{{ __('Email') }} <span class="text-danger">*</span></label>
+                            <input type="email" name="email" class="form-control" required value="{{ $employee->email }}" placeholder="{{ __('adresse@email.com') }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">{{ __('Mot de passe') }} <span class="text-danger">*</span></label>
+                            <input type="password" name="password" class="form-control" required minlength="8" placeholder="{{ __('Minimum 8 caracteres') }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">{{ __('Confirmer le mot de passe') }} <span class="text-danger">*</span></label>
+                            <input type="password" name="password_confirmation" class="form-control" required minlength="8">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{{ __('Annuler') }}</button>
+                        <button type="submit" class="btn btn-primary"><i class="ti ti-user-plus me-1"></i>{{ __('Creer le compte') }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endif
+@endforeach
 
 </x-dashboard::layouts.master>

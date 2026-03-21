@@ -17,8 +17,8 @@
                     <input type="date" name="date_to" class="form-control" value="{{ $dateTo }}">
                 </div>
             </div>
-            <div class="col-auto">
-                <select name="channel_id" class="form-select form-select-sm" onchange="this.form.submit()">
+            <div class="col-auto" style="min-width:200px;">
+                <select name="channel_id" class="form-select form-select-sm dashboard-select2" data-placeholder="{{ __('Tous les canaux') }}">
                     <option value="">{{ __('Tous les canaux') }}</option>
                     @foreach($channels as $ch)
                         <option value="{{ $ch->id }}" {{ (string) $channelId === (string) $ch->id ? 'selected' : '' }}>{{ $ch->name }}</option>
@@ -285,6 +285,10 @@
     </div>
 </div>
 
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
+@endpush
+
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 <script>
@@ -336,6 +340,18 @@ document.addEventListener('DOMContentLoaded', function () {
         ctx.parentElement.textContent = 'Aucune vente sur la periode.';
         ctx.parentElement.classList.add('text-center', 'text-muted', 'py-5');
     }
+});
+</script>
+<script>
+jQuery(function ($) {
+    $('.dashboard-select2').select2({
+        theme: 'bootstrap-5',
+        allowClear: true,
+        width: '100%',
+        placeholder: function () { return $(this).data('placeholder') || ''; }
+    }).on('select2:select select2:clear', function () {
+        $(this).closest('form')[0].submit();
+    });
 });
 </script>
 @endpush

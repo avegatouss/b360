@@ -11,11 +11,10 @@
         </div>
     </div>
     <div class="page-btn d-flex gap-2">
-        @if(($sale->source ?? '') === 'pos')
-            <a href="{{ route('eshop360.orders.receipt', [$instance->slug ?? '', $sale]) }}" class="btn btn-white border">
-                <i class="ti ti-printer me-1"></i>{{ __('Recu') }}
-            </a>
-        @endif
+        @include('eshop360::fne._sign-button', ['order' => $sale])
+        <button class="btn btn-white border" data-bs-toggle="modal" data-bs-target="#receipt-modal">
+            <i class="ti ti-printer me-1"></i>{{ __('Recu') }}
+        </button>
         <a href="{{ route('eshop360.sales.index', $instance->slug ?? '') }}" class="btn btn-secondary"><i class="ti ti-arrow-left me-1"></i>{{ __('Retour') }}</a>
     </div>
 </div>
@@ -123,35 +122,64 @@
 
         @if($sale->status !== 'refunded' && $sale->items->where('quantity', '>', 0)->isNotEmpty())
             <div class="card">
-                <div class="card-header"><h5>{{ __('Traiter un retour') }}</h5></div>
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <h5 class="mb-0"><i class="ti ti-arrow-back-up me-2"></i>{{ __('Traiter un retour') }}</h5>
+                    <span class="badge bg-warning-subtle text-warning">{{ __('Selectionnez les articles a retourner') }}</span>
+                </div>
                 <div class="card-body">
-                    <form method="POST" action="{{ route('eshop360.sales.returns.store', $instance->slug ?? '') }}">
+                    <form method="POST" action="{{ route('eshop360.sales.returns.store', $instance->slug ?? '') }}" id="return-form">
                         @csrf
                         <input type="hidden" name="order_id" value="{{ $sale->id }}">
 
                         <div class="table-responsive mb-3">
-                            <table class="table">
-                                <thead>
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
                                     <tr>
+                                        <th style="width:40px;">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="select-all-items">
+                                            </div>
+                                        </th>
                                         <th>{{ __('Produit') }}</th>
-                                        <th>{{ __('Qté vendue') }}</th>
-                                        <th>{{ __('Qté retour') }}</th>
-                                        <th>{{ __('Motif') }}</th>
+                                        <th class="text-center" style="width:80px;">{{ __('Vendu') }}</th>
+                                        <th class="text-center" style="width:100px;">{{ __('Qte retour') }}</th>
+                                        <th style="width:180px;">{{ __('Action stock') }}</th>
+                                        <th style="width:180px;">{{ __('Raison') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach($sale->items->where('quantity', '>', 0)->values() as $index => $item)
-                                        <tr>
+                                        <tr class="return-item-row {{ !$loop->first ? 'opacity-50' : '' }}" data-index="{{ $index }}">
                                             <td>
-                                                {{ $item->product_name }}
+                                                <div class="form-check">
+                                                    <input class="form-check-input item-checkbox" type="checkbox" name="items[{{ $index }}][selected]" value="1" data-index="{{ $index }}">
+                                                </div>
                                                 <input type="hidden" name="items[{{ $index }}][product_id]" value="{{ $item->product_id }}">
                                             </td>
-                                            <td>{{ $item->quantity }}</td>
-                                            <td style="max-width: 140px;">
-                                                <input type="number" name="items[{{ $index }}][quantity]" class="form-control form-control-sm" min="1" max="{{ $item->quantity }}" value="1">
+                                            <td>
+                                                <div class="fw-medium">{{ $item->product_name }}</div>
+                                                <small class="text-muted"><code>{{ $item->sku }}</code> — {{ number_format($item->unit_price, 0, ',', ' ') }} / u</small>
+                                            </td>
+                                            <td class="text-center fw-bold">{{ $item->quantity }}</td>
+                                            <td>
+                                                <input type="number" name="items[{{ $index }}][quantity]" class="form-control form-control-sm return-qty" min="1" max="{{ $item->quantity }}" value="1" disabled data-unit-total="{{ $item->total / $item->quantity }}">
                                             </td>
                                             <td>
-                                                <input type="text" name="items[{{ $index }}][reason]" class="form-control form-control-sm" placeholder="Motif">
+                                                <select name="items[{{ $index }}][stock_action]" class="form-select form-select-sm stock-action-select" disabled>
+                                                    <option value="return_stock">{{ __('Retour en stock') }}</option>
+                                                    <option value="adjustment">{{ __('Ajustement stock') }}</option>
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <select name="items[{{ $index }}][reason]" class="form-select form-select-sm reason-select" disabled>
+                                                    <option value="return">{{ __('Retour client') }}</option>
+                                                    <option value="damaged">{{ __('Produit endommage') }}</option>
+                                                    <option value="defective">{{ __('Produit defectueux') }}</option>
+                                                    <option value="wrong_item">{{ __('Mauvais article') }}</option>
+                                                    <option value="lost">{{ __('Perte / Vol') }}</option>
+                                                    <option value="correction">{{ __('Correction d\'inventaire') }}</option>
+                                                    <option value="other">{{ __('Autre') }}</option>
+                                                </select>
                                             </td>
                                         </tr>
                                     @endforeach
@@ -160,19 +188,34 @@
                         </div>
 
                         <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label">{{ __('Montant rembourse') }}</label>
-                                <input type="number" name="refund_amount" class="form-control" min="0" step="0.01" value="{{ number_format($sale->total, 2, '.', '') }}" required>
+                            <div class="col-md-4">
+                                <label class="form-label">{{ __('Montant a rembourser') }}</label>
+                                <div class="input-group">
+                                    <input type="number" name="refund_amount" id="refund-amount" class="form-control" min="0" step="1" value="0" required>
+                                    <span class="input-group-text">{{ $instance->settings['currency'] ?? 'FCFA' }}</span>
+                                </div>
+                                <small class="text-muted">{{ __('Total vente : :total', ['total' => number_format($sale->total, 0, ',', ' ')]) }}</small>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
+                                <label class="form-label">{{ __('Mode de remboursement') }}</label>
+                                <select name="refund_method" class="form-select">
+                                    <option value="cash">{{ __('Especes') }}</option>
+                                    <option value="original">{{ __('Meme methode') }}</option>
+                                    <option value="wallet">{{ __('Portefeuille client') }}</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
                                 <label class="form-label">{{ __('Notes') }}</label>
-                                <input type="text" name="notes" class="form-control" placeholder="{{ __('Notes retour') }}">
+                                <input type="text" name="notes" class="form-control" placeholder="{{ __('Notes retour...') }}">
                             </div>
                         </div>
 
-                        <div class="d-flex justify-content-end mt-3">
-                            <button type="submit" class="btn btn-danger">
-                                <i class="ti ti-arrow-back-up me-1"></i>Valider le retour
+                        <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+                            <div>
+                                <span class="text-muted" id="return-summary">{{ __('Aucun article selectionne') }}</span>
+                            </div>
+                            <button type="submit" class="btn btn-danger" id="btn-submit-return" disabled>
+                                <i class="ti ti-arrow-back-up me-1"></i>{{ __('Valider le retour') }}
                             </button>
                         </div>
                     </form>
@@ -181,5 +224,87 @@
         @endif
     </div>
 </div>
+
+{{-- Receipt Modal --}}
+<div class="modal fade" id="receipt-modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:380px;">
+        <div class="modal-content">
+            <div class="modal-header py-2">
+                <h6 class="modal-title"><i class="ti ti-receipt me-1"></i>{{ __('Recu de vente') }}</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0" id="receipt-content" style="max-height:70vh;overflow-y:auto;">
+                @include('eshop360::pdf.order-receipt-inline', ['order' => $sale])
+            </div>
+            <div class="modal-footer py-2 justify-content-between">
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">{{ __('Fermer') }}</button>
+                <div class="d-flex gap-2">
+                    <a href="{{ route('eshop360.orders.receipt', [$instance->slug ?? '', $sale]) }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                        <i class="ti ti-printer me-1"></i>{{ __('Imprimer PDF') }}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var checkboxes = document.querySelectorAll('.item-checkbox');
+    var selectAll = document.getElementById('select-all-items');
+    var submitBtn = document.getElementById('btn-submit-return');
+    var refundInput = document.getElementById('refund-amount');
+    var summary = document.getElementById('return-summary');
+
+    function updateRow(cb) {
+        var row = cb.closest('.return-item-row');
+        var checked = cb.checked;
+        var inputs = row.querySelectorAll('input:not([type=hidden]):not([type=checkbox]), select');
+        inputs.forEach(function (el) { el.disabled = !checked; });
+        row.classList.toggle('opacity-50', !checked);
+    }
+
+    function recalculate() {
+        var total = 0, count = 0;
+        checkboxes.forEach(function (cb) {
+            if (cb.checked) {
+                var row = cb.closest('.return-item-row');
+                var qty = parseInt(row.querySelector('.return-qty').value) || 0;
+                var unitTotal = parseFloat(row.querySelector('.return-qty').dataset.unitTotal) || 0;
+                total += qty * unitTotal;
+                count += qty;
+            }
+        });
+        if (refundInput) refundInput.value = Math.round(total);
+        if (submitBtn) submitBtn.disabled = count === 0;
+        if (summary) summary.textContent = count > 0
+            ? count + ' article(s) — ' + Math.round(total).toLocaleString('fr') + ' {{ $instance->settings["currency"] ?? "FCFA" }}'
+            : '{{ __("Aucun article selectionne") }}';
+    }
+
+    checkboxes.forEach(function (cb) {
+        cb.addEventListener('change', function () {
+            updateRow(this);
+            recalculate();
+        });
+    });
+
+    if (selectAll) {
+        selectAll.addEventListener('change', function () {
+            checkboxes.forEach(function (cb) {
+                cb.checked = selectAll.checked;
+                updateRow(cb);
+            });
+            recalculate();
+        });
+    }
+
+    document.querySelectorAll('.return-qty').forEach(function (input) {
+        input.addEventListener('input', recalculate);
+    });
+});
+</script>
+@endpush
 
 </x-dashboard::layouts.master>

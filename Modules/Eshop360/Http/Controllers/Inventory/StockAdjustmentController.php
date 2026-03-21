@@ -108,14 +108,20 @@ class StockAdjustmentController extends Controller
             ->with('success', __('Adjustment notes updated successfully.'));
     }
 
-    public function destroy(string $slug, StockMovement $movement): RedirectResponse
+    public function destroy(Request $request, string $slug, StockMovement $movement): RedirectResponse
     {
         if ($movement->type !== 'adjustment') {
             return redirect()->route('eshop360.stock-adjustments.index', $slug)
                 ->with('error', __('Only adjustment movements can be deleted.'));
         }
 
-        DB::transaction(function () use ($movement) {
+        $validated = $request->validate([
+            'cancellation_reason' => 'required|string|in:erreur_saisie,doublon,correction,annulation_commande,retour_fournisseur,autre',
+        ]);
+
+        $reason = $validated['cancellation_reason'];
+
+        DB::transaction(function () use ($movement, $reason) {
             $stock = Stock::where('instance_id', $movement->instance_id)
                 ->where('product_id', $movement->product_id)
                 ->where('warehouse_id', $movement->warehouse_id)
@@ -136,10 +142,22 @@ class StockAdjustmentController extends Controller
                 $stock->decrement('quantity', $movement->quantity);
             }
 
+            // Log the reversal as a new movement before deleting
+            StockMovement::create([
+                'instance_id'  => $movement->instance_id,
+                'product_id'   => $movement->product_id,
+                'warehouse_id' => $movement->warehouse_id,
+                'store_id'     => $movement->store_id,
+                'type'         => 'adjustment',
+                'quantity'     => -$movement->quantity,
+                'notes'        => "[annulation:{$reason}] Annulation ajustement #{$movement->id} — " . ($movement->notes ?? ''),
+                'performed_by' => auth()->id(),
+            ]);
+
             $movement->delete();
         });
 
         return redirect()->route('eshop360.stock-adjustments.index', $slug)
-            ->with('success', __('Stock adjustment reversed and deleted.'));
+            ->with('success', __('Ajustement annule avec succes.'));
     }
 }

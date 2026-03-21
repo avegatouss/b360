@@ -224,7 +224,7 @@
                     </div>
 
                     {{-- Contact info --}}
-                    @if($warehouse->address || $warehouse->phone || $warehouse->manager_name || $warehouse->email)
+                    @if($warehouse->address || $warehouse->phone || $warehouse->manager_id || $warehouse->manager_name || $warehouse->email)
                         <div class="border-top pt-3">
                             <div class="row g-2">
                                 @if($warehouse->address)
@@ -251,7 +251,17 @@
                                         </div>
                                     </div>
                                 @endif
-                                @if($warehouse->manager_name)
+                                @if($warehouse->manager)
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="ti ti-user text-muted" style="font-size:14px;"></i>
+                                            <small class="fw-medium">{{ $warehouse->manager->name }}</small>
+                                            @if($warehouse->manager->position)
+                                                <small class="text-muted">— {{ $warehouse->manager->position }}</small>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @elseif($warehouse->manager_name)
                                     <div class="col-md-6">
                                         <div class="d-flex align-items-center gap-2">
                                             <i class="ti ti-user text-muted" style="font-size:14px;"></i>
@@ -346,7 +356,12 @@
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">{{ __('Responsable') }}</label>
-                                    <input type="text" name="manager_name" class="form-control" value="{{ $warehouse->manager_name }}">
+                                    <select name="manager_id" class="form-select select2-wh-modal">
+                                        <option value="">{{ __('Aucun') }}</option>
+                                        @foreach($employees as $emp)
+                                            <option value="{{ $emp->id }}" @selected($warehouse->manager_id == $emp->id)>{{ $emp->name }} — {{ $emp->position ?? '' }}</option>
+                                        @endforeach
+                                    </select>
                                 </div>
                                 <div class="col-12">
                                     <div class="form-check form-switch">
@@ -427,7 +442,12 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">{{ __('Responsable') }}</label>
-                            <input type="text" name="manager_name" class="form-control">
+                            <select name="manager_id" class="form-select select2-wh-modal">
+                                <option value="">{{ __('Aucun') }}</option>
+                                @foreach($employees as $emp)
+                                    <option value="{{ $emp->id }}">{{ $emp->name }} — {{ $emp->position ?? '' }}</option>
+                                @endforeach
+                            </select>
                         </div>
                         <div class="col-12">
                             <div class="form-check form-switch">
@@ -466,6 +486,12 @@ jQuery(function ($) {
     $('.wh-select2').each(function () {
         $(this).select2({ theme: 'bootstrap-5', allowClear: true, width: '100%', placeholder: $(this).data('placeholder') || '' })
             .on('select2:select select2:clear', function () { $(this).closest('form')[0].submit(); });
+    });
+
+    // Select2 dans les modals (responsable)
+    $('.select2-wh-modal').each(function () {
+        var $el = $(this), $modal = $el.closest('.modal');
+        $el.select2({ theme: 'bootstrap-5', allowClear: true, width: '100%', placeholder: @json(__('Selectionner un responsable')), dropdownParent: $modal.length ? $modal : undefined });
     });
 });
 </script>
