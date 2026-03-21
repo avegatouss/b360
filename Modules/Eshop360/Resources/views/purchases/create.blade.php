@@ -38,7 +38,7 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">{{ __('Fournisseur') }} <span class="text-danger">*</span></label>
-                            <select id="supplier-select" class="form-select @error('supplier_id') is-invalid @enderror select2-form" data-placeholder="{{ __('Rechercher un fournisseur...') }}">
+                            <select id="supplier-select" name="supplier_id" class="form-select @error('supplier_id') is-invalid @enderror select2-form" data-placeholder="{{ __('Rechercher un fournisseur...') }}">
                                 <option value="">{{ __('Rechercher un fournisseur...') }}</option>
                                 @foreach($suppliers as $sup)
                                     <option value="{{ $sup->id }}" data-name="{{ $sup->name }}" data-email="{{ $sup->email ?? '' }}" @selected(old('supplier_id') == $sup->id)>
@@ -107,7 +107,7 @@
                                             <span class="input-group-text">XAF</span>
                                         </div>
                                     </td>
-                                    <td class="text-end align-middle"><span class="item-subtotal fw-bold">0</span> <small class="text-muted">XAF</small></td>
+                                    <td class="text-end align-middle"><span class="item-subtotal fw-bold">0</span> <span class="text-muted">XAF</span></td>
                                     <td class="align-middle"><button type="button" class="btn btn-sm btn-outline-danger remove-row"><i class="ti ti-x"></i></button></td>
                                 </tr>
                             </tbody>
@@ -115,7 +115,7 @@
                                 <tr>
                                     <td class="fw-bold text-end" colspan="1"><span id="totalItems">1</span> {{ __('produit(s)') }}</td>
                                     <td class="fw-bold text-end" colspan="2">{{ __('Total') }} :</td>
-                                    <td class="text-end"><span id="grandTotal" class="fw-bold text-primary fs-6">0</span> <small class="text-muted">XAF</small></td>
+                                    <td class="text-end"><span id="grandTotal" class="fw-bold text-primary fs-6">0</span> <span class="text-muted">XAF</span></td>
                                     <td></td>
                                 </tr>
                             </tfoot>
@@ -138,7 +138,7 @@
                             <input type="number" name="paid_amount" class="form-control" step="0.01" min="0" value="{{ old('paid_amount', 0) }}">
                             <span class="input-group-text">XAF</span>
                         </div>
-                        <small class="text-muted">{{ __('Laisser à 0 si non payé') }}</small>
+                        <span class="text-muted">{{ __('Laisser à 0 si non payé') }}</span>
                     </div>
                     <div>
                         <label class="form-label">{{ __('Statut initial') }}</label>
@@ -154,9 +154,9 @@
             {{-- Summary --}}
             <div class="card border-0 shadow-sm bg-primary-subtle mb-3">
                 <div class="card-body text-center py-3">
-                    <small class="text-muted">{{ __('Total commande') }}</small>
+                    <span class="text-muted">{{ __('Total commande') }}</span>
                     <h3 class="fw-bold text-primary mb-0" id="summaryTotal">0 XAF</h3>
-                    <small class="text-muted"><span id="summaryItems">0</span> {{ __('produit(s)') }}</small>
+                    <span class="text-muted"><span id="summaryItems">0</span> {{ __('produit(s)') }}</span>
                 </div>
             </div>
 
@@ -198,16 +198,14 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     initSelect2();
 
-    // Supplier select → hidden fields
-    var supplierSel = document.getElementById('supplier-select');
-    if (supplierSel) {
-        supplierSel.addEventListener('change', function () {
+    // Supplier select → hidden fields (use jQuery for Select2 compat)
+    if (typeof $ !== 'undefined') {
+        $('#supplier-select').on('change select2:select select2:clear', function () {
             var opt = this.options[this.selectedIndex];
-            document.getElementById('supplier-name').value = opt ? (opt.dataset.name || '') : '';
-            document.getElementById('supplier-email').value = opt ? (opt.dataset.email || '') : '';
+            document.getElementById('supplier-name').value = opt && opt.value ? (opt.dataset.name || '') : '';
+            document.getElementById('supplier-email').value = opt && opt.value ? (opt.dataset.email || '') : '';
         });
-        // Trigger on load
-        if (supplierSel.value) supplierSel.dispatchEvent(new Event('change'));
+        if ($('#supplier-select').val()) $('#supplier-select').trigger('change');
     }
 
     // Add row

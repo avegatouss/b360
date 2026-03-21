@@ -20,11 +20,19 @@
 {{-- Filtres periode --}}
 <div class="card mb-3 border-0 shadow-sm">
     <div class="card-body py-2">
-        <form method="GET" action="{{ route('eshop360.charges.cost-absorption', $slug) }}" class="row g-2 align-items-end">
-            <div class="col-md-2"><label class="form-label small mb-1">{{ __('Du') }}</label><input type="date" name="date_from" class="form-control form-control-sm" value="{{ $dateFrom }}"></div>
-            <div class="col-md-2"><label class="form-label small mb-1">{{ __('Au') }}</label><input type="date" name="date_to" class="form-control form-control-sm" value="{{ $dateTo }}"></div>
-            <div class="col-auto"><button type="submit" class="btn btn-sm btn-primary"><i class="ti ti-search me-1"></i>{{ __('Analyser') }}</button></div>
-            <div class="col-auto"><small class="text-muted">{{ $daysInPeriod }} {{ __('jours') }}</small></div>
+        <form method="GET" action="{{ route('eshop360.charges.cost-absorption', $slug) }}" id="absorption-form" class="row g-2 align-items-center">
+            <div class="col-auto"><input type="date" name="date_from" class="form-control form-control-sm" value="{{ $dateFrom }}"></div>
+            <div class="col-auto"><span class="text-muted">{{ __('au') }}</span></div>
+            <div class="col-auto"><input type="date" name="date_to" class="form-control form-control-sm" value="{{ $dateTo }}"></div>
+            <div class="col-auto" style="min-width:180px;">
+                <select name="method" class="form-select form-select-sm abs-select2" data-placeholder="{{ __('Methode') }}">
+                    <option value="revenue" {{ ($allocationMethod ?? 'revenue') === 'revenue' ? 'selected' : '' }}>{{ __('Proportionnel au CA') }}</option>
+                    <option value="hybrid" {{ ($allocationMethod ?? '') === 'hybrid' ? 'selected' : '' }}>{{ __('Hybride (CA + Quantite)') }}</option>
+                    <option value="quantity" {{ ($allocationMethod ?? '') === 'quantity' ? 'selected' : '' }}>{{ __('Par unite vendue') }}</option>
+                </select>
+            </div>
+            <div class="col-auto"><button type="submit" class="btn btn-sm btn-primary"><i class="ti ti-filter me-1"></i>{{ __('Analyser') }}</button></div>
+            <div class="col-auto"><span class="text-muted">{{ $daysInPeriod }} {{ __('jours') }}</span></div>
         </form>
     </div>
 </div>
@@ -87,7 +95,9 @@
         <div class="card border-0 shadow-sm h-100">
             <div class="card-header bg-transparent"><h6 class="mb-0 fw-bold"><i class="ti ti-chart-pie me-2"></i>{{ __('Repartition des charges') }}</h6></div>
             <div class="card-body">
-                <canvas id="chargesPieChart" height="250"></canvas>
+                <div style="position:relative; height:250px;">
+                    <canvas id="chargesPieChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -144,6 +154,19 @@
             </div>
         </div>
     </div>
+</div>
+
+{{-- Note methode --}}
+@php $methodColor = match($allocationMethod ?? 'revenue') { 'revenue' => 'info', 'hybrid' => 'primary', default => 'warning' }; @endphp
+<div class="alert alert-{{ $methodColor }} py-2 mb-3">
+    <i class="ti ti-info-circle me-1"></i>
+    @if(($allocationMethod ?? 'revenue') === 'revenue')
+        <strong>{{ __('Proportionnel au CA') }}</strong> — {{ __('Chaque produit absorbe une part de charges egale a sa part du CA total. Le poids est identique pour tous et ne depasse jamais le taux global.') }}
+    @elseif($allocationMethod === 'hybrid')
+        <strong>{{ __('Hybride (CA + Quantite)') }}</strong> — {{ __('Moyenne entre la part de CA et la part de quantite. Equilibre entre produits chers/peu vendus et produits pas chers/tres vendus. Formule : coefficient = (part_CA + part_quantite) / 2.') }}
+    @else
+        <strong>{{ __('Par unite vendue') }}</strong> — {{ __('Chaque unite absorbe le meme montant fixe. Un produit a faible prix peut depasser 100% s\'il ne couvre pas sa part.') }}
+    @endif
 </div>
 
 {{-- Tableau par produit --}}
@@ -233,6 +256,10 @@
     </div>
 </div>
 
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
+@endpush
+
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 <script>
@@ -250,6 +277,12 @@ document.addEventListener('DOMContentLoaded', function () {
             data: { labels: labels, datasets: [{ data: values, backgroundColor: colors.slice(0, labels.length), borderWidth: 0 }] },
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 15 } } } }
         });
+    }
+
+    // Select2
+    if (typeof jQuery !== 'undefined' && jQuery.fn.select2) {
+        jQuery('.abs-select2').select2({ theme: 'bootstrap-5', minimumResultsForSearch: Infinity, width: '100%' })
+            .on('select2:select', function () { document.getElementById('absorption-form').submit(); });
     }
 
     // Realtime counter

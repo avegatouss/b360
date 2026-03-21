@@ -61,7 +61,7 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">{{ __('Type de transport') }} <span class="text-danger">*</span></label>
-                            <select name="shipping_type" class="form-select @error('shipping_type') is-invalid @enderror" required>
+                            <select name="shipping_type" class="form-select select2-create @error('shipping_type') is-invalid @enderror" required>
                                 <option value="">{{ __('Sélectionner') }}</option>
                                 <option value="sea" @selected(old('shipping_type') === 'sea')><i class="ti ti-ship"></i> {{ __('Maritime') }}</option>
                                 <option value="air" @selected(old('shipping_type') === 'air')>{{ __('Aérien') }}</option>
@@ -77,9 +77,10 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">{{ __('Méthode de répartition') }} <span class="text-danger">*</span></label>
-                            <select name="cost_allocation_method" class="form-select @error('cost_allocation_method') is-invalid @enderror" required>
+                            <select name="cost_allocation_method" class="form-select select2-create @error('cost_allocation_method') is-invalid @enderror" required>
                                 <option value="value" @selected(old('cost_allocation_method', 'value') === 'value')>{{ __('Par valeur') }}</option>
-                                <option value="quantity" @selected(old('cost_allocation_method') === 'quantity')>{{ __('Par quantité') }}</option>
+                                <option value="hybrid" @selected(old('cost_allocation_method') === 'hybrid')>{{ __('Hybride (valeur + quantite)') }}</option>
+                                <option value="quantity" @selected(old('cost_allocation_method') === 'quantity')>{{ __('Par quantite') }}</option>
                             </select>
                             @error('cost_allocation_method')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             <small class="text-muted">{{ __('Comment répartir les frais sur les produits') }}</small>
@@ -232,11 +233,20 @@
     </div>
 </form>
 
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
+@endpush
+
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     var rowIndex = 1;
-    var productsData = @json(($products ?? collect())->map(fn($p) => ['id' => $p->id, 'name' => $p->name, 'sku' => $p->sku, 'price' => $p->purchase_price_provisional ?? $p->cost_price ?? 0]));
+    @php
+        $productsJsonData = ($products ?? collect())->map(function($p) {
+            return ['id' => $p->id, 'name' => $p->name, 'sku' => $p->sku, 'price' => $p->purchase_price_provisional ?? $p->cost_price ?? 0];
+        });
+    @endphp
+    var productsData = @json($productsJsonData);
 
     // Init Select2
     function initSelect2() {

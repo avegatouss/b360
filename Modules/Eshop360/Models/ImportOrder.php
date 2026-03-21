@@ -71,4 +71,24 @@ class ImportOrder extends Model
     {
         return (float) $this->costs()->sum('amount');
     }
+
+    public function getItemsTotalAttribute(): float
+    {
+        return $this->total_factory;
+    }
+
+    public function getCostsTotalAttribute(): float
+    {
+        return $this->total_costs;
+    }
+
+    public function getTotalAttribute(): float
+    {
+        return $this->total_factory + $this->total_costs;
+    }
+
+    public function getIsAllocatedAttribute(): bool
+    {
+        return $this->items()->where('allocated_cost', '>', 0)->exists();
+    }
 }

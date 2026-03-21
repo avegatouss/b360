@@ -28,4 +28,14 @@ class ImportCost extends Model
     {
         return $this->belongsTo(ImportOrder::class);
     }
+
+    public function getLabelAttribute(): string
+    {
+        $labels = [
+            'freight' => __('Fret'), 'customs' => __('Douane'), 'tax' => __('Taxe'),
+            'admin' => __('Frais admin'), 'local_transport' => __('Transport local'),
+            'handling' => __('Manutention'), 'storage' => __('Entreposage'), 'other' => __('Autre'),
+        ];
+        return $labels[$this->type] ?? ucfirst($this->type);
+    }
 }

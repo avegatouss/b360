@@ -64,7 +64,8 @@ class PurchaseController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'supplier_name'       => 'required|string|max:255',
+            'supplier_id'         => 'nullable|exists:eshop_suppliers,id',
+            'supplier_name'       => 'nullable|string|max:255',
             'supplier_email'      => 'nullable|email|max:255',
             'warehouse_id'        => 'nullable|exists:eshop_warehouses,id',
             'status'              => 'nullable|in:ordered,pending,received,cancelled',
@@ -104,18 +105,24 @@ class PurchaseController extends Controller
                 $paymentStatus = 'partial';
             }
 
-            // Resolve supplier_id from name if not provided directly
+            // Resolve supplier
             $supplierId = $validated['supplier_id'] ?? null;
-            if (!$supplierId && !empty($validated['supplier_name'])) {
+            $supplierName = $validated['supplier_name'] ?? '';
+
+            if ($supplierId && empty($supplierName)) {
+                $supplier = Supplier::find($supplierId);
+                $supplierName = $supplier?->name ?? '';
+                $validated['supplier_email'] = $validated['supplier_email'] ?? $supplier?->email;
+            } elseif (!$supplierId && !empty($supplierName)) {
                 $supplierId = Supplier::where('instance_id', $instance?->id)
-                    ->where('name', $validated['supplier_name'])
+                    ->where('name', $supplierName)
                     ->value('id');
             }
 
             $purchase = PurchaseOrder::create([
                 'instance_id'    => $instance?->id,
                 'supplier_id'    => $supplierId,
-                'supplier_name'  => $validated['supplier_name'],
+                'supplier_name'  => $supplierName,
                 'supplier_email' => $validated['supplier_email'] ?? null,
                 'reference'      => 'PO-' . now()->format('Ymd') . '-' . str_pad(PurchaseOrder::count() + 1, 4, '0', STR_PAD_LEFT),
                 'warehouse_id'   => $validated['warehouse_id'] ?? null,
@@ -356,6 +363,7 @@ class PurchaseController extends Controller
 
         DB::transaction(function () use ($purchase, $stockService) {
             foreach ($purchase->items as $item) {
+                // 1. Add stock to warehouse
                 $stockService->adjustStock(
                     $item->product,
                     $purchase->warehouse_id,
@@ -366,6 +374,24 @@ class PurchaseController extends Controller
                     PurchaseOrder::class,
                     $purchase->id,
                 );
+
+                // 2. Update product cost price (weighted average)
+                if ($item->product && $item->unit_cost > 0) {
+                    $product = $item->product;
+                    $oldCost = (float) ($product->cost_price ?? 0);
+                    $oldStock = (int) $product->stocks()->sum('quantity') - $item->quantity; // stock before this receipt
+                    $newCost = (float) $item->unit_cost;
+                    $newQty = (int) $item->quantity;
+
+                    if ($oldCost > 0 && $oldStock > 0) {
+                        // Weighted average: (old_cost * old_stock + new_cost * new_qty) / (old_stock + new_qty)
+                        $weightedCost = round(($oldCost * $oldStock + $newCost * $newQty) / ($oldStock + $newQty), 2);
+                    } else {
+                        $weightedCost = $newCost;
+                    }
+
+                    $product->update(['cost_price' => $weightedCost]);
+                }
             }
 
             $purchase->update([

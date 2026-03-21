@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\Eshop360\Models\ImportOrder;
 use Modules\Eshop360\Models\ImportCost;
+use Modules\Eshop360\Models\ImportCostType;
 use Modules\Eshop360\Models\Supplier;
 use Modules\Eshop360\Models\Warehouse;
 use Modules\Eshop360\Models\Product;
@@ -71,7 +72,7 @@ class ImportController extends Controller
             'container_no' => 'nullable|string|max:100',
             'ship_date' => 'nullable|date',
             'eta' => 'nullable|date|after_or_equal:ship_date',
-            'cost_allocation_method' => 'required|in:value,quantity',
+            'cost_allocation_method' => 'required|in:value,quantity,hybrid',
             'notes' => 'nullable|string',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:eshop_products,id',
@@ -142,9 +143,42 @@ class ImportController extends Controller
         return redirect()->back()->with('success', __('eshop::eshop.import_received'));
     }
 
+    public function simulate(string $slug, ImportOrder $import)
+    {
+        $import->load(['items.product', 'costs', 'supplier', 'warehouse']);
+        $importService = app(ImportService::class);
+
+        $simValue = $importService->simulateAllocation($import, 'value');
+        $simQuantity = $importService->simulateAllocation($import, 'quantity');
+        $simHybrid = $importService->simulateAllocation($import, 'hybrid');
+
+        return view('eshop360::imports.simulate', compact('import', 'simValue', 'simQuantity', 'simHybrid'));
+    }
+
     public function destroy(string $slug, ImportOrder $import)
     {
         $import->delete();
         return redirect()->back()->with('success', __('eshop::eshop.import_deleted'));
+    }
+
+    public function storeCostType(Request $request)
+    {
+        $validated = $request->validate([
+            'label' => 'required|string|max:100',
+        ]);
+
+        $instance = CurrentInstance::get();
+        $code = \Illuminate\Support\Str::slug($validated['label'], '_');
+
+        $type = ImportCostType::updateOrCreate(
+            ['instance_id' => $instance->id, 'code' => $code],
+            ['label' => $validated['label'], 'is_active' => true]
+        );
+
+        if ($request->wantsJson()) {
+            return response()->json(['id' => $type->id, 'code' => $type->code, 'label' => $type->label]);
+        }
+
+        return redirect()->back()->with('success', __('Type de frais cree.'));
     }
 }

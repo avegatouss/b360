@@ -432,6 +432,8 @@ Route::middleware([
         Route::post('/{import}/allocate', [ImportController::class, 'allocateCosts'])->middleware('can:eshop.imports.manage')->name('allocate');
         Route::post('/{import}/receive', [ImportController::class, 'receive'])->middleware('can:eshop.imports.manage')->name('receive');
         Route::delete('/{import}', [ImportController::class, 'destroy'])->middleware('can:eshop.imports.manage')->name('destroy');
+        Route::get('/{import}/simulate', [ImportController::class, 'simulate'])->middleware('can:eshop.imports.manage')->name('simulate');
+        Route::post('/cost-types', [ImportController::class, 'storeCostType'])->middleware('can:eshop.imports.manage')->name('cost-types.store');
     });
 
     // ─── Finance: Accounts ──────────────────────────
@@ -532,6 +534,7 @@ Route::middleware([
         Route::get('/realtime', [ChargesController::class, 'realtime'])->name('realtime');
         Route::get('/realtime-data', [ChargesController::class, 'realtimeData'])->name('realtime-data');
         Route::get('/cost-absorption', [ChargesController::class, 'costAbsorption'])->name('cost-absorption');
+        Route::post('/categories', [ChargesController::class, 'storeCategory'])->middleware('can:eshop.charges.manage')->name('categories.store');
     });
 
     // ─── Distribution Channels ──────────────────────────

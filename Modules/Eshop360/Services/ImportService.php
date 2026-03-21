@@ -41,36 +41,76 @@ class ImportService
      */
     public function allocateCosts(ImportOrder $order): void
     {
-        $items = $order->items;
-        $totalCosts = $order->costs()->sum('amount');
+        $simulation = $this->simulateAllocation($order, $order->cost_allocation_method);
 
-        if ($items->isEmpty() || $totalCosts <= 0) return;
-
-        if ($order->cost_allocation_method === 'value') {
-            $totalFactory = $items->sum('total_factory');
-            if ($totalFactory <= 0) return;
-            foreach ($items as $item) {
-                $coefficient = $item->total_factory / $totalFactory;
-                $allocatedCost = $totalCosts * $coefficient;
-                $costPriceReal = $item->unit_price_factory + ($allocatedCost / $item->quantity);
+        foreach ($order->items as $item) {
+            $sim = collect($simulation)->firstWhere('item_id', $item->id);
+            if ($sim) {
                 $item->update([
-                    'allocated_cost' => $allocatedCost,
-                    'cost_price_real' => $costPriceReal,
-                ]);
-            }
-        } else { // quantity method
-            $totalQuantity = $items->sum('quantity');
-            if ($totalQuantity <= 0) return;
-            foreach ($items as $item) {
-                $coefficient = $item->quantity / $totalQuantity;
-                $allocatedCost = $totalCosts * $coefficient;
-                $costPriceReal = $item->unit_price_factory + ($allocatedCost / $item->quantity);
-                $item->update([
-                    'allocated_cost' => $allocatedCost,
-                    'cost_price_real' => $costPriceReal,
+                    'allocated_cost' => $sim['allocated_cost'],
+                    'cost_price_real' => $sim['cost_price_real'],
                 ]);
             }
         }
+    }
+
+    /**
+     * Simulate cost allocation WITHOUT saving (for comparison).
+     * Returns an array of items with simulated values.
+     */
+    public function simulateAllocation(ImportOrder $order, string $method): array
+    {
+        $items = $order->items;
+        $totalCosts = (float) $order->costs()->sum('amount');
+
+        if ($items->isEmpty() || $totalCosts <= 0) {
+            return $items->map(fn ($item) => [
+                'item_id' => $item->id,
+                'product_name' => $item->product?->name ?? '—',
+                'sku' => $item->product?->sku ?? '',
+                'quantity' => $item->quantity,
+                'unit_price_factory' => (float) $item->unit_price_factory,
+                'total_factory' => (float) $item->total_factory,
+                'allocated_cost' => 0,
+                'cost_per_unit' => 0,
+                'cost_price_real' => (float) $item->unit_price_factory,
+                'total_landed' => (float) $item->total_factory,
+            ])->toArray();
+        }
+
+        $totalFactory = (float) $items->sum('total_factory');
+        $totalQuantity = (int) $items->sum('quantity');
+
+        return $items->map(function ($item) use ($method, $totalCosts, $totalFactory, $totalQuantity) {
+            if ($method === 'value' && $totalFactory > 0) {
+                $coefficient = (float) $item->total_factory / $totalFactory;
+            } elseif ($method === 'hybrid' && $totalFactory > 0 && $totalQuantity > 0) {
+                $partValue = (float) $item->total_factory / $totalFactory;
+                $partQty = (float) $item->quantity / $totalQuantity;
+                $coefficient = ($partValue + $partQty) / 2;
+            } elseif ($totalQuantity > 0) {
+                $coefficient = (float) $item->quantity / $totalQuantity;
+            } else {
+                $coefficient = 0;
+            }
+
+            $allocatedCost = round($totalCosts * $coefficient, 2);
+            $costPerUnit = $item->quantity > 0 ? round($allocatedCost / $item->quantity, 4) : 0;
+            $costPriceReal = round((float) $item->unit_price_factory + $costPerUnit, 4);
+
+            return [
+                'item_id' => $item->id,
+                'product_name' => $item->product?->name ?? '—',
+                'sku' => $item->product?->sku ?? '',
+                'quantity' => (int) $item->quantity,
+                'unit_price_factory' => (float) $item->unit_price_factory,
+                'total_factory' => (float) $item->total_factory,
+                'allocated_cost' => $allocatedCost,
+                'cost_per_unit' => $costPerUnit,
+                'cost_price_real' => $costPriceReal,
+                'total_landed' => round($costPriceReal * $item->quantity, 2),
+            ];
+        })->toArray();
     }
 
     /**

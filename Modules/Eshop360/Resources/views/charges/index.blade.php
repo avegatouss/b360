@@ -7,11 +7,14 @@
     $costPerSecond = $dashboardData['cost_per_second'] ?? 0;
     $accumulated = $dashboardData['accumulated_since_month_start'] ?? 0;
     $breakdown = $dashboardData['breakdown'] ?? [];
-    $categoryLabels = [
+    $chargeCategories = \Modules\Eshop360\Models\ChargeCategory::getForInstance($instance->id ?? 0);
+    $categoryLabels = $chargeCategories->pluck('label', 'code')->toArray();
+    // Fallback for old codes not in DB
+    $categoryLabels = array_merge([
         'rent' => 'Loyer', 'electricity' => 'Electricite', 'salary' => 'Salaires',
         'transport' => 'Transport', 'maintenance' => 'Maintenance',
         'insurance' => 'Assurance', 'other' => 'Divers',
-    ];
+    ], $categoryLabels);
 @endphp
 
 <div class="page-header">
@@ -198,12 +201,15 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">{{ __('Categorie') }} <span class="text-danger">*</span></label>
-                        <select name="category" class="form-select" required>
-                            <option value="">{{ __('Choisir') }}</option>
-                            @foreach($categoryLabels as $value => $label)
-                                <option value="{{ $value }}">{{ $label }}</option>
-                            @endforeach
-                        </select>
+                        <div class="input-group">
+                            <select name="category" class="form-select charge-cat-select2" data-placeholder="{{ __('Choisir') }}" data-dropdown-parent="#addChargeModal" required>
+                                <option value=""></option>
+                                @foreach($categoryLabels as $value => $label)
+                                    <option value="{{ $value }}">{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            <button type="button" class="btn btn-outline-primary btn-add-charge-cat" title="{{ __('Nouvelle categorie') }}"><i class="ti ti-plus"></i></button>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">{{ __('Montant mensuel (XAF)') }} <span class="text-danger">*</span></label>
@@ -241,11 +247,15 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">{{ __('Categorie') }} <span class="text-danger">*</span></label>
-                        <select name="category" class="form-select" required>
-                            @foreach($categoryLabels as $value => $label)
-                                <option value="{{ $value }}" {{ $charge->category === $value ? 'selected' : '' }}>{{ $label }}</option>
-                            @endforeach
-                        </select>
+                        <div class="input-group">
+                            <select name="category" class="form-select charge-cat-select2" data-placeholder="{{ __('Choisir') }}" data-dropdown-parent="#editChargeModal-{{ $charge->id }}" required>
+                                <option value=""></option>
+                                @foreach($categoryLabels as $value => $label)
+                                    <option value="{{ $value }}" {{ $charge->category === $value ? 'selected' : '' }}>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            <button type="button" class="btn btn-outline-primary btn-add-charge-cat" title="{{ __('Nouvelle') }}"><i class="ti ti-plus"></i></button>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">{{ __('Montant mensuel (XAF)') }} <span class="text-danger">*</span></label>
@@ -280,5 +290,44 @@
     }, 1000);
 })();
 </script>
+
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
+<style>.input-group .select2-container { flex: 1 1 auto; width: auto !important; min-width: 0; } .input-group .select2-container .select2-selection { border-top-right-radius: 0; border-bottom-right-radius: 0; }</style>
+@endpush
+
+@push('scripts')
+<script>
+jQuery(function ($) {
+    $('.charge-cat-select2').each(function () {
+        var $el = $(this);
+        var parent = $el.data('dropdown-parent');
+        $el.select2({ theme: 'bootstrap-5', allowClear: true, width: 'resolve', placeholder: $el.data('placeholder') || '', dropdownParent: parent ? $(parent) : undefined });
+    });
+
+    $(document).on('click', '.btn-add-charge-cat', function () {
+        var label = prompt(@json(__('Nom de la nouvelle categorie :')));
+        if (!label || !label.trim()) return;
+        var $btn = $(this);
+        $.ajax({
+            url: @json(route('eshop360.charges.categories.store', $instance->slug ?? '')),
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'), 'Accept': 'application/json' },
+            data: { label: label.trim() },
+            success: function (data) {
+                $('.charge-cat-select2').each(function () {
+                    if (!$(this).find('option[value="' + data.code + '"]').length) {
+                        $(this).append(new Option(data.label, data.code, false, false));
+                    }
+                });
+                var $sel = $btn.closest('.input-group').find('select');
+                $sel.val(data.code).trigger('change');
+            },
+            error: function () { alert(@json(__('Erreur.'))); }
+        });
+    });
+});
+</script>
+@endpush
 
 </x-dashboard::layouts.master>

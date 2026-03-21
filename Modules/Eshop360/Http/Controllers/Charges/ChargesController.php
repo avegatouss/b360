@@ -126,10 +126,21 @@ class ChargesController extends Controller
         $chargeAbsorbed = $chargePerUnit * $totalUnitsSold;
         $absorptionRate = $totalRevenue > 0 ? round(($totalChargesForPeriod / $totalRevenue) * 100, 2) : 0;
 
+        // Allocation method: 'revenue', 'quantity', or 'hybrid'
+        $allocationMethod = $request->input('method', 'revenue');
+
         // Per-product breakdown
-        $products = $salesData->map(function ($row) use ($chargePerUnit, $totalRevenue, $totalUnitsSold) {
-            $chargeAllocated = round($chargePerUnit * $row->qty_sold, 2);
-            $margin = round($row->revenue - $chargeAllocated, 2);
+        $products = $salesData->map(function ($row) use ($chargePerUnit, $totalChargesForPeriod, $totalRevenue, $totalUnitsSold, $allocationMethod) {
+            if ($allocationMethod === 'revenue' && $totalRevenue > 0) {
+                $chargeAllocated = round($totalChargesForPeriod * ((float) $row->revenue / $totalRevenue), 2);
+            } elseif ($allocationMethod === 'hybrid' && $totalRevenue > 0 && $totalUnitsSold > 0) {
+                $partCA = (float) $row->revenue / $totalRevenue;
+                $partQty = (float) $row->qty_sold / $totalUnitsSold;
+                $chargeAllocated = round($totalChargesForPeriod * (($partCA + $partQty) / 2), 2);
+            } else {
+                $chargeAllocated = round($chargePerUnit * $row->qty_sold, 2);
+            }
+            $margin = round((float) $row->revenue - $chargeAllocated, 2);
             return (object) [
                 'product_id' => $row->product_id,
                 'name' => $row->product_name,
@@ -150,10 +161,27 @@ class ChargesController extends Controller
         ])->values();
 
         return view('eshop360::charges.cost-absorption', compact(
-            'charges', 'products', 'chargeBreakdown',
+            'charges', 'products', 'chargeBreakdown', 'allocationMethod',
             'totalChargesForPeriod', 'totalUnitsSold', 'totalRevenue',
             'chargePerUnit', 'chargeAbsorbed', 'absorptionRate',
             'dateFrom', 'dateTo', 'daysInPeriod',
         ));
+    }
+
+    public function storeCategory(Request $request)
+    {
+        $validated = $request->validate(['label' => 'required|string|max:100']);
+        $instance = \Modules\Core\Support\CurrentInstance::get();
+        $code = \Illuminate\Support\Str::slug($validated['label'], '_');
+
+        $cat = \Modules\Eshop360\Models\ChargeCategory::updateOrCreate(
+            ['instance_id' => $instance->id, 'code' => $code],
+            ['label' => $validated['label'], 'is_active' => true]
+        );
+
+        if ($request->wantsJson()) {
+            return response()->json(['id' => $cat->id, 'code' => $cat->code, 'label' => $cat->label]);
+        }
+        return redirect()->back()->with('success', __('Categorie creee.'));
     }
 }

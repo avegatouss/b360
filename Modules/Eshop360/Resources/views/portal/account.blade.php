@@ -214,18 +214,18 @@
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
                                     <span class="badge {{ $d->status === 'paid' ? 'bg-success' : ($d->status === 'partial' ? 'bg-warning text-dark' : 'bg-danger') }} mb-1">{{ ucfirst($d->status) }}</span>
-                                    <div class="text-muted" style="font-size:.85rem;">{{ $d->created_at->format('d/m/Y') }}</div>
+                                    <div class="text-muted" style="font-size:.9rem;">{{ $d->created_at->format('d/m/Y') }}</div>
                                     @if($d->due_date)
-                                        <div class="text-muted" style="font-size:.8rem;">{{ __('Echeance') }}: {{ $d->due_date->format('d/m/Y') }}</div>
+                                        <div class="text-muted" style="font-size:.9rem;">{{ __('Echeance') }}: {{ $d->due_date->format('d/m/Y') }}</div>
                                     @endif
                                 </div>
                                 <div class="text-end">
                                     <div class="fw-bold">{{ $fmt($d->amount_due) }} {{ $currency }}</div>
                                     @if($d->paid_amount > 0)
-                                        <div class="text-success" style="font-size:.85rem;">{{ __('Paye') }}: {{ $fmt($d->paid_amount) }}</div>
+                                        <div class="text-success" style="font-size:.9rem;">{{ __('Paye') }}: {{ $fmt($d->paid_amount) }}</div>
                                     @endif
                                     @if($remaining > 0)
-                                        <div class="text-danger fw-bold" style="font-size:.85rem;">{{ __('Reste') }}: {{ $fmt($remaining) }}</div>
+                                        <div class="text-danger fw-bold" style="font-size:.9rem;">{{ __('Reste') }}: {{ $fmt($remaining) }}</div>
                                     @endif
                                 </div>
                             </div>

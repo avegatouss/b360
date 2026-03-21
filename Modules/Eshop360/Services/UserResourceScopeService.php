@@ -187,18 +187,22 @@ class UserResourceScopeService
             return;
         }
 
-        $instanceId = CurrentInstance::get()?->id;
+        try {
+            $instanceId = CurrentInstance::get()?->id;
 
-        $assignments = UserAssignment::forUser($this->user->id)
-            ->when($instanceId, fn ($q) => $q->forInstance($instanceId))
-            ->get(['resource_type', 'resource_id']);
+            $assignments = UserAssignment::forUser($this->user->id)
+                ->when($instanceId, fn ($q) => $q->forInstance($instanceId))
+                ->get(['resource_type', 'resource_id']);
 
-        foreach ($assignments as $assignment) {
-            match ($assignment->resource_type) {
-                'store' => $this->storeAssignments->push($assignment->resource_id),
-                'warehouse' => $this->warehouseAssignments->push($assignment->resource_id),
-                'customer' => $this->customerAssignments->push($assignment->resource_id),
-            };
+            foreach ($assignments as $assignment) {
+                match ($assignment->resource_type) {
+                    'store' => $this->storeAssignments->push($assignment->resource_id),
+                    'warehouse' => $this->warehouseAssignments->push($assignment->resource_id),
+                    'customer' => $this->customerAssignments->push($assignment->resource_id),
+                };
+            }
+        } catch (\Throwable) {
+            // Table may not exist yet (before migration). Silently ignore.
         }
     }
 }

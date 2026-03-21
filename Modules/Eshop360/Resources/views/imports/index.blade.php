@@ -331,17 +331,17 @@
     @endif
 </div>
 
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
+@endpush
+
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    if (typeof $ !== 'undefined' && $.fn.select2) {
-        $('.select2-filter').select2({
-            theme: 'bootstrap-5',
-            allowClear: true,
-            width: '100%',
-            language: { noResults: function () { return '{{ __("Aucun résultat") }}'; } }
-        });
-    }
+jQuery(function ($) {
+    $('.select2-filter').each(function () {
+        $(this).select2({ theme: 'bootstrap-5', allowClear: true, width: '100%', placeholder: $(this).data('placeholder') || '' })
+            .on('select2:select select2:clear', function () { $(this).closest('form')[0].submit(); });
+    });
 });
 </script>
 @endpush
