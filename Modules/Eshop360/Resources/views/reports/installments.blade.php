@@ -3,8 +3,7 @@
     :instance="$instance"
     :pageTitle="__('Echeancier')">
 
-    <div class="page-wrapper">
-        <div class="content">
+
             <div class="page-header">
                 <div class="add-item d-flex">
                     <div class="page-title">
@@ -85,7 +84,7 @@
                                     <td>{{ ($plan['paid_installments'] ?? 0) }}/{{ ($plan['total_installments'] ?? 0) }}</td>
                                     <td>{{ $plan['next_due_date'] ?? '---' }}</td>
                                     <td>
-                                        @php
+                                        @php $currency = $eshopCurrency ?? 'FCFA';
                                             $planStatus = $plan['status'] ?? 'active';
                                             $planStatusClass = match($planStatus) {
                                                 'active' => 'bg-primary',
@@ -106,7 +105,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
+  
 
 </x-dashboard::layouts.master>

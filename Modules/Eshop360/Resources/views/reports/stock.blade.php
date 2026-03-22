@@ -3,8 +3,7 @@
     :instance="$instance"
     :pageTitle="__('Rapport de stock')">
 
-    <div class="page-wrapper">
-        <div class="content">
+
             <div class="page-header">
                 <div class="add-item d-flex">
                     <div class="page-title">
@@ -39,7 +38,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @php $rows = $data['items'] ?? $data; @endphp
+                                @php $currency = $eshopCurrency ?? 'FCFA'; $rows = $data['items'] ?? $data; @endphp
                                 @forelse($rows as $row)
                                 <tr>
                                     <td>{{ $row['product'] ?? $row['name'] ?? '---' }}</td>
@@ -71,7 +70,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
+    
 
 </x-dashboard::layouts.master>

@@ -353,6 +353,38 @@ class RolesPermissionsSeeder extends Seeder
         $user = Role::firstOrCreate(['name' => 'user', 'guard_name' => 'web']);
         $user->syncPermissions($userPermissions);
 
+        /*
+        |----------------------------------------------------------------------
+        | Roles metier — specifiques a des postes
+        |----------------------------------------------------------------------
+        */
+
+        // Caissier(e) — acces POS, ventes, clients, facturation basique
+        $cashier = Role::firstOrCreate(['name' => 'caissiere', 'guard_name' => 'web']);
+        $cashier->syncPermissions([
+            'dashboard.view',
+            'products.view',
+            'stock.view',
+            'sales.view', 'sales.create',
+            'pos.access', 'pos.manage',
+            'customers.view', 'customers.create',
+            'invoices.view',
+            'online_orders.view',
+            'printing.manage',
+        ]);
+
+        // Responsable entrepot — inventaire, stock, receptions, transferts
+        $warehouseManager = Role::firstOrCreate(['name' => 'responsable-entrepot', 'guard_name' => 'web']);
+        $warehouseManager->syncPermissions([
+            'dashboard.view',
+            'products.view', 'products.edit',
+            'stock.view', 'stock.manage', 'stock.adjust', 'stock.transfer',
+            'purchases.view', 'purchases.create', 'purchases.edit',
+            'imports.view', 'imports.create', 'imports.edit',
+            'suppliers.view',
+            'reports.view',
+        ]);
+
         // Restaurer au contexte global
         $registrar->setPermissionsTeamId(self::GLOBAL_TEAM_ID);
         $registrar->forgetCachedPermissions();

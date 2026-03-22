@@ -28,7 +28,7 @@ final class ChannelMember
 
         // Instance-admins bypass channel membership check
         if ($user->hasRole('instance-admin') || $user->hasRole('super-admin')) {
-            $request->merge(['channel_user_role' => 'manager']);
+            $request->merge(['channel_user_role' => 'admin']);
             return $next($request);
         }
 

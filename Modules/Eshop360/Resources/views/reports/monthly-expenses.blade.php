@@ -3,8 +3,7 @@
     :instance="$instance"
     :pageTitle="__('Depenses mensuelles')">
 
-    <div class="page-wrapper">
-        <div class="content">
+
             <div class="page-header">
                 <div class="add-item d-flex">
                     <div class="page-title">
@@ -36,7 +35,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @php
+                                @php $currency = $eshopCurrency ?? 'FCFA';
                                     $months = ['Janvier','Fevrier','Mars','Avril','Mai','Juin','Juillet','Aout','Septembre','Octobre','Novembre','Decembre'];
                                     $prev = 0;
                                 @endphp
@@ -77,7 +76,8 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
+     
+@push('styles')<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">@endpush
+@push('scripts')<script>jQuery(function($){$(".form-select").select2({theme:"bootstrap-5",width:"100%"});});</script>@endpush
 
 </x-dashboard::layouts.master>

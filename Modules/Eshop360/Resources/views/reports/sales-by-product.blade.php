@@ -3,8 +3,7 @@
     :instance="$instance"
     :pageTitle="__('Ventes par produit')">
 
-    <div class="page-wrapper">
-        <div class="content">
+
             <div class="page-header">
                 <div class="add-item d-flex">
                     <div class="page-title">
@@ -36,7 +35,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @php $grandTotal = collect($data)->sum('revenue'); @endphp
+                                @php $currency = $eshopCurrency ?? 'FCFA'; $grandTotal = collect($data)->sum('revenue'); @endphp
                                 @forelse($data as $row)
                                 <tr>
                                     <td>{{ $row['product'] ?? $row['name'] ?? '---' }}</td>
@@ -63,7 +62,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
+   
 
 </x-dashboard::layouts.master>

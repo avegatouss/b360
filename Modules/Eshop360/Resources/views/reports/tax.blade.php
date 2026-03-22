@@ -3,8 +3,9 @@
     :instance="$instance"
     :pageTitle="__('Rapport de taxes')">
 
-    <div class="page-wrapper">
-        <div class="content">
+@php $slug = $instance->slug ?? ''; $currency = $eshopCurrency ?? 'FCFA'; @endphp
+
+
             <div class="page-header">
                 <div class="add-item d-flex">
                     <div class="page-title">
@@ -62,7 +63,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
+
 
 </x-dashboard::layouts.master>

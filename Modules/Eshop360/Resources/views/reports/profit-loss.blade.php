@@ -1,11 +1,10 @@
-@php $slug = $instance->slug ?? ''; @endphp
+@php $slug = $instance->slug ?? ''; $currency = $eshopCurrency ?? 'FCFA'; @endphp
 <x-dashboard::layouts.master
     :title="__('Compte de resultat') . ' — ' . ($instance->name ?? 'B360')"
     :instance="$instance"
     :pageTitle="__('Compte de resultat')">
 
-    <div class="page-wrapper">
-        <div class="content">
+
             {{-- Page Header --}}
             <div class="page-header">
                 <div class="add-item d-flex">
@@ -81,7 +80,7 @@
                             <p class="text-muted small mb-1">{{ __('Chiffre d\'affaires') }}</p>
                             <h4 class="fw-bold text-success">{{ number_format($totalRevenue, 0, ',', ' ') }}</h4>
                             @if($prev)
-                                <small class="text-muted">{{ __('Prec') }}: {{ number_format($prev['total_revenue'] ?? 0, 0, ',', ' ') }}</small>
+                                <span class="text-muted">{{ __('Prec') }}: {{ number_format($prev['total_revenue'] ?? 0, 0, ',', ' ') }}</span>
                             @endif
                         </div>
                     </div>
@@ -92,7 +91,7 @@
                             <p class="text-muted small mb-1">{{ __('Cout des ventes (COGS)') }}</p>
                             <h4 class="fw-bold text-warning">{{ number_format($cogs, 0, ',', ' ') }}</h4>
                             @if($prev)
-                                <small class="text-muted">{{ __('Prec') }}: {{ number_format($prev['cogs'] ?? 0, 0, ',', ' ') }}</small>
+                                <span class="text-muted">{{ __('Prec') }}: {{ number_format($prev['cogs'] ?? 0, 0, ',', ' ') }}</span>
                             @endif
                         </div>
                     </div>
@@ -104,7 +103,7 @@
                             <h4 class="fw-bold text-info">{{ number_format($grossProfit, 0, ',', ' ') }}</h4>
                             <span class="badge bg-info bg-opacity-25 text-info">{{ $grossMargin }}%</span>
                             @if($prev)
-                                <br><small class="text-muted">{{ __('Prec') }}: {{ number_format($prev['gross_profit'] ?? 0, 0, ',', ' ') }}</small>
+                                <br><span class="text-muted">{{ __('Prec') }}: {{ number_format($prev['gross_profit'] ?? 0, 0, ',', ' ') }}</span>
                             @endif
                         </div>
                     </div>
@@ -115,7 +114,7 @@
                             <p class="text-muted small mb-1">{{ __('Charges') }}</p>
                             <h4 class="fw-bold text-danger">{{ number_format($totalExpenses, 0, ',', ' ') }}</h4>
                             @if($prev)
-                                <small class="text-muted">{{ __('Prec') }}: {{ number_format($prev['total_expenses'] ?? 0, 0, ',', ' ') }}</small>
+                                <span class="text-muted">{{ __('Prec') }}: {{ number_format($prev['total_expenses'] ?? 0, 0, ',', ' ') }}</span>
                             @endif
                         </div>
                     </div>
@@ -232,7 +231,5 @@
                 </div>
             </div>
             @endif
-        </div>
-    </div>
-
+      
 </x-dashboard::layouts.master>

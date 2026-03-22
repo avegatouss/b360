@@ -490,6 +490,8 @@ Route::middleware([
     Route::prefix('finance/gift-cards')->name('eshop360.finance.gift-cards.')->middleware('can:eshop.finance.view')->group(function () {
         Route::get('/', [GiftCardController::class, 'index'])->name('index');
         Route::post('/', [GiftCardController::class, 'store'])->middleware('can:eshop.finance.manage')->name('store');
+        Route::post('/batch', [GiftCardController::class, 'storeBatch'])->middleware('can:eshop.finance.manage')->name('store-batch');
+        Route::post('/code-settings', [GiftCardController::class, 'saveCodeSettings'])->middleware('can:eshop.finance.manage')->name('code-settings');
         Route::post('/{giftCard}/topup', [GiftCardController::class, 'topup'])->middleware('can:eshop.finance.manage')->name('topup');
         Route::match(['post', 'patch'], '/{giftCard}/disable', [GiftCardController::class, 'disable'])->middleware('can:eshop.finance.manage')->name('disable');
         Route::delete('/{giftCard}', [GiftCardController::class, 'destroy'])->middleware('can:eshop.finance.manage')->name('destroy');
@@ -559,6 +561,12 @@ Route::middleware([
         Route::delete('/{channel}', [ChannelController::class, 'destroy'])->middleware('can:eshop.channels.manage')->name('destroy');
         Route::get('/{channel}/margins', [ChannelController::class, 'margins'])->name('margins');
         Route::get('/{channel}/orders', [ChannelController::class, 'orders'])->name('orders');
+
+        // Channel Members & Roles
+        Route::get('/{channel}/members', [\Modules\Eshop360\Http\Controllers\Channel\ChannelMemberController::class, 'index'])->name('members.index');
+        Route::post('/{channel}/members', [\Modules\Eshop360\Http\Controllers\Channel\ChannelMemberController::class, 'store'])->middleware('can:eshop.channels.manage')->name('members.store');
+        Route::put('/{channel}/members/{member}', [\Modules\Eshop360\Http\Controllers\Channel\ChannelMemberController::class, 'update'])->middleware('can:eshop.channels.manage')->name('members.update');
+        Route::delete('/{channel}/members/{member}', [\Modules\Eshop360\Http\Controllers\Channel\ChannelMemberController::class, 'destroy'])->middleware('can:eshop.channels.manage')->name('members.destroy');
     });
 
     // ─── Online Orders ──────────────────────────────
@@ -772,8 +780,8 @@ Route::middleware([
             Route::get('/customers', [ChannelPortalCustomerController::class, 'index'])->name('customers.index');
             Route::get('/customers/{customer}', [ChannelPortalCustomerController::class, 'show'])->name('customers.show');
 
-            // ─── POS + Cart + Checkout (operator+) ───
-            Route::middleware('eshop.channel.role:operator')->group(function () {
+            // ─── POS + Cart + Checkout (cashier+) ───
+            Route::middleware('eshop.channel.role:cashier')->group(function () {
                 Route::get('/pos', [ChannelPortalPosController::class, 'index'])->name('pos.index');
                 Route::post('/pos/checkout', [ChannelPortalCheckoutController::class, 'process'])->name('pos.checkout');
                 Route::post('/pos/registers/open', [ChannelPortalCashRegisterController::class, 'open'])->name('pos.registers.open');

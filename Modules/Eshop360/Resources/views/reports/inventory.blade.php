@@ -1,11 +1,10 @@
-@php $slug = $instance->slug ?? ''; @endphp
+@php $slug = $instance->slug ?? ''; $currency = $eshopCurrency ?? 'FCFA'; @endphp
 <x-dashboard::layouts.master
     :title="__('Rapport d\'inventaire') . ' — ' . ($instance->name ?? 'B360')"
     :instance="$instance"
     :pageTitle="__('Rapport d\'inventaire')">
 
-    <div class="page-wrapper">
-        <div class="content">
+
             {{-- Page Header --}}
             <div class="page-header">
                 <div class="add-item d-flex">
@@ -163,7 +162,5 @@
                 </div>
                 @endif
             </div>
-        </div>
-    </div>
-
+    
 </x-dashboard::layouts.master>

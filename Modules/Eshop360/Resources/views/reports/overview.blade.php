@@ -1,11 +1,10 @@
-@php $slug = $instance->slug ?? ''; @endphp
+@php $slug = $instance->slug ?? ''; $currency = $eshopCurrency ?? 'FCFA'; @endphp
 <x-dashboard::layouts.master
     :title="__('Vue d\'ensemble') . ' — ' . ($instance->name ?? 'B360')"
     :instance="$instance"
     :pageTitle="__('Vue d\'ensemble')">
 
-    <div class="page-wrapper">
-        <div class="content">
+
             {{-- Page Header --}}
             <div class="page-header">
                 <div class="add-item d-flex">
@@ -251,8 +250,7 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
+     
 
     @if(!empty($data['daily_revenue']))
     @push('scripts')

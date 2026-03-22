@@ -212,7 +212,7 @@
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">{{ __('Montant mensuel ({{ $eshopCurrency ?? 'FCFA' }})') }} <span class="text-danger">*</span></label>
+                        <label class="form-label">{{ __('Montant mensuel') }} ({{ $eshopCurrency ?? 'FCFA' }}) <span class="text-danger">*</span></label>
                         <input type="number" name="amount_monthly" class="form-control" step="1" min="0" required>
                     </div>
                     <div class="mb-3">
@@ -258,7 +258,7 @@
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">{{ __('Montant mensuel ({{ $eshopCurrency ?? 'FCFA' }})') }} <span class="text-danger">*</span></label>
+                        <label class="form-label">{{ __('Montant mensuel') }} ({{ $eshopCurrency ?? 'FCFA' }}) <span class="text-danger">*</span></label>
                         <input type="number" name="amount_monthly" class="form-control" step="1" min="0" value="{{ $charge->amount_monthly }}" required>
                     </div>
                     <div class="mb-3">
