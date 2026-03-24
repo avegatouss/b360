@@ -18,6 +18,20 @@ final class DashboardController extends Controller
             abort(503, 'Instance non résolue.');
         }
 
+        // When hierarchical menu is enabled, redirect to the nav home instead of dashboard
+        $hmEnabled = (bool) config('eshop360.hierarchical_menu');
+        if (!$hmEnabled && class_exists(\Modules\Eshop360\Services\EshopSettingsService::class)) {
+            try {
+                $hmEnabled = (bool) app(\Modules\Eshop360\Services\EshopSettingsService::class)
+                    ->value('general', 'hierarchical_menu', false);
+            } catch (\Throwable) {
+                // DB not ready
+            }
+        }
+        if ($hmEnabled) {
+            return redirect()->route('eshop360.nav.home', $slug);
+        }
+
         $memberCount = DB::connection('system')
             ->table('instance_user')
             ->where('instance_id', $instance->id)

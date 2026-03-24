@@ -18,7 +18,7 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('channel_id')->constrained('eshop_distribution_channels')->cascadeOnDelete();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-            $table->enum('role', ['manager', 'operator', 'viewer'])->default('viewer');
+            $table->enum('role', ['member', 'manager', 'operator', 'viewer'])->default('viewer');
             $table->timestamps();
 
             $table->unique(['channel_id', 'user_id']);

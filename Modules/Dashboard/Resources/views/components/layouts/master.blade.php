@@ -312,6 +312,22 @@
     {{-- ============================================================ --}}
     {{-- SIDEBAR                                                      --}}
     {{-- ============================================================ --}}
+    @if(!empty($hierarchicalMenuEnabled))
+        {{-- Hierarchical menu mode: hide sidebar, show floating nav button --}}
+        <div class="sidebar" id="sidebar" style="display:none"></div>
+        <style>
+            .page-wrapper { margin-left: 0 !important; }
+            .header .header-left { display: none; }
+            #mobile_btn { display: none !important; }
+        </style>
+        <div style="position:fixed;bottom:24px;left:24px;z-index:1050;">
+            <a href="{{ route('eshop360.nav.home', $instance->slug ?? '') }}"
+               class="btn btn-primary d-flex align-items-center gap-2 shadow-lg"
+               style="border-radius:12px;padding:12px 20px;font-weight:600;">
+                <i class="ti ti-layout-grid fs-18"></i> Navigation
+            </a>
+        </div>
+    @else
     <div class="sidebar" id="sidebar">
 
         <!-- Logo -->
@@ -395,6 +411,7 @@
             </div>
         </div>
     </div>
+    @endif
     {{-- ============================================================ --}}
     {{-- /SIDEBAR                                                     --}}
     {{-- ============================================================ --}}

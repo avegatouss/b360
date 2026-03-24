@@ -18,6 +18,21 @@ final class CurrentInstance
         app()->instance('currentInstance', $instance);
     }
 
+    /**
+     * Get the current instance ID or throw if none is resolved.
+     * Use this instead of CurrentInstance::get()?->id ?? 0 to fail loud.
+     */
+    public static function idOrFail(): int
+    {
+        $instance = static::get();
+
+        if (!$instance?->id) {
+            abort(503, 'Instance non résolue — impossible de continuer.');
+        }
+
+        return (int) $instance->id;
+    }
+
     public static function clear(): void
     {
         app()->forgetInstance('currentInstance');

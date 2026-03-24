@@ -40,9 +40,19 @@ class CartController extends Controller
         ]);
 
         $product = Product::findOrFail($validated['product_id']);
-        $variation = isset($validated['variation_id'])
-            ? \Modules\Eshop360\Models\ProductVariation::find($validated['variation_id'])
-            : null;
+        $variation = null;
+        if (isset($validated['variation_id'])) {
+            $variation = \Modules\Eshop360\Models\ProductVariation::query()
+                ->where('product_id', $product->id)
+                ->where('is_active', true)
+                ->find($validated['variation_id']);
+
+            if (!$variation) {
+                return $this->respond($request, [
+                    'message' => __('Invalid variation for the selected product.'),
+                ], __('Invalid variation for the selected product.'), 422, 'error');
+            }
+        }
         $quantity = $validated['quantity'] ?? 1;
         $cart = $this->getCart();
         $requestedContext = $this->normalizeContext([
@@ -201,31 +211,19 @@ class CartController extends Controller
             'code' => 'required|string|max:50',
         ]);
 
+        $cartContext = $this->getCartContext();
+        $channelId = $cartContext['channel_id'] ?? null;
+
         $coupon = Coupon::where('code', $validated['code'])
-            ->where('is_active', true)
-            ->where(function ($q) {
-                $q->whereNull('valid_from')->orWhere('valid_from', '<=', now());
-            })
-            ->where(function ($q) {
-                $q->whereNull('valid_until')->orWhere('valid_until', '>=', now());
-            })
+            ->visibleToChannel($channelId)
+            ->valid()
             ->first();
 
-        if (! $coupon) {
+        if (!$coupon) {
             return $this->respond(
                 $request,
                 ['message' => __('Invalid or expired coupon code.')],
                 __('Invalid or expired coupon code.'),
-                422,
-                'error'
-            );
-        }
-
-        if ($coupon->usage_limit !== null && $coupon->usage_limit > 0 && $coupon->used_count >= $coupon->usage_limit) {
-            return $this->respond(
-                $request,
-                ['message' => __('Coupon usage limit reached.')],
-                __('Coupon usage limit reached.'),
                 422,
                 'error'
             );
@@ -284,9 +282,10 @@ class CartController extends Controller
     private function resolveItemKey(string $itemKey, Request $request): string
     {
         $productId = $request->input('product_id');
+        $variationId = $request->input('variation_id');
 
         if ($productId !== null && $productId !== '') {
-            return (string) $productId;
+            return $variationId ? "{$productId}_v{$variationId}" : (string) $productId;
         }
 
         return $itemKey;
@@ -429,21 +428,21 @@ class CartController extends Controller
 
     private function scopedCartKey(): string
     {
-        $instanceId = CurrentInstance::get()?->id ?? 0;
+        $instanceId = CurrentInstance::idOrFail();
 
         return 'eshop_cart_instance_' . $instanceId;
     }
 
     private function scopedCouponKey(): string
     {
-        $instanceId = CurrentInstance::get()?->id ?? 0;
+        $instanceId = CurrentInstance::idOrFail();
 
         return 'eshop_cart_coupon_instance_' . $instanceId;
     }
 
     private function scopedCartContextKey(): string
     {
-        $instanceId = CurrentInstance::get()?->id ?? 0;
+        $instanceId = CurrentInstance::idOrFail();
 
         return 'eshop_cart_context_instance_' . $instanceId;
     }

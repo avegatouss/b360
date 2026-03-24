@@ -26,21 +26,32 @@ class OrderUserAssignmentScope implements Scope
         $warehouseIds = $service->warehouseIds();
         $customerIds = $service->customerIds();
 
-        // No assignments at all = full access
+        // null = admin (full access)
         if ($storeIds === null && $warehouseIds === null && $customerIds === null) {
+            return;
+        }
+
+        // Collect all non-empty assignment sets for OR filtering
+        $hasAny = ($storeIds && $storeIds->isNotEmpty())
+            || ($warehouseIds && $warehouseIds->isNotEmpty())
+            || ($customerIds && $customerIds->isNotEmpty());
+
+        if (!$hasAny) {
+            // Non-admin with zero assignments → sees nothing
+            $builder->whereRaw('1 = 0');
             return;
         }
 
         $table = $model->getTable();
 
         $builder->where(function (Builder $q) use ($table, $storeIds, $warehouseIds, $customerIds) {
-            if ($storeIds !== null) {
+            if ($storeIds && $storeIds->isNotEmpty()) {
                 $q->orWhereIn("{$table}.store_id", $storeIds);
             }
-            if ($warehouseIds !== null) {
+            if ($warehouseIds && $warehouseIds->isNotEmpty()) {
                 $q->orWhereIn("{$table}.warehouse_id", $warehouseIds);
             }
-            if ($customerIds !== null) {
+            if ($customerIds && $customerIds->isNotEmpty()) {
                 $q->orWhereIn("{$table}.customer_id", $customerIds);
             }
         });

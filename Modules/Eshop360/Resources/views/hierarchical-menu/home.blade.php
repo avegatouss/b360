@@ -1,0 +1,39 @@
+@extends('eshop360::hierarchical-menu.layout')
+
+@section('breadcrumb')
+    <span class="hm-bc-current">Accueil</span>
+@endsection
+
+@section('content')
+    <div class="hm-page-header">
+        <div class="hm-logo">
+            <img src="{{ URL::asset('build/img/logo.svg') }}" alt="B360">
+        </div>
+        <h1>Bienvenue sur B360</h1>
+        <p>Sélectionnez un canal pour commencer</p>
+    </div>
+
+    @if($channels->isNotEmpty())
+        <div class="hm-grid hm-grid-lg">
+            @foreach($channels as $channel)
+                <a href="{{ route('eshop360.nav.modules', [$instance?->slug ?? '', $channel->slug]) }}"
+                   class="hm-card hm-card-channel"
+                   style="--card-accent: {{ $channel->portal_settings['theme_color'] ?? '#4f46e5' }}">
+                    <div class="hm-card-icon"
+                         style="background: {{ $channel->portal_settings['theme_color'] ?? '#4f46e5' }}">
+                        <i class="ti ti-building-store"></i>
+                    </div>
+                    <div class="hm-card-title">{{ $channel->name }}</div>
+                    @if($channel->code)
+                        <div class="hm-card-subtitle">{{ $channel->code }}</div>
+                    @endif
+                </a>
+            @endforeach
+        </div>
+    @else
+        <div class="hm-empty">
+            <i class="ti ti-building-store"></i>
+            <p>Aucun canal de distribution actif.<br>Configurez vos canaux dans les paramètres.</p>
+        </div>
+    @endif
+@endsection

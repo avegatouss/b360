@@ -7,15 +7,12 @@ use Illuminate\Http\Request;
 use Modules\Core\Support\CurrentInstance;
 use Modules\Eshop360\Models\Order;
 use Modules\Eshop360\Models\OrderItem;
-use Modules\Eshop360\Models\Product;
-use Modules\Eshop360\Services\MarginService;
-use Modules\Eshop360\Services\StockService;
+use Modules\Eshop360\Services\ChannelB2BService;
 
 class ChannelPortalOrderController extends Controller
 {
     public function __construct(
-        private MarginService $marginService,
-        private StockService $stockService,
+        private readonly ChannelB2BService $channelB2BService,
     ) {}
 
     /**
@@ -50,17 +47,14 @@ class ChannelPortalOrderController extends Controller
     public function create(Request $request)
     {
         $channel = $request->resolved_channel;
+        $hubCustomer = $this->channelB2BService->resolveHubCustomer($channel);
 
         $products = $channel->products()
             ->with('category')
             ->orderBy('name')
             ->get();
 
-        $customers = \Modules\Eshop360\Models\Customer::where(
-            'instance_id', $channel->instance_id
-        )->orderBy('name')->get();
-
-        return view('eshop360::channel-portal.orders.create', compact('channel', 'products', 'customers'));
+        return view('eshop360::channel-portal.orders.create', compact('channel', 'products', 'hubCustomer'));
     }
 
     /**
@@ -72,7 +66,6 @@ class ChannelPortalOrderController extends Controller
         $instance = CurrentInstance::get();
 
         $validated = $request->validate([
-            'customer_id' => 'nullable|integer|exists:eshop_customers,id',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|integer|exists:eshop_products,id',
             'items.*.quantity' => 'required|integer|min:1',
@@ -83,6 +76,10 @@ class ChannelPortalOrderController extends Controller
         $itemsData = [];
 
         foreach ($validated['items'] as $item) {
+            $product = $channel->products()
+                ->where('eshop_products.id', $item['product_id'])
+                ->firstOrFail();
+
             $channelPrice = $channel->productPrices()
                 ->where('product_id', $item['product_id'])
                 ->first();
@@ -93,18 +90,22 @@ class ChannelPortalOrderController extends Controller
 
             $itemsData[] = [
                 'product_id' => $item['product_id'],
+                'product_name' => $product->name,
+                'sku' => $product->sku ?? '',
                 'quantity' => $item['quantity'],
                 'price' => $price,
                 'total' => $lineTotal,
             ];
         }
 
+        $hubCustomer = $this->channelB2BService->resolveHubCustomer($channel);
+
         $order = Order::create([
             'instance_id' => $instance->id,
-            'customer_id' => $validated['customer_id'] ?? null,
+            'customer_id' => $hubCustomer?->id,
             'channel_id' => $channel->id,
             'warehouse_id' => $channel->warehouse_id,
-            'order_number' => 'CP-' . strtoupper($channel->slug) . '-' . now()->format('ymdHis'),
+            'order_number' => $this->channelB2BService->buildSupplyOrderNumber($channel),
             'status' => 'pending',
             'payment_status' => 'unpaid',
             'subtotal' => $subtotal,
@@ -123,8 +124,10 @@ class ChannelPortalOrderController extends Controller
             OrderItem::create([
                 'order_id' => $order->id,
                 'product_id' => $itemData['product_id'],
+                'product_name' => $itemData['product_name'],
+                'sku' => $itemData['sku'],
                 'quantity' => $itemData['quantity'],
-                'price' => $itemData['price'],
+                'unit_price' => $itemData['price'],
                 'total' => $itemData['total'],
             ]);
         }
@@ -160,37 +163,20 @@ class ChannelPortalOrderController extends Controller
 
         $order = Order::forChannel($channel->id)->findOrFail($orderId);
 
-        $order->update([
-            'status' => 'completed',
-            'delivered_at' => now(),
-        ]);
-
-        // Trigger margin calculation
-        $this->marginService->syncOrderMargins($order);
-
-        // Auto-increment stock in channel's warehouse
-        if ($channel->warehouse_id) {
-            $order->load('items.product');
-            foreach ($order->items as $item) {
-                if ($item->product) {
-                    $this->stockService->adjustStock(
-                        $item->product,
-                        $channel->warehouse_id,
-                        $item->quantity,
-                        'in',
-                        "Réception canal: Commande #{$order->order_number}",
-                        auth()->id(),
-                        Order::class,
-                        $order->id,
-                    );
-                }
-            }
+        try {
+            $this->channelB2BService->receiveSupplyOrder($order, $channel, auth()->id());
+        } catch (\RuntimeException $e) {
+            return redirect()->route('eshop360.channel-portal.orders.show', [
+                $instance->slug,
+                $channel->slug ?? $channel->id,
+                $order->id,
+            ])->with('error', $e->getMessage());
         }
 
         return redirect()->route('eshop360.channel-portal.orders.show', [
             $instance->slug,
             $channel->slug ?? $channel->id,
             $order->id,
-        ])->with('success', 'Reception confirmee. Les marges ont ete calculees.');
+        ])->with('success', 'Reception confirmee. Le stock du canal a ete alimente depuis son approvisionnement Saphir Plus.');
     }
 }

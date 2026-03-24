@@ -32,7 +32,8 @@ class OnlineOrderService
             foreach ($items as $item) {
                 $product = Product::findOrFail($item['product_id']);
                 $pricing = $pricingService->resolve($product, $channelId);
-                $unitPrice = round((float) ($item['unit_price'] ?? $pricing['unit_price']), 2);
+                // Always use server-side pricing — never accept client-supplied prices
+                $unitPrice = round((float) $pricing['unit_price'], 2);
                 $total = $unitPrice * $item['quantity'];
                 $tax = $total * ($product->tax_rate / 100);
                 $subtotal += $total;

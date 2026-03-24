@@ -65,14 +65,12 @@ class Customer extends Model
     }
 
     /**
-     * Scope: customers visible to a given channel (channel's own + shared).
+     * Scope: customers visible to a given channel.
+     * A channel must never inherit Saphir Plus customers by default.
      */
     public function scopeVisibleToChannel($query, int $channelId)
     {
-        return $query->where(function ($q) use ($channelId) {
-            $q->where('channel_id', $channelId)
-              ->orWhereNull('channel_id');
-        });
+        return $query->where('channel_id', $channelId);
     }
 
     public function orders(): HasMany

@@ -308,7 +308,7 @@ class PurchaseController extends Controller
             $purchase->update(['warehouse_id' => $validated['warehouse_id']]);
 
             foreach ($validated['items'] as $itemData) {
-                $item = PurchaseItem::find($itemData['purchase_item_id']);
+                $item = $purchase->items()->findOrFail($itemData['purchase_item_id']);
                 $qty = (int) $itemData['received_qty'];
 
                 if ($qty <= 0) {

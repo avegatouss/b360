@@ -133,7 +133,7 @@ class HoldingService
      */
     private function storeSnapshotInSession(array $cart, ?array $coupon, ?array $context): void
     {
-        $instanceId = CurrentInstance::get()?->id ?? 0;
+        $instanceId = CurrentInstance::idOrFail();
 
         session()->put('eshop_cart', $cart);
         session()->put('eshop_cart_instance_' . $instanceId, $cart);

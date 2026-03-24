@@ -17,7 +17,9 @@ return new class extends Migration {
         });
 
         // Change the type column from enum of template names to enum of categories
-        DB::statement("ALTER TABLE eshop_email_templates MODIFY COLUMN `type` ENUM('transactional','marketing','system') NOT NULL DEFAULT 'transactional'");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE eshop_email_templates MODIFY COLUMN `type` ENUM('transactional','marketing','system') NOT NULL DEFAULT 'transactional'");
+        }
     }
 
     public function down(): void
@@ -27,6 +29,8 @@ return new class extends Migration {
             $table->dropColumn('variables');
         });
 
-        DB::statement("ALTER TABLE eshop_email_templates MODIFY COLUMN `type` ENUM('invoice','password_reset','product_list','report','birthday','order_status','welcome') NOT NULL");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE eshop_email_templates MODIFY COLUMN `type` ENUM('invoice','password_reset','product_list','report','birthday','order_status','welcome') NOT NULL");
+        }
     }
 };

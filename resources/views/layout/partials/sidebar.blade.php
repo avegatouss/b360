@@ -1,4 +1,19 @@
 @if (! Route::is(['pos','pos-2','pos-3','pos-4','pos-5']))
+        @if(!empty($hierarchicalMenuEnabled))
+            {{-- Hierarchical menu mode: hide sidebar, show nav button --}}
+            <div class="sidebar" id="sidebar" style="display:none"></div>
+            <style>
+                .page-wrapper { margin-left: 0 !important; }
+                .header .header-left { display: none; }
+            </style>
+            <div class="hm-sidebar-toggle" style="position:fixed;bottom:24px;left:24px;z-index:1050;">
+                <a href="{{ route('eshop360.nav.home', Modules\Core\Support\CurrentInstance::get()?->slug ?? '') }}"
+                   class="btn btn-primary d-flex align-items-center gap-2 shadow-lg"
+                   style="border-radius:12px;padding:12px 20px;font-weight:600;">
+                    <i class="ti ti-layout-grid fs-18"></i> Navigation
+                </a>
+            </div>
+        @else
         <!-- Sidebar -->
         <div class="sidebar" id="sidebar">
                 <!-- Logo -->
@@ -808,6 +823,7 @@
                 </div>
         </div>
         <!-- /Sidebar -->
+        @endif {{-- end @else hierarchicalMenuEnabled --}}
 @endif
 
 @if (Route::is(['pos','pos-2','pos-3','pos-4','pos-5']))

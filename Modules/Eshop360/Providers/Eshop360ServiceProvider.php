@@ -19,6 +19,8 @@ use Modules\Eshop360\Console\Commands\GenerateRecurringInvoices;
 use Modules\Eshop360\Http\Middleware\EnsurePaidFeature;
 use Modules\Eshop360\Services\AuditService;
 use Modules\Eshop360\Services\CartService;
+use Modules\Eshop360\Services\ChannelAccessService;
+use Modules\Eshop360\Services\ChannelB2BService;
 use Modules\Eshop360\Services\EshopSettingsService;
 use Modules\Eshop360\Services\WebhookService;
 use Modules\Eshop360\Services\CashRegisterService;
@@ -52,6 +54,8 @@ final class Eshop360ServiceProvider extends ServiceProvider
 
         // Core services
         $this->app->singleton(\Modules\Eshop360\Services\UserResourceScopeService::class);
+        $this->app->singleton(ChannelAccessService::class);
+        $this->app->singleton(ChannelB2BService::class);
         $this->app->singleton(EshopSettingsService::class);
         $this->app->singleton(WebhookService::class);
         $this->app->singleton(CartService::class);
@@ -124,6 +128,7 @@ final class Eshop360ServiceProvider extends ServiceProvider
         $router->aliasMiddleware('eshop.channel.resolve', \Modules\Eshop360\Http\Middleware\ResolveChannel::class);
         $router->aliasMiddleware('eshop.channel.member', \Modules\Eshop360\Http\Middleware\ChannelMember::class);
         $router->aliasMiddleware('eshop.channel.role', \Modules\Eshop360\Http\Middleware\ChannelRole::class);
+        $router->aliasMiddleware('eshop.channel.feature', \Modules\Eshop360\Http\Middleware\EnsureChannelFeature::class);
         $router->aliasMiddleware('eshop.user.assignments', \Modules\Eshop360\Http\Middleware\ResolveUserAssignments::class);
 
         // Register console commands
@@ -160,6 +165,19 @@ final class Eshop360ServiceProvider extends ServiceProvider
             if (!$view->offsetExists('instance')) {
                 $view->with('instance', CurrentInstance::get());
             }
+        });
+
+        // Share hierarchical menu flag with all layouts that contain a sidebar
+        View::composer(['layout.partials.sidebar', 'dashboard::components.layouts.master'], function ($view) {
+            $enabled = (bool) config('eshop360.hierarchical_menu');
+            if (!$enabled) {
+                try {
+                    $enabled = (bool) app(EshopSettingsService::class)->value('general', 'hierarchical_menu', false);
+                } catch (\Throwable) {
+                    // DB not ready yet (install phase)
+                }
+            }
+            $view->with('hierarchicalMenuEnabled', $enabled);
         });
     }
 }

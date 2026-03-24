@@ -11,6 +11,9 @@ class EshopSettingsService
     private const CACHE_TTL = 3600; // 1 hour
 
     private static array $defaults = [
+        'general' => [
+            'hierarchical_menu' => false,
+        ],
         'pos' => [
             'default_layout'          => 'layout1',
             'default_warehouse_id'    => null,
@@ -69,6 +72,24 @@ class EshopSettingsService
             'bank_account'       => '',
             'bank_iban'          => '',
         ],
+        'features' => [
+            'portal' => true,
+            'shop' => true,
+            'orders' => true,
+            'online_orders' => true,
+            'stock' => true,
+            'stock_adjustments' => true,
+            'sales' => true,
+            'customers' => true,
+            'pos' => true,
+            'promotions' => true,
+            'settings' => true,
+            'reports' => true,
+            'margins' => true,
+            'finance' => false,
+            'hr' => false,
+            'support' => false,
+        ],
     ];
 
     /**
@@ -76,7 +97,7 @@ class EshopSettingsService
      */
     public function get(string $group, ?int $instanceId = null): array
     {
-        $instanceId ??= CurrentInstance::get()?->id ?? 0;
+        $instanceId ??= CurrentInstance::idOrFail();
         $cacheKey = $this->cacheKey($group, $instanceId);
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($group, $instanceId) {
@@ -95,7 +116,7 @@ class EshopSettingsService
      */
     public function set(string $group, array $data, ?int $instanceId = null): void
     {
-        $instanceId ??= CurrentInstance::get()?->id ?? 0;
+        $instanceId ??= CurrentInstance::idOrFail();
 
         EshopModuleSetting::updateOrCreate(
             ['instance_id' => $instanceId, 'group' => $group],
@@ -130,7 +151,7 @@ class EshopSettingsService
      */
     public function forget(string $group, ?int $instanceId = null): void
     {
-        $instanceId ??= CurrentInstance::get()?->id ?? 0;
+        $instanceId ??= CurrentInstance::idOrFail();
         Cache::forget($this->cacheKey($group, $instanceId));
     }
 
@@ -139,7 +160,7 @@ class EshopSettingsService
      */
     public function getForChannel(string $group, int $channelId, ?int $instanceId = null): array
     {
-        $instanceId ??= CurrentInstance::get()?->id ?? 0;
+        $instanceId ??= CurrentInstance::idOrFail();
         $cacheKey = $this->channelCacheKey($group, $instanceId, $channelId);
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($group, $instanceId, $channelId) {
@@ -163,7 +184,7 @@ class EshopSettingsService
      */
     public function setForChannel(string $group, array $data, int $channelId, ?int $instanceId = null): void
     {
-        $instanceId ??= CurrentInstance::get()?->id ?? 0;
+        $instanceId ??= CurrentInstance::idOrFail();
 
         EshopModuleSetting::updateOrCreate(
             ['instance_id' => $instanceId, 'group' => $group, 'channel_id' => $channelId],
@@ -190,8 +211,28 @@ class EshopSettingsService
      */
     public function forgetChannel(string $group, int $channelId, ?int $instanceId = null): void
     {
-        $instanceId ??= CurrentInstance::get()?->id ?? 0;
+        $instanceId ??= CurrentInstance::idOrFail();
         Cache::forget($this->channelCacheKey($group, $instanceId, $channelId));
+    }
+
+    public function isChannelFeatureEnabled(string $feature, int $channelId, bool $default = false): bool
+    {
+        return (bool) $this->channelValue('features', $feature, $channelId, $default);
+    }
+
+    /**
+     * @param  array<string, bool>  $features
+     */
+    public function setChannelFeatures(array $features, int $channelId, ?int $instanceId = null): void
+    {
+        $current = $this->getForChannel('features', $channelId, $instanceId);
+        $normalized = [];
+
+        foreach ($features as $key => $value) {
+            $normalized[$key] = (bool) $value;
+        }
+
+        $this->setForChannel('features', array_merge($current, $normalized), $channelId, $instanceId);
     }
 
     private function cacheKey(string $group, int $instanceId): string

@@ -41,7 +41,9 @@ class UserResourceScopeService
     }
 
     /**
-     * Get assigned store IDs. Returns null if user sees all stores.
+     * Get assigned store IDs.
+     * Returns null for admins (full access).
+     * Returns empty collection if no assignments (no access).
      */
     public function storeIds(): ?Collection
     {
@@ -51,15 +53,13 @@ class UserResourceScopeService
 
         $this->resolveAssignments();
 
-        if ($this->storeAssignments->isEmpty()) {
-            return null; // No assignments = all access
-        }
-
         return $this->storeAssignments;
     }
 
     /**
-     * Get assigned warehouse IDs. Returns null if user sees all warehouses.
+     * Get assigned warehouse IDs.
+     * Returns null for admins (full access).
+     * Returns empty collection if no assignments (no access).
      */
     public function warehouseIds(): ?Collection
     {
@@ -69,15 +69,13 @@ class UserResourceScopeService
 
         $this->resolveAssignments();
 
-        if ($this->warehouseAssignments->isEmpty()) {
-            return null;
-        }
-
         return $this->warehouseAssignments;
     }
 
     /**
-     * Get assigned customer IDs. Returns null if user sees all customers.
+     * Get assigned customer IDs.
+     * Returns null for admins (full access).
+     * Returns empty collection if no assignments (no access).
      */
     public function customerIds(): ?Collection
     {
@@ -86,10 +84,6 @@ class UserResourceScopeService
         }
 
         $this->resolveAssignments();
-
-        if ($this->customerAssignments->isEmpty()) {
-            return null;
-        }
 
         return $this->customerAssignments;
     }

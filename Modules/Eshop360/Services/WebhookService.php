@@ -32,7 +32,7 @@ class WebhookService
      */
     public function dispatch(string $event, array $payload = []): void
     {
-        $instanceId = CurrentInstance::get()?->id ?? 0;
+        $instanceId = CurrentInstance::idOrFail();
 
         $webhooks = Webhook::where('instance_id', $instanceId)
             ->where('is_active', true)

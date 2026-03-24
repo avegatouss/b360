@@ -4,6 +4,7 @@ namespace Modules\Eshop360\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Modules\Eshop360\Services\ChannelAccessService;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -12,6 +13,10 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final class ChannelMember
 {
+    public function __construct(
+        private readonly ChannelAccessService $access,
+    ) {}
+
     public function handle(Request $request, Closure $next): Response
     {
         $channel = $request->resolved_channel;
@@ -26,19 +31,13 @@ final class ChannelMember
             abort(403, 'You are not a member of this channel');
         }
 
-        // Instance-admins bypass channel membership check
-        if ($user->hasRole('instance-admin') || $user->hasRole('super-admin')) {
-            $request->merge(['channel_user_role' => 'admin']);
-            return $next($request);
-        }
-
-        $channelUser = $channel->channelUsers()->where('user_id', $user->id)->first();
-
-        if (!$channelUser) {
+        if (!$this->access->canAccessChannel($user, $channel)) {
             abort(403, 'You are not a member of this channel');
         }
 
-        $request->merge(['channel_user_role' => $channelUser->role ?? 'viewer']);
+        $request->merge([
+            'channel_user_role' => $this->access->roleForChannel($user, $channel) ?? 'viewer',
+        ]);
 
         return $next($request);
     }

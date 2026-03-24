@@ -22,6 +22,7 @@ use Modules\Eshop360\Models\Warehouse;
 use Modules\Eshop360\Services\CartService;
 use Modules\Eshop360\Services\CashRegisterService;
 use Modules\Eshop360\Services\HoldingService;
+use Modules\Eshop360\Services\ProductPricingService;
 use Modules\Eshop360\Services\UserResourceScopeService;
 
 class PosController extends Controller
@@ -139,7 +140,7 @@ class PosController extends Controller
             'notes' => 'nullable|string|max:1000',
         ]);
 
-        $instanceId = CurrentInstance::get()?->id ?? 0;
+        $instanceId = CurrentInstance::idOrFail();
 
         $register = $this->cashRegisterService->open(
             $instanceId,
@@ -197,7 +198,7 @@ class PosController extends Controller
             'notes' => 'nullable|string|max:1000',
         ]);
 
-        $instanceId = CurrentInstance::get()?->id ?? 0;
+        $instanceId = CurrentInstance::idOrFail();
         $coupon = $this->cartService->getCoupon();
         $cartContext = $this->cartService->getContext();
         $totals = $this->cartService->calculateTotals($cart, $coupon);
@@ -245,7 +246,7 @@ class PosController extends Controller
      */
     private function posData(Request $request): array
     {
-        $instanceId = CurrentInstance::get()?->id ?? 0;
+        $instanceId = CurrentInstance::idOrFail();
         $settings = $this->eshopSettings->get('pos');
         $perPage = $request->integer('per_page', (int) ($settings['products_per_page'] ?? 24));
 
@@ -306,6 +307,19 @@ class PosController extends Controller
         $cart = $this->cartService->getCart();
         $coupon = $this->cartService->getCoupon();
         $cartContext = $this->cartService->getContext();
+        $activeChannelId = $request->filled('channel_id')
+            ? $request->integer('channel_id')
+            : ($cartContext['channel_id'] ?? null);
+
+        $products->getCollection()->transform(function (Product $product) use ($activeChannelId) {
+            $pricing = app(ProductPricingService::class)->resolve($product, $activeChannelId, true);
+            $product->setAttribute('display_price', (float) $pricing['unit_price']);
+            $product->setAttribute('display_original_price', (float) $pricing['original_price']);
+            $product->setAttribute('display_price_source', $pricing['price_source']);
+
+            return $product;
+        });
+
         $totals = $this->cartService->calculateTotals($cart, $coupon);
         $currentRegister = $this->cashRegisterService->getCurrentRegister();
         $currentRegisterExpected = $currentRegister ? $this->cashRegisterService->expectedAmount($currentRegister) : null;

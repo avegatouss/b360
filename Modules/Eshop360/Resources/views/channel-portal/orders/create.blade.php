@@ -3,8 +3,8 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h4 class="fw-bold mb-1">{{ __('Nouvelle commande') }}</h4>
-        <p class="text-muted mb-0">{{ __('Commander des produits du catalogue') }} &mdash; {{ $channel->name }}</p>
+        <h4 class="fw-bold mb-1">{{ __('Nouvelle commande d\'approvisionnement') }}</h4>
+        <p class="text-muted mb-0">{{ __('Commander des produits Saphir Plus pour alimenter le stock du canal') }} &mdash; {{ $channel->name }}</p>
     </div>
     <a href="{{ route('eshop360.channel-portal.orders.index', [request()->route('slug'), $channel->slug ?? $channel->id]) }}" class="btn btn-outline-secondary btn-sm">
         <i class="ti ti-arrow-left me-1"></i>{{ __('Retour') }}
@@ -91,15 +91,13 @@
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <label class="form-label">{{ __('Client') }}</label>
-                        <select name="customer_id" class="form-select cp-select2" data-placeholder="{{ __('Sélectionner un client') }}">
-                            <option value=""></option>
-                            @foreach($customers as $customer)
-                                <option value="{{ $customer->id }}" {{ old('customer_id') == $customer->id ? 'selected' : '' }}>
-                                    {{ $customer->name }}
-                                </option>
-                            @endforeach
-                        </select>
+                        <label class="form-label">{{ __('Compte client hub') }}</label>
+                        <input
+                            type="text"
+                            class="form-control"
+                            value="{{ $hubCustomer?->name ?? $channel->name }}"
+                            readonly>
+                        <div class="form-text">{{ __('Le canal commande ici comme client B2B de Saphir Plus.') }}</div>
                     </div>
 
                     <div class="mb-3">
@@ -119,7 +117,7 @@
                     </div>
 
                     <button type="submit" class="btn btn-primary w-100" id="submitBtn" disabled>
-                        <i class="ti ti-check me-1"></i>{{ __('Passer la commande') }}
+                        <i class="ti ti-check me-1"></i>{{ __('Envoyer l\'approvisionnement') }}
                     </button>
                 </div>
             </div>

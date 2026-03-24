@@ -869,6 +869,18 @@ final class Eshop360HooksProvider implements RegistersHooks
             parentId: 'eshop360.portails',
         ));
 
+        $registry->addMenu(new MenuItem(
+            id: 'eshop360.portails.general_settings',
+            label: 'Paramètres généraux',
+            route: 'eshop360.settings.general',
+            priority: 770,
+            requiredPermission: 'eshop.settings.manage',
+            requiredModule: 'Eshop360',
+            group: 'main',
+            activePattern: 'eshop360.settings.general*',
+            parentId: 'eshop360.portails',
+        ));
+
         // =====================================================================
         // Communication
         // =====================================================================

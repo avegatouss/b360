@@ -244,7 +244,7 @@ class InvoiceController extends Controller
 
     public function settings()
     {
-        $instanceId = CurrentInstance::get()?->id ?? 0;
+        $instanceId = CurrentInstance::idOrFail();
         $settings = $this->eshopSettings->get('invoice');
 
         return view('eshop360::invoices.settings', compact('settings'));
@@ -271,7 +271,7 @@ class InvoiceController extends Controller
             $validated['company_logo'] = $request->file('company_logo')->store('invoice_settings', 'public');
         }
 
-        $instanceId = CurrentInstance::get()?->id ?? 0;
+        $instanceId = CurrentInstance::idOrFail();
         $this->eshopSettings->set('invoice', $validated);
 
         return redirect()->route('eshop360.invoices.settings')

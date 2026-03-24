@@ -1,4 +1,8 @@
-@php $slug = $instance->slug ?? ''; $currency = $eshopCurrency ?? 'FCFA'; @endphp
+@php
+    $slug = $instance->slug ?? '';
+    $currency = function_exists('currency') ? currency($instance->id ?? null) : ($eshopCurrency ?? 'XAF');
+    $money = fn ($amount) => number_format((float) $amount, 2, '.', '');
+@endphp
 <x-dashboard::layouts.master
     :title="__('Vue d\'ensemble') . ' — ' . ($instance->name ?? 'B360')"
     :instance="$instance"
@@ -55,7 +59,7 @@
                                 </div>
                                 <div class="ms-3">
                                     <p class="text-muted mb-1 small">{{ __('Ventes totales') }}</p>
-                                    <h4 class="fw-bold mb-0">{{ number_format($data['total_sales'] ?? 0, 0, ',', ' ') }}</h4>
+                                    <h4 class="fw-bold mb-0">{{ $money($data['total_sales'] ?? 0) }}</h4>
                                 </div>
                             </div>
                         </div>
@@ -72,7 +76,7 @@
                                 </div>
                                 <div class="ms-3">
                                     <p class="text-muted mb-1 small">{{ __('Achats totaux') }}</p>
-                                    <h4 class="fw-bold mb-0">{{ number_format($data['total_purchases'] ?? 0, 0, ',', ' ') }}</h4>
+                                    <h4 class="fw-bold mb-0">{{ $money($data['total_purchases'] ?? 0) }}</h4>
                                 </div>
                             </div>
                         </div>
@@ -89,7 +93,7 @@
                                 </div>
                                 <div class="ms-3">
                                     <p class="text-muted mb-1 small">{{ __('Depenses') }}</p>
-                                    <h4 class="fw-bold mb-0">{{ number_format($data['total_expenses'] ?? 0, 0, ',', ' ') }}</h4>
+                                    <h4 class="fw-bold mb-0">{{ $money($data['total_expenses'] ?? 0) }}</h4>
                                 </div>
                             </div>
                         </div>
@@ -107,7 +111,7 @@
                                 </div>
                                 <div class="ms-3">
                                     <p class="text-muted mb-1 small">{{ __('Benefice net') }}</p>
-                                    <h4 class="fw-bold mb-0 text-{{ $netProfit >= 0 ? 'success' : 'danger' }}">{{ number_format($netProfit, 0, ',', ' ') }}</h4>
+                                    <h4 class="fw-bold mb-0 text-{{ $netProfit >= 0 ? 'success' : 'danger' }}">{{ $money($netProfit) }}</h4>
                                 </div>
                             </div>
                         </div>
@@ -145,7 +149,7 @@
                     <div class="card border-0 shadow-sm border-start border-success border-3 h-100">
                         <div class="card-body">
                             <p class="text-muted mb-1 small">{{ __('CA encaisse') }}</p>
-                            <h4 class="fw-bold mb-0">{{ number_format($data['revenue_collected'] ?? 0, 0, ',', ' ') }}</h4>
+                            <h4 class="fw-bold mb-0">{{ $money($data['revenue_collected'] ?? 0) }}</h4>
                         </div>
                     </div>
                 </div>
@@ -153,7 +157,7 @@
                     <div class="card border-0 shadow-sm border-start border-danger border-3 h-100">
                         <div class="card-body">
                             <p class="text-muted mb-1 small">{{ __('Impayes') }}</p>
-                            <h4 class="fw-bold mb-0 text-danger">{{ number_format($data['outstanding_dues'] ?? 0, 0, ',', ' ') }}</h4>
+                            <h4 class="fw-bold mb-0 text-danger">{{ $money($data['outstanding_dues'] ?? 0) }}</h4>
                         </div>
                     </div>
                 </div>
@@ -200,7 +204,7 @@
                                             <td><span class="badge bg-secondary">{{ $i + 1 }}</span></td>
                                             <td>{{ $product['name'] ?? '---' }}</td>
                                             <td class="text-end">{{ number_format($product['quantity'] ?? 0, 0, ',', ' ') }}</td>
-                                            <td class="text-end fw-semibold">{{ number_format($product['revenue'] ?? 0, 0, ',', ' ') }}</td>
+                                            <td class="text-end fw-semibold">{{ $money($product['revenue'] ?? 0) }}</td>
                                         </tr>
                                         @empty
                                         <tr><td colspan="4" class="text-center text-muted py-3">{{ __('Aucune donnee') }}</td></tr>
@@ -238,7 +242,7 @@
                                             <td><span class="badge bg-secondary">{{ $i + 1 }}</span></td>
                                             <td>{{ $customer['name'] ?? '---' }}</td>
                                             <td class="text-end">{{ number_format($customer['orders'] ?? 0, 0, ',', ' ') }}</td>
-                                            <td class="text-end fw-semibold">{{ number_format($customer['total'] ?? 0, 0, ',', ' ') }}</td>
+                                            <td class="text-end fw-semibold">{{ $money($customer['total'] ?? 0) }}</td>
                                         </tr>
                                         @empty
                                         <tr><td colspan="4" class="text-center text-muted py-3">{{ __('Aucune donnee') }}</td></tr>

@@ -44,23 +44,29 @@ class Coupon extends Model
     }
 
     /**
-     * Scope: coupons visible to a channel (channel's own + instance-wide).
+     * Scope: coupons visible inside a channel.
+     * Channel coupons are isolated from Saphir Plus coupons by default.
      */
     public function scopeVisibleToChannel(Builder $query, ?int $channelId): Builder
     {
-        return $query->where(function ($q) use ($channelId) {
-            $q->whereNull('channel_id');
-            if ($channelId) {
-                $q->orWhere('channel_id', $channelId);
-            }
-        });
+        if ($channelId) {
+            return $query->where('channel_id', $channelId);
+        }
+
+        return $query->whereNull('channel_id');
     }
 
     public function scopeValid(Builder $query): Builder
     {
         return $query->where('is_active', true)
-            ->where('valid_from', '<=', now())
-            ->where('valid_until', '>=', now())
+            ->where(function ($q) {
+                $q->whereNull('valid_from')
+                    ->orWhere('valid_from', '<=', now());
+            })
+            ->where(function ($q) {
+                $q->whereNull('valid_until')
+                    ->orWhere('valid_until', '>=', now());
+            })
             ->where(function ($q) {
                 $q->whereNull('usage_limit')
                   ->orWhereColumn('used_count', '<', 'usage_limit');

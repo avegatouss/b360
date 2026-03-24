@@ -23,7 +23,8 @@ class ChannelPortalCustomerController extends Controller
             ->distinct()
             ->pluck('customer_id');
 
-        $query = Customer::whereIn('id', $customerIds);
+        $query = Customer::where('channel_id', $channel->id)
+            ->whereIn('id', $customerIds);
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -65,7 +66,7 @@ class ChannelPortalCustomerController extends Controller
     {
         $channel = $request->resolved_channel;
 
-        $customer = Customer::findOrFail($customerId);
+        $customer = Customer::where('channel_id', $channel->id)->findOrFail($customerId);
 
         $orders = Order::forChannel($channel->id)
             ->where('customer_id', $customerId)

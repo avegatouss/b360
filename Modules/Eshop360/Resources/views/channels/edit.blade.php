@@ -93,6 +93,27 @@
                 </div>
             </div>
 
+            <hr class="my-4">
+            <h5 class="mb-3"><i class="ti ti-toggle-left me-1"></i>{{ __('Fonctionnalites du canal') }}</h5>
+
+            <div class="row">
+                @foreach(($featureDefinitions ?? []) as $featureKey => $featureLabel)
+                    <div class="col-md-4 mb-3">
+                        <div class="form-check form-switch mt-2">
+                            <input type="hidden" name="features[{{ $featureKey }}]" value="0">
+                            <input
+                                class="form-check-input"
+                                type="checkbox"
+                                name="features[{{ $featureKey }}]"
+                                value="1"
+                                id="feature_{{ $featureKey }}"
+                                {{ old('features.' . $featureKey, $featureSettings[$featureKey] ?? false) ? 'checked' : '' }}>
+                            <label class="form-check-label" for="feature_{{ $featureKey }}">{{ $featureLabel }}</label>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-primary"><i class="ti ti-check me-1"></i>{{ __('Mettre à jour') }}</button>
                 <a href="{{ route('eshop360.channels.show', [$instance->slug ?? '', $channel]) }}" class="btn btn-secondary">Annuler</a>

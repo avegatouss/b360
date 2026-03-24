@@ -76,7 +76,7 @@ class DistributionChannel extends Model
 
     public function users(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'eshop_channel_users')
+        return $this->belongsToMany(User::class, 'eshop_channel_users', 'channel_id', 'user_id')
             ->withPivot('role')
             ->withTimestamps();
     }

@@ -7,6 +7,7 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Log;
 use Modules\Eshop360\Models\EshopPaymentGateway;
 use Modules\Eshop360\Models\Invoice;
+use Modules\Eshop360\Models\Payment;
 use Modules\Eshop360\Services\Payment\PaymentGatewayManager;
 
 class PublicPaymentController extends Controller
@@ -91,7 +92,13 @@ class PublicPaymentController extends Controller
                 'gateway_reference' => $result['transaction_id'] ?? null,
                 'status' => 'pending',
                 'notes' => "Paiement via {$gateway->display_name}",
-                'metadata' => ['initiation' => $result, 'gateway_id' => $gateway->id],
+                'metadata' => [
+                    'initiation' => $result,
+                    'gateway_id' => $gateway->id,
+                    'instance_id' => $invoice->instance_id,
+                    'invoice_id' => $invoice->id,
+                    'payment_token' => $invoice->payment_token,
+                ],
             ]);
 
             // Redirect to gateway if URL provided
@@ -130,11 +137,7 @@ class PublicPaymentController extends Controller
             ->where('driver', $gateway)->where('is_active', true)->first();
 
         if ($gatewayConfig) {
-            $payment = $invoice->payments()
-                ->where('gateway', $gateway)
-                ->where('status', 'pending')
-                ->latest()
-                ->first();
+            $payment = $this->resolveInvoicePayment($invoice, $gatewayConfig);
 
             if ($payment && $payment->gateway_reference) {
                 try {
@@ -190,15 +193,18 @@ class PublicPaymentController extends Controller
                 }
 
                 $transactionId = $result['transaction_id'] ?? null;
-                if (!$transactionId) {
+                $reference = $result['reference'] ?? null;
+
+                if (!$transactionId && !$reference) {
                     continue;
                 }
 
-                // Find the matching payment
-                $payment = \Modules\Eshop360\Models\Payment::where('gateway', $gateway)
-                    ->where('gateway_reference', $transactionId)
-                    ->where('status', 'pending')
-                    ->first();
+                $payment = $this->resolveWebhookPayment(
+                    $config,
+                    $gateway,
+                    $transactionId,
+                    $reference
+                );
 
                 if (!$payment) {
                     continue;
@@ -233,11 +239,30 @@ class PublicPaymentController extends Controller
      */
     public function success(string $token)
     {
-        $invoice = Invoice::where('payment_token', $token)->first();
+        $invoice = Invoice::where('payment_token', $token)
+            ->with('payments')
+            ->first();
+
+        $message = 'Paiement effectue avec succes.';
+
+        if (!$invoice) {
+            return view('eshop360::payment.failed', [
+                'message' => 'Facture introuvable.',
+                'token' => $token,
+            ]);
+        }
+
+        if ($invoice->status === 'paid') {
+            $message = 'Paiement confirme.';
+        } elseif ($invoice->payments->contains(fn (Payment $payment) => $payment->status === 'pending')) {
+            $message = 'Votre paiement est en cours de traitement.';
+        } elseif ($invoice->payments->contains(fn (Payment $payment) => $payment->status === 'failed')) {
+            $message = 'Le paiement a echoue ou a ete annule.';
+        }
 
         return view('eshop360::payment.success', [
             'invoice' => $invoice,
-            'message' => 'Paiement effectue avec succes.',
+            'message' => $message,
         ]);
     }
 
@@ -264,5 +289,54 @@ class PublicPaymentController extends Controller
             'due_amount' => round($dueAmount, 2),
             'status' => $status,
         ]);
+    }
+
+    private function resolveInvoicePayment(Invoice $invoice, EshopPaymentGateway $gatewayConfig): ?Payment
+    {
+        return $invoice->payments()
+            ->where('gateway', $gatewayConfig->driver)
+            ->where('status', 'pending')
+            ->get()
+            ->filter(function (Payment $payment) use ($gatewayConfig): bool {
+                $metadata = is_array($payment->metadata) ? $payment->metadata : [];
+
+                return (int) ($metadata['gateway_id'] ?? 0) === (int) $gatewayConfig->id;
+            })
+            ->sortByDesc('id')
+            ->first();
+    }
+
+    private function resolveWebhookPayment(
+        EshopPaymentGateway $config,
+        string $gateway,
+        ?string $transactionId,
+        ?string $reference
+    ): ?Payment {
+        $payments = Payment::query()
+            ->where('instance_id', $config->instance_id)
+            ->where('gateway', $gateway)
+            ->where('status', 'pending')
+            ->when($transactionId, fn ($query) => $query->where('gateway_reference', $transactionId))
+            ->latest()
+            ->get();
+
+        return $payments->first(function (Payment $payment) use ($config, $transactionId, $reference): bool {
+            $metadata = is_array($payment->metadata) ? $payment->metadata : [];
+            $gatewayId = (int) ($metadata['gateway_id'] ?? 0);
+
+            if ($gatewayId !== 0 && $gatewayId !== (int) $config->id) {
+                return false;
+            }
+
+            if ($transactionId !== null && $payment->gateway_reference !== $transactionId) {
+                return false;
+            }
+
+            if ($reference !== null && $payment->reference !== $reference) {
+                return false;
+            }
+
+            return true;
+        });
     }
 }

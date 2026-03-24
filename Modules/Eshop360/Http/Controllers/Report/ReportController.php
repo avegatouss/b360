@@ -13,16 +13,29 @@ use Modules\Eshop360\Models\Product;
 use Modules\Eshop360\Models\PurchaseOrder;
 use Modules\Eshop360\Models\Stock;
 use Modules\Eshop360\Models\StockMovement;
+use Modules\Eshop360\Services\ChannelAccessService;
 
 class ReportController extends Controller
 {
+    public function __construct(
+        private readonly ChannelAccessService $channelAccess,
+    ) {}
+
     public function sales(Request $request)
     {
         $dateFrom = $request->date_from ?? now()->startOfMonth()->toDateString();
         $dateTo = $request->date_to ?? now()->toDateString();
+        $user = auth()->user();
+        $channelFilter = $request->integer('channel_id') ?: null;
+        $channels = $this->channelAccess->availableChannelsForFilter($user);
 
-        $salesByDay = Order::where('status', 'completed')
-            ->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
+        $baseQuery = fn () => $this->channelAccess->scopeWithChannelFilter(
+            Order::where('status', 'completed')
+                ->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59']),
+            $user, $channelFilter
+        );
+
+        $salesByDay = $baseQuery()
             ->select(
                 DB::raw('DATE(created_at) as date'),
                 DB::raw('SUM(total) as total'),
@@ -34,27 +47,28 @@ class ReportController extends Controller
             ->orderBy('date')
             ->get();
 
-        $salesBySource = Order::where('status', 'completed')
-            ->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
+        $salesBySource = $baseQuery()
             ->select('source', DB::raw('SUM(total) as total'), DB::raw('COUNT(*) as count'))
             ->groupBy('source')
             ->get();
 
-        $salesByPayment = Order::where('status', 'completed')
-            ->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
+        $salesByPayment = $baseQuery()
             ->select('payment_method', DB::raw('SUM(total) as total'), DB::raw('COUNT(*) as count'))
             ->groupBy('payment_method')
             ->get();
 
         $totals = [
-            'revenue'  => Order::where('status', 'completed')->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])->sum('total'),
-            'orders'   => Order::where('status', 'completed')->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])->count(),
-            'tax'      => Order::where('status', 'completed')->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])->sum('tax_amount'),
-            'discount' => Order::where('status', 'completed')->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])->sum('discount_amount'),
-            'due'      => Order::where('payment_status', '!=', 'paid')->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])->sum('due_amount'),
+            'revenue'  => $baseQuery()->sum('total'),
+            'orders'   => $baseQuery()->count(),
+            'tax'      => $baseQuery()->sum('tax_amount'),
+            'discount' => $baseQuery()->sum('discount_amount'),
+            'due'      => $this->channelAccess->scopeWithChannelFilter(
+                Order::where('payment_status', '!=', 'paid')->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59']),
+                $user, $channelFilter
+            )->sum('due_amount'),
         ];
 
-        return view('eshop360::sales.report', compact('salesByDay', 'salesBySource', 'salesByPayment', 'totals', 'dateFrom', 'dateTo'));
+        return view('eshop360::sales.report', compact('salesByDay', 'salesBySource', 'salesByPayment', 'totals', 'dateFrom', 'dateTo', 'channels', 'channelFilter'));
     }
 
     public function inventory(Request $request)

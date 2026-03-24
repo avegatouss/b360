@@ -401,7 +401,7 @@ class ChannelShopController extends Controller
      */
     private function cartKey(DistributionChannel $channel): string
     {
-        $instanceId = CurrentInstance::get()?->id ?? 0;
+        $instanceId = CurrentInstance::idOrFail();
 
         return "channel_cart_{$channel->id}_instance_{$instanceId}";
     }

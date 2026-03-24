@@ -28,6 +28,10 @@ class CustomerPortalController extends Controller
     {
         $customer = $this->resolveCustomer();
         $instanceId = CurrentInstance::get()?->id;
+        $context = $this->resolvePortalContext($request);
+        $channelId = $context['channel_id'] ?? null;
+
+        $this->storeCartContext($context);
 
         $hasSearch = $request->filled('search');
 
@@ -45,17 +49,12 @@ class CustomerPortalController extends Controller
                         ->orWhere('barcode', 'like', "%{$search}%");
                 });
             })
-            // Without search: hide products with 0 stock
-            ->when(! $hasSearch, function ($query) {
-                $query->whereHas('stocks', fn ($sq) => $sq->where('quantity', '>', 0));
-            })
             ->latest()
             ->paginate(18)
             ->withQueryString();
 
-        // Standard Saphir pricing (no channel context)
-        $products->getCollection()->transform(function (Product $product) {
-            $pricing = $this->pricingService->resolve($product, null, true);
+        $products->getCollection()->transform(function (Product $product) use ($channelId) {
+            $pricing = $this->pricingService->resolve($product, $channelId, true);
 
             $product->setAttribute('display_price', $pricing['unit_price']);
             $product->setAttribute('display_original_price', $pricing['original_price']);
@@ -103,17 +102,27 @@ class CustomerPortalController extends Controller
         $validated = $request->validate([
             'product_id' => 'required|exists:eshop_products,id',
             'quantity' => 'nullable|integer|min:1',
+            'channel_id' => 'nullable|exists:eshop_distribution_channels,id',
         ]);
 
+        $requestedContext = $this->normalizeContext([
+            'channel_id' => $validated['channel_id'] ?? null,
+        ]);
+        $cart = $this->getCart();
+        $cartContext = $this->resolveContextForMutation($requestedContext, $this->getCartContext(), ! empty($cart));
+
+        if ($cartContext === false) {
+            return redirect()->back()->with('error', __('This cart already uses another pricing context. Clear it first.'));
+        }
+
+        $channelId = $cartContext['channel_id'] ?? null;
         $product = Product::query()
             ->when($instanceId !== null, fn ($query) => $query->where('instance_id', $instanceId))
             ->active()
             ->findOrFail($validated['product_id']);
         $quantity = max(1, (int) ($validated['quantity'] ?? 1));
-        $cart = $this->getCart();
 
-        // Standard Saphir pricing (no channel)
-        $pricing = $this->pricingService->resolve($product, null, true);
+        $pricing = $this->pricingService->resolve($product, $channelId, true);
 
         $key = (string) $product->id;
 
@@ -132,10 +141,12 @@ class CustomerPortalController extends Controller
                 'quantity' => $quantity,
                 'total' => round($pricing['unit_price'] * $quantity, 2),
                 'price_source' => $pricing['price_source'],
+                'channel_id' => $pricing['channel_id'],
             ];
         }
 
         $this->storeCart($cart);
+        $this->storeCartContext($cartContext);
 
         return redirect()->back()->with('success', __('Product added to online cart.'));
     }
@@ -211,7 +222,7 @@ class CustomerPortalController extends Controller
             ], array_values($cart)),
             $validated['delivery_address'],
             $validated['notes'] ?? null,
-            null, // No channel — direct Saphir order
+            $this->getCartContext()['channel_id'] ?? null,
         );
 
         $this->clearCartState();
@@ -421,7 +432,11 @@ class CustomerPortalController extends Controller
     public function printStoreOrder(string $slug, \Modules\Eshop360\Models\Order $order)
     {
         $customer = $this->resolveCustomer();
-        abort_unless((int) $order->customer_id === (int) $customer->id, 403);
+        abort_unless(
+            (int) $order->customer_id === (int) $customer->id
+            && (int) $order->instance_id === (int) $customer->instance_id,
+            403
+        );
         $order->loadMissing(['items.product', 'store', 'customer']);
 
         $settings = app(\Modules\Eshop360\Services\EshopSettingsService::class)->get('invoice');
@@ -433,7 +448,11 @@ class CustomerPortalController extends Controller
     public function printOnlineOrder(string $slug, OnlineOrder $onlineOrder)
     {
         $customer = $this->resolveCustomer();
-        abort_unless((int) $onlineOrder->customer_id === (int) $customer->id, 403);
+        abort_unless(
+            (int) $onlineOrder->customer_id === (int) $customer->id
+            && (int) $onlineOrder->instance_id === (int) $customer->instance_id,
+            403
+        );
         $onlineOrder->loadMissing(['items.product', 'channel']);
 
         $settings = app(\Modules\Eshop360\Services\EshopSettingsService::class)->get('invoice');
@@ -636,12 +655,12 @@ class CustomerPortalController extends Controller
 
     private function scopedCartKey(): string
     {
-        return 'eshop_portal_cart_instance_' . (CurrentInstance::get()?->id ?? 0);
+        return 'eshop_portal_cart_instance_' . (CurrentInstance::idOrFail());
     }
 
     private function scopedCartContextKey(): string
     {
-        return 'eshop_portal_cart_context_instance_' . (CurrentInstance::get()?->id ?? 0);
+        return 'eshop_portal_cart_context_instance_' . (CurrentInstance::idOrFail());
     }
 
     /**

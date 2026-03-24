@@ -33,10 +33,14 @@ return new class extends Migration {
         });
 
         // Convert import_costs.type from enum to string
-        DB::statement("ALTER TABLE eshop_import_costs MODIFY COLUMN type VARCHAR(50) NOT NULL");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE eshop_import_costs MODIFY COLUMN type VARCHAR(50) NOT NULL");
+        }
 
         // Convert company_charges.category from enum to string
-        DB::statement("ALTER TABLE eshop_company_charges MODIFY COLUMN category VARCHAR(50) NOT NULL");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE eshop_company_charges MODIFY COLUMN category VARCHAR(50) NOT NULL");
+        }
     }
 
     public function down(): void

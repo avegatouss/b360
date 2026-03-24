@@ -7,7 +7,7 @@
         </div>
         <div id="pos-coupon-status" class="{{ $coupon ? '' : 'd-none' }} mt-1 small text-success">
             @if($coupon)
-                <i class="ti ti-check me-1"></i>{{ $coupon['code'] }} {{ __('applique') }}
+                <i class="ti ti-check me-1"></i>{{ __('Coupon actif') }}: {{ $coupon['code'] }}
             @endif
         </div>
     </div>

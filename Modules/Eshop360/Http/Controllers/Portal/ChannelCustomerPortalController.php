@@ -348,15 +348,14 @@ class ChannelCustomerPortalController extends Controller
 
         $customer = Customer::query()
             ->where('instance_id', $instance->id)
+            ->where('channel_id', $channel->id)
+            ->where('is_active', true)
             ->where(function ($query) use ($user, $channel) {
                 $query->where('user_id', $user->id);
 
                 if (! empty($user->email)) {
                     $query->orWhere('email', $user->email);
                 }
-
-                // Also match customers explicitly assigned to this channel
-                $query->orWhere('channel_id', $channel->id);
             })
             ->first();
 
@@ -364,6 +363,7 @@ class ChannelCustomerPortalController extends Controller
         if (! $customer && ($user->hasRole('super-admin') || $user->hasRole('instance-admin'))) {
             $customer = Customer::query()
                 ->where('instance_id', $instance->id)
+                ->where('channel_id', $channel->id)
                 ->where('is_active', true)
                 ->first();
         }
@@ -409,7 +409,7 @@ class ChannelCustomerPortalController extends Controller
 
     private function scopedCartKey(DistributionChannel $channel): string
     {
-        $instanceId = CurrentInstance::get()?->id ?? 0;
+        $instanceId = CurrentInstance::idOrFail();
 
         return "eshop_portal_cart_instance_{$instanceId}_channel_{$channel->id}";
     }

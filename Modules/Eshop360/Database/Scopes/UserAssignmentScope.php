@@ -30,8 +30,10 @@ class UserAssignmentScope implements Scope
         };
 
         if ($ids === null) {
-            return; // Admin or no assignments = all access
+            return; // Admin = full access
         }
+
+        // Empty collection = non-admin with no assignments → whereIn([]) returns 0 rows
 
         $builder->whereIn($model->getTable() . '.' . $this->column, $ids);
     }

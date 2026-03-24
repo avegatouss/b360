@@ -68,8 +68,9 @@ class CheckoutController extends Controller
 
         // Block wallet payment if customer account is not enabled
         if ($request->input('payment_method') === 'wallet' && empty($posSettings['customer_account_enabled'])) {
-            return redirect()->route('eshop360.pos.index', ['slug' => $instance?->slug])
-                ->with('error', __('Le paiement par compte client n\'est pas active.'));
+            return back()->withErrors([
+                'payment_method' => __('Le paiement par compte client n\'est pas active.'),
+            ])->withInput();
         }
 
         // Require customer when walk-in is disabled
@@ -277,14 +278,14 @@ class CheckoutController extends Controller
 
     private function scopedCartKey(): string
     {
-        $instanceId = CurrentInstance::get()?->id ?? 0;
+        $instanceId = CurrentInstance::idOrFail();
 
         return 'eshop_cart_instance_' . $instanceId;
     }
 
     private function scopedCouponKey(): string
     {
-        $instanceId = CurrentInstance::get()?->id ?? 0;
+        $instanceId = CurrentInstance::idOrFail();
 
         return 'eshop_cart_coupon_instance_' . $instanceId;
     }
@@ -309,7 +310,7 @@ class CheckoutController extends Controller
 
     private function scopedCartContextKey(): string
     {
-        $instanceId = CurrentInstance::get()?->id ?? 0;
+        $instanceId = CurrentInstance::idOrFail();
 
         return 'eshop_cart_context_instance_' . $instanceId;
     }

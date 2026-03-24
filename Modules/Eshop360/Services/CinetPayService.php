@@ -132,13 +132,16 @@ class CinetPayService
 
         $payment = Payment::query()
             ->where('gateway', 'cinetpay')
-            ->where('gateway_reference', $transactionId)
+            ->when($transactionId !== '', fn ($query) => $query->where('gateway_reference', $transactionId))
+            ->when(!empty($data['reference']), fn ($query) => $query->where('reference', $data['reference']))
+            ->orderByDesc('id')
             ->first();
 
         if (!$payment && !empty($data['reference'])) {
             $payment = Payment::query()
                 ->where('gateway', 'cinetpay')
                 ->where('reference', $data['reference'])
+                ->orderByDesc('id')
                 ->first();
         }
 

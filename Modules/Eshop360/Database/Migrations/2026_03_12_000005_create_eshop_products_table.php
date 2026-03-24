@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->foreignId('brand_id')->nullable()->constrained('eshop_brands')->nullOnDelete();
             $table->string('name');
             $table->string('slug');
-            $table->string('sku');
+            $table->string('sku')->nullable();
             $table->text('description')->nullable();
             $table->decimal('price', 12, 2)->default(0);
             $table->decimal('cost_price', 12, 2)->default(0);

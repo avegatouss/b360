@@ -15,6 +15,10 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final class ChannelRole
 {
+    private const LEGACY_ALIASES = [
+        'member' => 'admin',
+    ];
+
     public const HIERARCHY = [
         'client'   => 0,
         'viewer'   => 1,
@@ -40,12 +44,15 @@ final class ChannelRole
 
     public static function label(string $role): string
     {
+        $role = self::normalizeRole($role);
+
         return self::LABELS[$role] ?? ucfirst($role);
     }
 
     public function handle(Request $request, Closure $next, string $requiredRole = 'viewer'): Response
     {
-        $userRole = $request->channel_user_role ?? 'viewer';
+        $userRole = self::normalizeRole((string) ($request->channel_user_role ?? 'viewer'));
+        $requiredRole = self::normalizeRole($requiredRole);
 
         $requiredLevel = self::HIERARCHY[$requiredRole] ?? 0;
         $userLevel = self::HIERARCHY[$userRole] ?? 0;
@@ -55,5 +62,10 @@ final class ChannelRole
         }
 
         return $next($request);
+    }
+
+    private static function normalizeRole(string $role): string
+    {
+        return self::LEGACY_ALIASES[$role] ?? $role;
     }
 }

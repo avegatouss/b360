@@ -40,10 +40,24 @@ final class DemoChannelsSeeder
     {
         $data = [
             [
-                'name' => '[DEMO] Revendeur Principal',
-                'slug' => 'demo-revendeur',
-                'code' => 'DEMO-REV',
-                'description' => 'Canal de distribution Revendeur - grossiste pharmaceutique',
+                'name' => '[DEMO] Saphir Plus',
+                'slug' => 'saphir-plus',
+                'code' => 'SAPHIR',
+                'description' => 'Canal global Saphir Plus - acces complet a tous les modules',
+                'is_active' => true,
+                'margin_rate' => 0.0000,
+                'buy_rate' => 0.0000,
+                'debt_share' => 0.3333,
+                'channel_share' => 0.3333,
+                'owner_share' => 0.3334,
+                'portal_enabled' => false,
+                'portal_settings' => ['theme_color' => '#4f46e5', 'logo' => null],
+            ],
+            [
+                'name' => '[DEMO] CODIFARM',
+                'slug' => 'demo-codifarm',
+                'code' => 'DEMO-CDF',
+                'description' => 'Canal de distribution CODIFARM - grossiste pharmaceutique',
                 'is_active' => true,
                 'margin_rate' => 0.1300,
                 'buy_rate' => 0.2000,

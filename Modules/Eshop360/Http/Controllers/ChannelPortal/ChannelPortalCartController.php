@@ -17,18 +17,29 @@ class ChannelPortalCartController extends Controller
         $validated = $request->validate([
             'product_id' => 'required|integer|exists:eshop_products,id',
             'quantity' => 'integer|min:1',
-            'variation_id' => 'nullable|integer',
+            'variation_id' => 'nullable|integer|exists:eshop_product_variations,id',
         ]);
 
-        $product = Product::findOrFail($validated['product_id']);
+        // Product must belong to this channel's catalog
+        $product = $channel->products()
+            ->where('eshop_products.id', $validated['product_id'])
+            ->firstOrFail();
 
-        // Use channel pricing
+        // Apply channel pricing
         $channelPrice = $channel->productPrices()->where('product_id', $product->id)->first();
         if ($channelPrice) {
             $product->price = $channelPrice->sale_price;
         }
 
-        $cart->addItem($product, $validated['quantity'] ?? 1, $validated['variation_id'] ?? null);
+        try {
+            $cart->addItem($product, $validated['quantity'] ?? 1, $validated['variation_id'] ?? null);
+        } catch (\InvalidArgumentException $e) {
+            if ($request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+            }
+
+            return back()->with('error', $e->getMessage());
+        }
 
         if ($request->wantsJson()) {
             return response()->json(['success' => true, 'count' => $cart->getItemCount()]);

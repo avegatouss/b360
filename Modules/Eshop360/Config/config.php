@@ -11,6 +11,9 @@ $cinetpayConfig = [
 return [
     'name' => 'Eshop360',
 
+    // Hierarchical menu mode: replaces the sidebar with a drill-down card navigation
+    'hierarchical_menu' => env('ESHOP_HIERARCHICAL_MENU', false),
+
     // POS settings
     'pos' => [
         'default_layout' => 'pos-1',

@@ -320,7 +320,9 @@ class SaleController extends Controller
         ]);
 
         // Filter only selected items
-        $selectedItems = collect($validated['items'])->filter(fn ($item) => !empty($item['selected']));
+        $selectedItems = collect($validated['items'])->filter(
+            fn ($item) => !array_key_exists('selected', $item) || !empty($item['selected'])
+        );
 
         if ($selectedItems->isEmpty()) {
             return redirect()->back()->with('error', __('Veuillez selectionner au moins un article a retourner.'));

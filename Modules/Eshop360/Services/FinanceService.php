@@ -149,7 +149,7 @@ class FinanceService
                 'instance_id'    => $customer->instance_id,
                 'customer_id'    => $customer->id,
                 'type'           => 'debit',
-                'amount'         => $amount,
+                'amount'         => $deductedFromWallet,
                 'reference_type' => $orderId ? Order::class : null,
                 'reference_id'   => $orderId,
                 'notes'          => $orderId ? "Paiement commande #$orderId" : 'Debit portefeuille',
@@ -157,7 +157,7 @@ class FinanceService
             ]);
 
             // If credit was used, create a CustomerDue for the debt portion
-            if ($creditUsed > 0) {
+            if ($creditUsed > 0 && $orderId) {
                 CustomerDue::create([
                     'customer_id'  => $customer->id,
                     'order_id'     => $orderId,
@@ -168,7 +168,7 @@ class FinanceService
                 ]);
             }
 
-            return $amount;
+            return $deductedFromWallet;
         });
     }
 

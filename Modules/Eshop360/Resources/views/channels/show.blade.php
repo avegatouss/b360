@@ -4,6 +4,7 @@
     :pageTitle="$channel->name">
 
 @php $slug = $instance->slug ?? ''; @endphp
+@php $currencyCode = function_exists('currency') ? currency($instance->id ?? null) : 'XAF'; @endphp
 
 <div class="page-header">
     <div class="add-item d-flex">
@@ -80,7 +81,7 @@
         <div class="card border-0 shadow-sm border-start border-primary border-3">
             <div class="card-body py-3 text-center">
                 <small class="text-muted">{{ __('Marge totale') }}</small>
-                <div class="fw-bold fs-4 text-primary">{{ number_format($summary['total_margin'] ?? 0, 0, ',', ' ') }}</div>
+                <div class="fw-bold fs-4 text-primary">{{ number_format($summary['total_margin'] ?? 0, 0, ',', ' ') }} {{ $currencyCode }}</div>
             </div>
         </div>
     </div>
@@ -88,7 +89,7 @@
         <div class="card border-0 shadow-sm border-start border-danger border-3">
             <div class="card-body py-3 text-center">
                 <small class="text-muted">{{ __('Part dette') }}</small>
-                <div class="fw-bold fs-4 text-danger">{{ number_format($summary['total_debt'] ?? 0, 0, ',', ' ') }}</div>
+                <div class="fw-bold fs-4 text-danger">{{ number_format($summary['total_debt'] ?? 0, 0, ',', ' ') }} {{ $currencyCode }}</div>
             </div>
         </div>
     </div>
@@ -96,7 +97,7 @@
         <div class="card border-0 shadow-sm border-start border-success border-3">
             <div class="card-body py-3 text-center">
                 <small class="text-muted">{{ __('Part') }} {{ $channel->name }}</small>
-                <div class="fw-bold fs-4 text-success">{{ number_format($summary['total_channel'] ?? 0, 0, ',', ' ') }}</div>
+                <div class="fw-bold fs-4 text-success">{{ number_format($summary['total_channel'] ?? 0, 0, ',', ' ') }} {{ $currencyCode }}</div>
             </div>
         </div>
     </div>
@@ -104,7 +105,7 @@
         <div class="card border-0 shadow-sm border-start border-info border-3">
             <div class="card-body py-3 text-center">
                 <small class="text-muted">{{ __('Part proprietaire') }}</small>
-                <div class="fw-bold fs-4 text-info">{{ number_format($summary['total_owner'] ?? 0, 0, ',', ' ') }}</div>
+                <div class="fw-bold fs-4 text-info">{{ number_format($summary['total_owner'] ?? 0, 0, ',', ' ') }} {{ $currencyCode }}</div>
             </div>
         </div>
     </div>

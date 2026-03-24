@@ -49,7 +49,7 @@ class CartService
 
     private function instanceId(): int
     {
-        return CurrentInstance::get()?->id ?? 0;
+        return CurrentInstance::idOrFail();
     }
 
     // ─── Cart Items ──────────────────────────────────
@@ -81,7 +81,18 @@ class CartService
     public function addItem(Product $product, int $quantity = 1, ?int $variationId = null): void
     {
         $cart = $this->getCart();
-        $variation = $variationId ? ProductVariation::find($variationId) : null;
+        $variation = null;
+
+        if ($variationId) {
+            $variation = ProductVariation::query()
+                ->where('product_id', $product->id)
+                ->active()
+                ->find($variationId);
+
+            if (!$variation) {
+                throw new \InvalidArgumentException('Invalid variation for the selected product.');
+            }
+        }
 
         // Cart key includes variation to support multiple variants of the same product
         $key = $variation ? "item_{$product->id}_v{$variation->id}" : "item_{$product->id}";
@@ -176,7 +187,10 @@ class CartService
      */
     public function applyCoupon(string $code): array
     {
-        $coupon = Coupon::where('code', $code)->valid()->first();
+        $coupon = Coupon::where('code', $code)
+            ->visibleToChannel($this->channelId)
+            ->valid()
+            ->first();
 
         if (!$coupon) {
             return [

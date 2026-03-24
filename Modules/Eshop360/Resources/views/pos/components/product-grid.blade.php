@@ -13,7 +13,7 @@
                 <div class="card pos-product-card h-100 {{ $outOfStock ? 'out-of-stock' : '' }}"
                      data-product-id="{{ $product->id }}"
                      data-product-name="{{ $product->name }}"
-                     data-product-price="{{ $product->price }}"
+                     data-product-price="{{ $product->display_price ?? $product->price }}"
                      @if($hasVariations) data-has-variations="1" @endif>
                     <div class="position-relative">
                         @if($product->image)
@@ -34,7 +34,7 @@
                         <div class="small text-muted text-truncate">{{ $product->category->name ?? '' }}</div>
                         <div class="fw-semibold text-truncate mb-1" title="{{ $product->name }}">{{ $product->name }}</div>
                         <div class="d-flex justify-content-between align-items-center mt-auto">
-                            <span class="fw-bold text-primary">{{ number_format($product->price, 0, ',', ' ') }}</span>
+                            <span class="fw-bold text-primary">{{ number_format((float) ($product->display_price ?? $product->price), 2, '.', '') }}</span>
                             <span class="btn btn-sm btn-primary rounded-circle pos-add-btn" {{ $outOfStock ? 'disabled' : '' }} title="{{ __('Ajouter') }}">
                                 <i class="ti ti-plus"></i>
                             </span>

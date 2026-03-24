@@ -13,7 +13,7 @@ return new class extends Migration {
             $table->string('payable_type');
             $table->unsignedBigInteger('payable_id');
             $table->decimal('amount', 12, 2);
-            $table->enum('method', ['cash', 'card', 'cheque', 'paypal', 'bank_transfer', 'points', 'deposit', 'gift_card', 'external', 'manual'])->default('cash');
+            $table->enum('method', ['cash', 'card', 'cheque', 'paypal', 'bank_transfer', 'wallet', 'points', 'deposit', 'gift_card', 'external', 'manual'])->default('cash');
             $table->string('reference')->nullable();
             $table->enum('status', ['pending', 'completed', 'failed', 'refunded'])->default('completed');
             $table->text('notes')->nullable();

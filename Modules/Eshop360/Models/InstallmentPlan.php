@@ -37,6 +37,11 @@ class InstallmentPlan extends Model
         return $this->hasMany(InstallmentPayment::class, 'plan_id');
     }
 
+    public function installments(): HasMany
+    {
+        return $this->payments();
+    }
+
     public function getReferenceAttribute(): string
     {
         return sprintf('INST-%06d', $this->id ?? 0);

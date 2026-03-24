@@ -98,7 +98,7 @@ class ChannelPortalStockController extends Controller
         $validated = $request->validate([
             'product_id' => 'required|integer|exists:eshop_products,id',
             'quantity' => 'required|integer|min:1',
-            'type' => 'required|in:in,out,adjustment',
+            'type' => 'required|in:out',
             'reason' => 'nullable|string|max:500',
         ]);
 

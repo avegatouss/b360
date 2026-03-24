@@ -74,6 +74,7 @@ use Modules\Eshop360\Http\Controllers\Fne\FneController;
 use Modules\Eshop360\Http\Controllers\Notification\NotificationController;
 use Modules\Eshop360\Http\Controllers\Printing\ReceiptTemplateController;
 use Modules\Eshop360\Http\Controllers\Printing\PrinterController;
+use Modules\Eshop360\Http\Controllers\Navigation\HierarchicalMenuController;
 use Modules\Eshop360\Http\Middleware\ApplyCurrentInstanceUrlDefaults;
 
 /*
@@ -97,6 +98,13 @@ Route::middleware([
     ApplyCurrentInstanceUrlDefaults::class,
     'eshop.user.assignments',
 ])->prefix('/i/{slug}')->group(function () {
+
+    // ─── Hierarchical Menu Navigation ──────────────
+    Route::prefix('nav')->name('eshop360.nav.')->group(function () {
+        Route::get('/', [HierarchicalMenuController::class, 'home'])->name('home');
+        Route::get('/{channelSlug}', [HierarchicalMenuController::class, 'modules'])->name('modules');
+        Route::get('/{channelSlug}/{moduleKey}', [HierarchicalMenuController::class, 'actions'])->name('actions');
+    });
 
     // ─── POS Terminal ──────────────────────────────
     Route::prefix('pos')->name('eshop360.pos.')->group(function () {
@@ -267,7 +275,7 @@ Route::middleware([
 
     // ─── Channel Customer Portal (sous-client du canal) ───
     Route::prefix('canal/{channel}/portal')
-        ->middleware(['eshop.channel.resolve'])
+        ->middleware(['eshop.channel.resolve', 'eshop.channel.feature:portal'])
         ->name('eshop360.canal-portal.')
         ->group(function () {
             Route::get('/', [ChannelCustomerPortalController::class, 'catalog'])->name('catalog');
@@ -393,6 +401,8 @@ Route::middleware([
 
     // ─── Eshop Settings ─────────────────────────────
     Route::prefix('eshop-settings')->name('eshop360.settings.')->middleware('can:eshop.settings.manage')->group(function () {
+        Route::get('/general', [EshopSettingsController::class, 'general'])->name('general');
+        Route::put('/general', [EshopSettingsController::class, 'updateGeneral'])->name('general.update');
         Route::get('/pos', [EshopSettingsController::class, 'pos'])->name('pos');
         Route::put('/pos', [EshopSettingsController::class, 'updatePos'])->name('pos.update');
         Route::get('/printer', [EshopSettingsController::class, 'printer'])->name('printer');
@@ -753,35 +763,43 @@ Route::middleware([
 
     // ─── Channel Portal ─────────────────────────────
     Route::prefix('channel-portal/{channel}')
-        ->middleware(['eshop.channel.resolve', 'eshop.channel.member'])
+        ->middleware(['eshop.channel.resolve', 'eshop.channel.member', 'eshop.channel.feature:portal'])
         ->name('eshop360.channel-portal.')
         ->group(function () {
             Route::get('/', [ChannelPortalDashboardController::class, 'index'])->name('dashboard');
 
             // ─── Existing routes (all roles) ───
-            Route::get('/orders', [ChannelPortalOrderController::class, 'index'])->name('orders.index');
-            Route::get('/orders/create', [ChannelPortalOrderController::class, 'create'])->name('orders.create');
-            Route::post('/orders', [ChannelPortalOrderController::class, 'store'])->name('orders.store');
-            Route::get('/orders/{order}', [ChannelPortalOrderController::class, 'show'])->name('orders.show');
-            Route::post('/orders/{order}/confirm-reception', [ChannelPortalOrderController::class, 'confirmReception'])->name('orders.confirm-reception');
+            Route::middleware('eshop.channel.feature:orders')->group(function () {
+                Route::get('/orders', [ChannelPortalOrderController::class, 'index'])->name('orders.index');
+                Route::get('/orders/create', [ChannelPortalOrderController::class, 'create'])->name('orders.create');
+                Route::post('/orders', [ChannelPortalOrderController::class, 'store'])->name('orders.store');
+                Route::get('/orders/{order}', [ChannelPortalOrderController::class, 'show'])->name('orders.show');
+                Route::post('/orders/{order}/confirm-reception', [ChannelPortalOrderController::class, 'confirmReception'])->name('orders.confirm-reception');
+            });
 
             // ─── Online Orders (commandes clients en ligne du canal) ───
-            Route::prefix('online-orders')->name('online-orders.')->group(function () {
+            Route::prefix('online-orders')->name('online-orders.')->middleware('eshop.channel.feature:online_orders')->group(function () {
                 Route::get('/', [ChannelPortalOnlineOrderController::class, 'index'])->name('index');
                 Route::get('/{onlineOrder}', [ChannelPortalOnlineOrderController::class, 'show'])->name('show');
                 Route::match(['put', 'patch'], '/{onlineOrder}/status', [ChannelPortalOnlineOrderController::class, 'updateStatus'])->name('status');
             });
 
-            Route::get('/stock', [ChannelPortalStockController::class, 'index'])->name('stock.index');
+            Route::get('/stock', [ChannelPortalStockController::class, 'index'])
+                ->middleware('eshop.channel.feature:stock')
+                ->name('stock.index');
 
-            Route::get('/sales', [ChannelPortalSaleController::class, 'index'])->name('sales.index');
-            Route::get('/sales/{order}', [ChannelPortalSaleController::class, 'show'])->name('sales.show');
+            Route::middleware('eshop.channel.feature:sales')->group(function () {
+                Route::get('/sales', [ChannelPortalSaleController::class, 'index'])->name('sales.index');
+                Route::get('/sales/{order}', [ChannelPortalSaleController::class, 'show'])->name('sales.show');
+            });
 
-            Route::get('/customers', [ChannelPortalCustomerController::class, 'index'])->name('customers.index');
-            Route::get('/customers/{customer}', [ChannelPortalCustomerController::class, 'show'])->name('customers.show');
+            Route::middleware('eshop.channel.feature:customers')->group(function () {
+                Route::get('/customers', [ChannelPortalCustomerController::class, 'index'])->name('customers.index');
+                Route::get('/customers/{customer}', [ChannelPortalCustomerController::class, 'show'])->name('customers.show');
+            });
 
             // ─── POS + Cart + Checkout (cashier+) ───
-            Route::middleware('eshop.channel.role:cashier')->group(function () {
+            Route::middleware(['eshop.channel.role:cashier', 'eshop.channel.feature:pos'])->group(function () {
                 Route::get('/pos', [ChannelPortalPosController::class, 'index'])->name('pos.index');
                 Route::post('/pos/checkout', [ChannelPortalCheckoutController::class, 'process'])->name('pos.checkout');
                 Route::post('/pos/registers/open', [ChannelPortalCashRegisterController::class, 'open'])->name('pos.registers.open');
@@ -798,7 +816,7 @@ Route::middleware([
             });
 
             // ─── Customer CRUD (operator+) ───
-            Route::middleware('eshop.channel.role:operator')->group(function () {
+            Route::middleware(['eshop.channel.role:operator', 'eshop.channel.feature:customers'])->group(function () {
                 Route::post('/customers', [ChannelPortalCustomerController::class, 'store'])->name('customers.store');
                 Route::put('/customers/{customer}', [ChannelPortalCustomerController::class, 'update'])->name('customers.update');
                 Route::delete('/customers/{customer}', [ChannelPortalCustomerController::class, 'destroy'])->name('customers.destroy');
@@ -806,7 +824,7 @@ Route::middleware([
             });
 
             // ─── Stock adjustments (operator+) ───
-            Route::middleware('eshop.channel.role:operator')->group(function () {
+            Route::middleware(['eshop.channel.role:operator', 'eshop.channel.feature:stock_adjustments'])->group(function () {
                 Route::get('/stock/adjustments', [ChannelPortalStockController::class, 'adjustments'])->name('stock.adjustments');
                 Route::post('/stock/adjustments', [ChannelPortalStockController::class, 'storeAdjustment'])->name('stock.adjustments.store');
             });
@@ -818,7 +836,7 @@ Route::middleware([
             });
 
             // ─── Promotions (manager only) ───
-            Route::middleware('eshop.channel.role:manager')->prefix('promotions')->name('promotions.')->group(function () {
+            Route::middleware(['eshop.channel.role:manager', 'eshop.channel.feature:promotions'])->prefix('promotions')->name('promotions.')->group(function () {
                 Route::get('/coupons', [ChannelPortalPromotionController::class, 'index'])->name('coupons.index');
                 Route::post('/coupons', [ChannelPortalPromotionController::class, 'store'])->name('coupons.store');
                 Route::put('/coupons/{coupon}', [ChannelPortalPromotionController::class, 'update'])->name('coupons.update');
@@ -826,7 +844,7 @@ Route::middleware([
             });
 
             // ─── Settings (manager only) ───
-            Route::middleware('eshop.channel.role:manager')->prefix('settings')->name('settings.')->group(function () {
+            Route::middleware(['eshop.channel.role:manager', 'eshop.channel.feature:settings'])->prefix('settings')->name('settings.')->group(function () {
                 Route::get('/pos', [ChannelPortalSettingsController::class, 'pos'])->name('pos');
                 Route::put('/pos', [ChannelPortalSettingsController::class, 'updatePos'])->name('pos.update');
                 Route::get('/printer', [ChannelPortalSettingsController::class, 'printer'])->name('printer');
@@ -836,14 +854,16 @@ Route::middleware([
             });
 
             // ─── Reports (manager only) ───
-            Route::middleware('eshop.channel.role:manager')->prefix('reports')->name('reports.')->group(function () {
+            Route::middleware(['eshop.channel.role:manager', 'eshop.channel.feature:reports'])->prefix('reports')->name('reports.')->group(function () {
                 Route::get('/sales', [ChannelPortalReportController::class, 'sales'])->name('sales');
                 Route::get('/products', [ChannelPortalReportController::class, 'products'])->name('products');
                 Route::get('/customers', [ChannelPortalReportController::class, 'customers'])->name('customers');
             });
 
             // ─── Margins (manager only) ───
-            Route::get('/margins', [ChannelPortalMarginController::class, 'index'])->middleware('eshop.channel.role:manager')->name('margins.index');
+            Route::get('/margins', [ChannelPortalMarginController::class, 'index'])
+                ->middleware(['eshop.channel.role:manager', 'eshop.channel.feature:margins'])
+                ->name('margins.index');
         });
 
     // ─── Notifications ───
@@ -874,7 +894,7 @@ Route::middleware([
 
     // ─── Channel Customer Shop (public-facing e-shop scoped to a channel) ───
     Route::prefix('channel-shop/{channel}')
-        ->middleware(['eshop.channel.resolve'])
+        ->middleware(['eshop.channel.resolve', 'eshop.channel.feature:shop'])
         ->name('eshop360.channel-shop.')
         ->group(function () {
             Route::get('/catalog', [ChannelShopController::class, 'catalog'])->name('catalog');

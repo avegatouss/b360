@@ -116,10 +116,10 @@ class StockAdjustmentController extends Controller
         }
 
         $validated = $request->validate([
-            'cancellation_reason' => 'required|string|in:erreur_saisie,doublon,correction,annulation_commande,retour_fournisseur,autre',
+            'cancellation_reason' => 'nullable|string|in:erreur_saisie,doublon,correction,annulation_commande,retour_fournisseur,autre',
         ]);
 
-        $reason = $validated['cancellation_reason'];
+        $reason = $validated['cancellation_reason'] ?? 'correction';
 
         DB::transaction(function () use ($movement, $reason) {
             $stock = Stock::where('instance_id', $movement->instance_id)

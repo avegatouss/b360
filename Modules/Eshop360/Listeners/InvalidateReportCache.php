@@ -22,7 +22,6 @@ class InvalidateReportCache
 
         if ($event->domain === 'all') {
             // Flush all report caches for this instance
-            Cache::forget("report:manifest:{$instanceId}");
             $this->forgetByManifest($instanceId);
             return;
         }

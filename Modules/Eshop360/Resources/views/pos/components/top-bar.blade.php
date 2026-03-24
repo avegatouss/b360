@@ -1,7 +1,14 @@
 {{-- POS Top Bar --}}
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div class="d-flex align-items-center gap-3">
-        <h4 class="fw-bold mb-0"><i class="ti ti-device-desktop me-2"></i>{{ __('Terminal POS') }}</h4>
+        <div>
+            <h4 class="fw-bold mb-0"><i class="ti ti-device-desktop me-2"></i>{{ __('Terminal POS') }}</h4>
+            @if($activeContextLabel)
+                <div class="small text-primary mt-1">
+                    <i class="ti ti-tags me-1"></i>{{ __('Tarification active') }}: {{ $activeContextLabel }}
+                </div>
+            @endif
+        </div>
         @if($registerOpen)
             <span class="badge bg-success-subtle text-success px-3 py-2">
                 <i class="ti ti-lock-open me-1"></i>{{ __('Caisse ouverte') }}

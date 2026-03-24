@@ -490,8 +490,9 @@ class ReportService
      */
     private function cached(string $key, int $ttl, int $instanceId, callable $callback): mixed
     {
-        return Cache::remember($key, $ttl, function () use ($key, $instanceId, $callback) {
-            $this->trackCacheKey($key, $instanceId);
+        $this->trackCacheKey($key, $instanceId);
+
+        return Cache::remember($key, $ttl, function () use ($callback) {
             return $callback();
         });
     }

@@ -13,6 +13,31 @@ class EshopSettingsController extends Controller
     {
     }
 
+    // ─── General Settings ────────────────────────────
+
+    public function general()
+    {
+        $settings = $this->settings->get('general');
+
+        return view('eshop360::settings.general', compact('settings'));
+    }
+
+    public function updateGeneral(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'hierarchical_menu' => 'boolean',
+        ]);
+
+        $validated['hierarchical_menu'] = $request->boolean('hierarchical_menu');
+
+        $this->settings->set('general', $validated);
+
+        return redirect()->route('eshop360.settings.general')
+            ->with('success', __('Parametres generaux mis a jour.'));
+    }
+
+    // ─── POS Settings ────────────────────────────────
+
     public function pos()
     {
         $settings = $this->settings->get('pos');
