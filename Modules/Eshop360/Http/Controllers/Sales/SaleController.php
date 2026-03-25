@@ -15,6 +15,7 @@ use Modules\Eshop360\Models\OrderItem;
 use Modules\Eshop360\Models\Product;
 use Modules\Eshop360\Http\Controllers\Traits\ResolvesPosContext;
 use Modules\Eshop360\Services\CartService;
+use Modules\Eshop360\Services\ChannelAccessService;
 use Modules\Eshop360\Services\OrderService;
 use Modules\Eshop360\Services\StockService;
 
@@ -24,6 +25,7 @@ class SaleController extends Controller
     public function __construct(
         private readonly OrderService $orderService,
         private readonly CartService $cartService,
+        private readonly ChannelAccessService $channelAccess,
     ) {
     }
 
@@ -98,10 +100,8 @@ class SaleController extends Controller
             ->limit(10)
             ->get();
 
-        // Channels for filter
-        $channels = \Modules\Eshop360\Models\DistributionChannel::where('is_active', true)
-            ->orderBy('name')
-            ->get(['id', 'name']);
+        // Channels for filter (scoped to user access)
+        $channels = $this->channelAccess->availableChannelsForFilter(auth()->user());
 
         return view('eshop360::sales.dashboard', compact(
             'totalSales', 'totalOrders', 'completedOrders', 'pendingOrders',
@@ -228,6 +228,7 @@ class SaleController extends Controller
             Coupon::query()
                 ->where('instance_id', $instance?->id)
                 ->where('code', $validated['coupon_code'])
+                ->visibleToChannel($validated['channel_id'] ?? null)
                 ->increment('used_count');
         }
 
@@ -577,9 +578,17 @@ class SaleController extends Controller
     {
         $dateFrom = $request->date_from ?? now()->startOfMonth()->toDateString();
         $dateTo = $request->date_to ?? now()->toDateString();
+        $user = auth()->user();
+        $channelFilter = $request->integer('channel_id') ?: null;
+        $channels = $this->channelAccess->availableChannelsForFilter($user);
 
-        $taxByDay = Order::where('status', 'completed')
-            ->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
+        $baseOrderQuery = fn () => $this->channelAccess->scopeWithChannelFilter(
+            Order::where('status', 'completed')
+                ->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59']),
+            $user, $channelFilter
+        );
+
+        $taxByDay = $baseOrderQuery()
             ->select(
                 DB::raw('DATE(created_at) as date'),
                 DB::raw('SUM(subtotal) as subtotal'),
@@ -597,9 +606,12 @@ class SaleController extends Controller
                 DB::raw('SUM(quantity) as total_qty'),
                 DB::raw('SUM(total) as total_revenue')
             )
-            ->whereHas('order', function ($q) use ($dateFrom, $dateTo) {
-                $q->where('status', 'completed')
-                    ->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59']);
+            ->whereHas('order', function ($q) use ($dateFrom, $dateTo, $user, $channelFilter) {
+                $this->channelAccess->scopeWithChannelFilter(
+                    $q->where('status', 'completed')
+                        ->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59']),
+                    $user, $channelFilter
+                );
             })
             ->groupBy('product_id')
             ->orderByDesc('total_tax')
@@ -607,11 +619,9 @@ class SaleController extends Controller
             ->paginate(30)
             ->withQueryString();
 
-        $totalTax = Order::where('status', 'completed')
-            ->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
-            ->sum('tax_amount');
+        $totalTax = $baseOrderQuery()->sum('tax_amount');
 
-        return view('eshop360::sales.tax-report', compact('taxByDay', 'taxByProduct', 'totalTax', 'dateFrom', 'dateTo'));
+        return view('eshop360::sales.tax-report', compact('taxByDay', 'taxByProduct', 'totalTax', 'dateFrom', 'dateTo', 'channels', 'channelFilter'));
     }
 
 }

@@ -225,20 +225,21 @@ class PurchaseController extends Controller
     {
         $dateFrom = $request->date_from ?? now()->startOfMonth()->toDateString();
         $dateTo = $request->date_to ?? now()->toDateString();
+        $instanceId = CurrentInstance::idOrFail();
 
-        $purchasesByStatus = PurchaseOrder::whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
+        $purchasesByStatus = PurchaseOrder::where('instance_id', $instanceId)->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
             ->select('status', DB::raw('COUNT(*) as count'), DB::raw('SUM(total) as total'))
             ->groupBy('status')
             ->get();
 
-        $purchasesBySupplier = PurchaseOrder::whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
+        $purchasesBySupplier = PurchaseOrder::where('instance_id', $instanceId)->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
             ->select('supplier_name', DB::raw('COUNT(*) as count'), DB::raw('SUM(total) as total'))
             ->groupBy('supplier_name')
             ->orderByDesc('total')
             ->limit(20)
             ->get();
 
-        $monthlyPurchases = PurchaseOrder::whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
+        $monthlyPurchases = PurchaseOrder::where('instance_id', $instanceId)->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
             ->select(
                 DB::raw('YEAR(created_at) as year'),
                 DB::raw('MONTH(created_at) as month'),
@@ -250,9 +251,9 @@ class PurchaseController extends Controller
             ->orderBy('month')
             ->get();
 
-        $totalPurchased = PurchaseOrder::whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])->sum('total');
-        $totalPaid = PurchaseOrder::whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])->sum('paid_amount');
-        $totalDue = PurchaseOrder::whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])->sum('due_amount');
+        $totalPurchased = PurchaseOrder::where('instance_id', $instanceId)->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])->sum('total');
+        $totalPaid = PurchaseOrder::where('instance_id', $instanceId)->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])->sum('paid_amount');
+        $totalDue = PurchaseOrder::where('instance_id', $instanceId)->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])->sum('due_amount');
 
         return view('eshop360::purchases.report', compact(
             'purchasesByStatus', 'purchasesBySupplier', 'monthlyPurchases',
@@ -262,17 +263,20 @@ class PurchaseController extends Controller
 
     public function transactions(Request $request)
     {
+        $instanceId = CurrentInstance::idOrFail();
+
         $purchases = PurchaseOrder::with('items.product')
+            ->where('instance_id', $instanceId)
             ->where('payment_status', '!=', 'paid')
-            ->when($request->search, fn ($q, $s) => $q->where('reference', 'like', "%{$s}%")
-                ->orWhere('supplier_name', 'like', "%{$s}%"))
+            ->when($request->search, fn ($q, $s) => $q->where(fn ($qq) => $qq->where('reference', 'like', "%{$s}%")
+                ->orWhere('supplier_name', 'like', "%{$s}%")))
             ->when($request->date_from, fn ($q, $d) => $q->whereDate('created_at', '>=', $d))
             ->when($request->date_to, fn ($q, $d) => $q->whereDate('created_at', '<=', $d))
             ->orderByDesc('due_amount')
             ->paginate(20)
             ->withQueryString();
 
-        $totalDue = PurchaseOrder::where('payment_status', '!=', 'paid')->sum('due_amount');
+        $totalDue = PurchaseOrder::where('instance_id', $instanceId)->where('payment_status', '!=', 'paid')->sum('due_amount');
 
         return view('eshop360::purchases.transactions', compact('purchases', 'totalDue'));
     }

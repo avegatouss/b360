@@ -96,13 +96,19 @@ class ReportController extends Controller
     {
         $dateFrom = $request->date_from ?? now()->startOfMonth()->toDateString();
         $dateTo = $request->date_to ?? now()->toDateString();
+        $user = auth()->user();
+        $channelFilter = $request->integer('channel_id') ?: null;
+        $channels = $this->channelAccess->availableChannelsForFilter($user);
 
         $products = Product::select('eshop_products.*')
             ->leftJoin('eshop_order_items', 'eshop_products.id', '=', 'eshop_order_items.product_id')
-            ->leftJoin('eshop_orders', function ($join) use ($dateFrom, $dateTo) {
+            ->leftJoin('eshop_orders', function ($join) use ($dateFrom, $dateTo, $user, $channelFilter) {
                 $join->on('eshop_order_items.order_id', '=', 'eshop_orders.id')
                     ->where('eshop_orders.status', 'completed')
                     ->whereBetween('eshop_orders.created_at', [$dateFrom, $dateTo . ' 23:59:59']);
+                if ($channelFilter) {
+                    $join->where('eshop_orders.channel_id', $channelFilter);
+                }
             })
             ->selectRaw('COALESCE(SUM(eshop_order_items.quantity), 0) as total_sold')
             ->selectRaw('COALESCE(SUM(eshop_order_items.total), 0) as total_revenue')
@@ -114,7 +120,7 @@ class ReportController extends Controller
             ->paginate(30)
             ->withQueryString();
 
-        return view('eshop360::reports.products', compact('products', 'dateFrom', 'dateTo'));
+        return view('eshop360::reports.products', compact('products', 'dateFrom', 'dateTo', 'channels', 'channelFilter'));
     }
 
     public function bestSellers(Request $request)
@@ -122,14 +128,20 @@ class ReportController extends Controller
         $dateFrom = $request->date_from ?? now()->startOfMonth()->toDateString();
         $dateTo = $request->date_to ?? now()->toDateString();
         $limit = $request->integer('limit', 20);
+        $user = auth()->user();
+        $channelFilter = $request->integer('channel_id') ?: null;
+        $channels = $this->channelAccess->availableChannelsForFilter($user);
 
         $bestSellers = OrderItem::select('product_id')
             ->selectRaw('SUM(quantity) as total_qty')
             ->selectRaw('SUM(total) as total_revenue')
             ->selectRaw('COUNT(DISTINCT order_id) as order_count')
-            ->whereHas('order', function ($q) use ($dateFrom, $dateTo) {
-                $q->where('status', 'completed')
-                    ->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59']);
+            ->whereHas('order', function ($q) use ($dateFrom, $dateTo, $user, $channelFilter) {
+                $this->channelAccess->scopeWithChannelFilter(
+                    $q->where('status', 'completed')
+                        ->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59']),
+                    $user, $channelFilter
+                );
             })
             ->groupBy('product_id')
             ->orderByDesc('total_qty')
@@ -137,7 +149,7 @@ class ReportController extends Controller
             ->with('product:id,name,sku,image,price,category_id,brand_id', 'product.category:id,name', 'product.brand:id,name')
             ->get();
 
-        return view('eshop360::reports.best-sellers', compact('bestSellers', 'dateFrom', 'dateTo', 'limit'));
+        return view('eshop360::reports.best-sellers', compact('bestSellers', 'dateFrom', 'dateTo', 'limit', 'channels', 'channelFilter'));
     }
 
     public function stockHistory(Request $request)
@@ -193,31 +205,42 @@ class ReportController extends Controller
     {
         $dateFrom = $request->date_from ?? now()->startOfYear()->toDateString();
         $dateTo = $request->date_to ?? now()->toDateString();
+        $user = auth()->user();
+        $channelFilter = $request->integer('channel_id') ?: null;
+        $channels = $this->channelAccess->availableChannelsForFilter($user);
 
-        $customers = Customer::select('eshop_customers.*')
-            ->leftJoin('eshop_orders', function ($join) use ($dateFrom, $dateTo) {
+        $customerQuery = Customer::select('eshop_customers.*')
+            ->leftJoin('eshop_orders', function ($join) use ($dateFrom, $dateTo, $channelFilter) {
                 $join->on('eshop_customers.id', '=', 'eshop_orders.customer_id')
                     ->where('eshop_orders.status', 'completed')
                     ->whereBetween('eshop_orders.created_at', [$dateFrom, $dateTo . ' 23:59:59']);
+                if ($channelFilter) {
+                    $join->where('eshop_orders.channel_id', $channelFilter);
+                }
             })
             ->selectRaw('COALESCE(SUM(eshop_orders.total), 0) as total_spent')
             ->selectRaw('COALESCE(COUNT(eshop_orders.id), 0) as order_count')
             ->selectRaw('COALESCE(AVG(eshop_orders.total), 0) as avg_order_value')
             ->groupBy('eshop_customers.id')
+            ->when($channelFilter, fn ($q) => $q->where('eshop_customers.channel_id', $channelFilter))
             ->when($request->search, fn ($q, $s) => $q->where('eshop_customers.name', 'like', "%{$s}%"))
-            ->when($request->sort === 'orders', fn ($q) => $q->orderByDesc('order_count'), fn ($q) => $q->orderByDesc('total_spent'))
-            ->paginate(30)
-            ->withQueryString();
+            ->when($request->sort === 'orders', fn ($q) => $q->orderByDesc('order_count'), fn ($q) => $q->orderByDesc('total_spent'));
 
+        $customers = $customerQuery->paginate(30)->withQueryString();
+
+        $summaryBase = Customer::query()->when($channelFilter, fn ($q) => $q->where('channel_id', $channelFilter));
         $summary = [
-            'total_customers'  => Customer::count(),
-            'active_customers' => Customer::whereHas('orders', function ($q) use ($dateFrom, $dateTo) {
+            'total_customers'  => (clone $summaryBase)->count(),
+            'active_customers' => (clone $summaryBase)->whereHas('orders', function ($q) use ($dateFrom, $dateTo, $channelFilter) {
                 $q->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59']);
+                if ($channelFilter) {
+                    $q->where('channel_id', $channelFilter);
+                }
             })->count(),
-            'new_customers'    => Customer::whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])->count(),
+            'new_customers'    => (clone $summaryBase)->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])->count(),
         ];
 
-        return view('eshop360::customers.report', compact('customers', 'summary', 'dateFrom', 'dateTo'));
+        return view('eshop360::customers.report', compact('customers', 'summary', 'dateFrom', 'dateTo', 'channels', 'channelFilter'));
     }
 
     public function purchaseReport(Request $request)
