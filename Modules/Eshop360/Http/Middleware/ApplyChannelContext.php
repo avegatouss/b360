@@ -10,9 +10,9 @@ use Modules\Eshop360\Support\CurrentChannel;
 /**
  * Reads the current channel from session and shares it with all views.
  *
- * Also merges channel_id into the request if a scoped channel is active
- * and the request doesn't already carry one — so existing controllers
- * that read $request->channel_id automatically filter by the active channel.
+ * View::share is deferred to AFTER the request pipeline so that
+ * ResolveChannel middleware (which runs later) can call CurrentChannel::set()
+ * before views are rendered.
  */
 class ApplyChannelContext
 {
@@ -20,20 +20,22 @@ class ApplyChannelContext
     {
         CurrentChannel::flush();
 
+        // Pre-load channel from session (before ResolveChannel may override)
         $channel = CurrentChannel::get();
 
-        // Share channel context to all views
-        View::share('currentChannel', $channel);
-        View::share('isChannelScoped', CurrentChannel::isScoped());
-
         // Force channel_id in the request when a scoped channel is active.
-        // Uses query->set() and request->set() to override any user-supplied value
-        // (merge() alone can be bypassed via URL ?channel_id=X)
         if (CurrentChannel::isScoped()) {
             $request->query->set('channel_id', $channel->id);
             $request->request->set('channel_id', $channel->id);
         }
 
-        return $next($request);
+        $response = $next($request);
+
+        // Share channel context AFTER the full middleware pipeline has run
+        // (ResolveChannel may have called CurrentChannel::set() with a different channel)
+        View::share('currentChannel', CurrentChannel::get());
+        View::share('isChannelScoped', CurrentChannel::isScoped());
+
+        return $response;
     }
 }

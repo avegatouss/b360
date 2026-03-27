@@ -62,8 +62,11 @@ final class ChannelScope implements Scope
             }
 
             // Channel explicite mais pas de membership ChannelUser :
-            // Autoriser si l'utilisateur a un Customer lié à ce channel
-            // (portail client canal sans ChannelUser)
+            // Cas portail client canal — le middleware ResolveChannel a validé
+            // l'existence du channel, et le contrôleur vérifie l'accès client.
+            // Le scope se contente de filtrer sur le channel demandé.
+            // Sécurité assurée par les middlewares (eshop.channel.resolve, eshop.channel.member)
+            // et par resolveCustomer() dans les contrôleurs portail.
             $builder->where("{$table}.channel_id", $currentId);
             return;
         }

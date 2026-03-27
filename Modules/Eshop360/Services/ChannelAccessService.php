@@ -39,7 +39,7 @@ final class ChannelAccessService
 
         return ChannelUser::query()
             ->where('user_id', $user->id)
-            ->when($instanceId !== null, function ($query) use ($instanceId) {
+            ->when($instanceId !== null && $instanceId !== 0, function ($query) use ($instanceId) {
                 $query->whereHas('channel', function ($channelQuery) use ($instanceId) {
                     $channelQuery
                         ->where('instance_id', $instanceId)
