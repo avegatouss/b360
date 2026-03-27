@@ -10,13 +10,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Core\Database\Traits\BelongsToInstance;
 
+use Modules\Eshop360\Database\Traits\BelongsToChannel;
+
 class Employee extends Model
 {
-    use HasFactory, BelongsToInstance, SoftDeletes;
+    use HasFactory, BelongsToInstance, SoftDeletes, BelongsToChannel;
 
     protected $table = 'eshop_employees';
 
     protected $fillable = [
+        'channel_id',
         'instance_id',
         'user_id',
         'name',

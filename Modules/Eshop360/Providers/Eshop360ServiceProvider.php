@@ -130,6 +130,7 @@ final class Eshop360ServiceProvider extends ServiceProvider
         $router->aliasMiddleware('eshop.channel.role', \Modules\Eshop360\Http\Middleware\ChannelRole::class);
         $router->aliasMiddleware('eshop.channel.feature', \Modules\Eshop360\Http\Middleware\EnsureChannelFeature::class);
         $router->aliasMiddleware('eshop.user.assignments', \Modules\Eshop360\Http\Middleware\ResolveUserAssignments::class);
+        $router->aliasMiddleware('eshop.channel.context', \Modules\Eshop360\Http\Middleware\ApplyChannelContext::class);
 
         // Register console commands
         if ($this->app->runningInConsole()) {

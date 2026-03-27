@@ -9,7 +9,6 @@ use Modules\Core\Support\CurrentInstance;
 use Modules\Eshop360\Models\Customer;
 use Modules\Eshop360\Models\Invoice;
 use Modules\Eshop360\Models\RecurringInvoice;
-
 class RecurringInvoiceController extends Controller
 {
     public function index(string $slug)
@@ -27,7 +26,8 @@ class RecurringInvoiceController extends Controller
     public function create(string $slug)
     {
         $instance = CurrentInstance::get();
-        $customers = Customer::where('instance_id', $instance->id)->where('is_active', true)->orderBy('name')->get();
+        $customers = Customer::where('instance_id', $instance->id)->where('is_active', true)
+            ->orderBy('name')->get();
         $invoices = Invoice::where('instance_id', $instance->id)
             ->with('customer:id,name,code')
             ->orderByDesc('id')
@@ -66,7 +66,8 @@ class RecurringInvoiceController extends Controller
     public function edit(string $slug, RecurringInvoice $recurringInvoice)
     {
         $instance = CurrentInstance::get();
-        $customers = Customer::where('instance_id', $instance->id)->where('is_active', true)->orderBy('name')->get();
+        $customers = Customer::where('instance_id', $instance->id)->where('is_active', true)
+            ->orderBy('name')->get();
         $invoices = Invoice::where('instance_id', $instance->id)
             ->with('customer:id,name,code')
             ->orderByDesc('id')

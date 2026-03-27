@@ -7,13 +7,16 @@ use Illuminate\Database\Eloquent\Model;
 use Modules\Core\Database\Traits\BelongsToInstance;
 use Modules\Core\Support\CurrentInstance;
 
+use Modules\Eshop360\Database\Traits\BelongsToChannel;
+
 class EmailTemplate extends Model
 {
-    use HasFactory, BelongsToInstance;
+    use HasFactory, BelongsToInstance, BelongsToChannel;
 
     protected $table = 'eshop_email_templates';
 
     protected $fillable = [
+        'channel_id',
         'instance_id',
         'name',
         'subject',

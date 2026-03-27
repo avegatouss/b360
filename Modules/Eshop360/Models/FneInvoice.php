@@ -7,13 +7,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Modules\Core\Database\Traits\BelongsToInstance;
 
+use Modules\Eshop360\Database\Traits\BelongsToChannel;
+
 class FneInvoice extends Model
 {
-    use BelongsToInstance;
+    use BelongsToInstance, BelongsToChannel;
 
     protected $table = 'eshop_fne_invoices';
 
     protected $fillable = [
+        'channel_id',
         'instance_id',
         'invoiceable_type',
         'invoiceable_id',

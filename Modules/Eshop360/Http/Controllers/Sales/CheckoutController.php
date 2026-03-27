@@ -14,6 +14,7 @@ use Modules\Eshop360\Http\Controllers\Traits\ResolvesPosContext;
 use Modules\Eshop360\Services\CashRegisterService;
 use Modules\Eshop360\Services\EshopSettingsService;
 use Modules\Eshop360\Services\FinanceService;
+use Modules\Eshop360\Services\ChannelAccessService;
 use Modules\Eshop360\Services\OrderService;
 
 class CheckoutController extends Controller
@@ -38,7 +39,12 @@ class CheckoutController extends Controller
         $coupon = $this->getCoupon();
         $cartContext = $this->getCartContext();
         $totals = $this->calculateTotals($cart, $coupon);
-        $customers = Customer::where('is_active', true)->orderBy('name')->get();
+        $channelId = $cartContext['channel_id'] ?? null;
+        $customers = Customer::where('instance_id', $instance->id)
+            ->where('is_active', true)
+            ->when($channelId, fn ($q, $id) => $q->where('channel_id', $id))
+            ->orderBy('name')
+            ->get();
         $contextChannel = isset($cartContext['channel_id'])
             ? DistributionChannel::find($cartContext['channel_id'])
             : null;
@@ -93,8 +99,14 @@ class CheckoutController extends Controller
             'notes'           => 'nullable|string|max:1000',
         ]);
 
-        $coupon = $this->getCoupon();
         $cartContext = $this->getCartContext();
+        $channelId = $cartContext['channel_id'] ?? $validated['channel_id'] ?? null;
+
+        if ($channelId && ! app(ChannelAccessService::class)->canAccessChannel(auth()->user(), $channelId)) {
+            abort(403, 'No access to this channel.');
+        }
+
+        $coupon = $this->getCoupon();
         $totals = $this->calculateTotals($cart, $coupon);
         $shippingAmount = (float) ($validated['shipping_amount'] ?? 0);
         $expectedTotal = round($totals['total'] + $shippingAmount, 2);
@@ -147,7 +159,10 @@ class CheckoutController extends Controller
         ], $this->resolvePosOperationalData()));
 
         if ($coupon) {
-            Coupon::whereKey($coupon['id'])->increment('used_count');
+            $orderChannelId = $cartContext['channel_id'] ?? $validated['channel_id'] ?? null;
+            Coupon::whereKey($coupon['id'])
+                ->visibleToChannel($orderChannelId)
+                ->increment('used_count');
         }
 
         // Debit wallet if payment method is wallet
@@ -217,8 +232,11 @@ class CheckoutController extends Controller
         $instance = CurrentInstance::get();
         $customerCount = Customer::where('instance_id', $instance?->id)->count() + 1;
 
+        $cartContext = $this->getCartContext();
+
         $customer = Customer::create([
             'instance_id' => $instance?->id,
+            'channel_id' => $cartContext['channel_id'] ?? $validated['channel_id'] ?? null,
             'code' => 'CUS-' . str_pad((string) $customerCount, 6, '0', STR_PAD_LEFT),
             'name' => $validated['customer_name'],
             'email' => $validated['customer_email'] ?? null,

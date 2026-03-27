@@ -8,12 +8,17 @@ use Illuminate\Support\Facades\DB;
 use Modules\Eshop360\Models\CompanyCharge;
 use Modules\Eshop360\Models\Order;
 use Modules\Eshop360\Models\OrderItem;
+use Modules\Eshop360\Services\ChannelAccessService;
 use Modules\Eshop360\Services\ChargesService;
+use Modules\Eshop360\Support\CurrentChannel;
 use Modules\Core\Support\CurrentInstance;
 
 class ChargesController extends Controller
 {
-    public function __construct(private ChargesService $chargesService) {}
+    public function __construct(
+        private ChargesService $chargesService,
+        private ChannelAccessService $channelAccess,
+    ) {}
 
     public function index()
     {
@@ -105,11 +110,16 @@ class ChargesController extends Controller
         $daysInPeriod = max(1, now()->parse($dateFrom)->diffInDays(now()->parse($dateTo)) + 1);
         $totalChargesForPeriod = $charges->sum(fn ($c) => round(($c->amount_monthly / 30) * $daysInPeriod, 2));
 
-        // Total units sold in period
+        // Total units sold in period (channel-scoped)
+        $channelId = CurrentChannel::isScoped() ? CurrentChannel::id() : null;
+        $accessibleIds = $this->channelAccess->accessibleChannelIds(auth()->user());
+
         $salesData = DB::table('eshop_order_items as oi')
             ->join('eshop_orders as o', 'o.id', '=', 'oi.order_id')
             ->where('o.instance_id', $instanceId)
             ->where('o.status', '!=', 'cancelled')
+            ->when($channelId, fn ($q) => $q->where('o.channel_id', $channelId))
+            ->when(! $channelId && $accessibleIds !== null, fn ($q) => $q->whereIn('o.channel_id', $accessibleIds->all()))
             ->whereBetween('o.created_at', [$dateFrom . ' 00:00:00', $dateTo . ' 23:59:59'])
             ->select(
                 'oi.product_id', 'oi.product_name',

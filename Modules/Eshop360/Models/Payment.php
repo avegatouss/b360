@@ -9,13 +9,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Modules\Core\Database\Traits\BelongsToInstance;
 
+use Modules\Eshop360\Database\Traits\BelongsToChannel;
+
 class Payment extends Model
 {
-    use HasFactory, BelongsToInstance;
+    use HasFactory, BelongsToInstance, BelongsToChannel;
 
     protected $table = 'eshop_payments';
 
     protected $fillable = [
+        'channel_id',
         'instance_id',
         'payable_type',
         'payable_id',

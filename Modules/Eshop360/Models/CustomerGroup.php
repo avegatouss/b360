@@ -7,13 +7,16 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Modules\Core\Database\Traits\BelongsToInstance;
 
+use Modules\Eshop360\Database\Traits\BelongsToChannel;
+
 class CustomerGroup extends Model
 {
-    use HasFactory, BelongsToInstance;
+    use HasFactory, BelongsToInstance, BelongsToChannel;
 
     protected $table = 'eshop_customer_groups';
 
     protected $fillable = [
+        'channel_id',
         'instance_id',
         'name',
         'discount_rate',

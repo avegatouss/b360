@@ -22,7 +22,8 @@ class BulkMessageController extends Controller
 
         $customerGroups = CustomerGroup::where('instance_id', $instance->id)->get();
         $stores = Store::where('instance_id', $instance->id)->where('is_active', true)->get();
-        $channels = DistributionChannel::where('instance_id', $instance->id)->get();
+        $channels = DistributionChannel::where('instance_id', $instance->id)
+            ->where('is_active', true)->orderBy('name')->get();
         $emailTemplates = EmailTemplate::where('instance_id', $instance->id)->where('is_active', true)->get();
 
         return view('eshop360::communication.bulk.compose', compact(
@@ -142,9 +143,7 @@ class BulkMessageController extends Controller
         }
 
         if ($request->filled('channel_id')) {
-            $query->whereHas('orders', function ($q) use ($request) {
-                $q->where('channel_id', $request->input('channel_id'));
-            });
+            $query->where('channel_id', $request->input('channel_id'));
         }
 
         if ($request->filled('status')) {

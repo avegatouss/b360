@@ -10,9 +10,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Modules\Core\Database\Traits\BelongsToInstance;
 use Modules\Eshop360\Database\Traits\ScopedByUserAssignment;
 
+use Modules\Eshop360\Database\Traits\BelongsToChannel;
+
 class Customer extends Model
 {
-    use HasFactory, BelongsToInstance, ScopedByUserAssignment;
+    use HasFactory, BelongsToInstance, ScopedByUserAssignment, BelongsToChannel;
 
     protected static array $userAssignmentConfig = [
         ['type' => 'customer', 'column' => 'id'],
@@ -57,11 +59,6 @@ class Customer extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function channel(): BelongsTo
-    {
-        return $this->belongsTo(DistributionChannel::class, 'channel_id');
     }
 
     /**

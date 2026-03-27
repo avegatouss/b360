@@ -60,10 +60,8 @@ class InvoiceController extends Controller
         $invoices = $query->latest()->paginate(25)->withQueryString();
 
         // Lookups
-        $customers = Customer::where('instance_id', $instance->id)
-            ->where('is_active', true)
-            ->orderBy('name')
-            ->get(['id', 'name', 'code']);
+        $customers = Customer::where('instance_id', $instance->id)->where('is_active', true)
+            ->orderBy('name')->get(['id', 'name', 'code']);
 
         return view('eshop360::invoices.index', compact('invoices', 'kpi', 'customers'));
     }
@@ -71,8 +69,9 @@ class InvoiceController extends Controller
     public function create(Request $request)
     {
         $instance = CurrentInstance::get();
-        $customers = Customer::where('is_active', true)->orderBy('name')->get();
-        $products = Product::active()->orderBy('name')->get();
+        $customers = Customer::where('instance_id', $instance->id)->where('is_active', true)
+            ->orderBy('name')->get();
+        $products = Product::where('instance_id', $instance->id)->active()->orderBy('name')->get();
         $order = $request->order_id ? Order::with('items.product', 'customer')->find($request->order_id) : null;
 
         $instanceId = $instance?->id ?? 0;

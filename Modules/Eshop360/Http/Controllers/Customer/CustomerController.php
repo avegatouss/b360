@@ -10,25 +10,40 @@ use Modules\Core\Support\CurrentInstance;
 use Modules\Eshop360\Models\Customer;
 use Modules\Eshop360\Models\CustomerTransaction;
 use Modules\Eshop360\Models\Order;
+use Modules\Eshop360\Services\ChannelAccessService;
 use Modules\Eshop360\Services\FinanceService;
 
 class CustomerController extends Controller
 {
+    public function __construct(
+        private readonly ChannelAccessService $channelAccess,
+    ) {}
+
     public function index(Request $request)
     {
-        $customers = Customer::withCount('orders')
-            ->withSum('orders as total_spent', 'total')
-            ->when($request->search, fn ($q, $s) => $q->where('name', 'like', "%{$s}%")
-                ->orWhere('email', 'like', "%{$s}%")
-                ->orWhere('phone', 'like', "%{$s}%")
-                ->orWhere('code', 'like', "%{$s}%"))
+        $user = auth()->user();
+        $channelFilter = $request->integer('channel_id') ?: null;
+
+        $query = Customer::withCount('orders')
+            ->withSum('orders as total_spent', 'total');
+
+        $customers = $query
+            ->when($channelFilter, fn ($q) => $q->where('channel_id', $channelFilter))
+            ->when($request->search, fn ($q, $s) => $q->where(function ($qq) use ($s) {
+                $qq->where('name', 'like', "%{$s}%")
+                    ->orWhere('email', 'like', "%{$s}%")
+                    ->orWhere('phone', 'like', "%{$s}%")
+                    ->orWhere('code', 'like', "%{$s}%");
+            }))
             ->when($request->filled('is_active'), fn ($q) => $q->where('is_active', $request->boolean('is_active')))
             ->when($request->city, fn ($q, $c) => $q->where('city', $c))
             ->latest()
             ->paginate(20)
             ->withQueryString();
 
-        return view('eshop360::customers.index', compact('customers'));
+        $channels = $this->channelAccess->availableChannelsForFilter($user);
+
+        return view('eshop360::customers.index', compact('customers', 'channels'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -56,6 +71,13 @@ class CustomerController extends Controller
         $instance = CurrentInstance::get();
         $validated['instance_id'] = $instance?->id;
         $validated['code'] = 'CUS-' . str_pad(Customer::where('instance_id', $instance?->id)->count() + 1, 6, '0', STR_PAD_LEFT);
+
+        // Force channel_id from session context (non-hub users must create within their channel)
+        $channelId = $request->integer('channel_id') ?: null;
+        if (!$this->channelAccess->isHubAdmin(auth()->user())) {
+            abort_unless($channelId, 422, 'Un canal doit etre selectionne pour creer un client.');
+        }
+        $validated['channel_id'] = $channelId;
 
         // Remove non-model fields
         $createAccount = $request->boolean('create_user_account');
@@ -96,18 +118,26 @@ class CustomerController extends Controller
 
     public function show(string $slug, Customer $customer)
     {
+        // Ensure user can access this customer's channel
+        $user = auth()->user();
+        if (!$this->channelAccess->isHubAdmin($user)) {
+            abort_unless(
+                $customer->channel_id && $this->channelAccess->canAccessChannel($user, $customer->channel_id),
+                403, 'Acces refuse a ce client.'
+            );
+        }
+
         $customer->load('user');
 
-        $orders = Order::where('customer_id', $customer->id)
-            ->with('items')
-            ->latest()
-            ->paginate(15);
+        $scopedOrderQuery = fn () => Order::where('customer_id', $customer->id);
+
+        $orders = $scopedOrderQuery()->with('items')->latest()->paginate(15);
 
         $stats = [
-            'total_orders'  => Order::where('customer_id', $customer->id)->count(),
-            'total_spent'   => Order::where('customer_id', $customer->id)->where('status', 'completed')->sum('total'),
-            'total_due'     => Order::where('customer_id', $customer->id)->where('payment_status', '!=', 'paid')->sum('due_amount'),
-            'last_order_at' => Order::where('customer_id', $customer->id)->latest()->value('created_at'),
+            'total_orders'  => $scopedOrderQuery()->count(),
+            'total_spent'   => $scopedOrderQuery()->where('status', 'completed')->sum('total'),
+            'total_due'     => $scopedOrderQuery()->where('payment_status', '!=', 'paid')->sum('due_amount'),
+            'last_order_at' => $scopedOrderQuery()->latest()->value('created_at'),
         ];
 
         $walletTransactions = CustomerTransaction::where('customer_id', $customer->id)
@@ -139,6 +169,15 @@ class CustomerController extends Controller
 
     public function update(Request $request, string $slug, Customer $customer): RedirectResponse
     {
+        // Ensure user can access this customer's channel
+        $user = auth()->user();
+        if (!$this->channelAccess->isHubAdmin($user)) {
+            abort_unless(
+                $customer->channel_id && $this->channelAccess->canAccessChannel($user, $customer->channel_id),
+                403, 'Acces refuse a ce client.'
+            );
+        }
+
         $validated = $request->validate([
             'name'         => 'required|string|max:255',
             'email'        => 'nullable|email|max:255',
@@ -175,22 +214,37 @@ class CustomerController extends Controller
     {
         $instance = CurrentInstance::get();
         $instanceId = $instance?->id ?? 0;
+        $user = auth()->user();
+        $accessibleChannelIds = $this->channelAccess->accessibleChannelIds($user);
         $from = $request->input('date_from', now()->startOfYear()->toDateString());
         $to = $request->input('date_to', now()->toDateString());
 
-        // Global customer KPIs
-        $totalCustomers = Customer::withoutGlobalScopes()->where('instance_id', $instanceId)->count();
-        $activeCustomers = Customer::withoutGlobalScopes()->where('instance_id', $instanceId)->where('is_active', true)->count();
-        $withAccount = Customer::withoutGlobalScopes()->where('instance_id', $instanceId)->whereNotNull('user_id')->count();
-        $newCustomers = Customer::withoutGlobalScopes()->where('instance_id', $instanceId)
+        // Helper to apply channel scope on raw DB queries
+        $applyChannelScope = function ($query, string $channelCol = 'channel_id') use ($accessibleChannelIds) {
+            if ($accessibleChannelIds !== null) {
+                $query->whereIn($channelCol, $accessibleChannelIds->all());
+            }
+            return $query;
+        };
+
+        // Global customer KPIs (scoped by channel)
+        $customerBase = Customer::withoutGlobalScopes()->where('instance_id', $instanceId);
+        if ($accessibleChannelIds !== null) {
+            $customerBase->whereIn('channel_id', $accessibleChannelIds->all());
+        }
+        $totalCustomers = (clone $customerBase)->count();
+        $activeCustomers = (clone $customerBase)->where('is_active', true)->count();
+        $withAccount = (clone $customerBase)->whereNotNull('user_id')->count();
+        $newCustomers = (clone $customerBase)
             ->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])->count();
 
         // Financial KPIs
-        $financialStats = DB::table('eshop_orders')
+        $financialQuery = DB::table('eshop_orders')
             ->where('instance_id', $instanceId)
             ->where('status', 'completed')
-            ->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])
-            ->selectRaw('
+            ->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59']);
+        $applyChannelScope($financialQuery);
+        $financialStats = $financialQuery->selectRaw('
                 COALESCE(SUM(total), 0) as total_revenue,
                 COALESCE(SUM(paid_amount), 0) as total_paid,
                 COALESCE(SUM(due_amount), 0) as total_due,
@@ -199,11 +253,13 @@ class CustomerController extends Controller
             ')->first();
 
         // Top 30 customers by revenue
-        $topCustomers = DB::table('eshop_orders')
+        $topCustomersQuery = DB::table('eshop_orders')
             ->join('eshop_customers', 'eshop_orders.customer_id', '=', 'eshop_customers.id')
             ->where('eshop_orders.instance_id', $instanceId)
             ->where('eshop_orders.status', 'completed')
-            ->whereBetween('eshop_orders.created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])
+            ->whereBetween('eshop_orders.created_at', [$from . ' 00:00:00', $to . ' 23:59:59']);
+        $applyChannelScope($topCustomersQuery, 'eshop_orders.channel_id');
+        $topCustomers = $topCustomersQuery
             ->selectRaw('
                 eshop_customers.id, eshop_customers.name, eshop_customers.code, eshop_customers.email,
                 eshop_customers.wallet_balance, eshop_customers.credit_limit,
@@ -221,45 +277,55 @@ class CustomerController extends Controller
             ->get();
 
         // Customers by store
-        $byStore = DB::table('eshop_orders')
+        $byStoreQuery = DB::table('eshop_orders')
             ->leftJoin('eshop_stores', 'eshop_orders.store_id', '=', 'eshop_stores.id')
             ->where('eshop_orders.instance_id', $instanceId)
             ->where('eshop_orders.status', 'completed')
-            ->whereBetween('eshop_orders.created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])
+            ->whereBetween('eshop_orders.created_at', [$from . ' 00:00:00', $to . ' 23:59:59']);
+        $applyChannelScope($byStoreQuery, 'eshop_orders.channel_id');
+        $byStore = $byStoreQuery
             ->selectRaw('COALESCE(eshop_stores.name, "N/A") as store_name, COUNT(DISTINCT customer_id) as customers, COUNT(*) as orders, SUM(eshop_orders.total) as revenue')
             ->groupBy('eshop_orders.store_id', 'eshop_stores.name')
             ->orderByDesc('revenue')
             ->get();
 
         // Customers by channel
-        $byChannel = DB::table('eshop_orders')
+        $byChannelQuery = DB::table('eshop_orders')
             ->leftJoin('eshop_distribution_channels', 'eshop_orders.channel_id', '=', 'eshop_distribution_channels.id')
             ->where('eshop_orders.instance_id', $instanceId)
             ->where('eshop_orders.status', 'completed')
             ->whereBetween('eshop_orders.created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])
-            ->whereNotNull('eshop_orders.customer_id')
+            ->whereNotNull('eshop_orders.customer_id');
+        $applyChannelScope($byChannelQuery, 'eshop_orders.channel_id');
+        $byChannel = $byChannelQuery
             ->selectRaw('COALESCE(eshop_distribution_channels.name, "Direct") as channel_name, COUNT(DISTINCT customer_id) as customers, COUNT(*) as orders, SUM(eshop_orders.total) as revenue')
             ->groupBy('eshop_orders.channel_id', 'eshop_distribution_channels.name')
             ->orderByDesc('revenue')
             ->get();
 
         // Monthly new customers trend (12 months)
-        $monthlyNewCustomers = Customer::withoutGlobalScopes()
+        $monthlyCustomersQuery = Customer::withoutGlobalScopes()
             ->where('instance_id', $instanceId)
-            ->where('created_at', '>=', now()->subMonths(12)->startOfMonth())
+            ->where('created_at', '>=', now()->subMonths(12)->startOfMonth());
+        if ($accessibleChannelIds !== null) {
+            $monthlyCustomersQuery->whereIn('channel_id', $accessibleChannelIds->all());
+        }
+        $monthlyNewCustomers = $monthlyCustomersQuery
             ->selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, COUNT(*) as count')
             ->groupByRaw('YEAR(created_at), MONTH(created_at)')
             ->orderByRaw('YEAR(created_at), MONTH(created_at)')
             ->get();
 
         // Top products bought by customers (what customers buy most)
-        $topProductsBought = DB::table('eshop_order_items')
+        $topProductsQuery = DB::table('eshop_order_items')
             ->join('eshop_orders', 'eshop_order_items.order_id', '=', 'eshop_orders.id')
             ->leftJoin('eshop_products', 'eshop_order_items.product_id', '=', 'eshop_products.id')
             ->where('eshop_orders.instance_id', $instanceId)
             ->where('eshop_orders.status', 'completed')
             ->whereNotNull('eshop_orders.customer_id')
-            ->whereBetween('eshop_orders.created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])
+            ->whereBetween('eshop_orders.created_at', [$from . ' 00:00:00', $to . ' 23:59:59']);
+        $applyChannelScope($topProductsQuery, 'eshop_orders.channel_id');
+        $topProductsBought = $topProductsQuery
             ->selectRaw('
                 COALESCE(eshop_products.name, eshop_order_items.product_name) as product_name,
                 eshop_products.sku, eshop_products.cost_price, eshop_products.purchase_price_factory,
@@ -339,11 +405,19 @@ class CustomerController extends Controller
     {
         $dateFrom = $request->date_from ?? now()->startOfYear()->toDateString();
         $dateTo = $request->date_to ?? now()->toDateString();
+        $user = auth()->user();
+        $accessibleChannelIds = $this->channelAccess->accessibleChannelIds($user);
+        $instance = CurrentInstance::get();
 
-        $topCustomers = Customer::select('eshop_customers.*')
+        $topCustomersQuery = Customer::select('eshop_customers.*')
+            ->where('eshop_customers.instance_id', $instance->id)
             ->join('eshop_orders', 'eshop_customers.id', '=', 'eshop_orders.customer_id')
             ->where('eshop_orders.status', 'completed')
-            ->whereBetween('eshop_orders.created_at', [$dateFrom, $dateTo . ' 23:59:59'])
+            ->whereBetween('eshop_orders.created_at', [$dateFrom, $dateTo . ' 23:59:59']);
+        if ($accessibleChannelIds !== null) {
+            $topCustomersQuery->whereIn('eshop_orders.channel_id', $accessibleChannelIds->all());
+        }
+        $topCustomers = $topCustomersQuery
             ->groupBy('eshop_customers.id')
             ->selectRaw('SUM(eshop_orders.total) as total_spent')
             ->selectRaw('COUNT(eshop_orders.id) as order_count')
@@ -352,12 +426,15 @@ class CustomerController extends Controller
             ->paginate(30)
             ->withQueryString();
 
-        $totalCustomers = Customer::count();
-        $activeCustomers = Customer::whereHas('orders', function ($q) use ($dateFrom, $dateTo) {
+        $customerBase = Customer::where('instance_id', $instance->id);
+        if ($accessibleChannelIds !== null) {
+            $customerBase->whereIn('channel_id', $accessibleChannelIds->all());
+        }
+        $totalCustomers = (clone $customerBase)->count();
+        $activeCustomers = (clone $customerBase)->whereHas('orders', function ($q) use ($dateFrom, $dateTo) {
             $q->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59']);
         })->count();
-
-        $newCustomers = Customer::whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])->count();
+        $newCustomers = (clone $customerBase)->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])->count();
 
         return view('eshop360::customers.report', compact(
             'topCustomers', 'totalCustomers', 'activeCustomers', 'newCustomers', 'dateFrom', 'dateTo'
@@ -366,10 +443,19 @@ class CustomerController extends Controller
 
     public function dueReport(Request $request)
     {
+        $user = auth()->user();
+        $accessibleChannelIds = $this->channelAccess->accessibleChannelIds($user);
+        $instance = CurrentInstance::get();
+
         $customersWithDue = Customer::select('eshop_customers.*')
+            ->where('eshop_customers.instance_id', $instance->id)
             ->join('eshop_orders', 'eshop_customers.id', '=', 'eshop_orders.customer_id')
             ->where('eshop_orders.due_amount', '>', 0)
-            ->where('eshop_orders.payment_status', '!=', 'paid')
+            ->where('eshop_orders.payment_status', '!=', 'paid');
+        if ($accessibleChannelIds !== null) {
+            $customersWithDue->whereIn('eshop_orders.channel_id', $accessibleChannelIds->all());
+        }
+        $customersWithDue = $customersWithDue
             ->groupBy('eshop_customers.id')
             ->selectRaw('SUM(eshop_orders.due_amount) as total_due')
             ->selectRaw('COUNT(eshop_orders.id) as unpaid_orders')
@@ -380,8 +466,9 @@ class CustomerController extends Controller
             ->paginate(30)
             ->withQueryString();
 
-        $totalDueAmount = Order::where('payment_status', '!=', 'paid')->sum('due_amount');
-        $customersDueCount = Order::where('due_amount', '>', 0)->distinct('customer_id')->count('customer_id');
+        $dueQuery = Order::where('instance_id', $instance->id)->where('payment_status', '!=', 'paid');
+        $totalDueAmount = (clone $dueQuery)->sum('due_amount');
+        $customersDueCount = (clone $dueQuery)->where('due_amount', '>', 0)->distinct('customer_id')->count('customer_id');
 
         return view('eshop360::customers.due-report', compact('customersWithDue', 'totalDueAmount', 'customersDueCount'));
     }

@@ -7,6 +7,7 @@ use Illuminate\Routing\Controller;
 use Modules\Core\Support\CurrentInstance;
 use Modules\Eshop360\Services\ChannelAccessService;
 use Modules\Eshop360\Services\HierarchicalMenuService;
+use Modules\Eshop360\Support\CurrentChannel;
 
 final class HierarchicalMenuController extends Controller
 {
@@ -30,6 +31,9 @@ final class HierarchicalMenuController extends Controller
             $channels = $channels->filter(fn ($ch) => $accessible?->contains($ch->id));
         }
 
+        // Clear channel context when returning to home (channel selection)
+        CurrentChannel::clear();
+
         $instance = CurrentInstance::get();
 
         return view('eshop360::hierarchical-menu.home', compact('channels', 'instance'));
@@ -49,7 +53,10 @@ final class HierarchicalMenuController extends Controller
         // Verify user has access to this channel
         abort_unless($this->channelAccess->canAccessChannel(auth()->user(), $channel), 403);
 
-        $moduleGroups = $this->menuService->getModuleGroups();
+        // Set active channel in session — all subsequent pages will be scoped
+        CurrentChannel::set($channel);
+
+        $moduleGroups = $this->menuService->getModuleGroups($channel);
         $instance = CurrentInstance::get();
 
         return view('eshop360::hierarchical-menu.modules', compact(
@@ -70,7 +77,10 @@ final class HierarchicalMenuController extends Controller
 
         abort_unless($this->channelAccess->canAccessChannel(auth()->user(), $channel), 403);
 
-        $module = $this->menuService->getModuleChildren($moduleKey);
+        // Reinforce channel context in session
+        CurrentChannel::set($channel);
+
+        $module = $this->menuService->getModuleChildren($moduleKey, $channel);
 
         if (!$module) {
             abort(404, 'Module introuvable');

@@ -5,6 +5,7 @@ namespace Modules\Eshop360\Http\Controllers\Promotion;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Modules\Core\Support\CurrentInstance;
 use Modules\Eshop360\Models\Discount;
 use Modules\Eshop360\Models\DiscountPlan;
 
@@ -12,7 +13,8 @@ class DiscountController extends Controller
 {
     public function index(Request $request)
     {
-        $discounts = Discount::query()
+        $instanceId = CurrentInstance::idOrFail();
+        $discounts = Discount::where('instance_id', $instanceId)
             ->when($request->search, fn ($q, $s) => $q->where('name', 'like', "%{$s}%"))
             ->when($request->filled('is_active'), fn ($q) => $q->where('is_active', $request->boolean('is_active')))
             ->when($request->discount_type, fn ($q, $t) => $q->where('discount_type', $t))
@@ -40,7 +42,7 @@ class DiscountController extends Controller
             'is_active'      => 'boolean',
         ]);
 
-        $validated['instance_id'] = $request->route('instance_id') ?? session('instance_id');
+        $validated['instance_id'] = CurrentInstance::idOrFail();
 
         Discount::create($validated);
 
@@ -80,7 +82,8 @@ class DiscountController extends Controller
 
     public function plans(Request $request)
     {
-        $plans = DiscountPlan::with('discounts')
+        $instanceId = CurrentInstance::idOrFail();
+        $plans = DiscountPlan::where('instance_id', $instanceId)->with('discounts')
             ->when($request->search, fn ($q, $s) => $q->where('name', 'like', "%{$s}%"))
             ->when($request->filled('is_active'), fn ($q) => $q->where('is_active', $request->boolean('is_active')))
             ->latest()
@@ -102,7 +105,7 @@ class DiscountController extends Controller
             'is_active'     => 'boolean',
         ]);
 
-        $validated['instance_id'] = $request->route('instance_id') ?? session('instance_id');
+        $validated['instance_id'] = CurrentInstance::idOrFail();
         $discountIds = $validated['discount_ids'];
         unset($validated['discount_ids']);
 

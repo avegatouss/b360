@@ -287,7 +287,7 @@ class PurchaseController extends Controller
     public function receiveForm(string $slug, PurchaseOrder $purchase)
     {
         $purchase->load(['items.product', 'warehouse']);
-        $warehouses = \Modules\Eshop360\Models\Warehouse::all();
+        $warehouses = \Modules\Eshop360\Models\Warehouse::where('is_active', true)->orderBy('name')->get();
 
         return view('eshop360::purchases.receive', compact('purchase', 'warehouses'));
     }

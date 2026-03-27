@@ -7,13 +7,16 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Modules\Core\Database\Traits\BelongsToInstance;
 
+use Modules\Eshop360\Database\Traits\BelongsToChannel;
+
 class ReceiptTemplate extends Model
 {
-    use HasFactory, BelongsToInstance;
+    use HasFactory, BelongsToInstance, BelongsToChannel;
 
     protected $table = 'eshop_receipt_templates';
 
     protected $fillable = [
+        'channel_id',
         'instance_id',
         'store_id',
         'name',

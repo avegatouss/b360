@@ -1,16 +1,42 @@
 @if (! Route::is(['pos','pos-2','pos-3','pos-4','pos-5']))
         @if(!empty($hierarchicalMenuEnabled))
-            {{-- Hierarchical menu mode: hide sidebar, show nav button --}}
+            {{-- Hierarchical menu mode: hide sidebar, inject channel controls into header --}}
+            @php
+                $__instanceSlug = Modules\Core\Support\CurrentInstance::get()?->slug ?? '';
+                $__channel = $currentChannel ?? \Modules\Eshop360\Support\CurrentChannel::get();
+                $__isScoped = $__channel && $__channel->slug !== \Modules\Eshop360\Services\HierarchicalMenuService::GLOBAL_CHANNEL_SLUG;
+                $__themeColor = $__channel->portal_settings['theme_color'] ?? '#4f46e5';
+                $__navTarget = $__channel ? route('eshop360.nav.modules', [$__instanceSlug, $__channel->slug]) : route('eshop360.nav.home', $__instanceSlug);
+                $__logoutUrl = route('instance.logout', $__instanceSlug);
+            @endphp
             <div class="sidebar" id="sidebar" style="display:none"></div>
             <style>
                 .page-wrapper { margin-left: 0 !important; }
-                .header .header-left { display: none; }
+                .header .header-left { display: flex !important; align-items: center; gap: 10px; padding-left: 16px; }
+                .header .header-left .logo, .header .header-left .logo-small { display: none !important; }
+                .hm-hdr-ch { display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:8px;background:{{ $__themeColor }}10;border:1px solid {{ $__themeColor }}28;text-decoration:none;color:{{ $__themeColor }};font-size:13px;font-weight:600;transition:all .2s;white-space:nowrap; }
+                .hm-hdr-ch:hover { background:{{ $__themeColor }}20;color:{{ $__themeColor }};text-decoration:none; }
+                .hm-hdr-dot { width:8px;height:8px;border-radius:50%;background:{{ $__themeColor }}; }
+                .hm-hdr-btn { display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;border:1px solid #e2e8f0;background:#fff;color:#374151;font-size:16px;text-decoration:none;transition:all .2s; }
+                .hm-hdr-btn:hover { background:#f1f5f9;border-color:#cbd5e1;color:#111;text-decoration:none; }
             </style>
-            <div class="hm-sidebar-toggle" style="position:fixed;bottom:24px;left:24px;z-index:1050;">
-                <a href="{{ route('eshop360.nav.home', Modules\Core\Support\CurrentInstance::get()?->slug ?? '') }}"
-                   class="btn btn-primary d-flex align-items-center gap-2 shadow-lg"
-                   style="border-radius:12px;padding:12px 20px;font-weight:600;">
-                    <i class="ti ti-layout-grid fs-18"></i> Navigation
+            {{-- Channel badge + nav buttons injected directly in header-left --}}
+            <div style="position:fixed;top:0;left:0;height:60px;display:flex;align-items:center;gap:8px;padding:0 16px;z-index:1051;">
+                @if($__channel)
+                    <a href="{{ $__navTarget }}" class="hm-hdr-ch" title="Retour aux modules">
+                        <span class="hm-hdr-dot"></span>
+                        {{ Str::limit($__channel->name, 22) }}
+                        @if($__isScoped)<i class="ti ti-lock" style="font-size:11px;opacity:.7;"></i>@endif
+                    </a>
+                @endif
+                <a href="{{ $__navTarget }}" class="hm-hdr-btn" title="Modules du canal">
+                    <i class="ti ti-layout-grid"></i>
+                </a>
+                <a href="{{ route('eshop360.nav.home', $__instanceSlug) }}" class="hm-hdr-btn" title="Changer de canal">
+                    <i class="ti ti-switch-horizontal"></i>
+                </a>
+                <a href="{{ $__logoutUrl }}" class="hm-hdr-btn" title="Deconnexion" style="color:#dc2626;border-color:#fecaca;">
+                    <i class="ti ti-logout"></i>
                 </a>
             </div>
         @else

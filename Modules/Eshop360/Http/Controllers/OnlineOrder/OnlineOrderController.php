@@ -14,23 +14,29 @@ use Modules\Eshop360\Services\StockService;
 
 class OnlineOrderController extends Controller
 {
-    public function __construct(private OnlineOrderService $onlineOrderService) {}
+    public function __construct(
+        private OnlineOrderService $onlineOrderService,
+    ) {}
 
     public function index(Request $request)
     {
         $instance = CurrentInstance::get();
 
+        $channelFilter = $request->integer('channel_id') ?: null;
+
         $query = OnlineOrder::where('eshop_online_orders.instance_id', $instance->id)
             ->with('customer', 'channel')
             ->when($request->status, fn ($q, $s) => $q->where('status', $s))
             ->when($request->customer_id, fn ($q, $c) => $q->where('customer_id', $c))
-            ->when($request->channel_id, fn ($q, $c) => $q->where('channel_id', $c))
             ->when($request->date_from, fn ($q, $d) => $q->whereDate('eshop_online_orders.created_at', '>=', $d))
             ->when($request->date_to, fn ($q, $d) => $q->whereDate('eshop_online_orders.created_at', '<=', $d))
             ->when($request->search, fn ($q, $s) => $q->where(function ($qq) use ($s) {
                 $qq->where('reference', 'like', "%{$s}%")
                     ->orWhereHas('customer', fn ($cq) => $cq->where('name', 'like', "%{$s}%"));
             }));
+
+        // Optional UI channel filter
+        $query->when($channelFilter, fn($q) => $q->where('channel_id', $channelFilter));
 
         // KPIs from filtered query
         $statsQuery = clone $query;
@@ -50,13 +56,10 @@ class OnlineOrderController extends Controller
         // Filter lookups
         $customers = \Modules\Eshop360\Models\Customer::where('instance_id', $instance->id)
             ->whereHas('onlineOrders')
-            ->orderBy('name')
-            ->get(['id', 'name', 'code']);
+            ->orderBy('name')->get(['id', 'name', 'code']);
 
         $channels = \Modules\Eshop360\Models\DistributionChannel::where('instance_id', $instance->id)
-            ->where('is_active', true)
-            ->orderBy('name')
-            ->get(['id', 'name']);
+            ->where('is_active', true)->orderBy('name')->get();
 
         return view('eshop360::online-orders.index', compact('orders', 'kpi', 'customers', 'channels'));
     }

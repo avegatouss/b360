@@ -17,7 +17,9 @@ use Modules\Eshop360\Models\Warehouse;
 use Modules\Eshop360\Models\StockMovement;
 use Modules\Eshop360\Models\OrderItem;
 use Modules\Eshop360\Services\ChargesService;
+use Modules\Eshop360\Services\ChannelAccessService;
 use Modules\Eshop360\Services\UserResourceScopeService;
+use Modules\Eshop360\Support\CurrentChannel;
 use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
@@ -180,6 +182,10 @@ class ProductController extends Controller
 
     public function show(string $slug, Product $product)
     {
+        // Channel context for raw queries
+        $channelId = CurrentChannel::isScoped() ? CurrentChannel::id() : null;
+        $accessibleIds = app(ChannelAccessService::class)->accessibleChannelIds(auth()->user());
+
         // 1. Load product with comprehensive relations
         $scope = app(UserResourceScopeService::class);
         $product->load([
@@ -215,6 +221,8 @@ class ProductController extends Controller
             ->join('eshop_orders', 'eshop_order_items.order_id', '=', 'eshop_orders.id')
             ->where('eshop_order_items.product_id', $product->id)
             ->where('eshop_orders.status', 'completed')
+            ->when($channelId, fn ($q) => $q->where('eshop_orders.channel_id', $channelId))
+            ->when(! $channelId && $accessibleIds !== null, fn ($q) => $q->whereIn('eshop_orders.channel_id', $accessibleIds->all()))
             ->selectRaw('
                 COALESCE(SUM(eshop_order_items.quantity), 0) as total_quantity_sold,
                 COALESCE(SUM(eshop_order_items.total), 0) as total_revenue,
@@ -235,6 +243,8 @@ class ProductController extends Controller
             ->where('eshop_order_items.product_id', $product->id)
             ->where('eshop_orders.status', 'completed')
             ->where('eshop_orders.created_at', '>=', now()->subMonths(6)->startOfMonth())
+            ->when($channelId, fn ($q) => $q->where('eshop_orders.channel_id', $channelId))
+            ->when(! $channelId && $accessibleIds !== null, fn ($q) => $q->whereIn('eshop_orders.channel_id', $accessibleIds->all()))
             ->selectRaw('
                 YEAR(eshop_orders.created_at) as year,
                 MONTH(eshop_orders.created_at) as month,
@@ -260,6 +270,8 @@ class ProductController extends Controller
             ->where('eshop_order_items.product_id', $product->id)
             ->where('eshop_orders.status', 'completed')
             ->where('eshop_orders.created_at', '>=', now()->subMonths(3)->startOfMonth())
+            ->when($channelId, fn ($q) => $q->where('eshop_orders.channel_id', $channelId))
+            ->when(! $channelId && $accessibleIds !== null, fn ($q) => $q->whereIn('eshop_orders.channel_id', $accessibleIds->all()))
             ->sum('eshop_order_items.total');
 
         $monthlyRevenueAvg = (float) $revenueLastThreeMonths / 3;

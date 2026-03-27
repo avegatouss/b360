@@ -5,13 +5,15 @@ namespace Modules\Eshop360\Models;
 use Illuminate\Database\Eloquent\Model;
 use Modules\Core\Database\Traits\BelongsToInstance;
 
+use Modules\Eshop360\Database\Traits\BelongsToChannel;
+
 class ChargeCategory extends Model
 {
-    use BelongsToInstance;
+    use BelongsToInstance, BelongsToChannel;
 
     protected $table = 'eshop_charge_categories';
 
-    protected $fillable = ['instance_id', 'code', 'label', 'is_active', 'sort_order'];
+    protected $fillable = ['instance_id', 'channel_id', 'code', 'label', 'is_active', 'sort_order'];
 
     protected $casts = ['is_active' => 'boolean', 'sort_order' => 'integer'];
 

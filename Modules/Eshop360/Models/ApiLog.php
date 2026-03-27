@@ -4,11 +4,16 @@ namespace Modules\Eshop360\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+use Modules\Eshop360\Database\Traits\BelongsToChannel;
+
 class ApiLog extends Model
 {
+    use BelongsToChannel;
+
     protected $table = 'eshop_api_logs';
 
     protected $fillable = [
+        'channel_id',
         'method',
         'endpoint',
         'response_code',

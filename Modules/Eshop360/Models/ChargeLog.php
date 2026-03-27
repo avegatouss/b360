@@ -6,13 +6,16 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+use Modules\Eshop360\Database\Traits\BelongsToChannel;
+
 class ChargeLog extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToChannel;
 
     protected $table = 'eshop_charge_logs';
 
     protected $fillable = [
+        'channel_id',
         'charge_id',
         'amount_per_second',
         'period_start',

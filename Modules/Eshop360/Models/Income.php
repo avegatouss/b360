@@ -8,13 +8,16 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Modules\Core\Database\Traits\BelongsToInstance;
 
+use Modules\Eshop360\Database\Traits\BelongsToChannel;
+
 class Income extends Model
 {
-    use HasFactory, BelongsToInstance;
+    use HasFactory, BelongsToInstance, BelongsToChannel;
 
     protected $table = 'eshop_incomes';
 
     protected $fillable = [
+        'channel_id',
         'instance_id',
         'source_id',
         'account_id',

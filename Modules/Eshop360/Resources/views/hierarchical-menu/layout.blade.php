@@ -441,7 +441,12 @@
 
         <div class="hm-navbar-user">
             @auth
-                <span class="hm-user-name">{{ auth()->user()->name ?? '' }}</span>
+                <span class="hm-user-name">{{ auth()->user()->full_name ?? auth()->user()->name ?? '' }}</span>
+                <a href="{{ route('instance.logout', $instance?->slug ?? '') }}"
+                   class="hm-btn hm-btn-icon" title="Deconnexion"
+                   style="color:#dc2626;border-color:#fecaca;">
+                    <i class="ti ti-logout"></i>
+                </a>
             @endauth
             <a href="{{ route('eshop360.nav.home', $instance?->slug ?? '') }}" class="hm-navbar-brand">
                 <img src="{{ URL::asset('build/img/logo.svg') }}" alt="B360">

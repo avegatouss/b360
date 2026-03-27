@@ -7,18 +7,24 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\Core\Support\CurrentInstance;
 use Modules\Eshop360\Models\Order;
+use Modules\Eshop360\Services\ChannelAccessService;
 use Modules\Eshop360\Services\OrderService;
 use Modules\Eshop360\Services\PdfService;
 
 class OrderController extends Controller
 {
-    public function __construct(private readonly OrderService $orderService)
-    {
+    public function __construct(
+        private readonly OrderService $orderService,
+        private readonly ChannelAccessService $channelAccess,
+    ) {
     }
 
     public function index(Request $request)
     {
         $instance = CurrentInstance::get();
+
+        $user = auth()->user();
+        $channelFilter = $request->integer('channel_id') ?: null;
 
         $query = Order::with(['customer'])
             ->when($request->status, fn ($q, $s) => $q->where('status', $s))
@@ -26,7 +32,6 @@ class OrderController extends Controller
             ->when($request->source, fn ($q, $s) => $q->where('source', $s))
             ->when($request->payment_method, fn ($q, $m) => $q->where('payment_method', $m))
             ->when($request->customer_id, fn ($q, $c) => $q->where('customer_id', $c))
-            ->when($request->channel_id, fn ($q, $c) => $q->where('channel_id', $c))
             ->when($request->min_total, fn ($q, $m) => $q->where('total', '>=', $m))
             ->when($request->max_total, fn ($q, $m) => $q->where('total', '<=', $m))
             ->when($request->date_from, fn ($q, $d) => $q->whereDate('eshop_orders.created_at', '>=', $d))
@@ -35,6 +40,9 @@ class OrderController extends Controller
                 $qq->where('order_number', 'like', "%{$s}%")
                     ->orWhereHas('customer', fn ($cq) => $cq->where('name', 'like', "%{$s}%"));
             }));
+
+        // Optional channel filter (access control is handled by ChannelScope)
+        $query->when($channelFilter, fn ($q) => $q->where('channel_id', $channelFilter));
 
         // KPIs from filtered query
         $fq = clone $query;
@@ -51,16 +59,14 @@ class OrderController extends Controller
 
         $orders = $query->latest()->paginate(25)->withQueryString();
 
-        // Filter lookups
+        // Filter lookups (scoped by channel access)
         $customers = \Modules\Eshop360\Models\Customer::where('instance_id', $instance->id)
             ->where('is_active', true)
+            ->when($channelFilter, fn ($q) => $q->where('channel_id', $channelFilter))
             ->orderBy('name')
             ->get(['id', 'name', 'code']);
 
-        $channels = \Modules\Eshop360\Models\DistributionChannel::where('instance_id', $instance->id)
-            ->where('is_active', true)
-            ->orderBy('name')
-            ->get(['id', 'name']);
+        $channels = $this->channelAccess->availableChannelsForFilter($user);
 
         $paymentMethods = Order::where('instance_id', $instance->id)
             ->whereNotNull('payment_method')
@@ -112,6 +118,7 @@ class OrderController extends Controller
 
     public function show(string $slug, Order $order)
     {
+        $this->authorizeOrderAccess($order);
         $order->load(['customer', 'items.product', 'payments', 'cashRegister.store', 'store', 'holding']);
 
         return view('eshop360::sales.orders.show', compact('order'));
@@ -119,6 +126,7 @@ class OrderController extends Controller
 
     public function receipt(string $slug, Order $order, PdfService $pdf)
     {
+        $this->authorizeOrderAccess($order);
         $order->load(['items.product', 'customer', 'payments', 'cashier', 'creator', 'store']);
 
         return $pdf->stream(
@@ -129,6 +137,7 @@ class OrderController extends Controller
 
     public function update(Request $request, string $slug, Order $order): RedirectResponse
     {
+        $this->authorizeOrderAccess($order);
         $instance = CurrentInstance::get();
         $validated = $request->validate([
             'status'         => 'nullable|in:pending,processing,completed,cancelled,refunded',
@@ -161,6 +170,7 @@ class OrderController extends Controller
 
     public function destroy(string $slug, Order $order): RedirectResponse
     {
+        $this->authorizeOrderAccess($order);
         $instance = CurrentInstance::get();
         $order->delete();
 
@@ -170,18 +180,32 @@ class OrderController extends Controller
 
     public function online(Request $request)
     {
-        $orders = Order::with(['customer', 'items'])
+        $query = Order::with(['customer', 'items'])
             ->where('source', 'online')
             ->when($request->status, fn ($q, $s) => $q->where('status', $s))
             ->when($request->payment_status, fn ($q, $s) => $q->where('payment_status', $s))
             ->when($request->search, fn ($q, $s) => $q->where('order_number', 'like', "%{$s}%")
                 ->orWhereHas('customer', fn ($cq) => $cq->where('name', 'like', "%{$s}%")))
             ->when($request->date_from, fn ($q, $d) => $q->whereDate('created_at', '>=', $d))
-            ->when($request->date_to, fn ($q, $d) => $q->whereDate('created_at', '<=', $d))
-            ->latest()
-            ->paginate(20)
-            ->withQueryString();
+            ->when($request->date_to, fn ($q, $d) => $q->whereDate('created_at', '<=', $d));
+
+        $orders = $query->latest()->paginate(20)->withQueryString();
 
         return view('eshop360::sales.orders.online', compact('orders'));
+    }
+
+    private function authorizeOrderAccess(Order $order): void
+    {
+        $user = auth()->user();
+        if ($this->channelAccess->isHubAdmin($user)) {
+            return;
+        }
+        if ($order->channel_id === null) {
+            abort(403, 'Acces refuse: commande du hub.');
+        }
+        abort_unless(
+            $this->channelAccess->canAccessChannel($user, $order->channel_id),
+            403, 'Acces refuse: cette commande appartient a un autre canal.'
+        );
     }
 }

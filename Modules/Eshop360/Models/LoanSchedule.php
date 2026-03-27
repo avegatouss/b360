@@ -5,11 +5,16 @@ namespace Modules\Eshop360\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+use Modules\Eshop360\Database\Traits\BelongsToChannel;
+
 class LoanSchedule extends Model
 {
+    use BelongsToChannel;
+
     protected $table = 'eshop_loan_schedules';
 
     protected $fillable = [
+        'channel_id',
         'loan_id',
         'installment_number',
         'due_date',

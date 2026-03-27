@@ -7,13 +7,16 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Modules\Core\Database\Traits\BelongsToInstance;
 
+use Modules\Eshop360\Database\Traits\BelongsToChannel;
+
 class Event extends Model
 {
-    use BelongsToInstance;
+    use BelongsToInstance, BelongsToChannel;
 
     protected $table = 'eshop_events';
 
     protected $fillable = [
+        'channel_id',
         'instance_id',
         'user_id',
         'title',

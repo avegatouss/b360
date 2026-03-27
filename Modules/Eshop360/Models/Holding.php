@@ -9,9 +9,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Modules\Core\Database\Traits\BelongsToInstance;
 
+use Modules\Eshop360\Database\Traits\BelongsToChannel;
+
 class Holding extends Model
 {
-    use HasFactory, BelongsToInstance;
+    use HasFactory, BelongsToInstance, BelongsToChannel;
 
     protected $table = 'eshop_holdings';
 
@@ -36,11 +38,6 @@ class Holding extends Model
         'discount_amount' => 'decimal:2',
         'total' => 'decimal:2',
     ];
-
-    public function channel(): BelongsTo
-    {
-        return $this->belongsTo(DistributionChannel::class, 'channel_id');
-    }
 
     public function customer(): BelongsTo
     {

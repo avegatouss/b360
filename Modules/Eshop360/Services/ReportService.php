@@ -15,6 +15,7 @@ use Modules\Eshop360\Models\PurchaseOrder;
 use Modules\Eshop360\Models\Stock;
 use Modules\Eshop360\Models\StockMovement;
 use Modules\Eshop360\Models\Supplier;
+use Modules\Eshop360\Support\CurrentChannel;
 
 class ReportService
 {
@@ -22,22 +23,28 @@ class ReportService
     private const TTL_MEDIUM = 900;   // 15 min — salesByCategory, salesByProduct, cashbook
     private const TTL_LONG   = 3600;  // 1h — stockReport, taxReport, dues, commissions, monthly
 
-    public function overview(int $instanceId, string $from, string $to): array
+    public function overview(int $instanceId, string $from, string $to, ?int $channelId = null): array
     {
-        return $this->cached("report:overview:{$instanceId}:{$from}:{$to}", self::TTL_SHORT, $instanceId, function () use ($instanceId, $from, $to) {
+        $cacheKey = "report:overview:{$instanceId}:ch_{$channelId}:{$from}:{$to}";
+
+        return $this->cached($cacheKey, self::TTL_SHORT, $instanceId, function () use ($instanceId, $from, $to, $channelId) {
             [$fromDateTime, $toDateTime] = $this->normalizeDateTimeRange($from, $to);
             [$fromDate, $toDate] = $this->normalizeDateRange($from, $to);
 
             $sales = Order::where('instance_id', $instanceId)
+                ->when($channelId, fn ($q) => $q->where('channel_id', $channelId))
                 ->whereBetween('created_at', [$fromDateTime, $toDateTime])
                 ->where('status', '!=', 'cancelled');
             $purchases = PurchaseOrder::where('instance_id', $instanceId)
+                ->when($channelId, fn ($q) => $q->where('channel_id', $channelId))
                 ->whereBetween('created_at', [$fromDateTime, $toDateTime])
                 ->where('status', '!=', 'cancelled');
             $expenses = Expense::where('instance_id', $instanceId)
+                ->when($channelId, fn ($q) => $q->where('channel_id', $channelId))
                 ->whereDate('date', '>=', $fromDate)
                 ->whereDate('date', '<=', $toDate);
             $incomes = Income::where('instance_id', $instanceId)
+                ->when($channelId, fn ($q) => $q->where('channel_id', $channelId))
                 ->whereDate('date', '>=', $fromDate)
                 ->whereDate('date', '<=', $toDate);
 
@@ -51,6 +58,7 @@ class ReportService
             $topProducts = DB::table('eshop_order_items as oi')
                 ->join('eshop_orders as o', 'o.id', '=', 'oi.order_id')
                 ->where('o.instance_id', $instanceId)
+                ->when($channelId, fn ($q) => $q->where('o.channel_id', $channelId))
                 ->whereBetween('o.created_at', [$fromDateTime, $toDateTime])
                 ->where('o.status', '!=', 'cancelled')
                 ->select('oi.product_name', DB::raw('SUM(oi.quantity) as total_qty'), DB::raw('SUM(oi.total) as total_amount'))
@@ -68,6 +76,7 @@ class ReportService
             $topCustomers = DB::table('eshop_orders as o')
                 ->join('eshop_customers as c', 'c.id', '=', 'o.customer_id')
                 ->where('o.instance_id', $instanceId)
+                ->when($channelId, fn ($q) => $q->where('o.channel_id', $channelId))
                 ->whereBetween('o.created_at', [$fromDateTime, $toDateTime])
                 ->where('o.status', '!=', 'cancelled')
                 ->select('c.name', DB::raw('COUNT(*) as orders_count'), DB::raw('SUM(o.total) as total_amount'))
@@ -88,8 +97,10 @@ class ReportService
                 'total_expenses' => $totalExpenses,
                 'net_profit' => $netProfit,
                 'total_orders' => (clone $sales)->count(),
-                'total_customers' => Customer::where('instance_id', $instanceId)->count(),
-                'total_products' => Product::where('instance_id', $instanceId)->count(),
+                'total_customers' => Customer::where('instance_id', $instanceId)
+                    ->when($channelId, fn ($q) => $q->where('channel_id', $channelId))->count(),
+                'total_products' => Product::where('instance_id', $instanceId)
+                    ->when($channelId, fn ($q) => $q->where('channel_id', $channelId))->count(),
                 'revenue_collected' => round((float) (clone $sales)->sum('paid_amount'), 2),
                 'outstanding_dues' => round((float) (clone $sales)->sum('due_amount'), 2),
                 'top_products' => $topProducts,
@@ -98,9 +109,11 @@ class ReportService
         });
     }
 
-    public function salesByCategory(int $instanceId, string $from, string $to): array
+    public function salesByCategory(int $instanceId, string $from, string $to, ?int $channelId = null): array
     {
-        return $this->cached("report:salesByCategory:{$instanceId}:{$from}:{$to}", self::TTL_MEDIUM, $instanceId, function () use ($instanceId, $from, $to) {
+        $cacheKey = "report:salesByCategory:{$instanceId}:ch_{$channelId}:{$from}:{$to}";
+
+        return $this->cached($cacheKey, self::TTL_MEDIUM, $instanceId, function () use ($instanceId, $from, $to, $channelId) {
             [$fromDateTime, $toDateTime] = $this->normalizeDateTimeRange($from, $to);
 
             return DB::table('eshop_order_items as oi')
@@ -108,6 +121,7 @@ class ReportService
                 ->join('eshop_products as p', 'p.id', '=', 'oi.product_id')
                 ->leftJoin('eshop_categories as c', 'c.id', '=', 'p.category_id')
                 ->where('o.instance_id', $instanceId)
+                ->when($channelId, fn ($q) => $q->where('o.channel_id', $channelId))
                 ->whereBetween('o.created_at', [$fromDateTime, $toDateTime])
                 ->where('o.status', '!=', 'cancelled')
                 ->select('c.name as category', DB::raw('SUM(oi.quantity) as total_qty'), DB::raw('SUM(oi.total) as total_amount'))
@@ -124,14 +138,17 @@ class ReportService
         });
     }
 
-    public function salesByProduct(int $instanceId, string $from, string $to): array
+    public function salesByProduct(int $instanceId, string $from, string $to, ?int $channelId = null): array
     {
-        return $this->cached("report:salesByProduct:{$instanceId}:{$from}:{$to}", self::TTL_MEDIUM, $instanceId, function () use ($instanceId, $from, $to) {
+        $cacheKey = "report:salesByProduct:{$instanceId}:ch_{$channelId}:{$from}:{$to}";
+
+        return $this->cached($cacheKey, self::TTL_MEDIUM, $instanceId, function () use ($instanceId, $from, $to, $channelId) {
             [$fromDateTime, $toDateTime] = $this->normalizeDateTimeRange($from, $to);
 
             return DB::table('eshop_order_items as oi')
                 ->join('eshop_orders as o', 'o.id', '=', 'oi.order_id')
                 ->where('o.instance_id', $instanceId)
+                ->when($channelId, fn ($q) => $q->where('o.channel_id', $channelId))
                 ->whereBetween('o.created_at', [$fromDateTime, $toDateTime])
                 ->where('o.status', '!=', 'cancelled')
                 ->select('oi.product_name', 'oi.sku', DB::raw('SUM(oi.quantity) as total_qty'), DB::raw('SUM(oi.total) as total_amount'))
@@ -149,19 +166,23 @@ class ReportService
         });
     }
 
-    public function cashbook(int $instanceId, string $from, string $to): array
+    public function cashbook(int $instanceId, string $from, string $to, ?int $channelId = null): array
     {
-        return $this->cached("report:cashbook:{$instanceId}:{$from}:{$to}", self::TTL_MEDIUM, $instanceId, function () use ($instanceId, $from, $to) {
+        $cacheKey = "report:cashbook:{$instanceId}:ch_{$channelId}:{$from}:{$to}";
+
+        return $this->cached($cacheKey, self::TTL_MEDIUM, $instanceId, function () use ($instanceId, $from, $to, $channelId) {
             [$fromDateTime, $toDateTime] = $this->normalizeDateTimeRange($from, $to);
             [$fromDate, $toDate] = $this->normalizeDateRange($from, $to);
 
             $payments = Payment::with('payable')
                 ->where('instance_id', $instanceId)
+                ->when($channelId, fn ($q) => $q->where('channel_id', $channelId))
                 ->whereBetween('created_at', [$fromDateTime, $toDateTime])
                 ->where('status', 'completed')
                 ->get();
             $expenses = Expense::with(['category', 'account'])
                 ->where('instance_id', $instanceId)
+                ->when($channelId, fn ($q) => $q->where('channel_id', $channelId))
                 ->whereDate('date', '>=', $fromDate)
                 ->whereDate('date', '<=', $toDate)
                 ->get();
@@ -223,18 +244,21 @@ class ReportService
         });
     }
 
-    public function stockReport(int $instanceId, ?int $warehouseId = null): array
+    public function stockReport(int $instanceId, ?int $warehouseId = null, ?int $channelId = null): array
     {
         $whKey = $warehouseId ?? 'all';
+        $cacheKey = "report:stockReport:{$instanceId}:ch_{$channelId}:{$whKey}";
 
-        return $this->cached("report:stockReport:{$instanceId}:{$whKey}", self::TTL_LONG, $instanceId, function () use ($instanceId, $warehouseId) {
+        return $this->cached($cacheKey, self::TTL_LONG, $instanceId, function () use ($instanceId, $warehouseId, $channelId) {
             $stocks = Stock::where('instance_id', $instanceId)
                 ->with(['product', 'warehouse'])
                 ->when($warehouseId, fn ($query) => $query->where('warehouse_id', $warehouseId))
+                ->when($channelId, fn ($q) => $q->where('channel_id', $channelId))
                 ->get();
 
             $movementMap = StockMovement::where('instance_id', $instanceId)
                 ->when($warehouseId, fn ($query) => $query->where('warehouse_id', $warehouseId))
+                ->when($channelId, fn ($q) => $q->where('channel_id', $channelId))
                 ->select('product_id', 'warehouse_id', 'type', DB::raw('SUM(quantity) as total_quantity'))
                 ->groupBy('product_id', 'warehouse_id', 'type')
                 ->get()
@@ -271,12 +295,15 @@ class ReportService
         });
     }
 
-    public function taxReport(int $instanceId, string $from, string $to): array
+    public function taxReport(int $instanceId, string $from, string $to, ?int $channelId = null): array
     {
-        return $this->cached("report:taxReport:{$instanceId}:{$from}:{$to}", self::TTL_LONG, $instanceId, function () use ($instanceId, $from, $to) {
+        $cacheKey = "report:taxReport:{$instanceId}:ch_{$channelId}:{$from}:{$to}";
+
+        return $this->cached($cacheKey, self::TTL_LONG, $instanceId, function () use ($instanceId, $from, $to, $channelId) {
             [$fromDateTime, $toDateTime] = $this->normalizeDateTimeRange($from, $to);
 
             $orders = Order::where('instance_id', $instanceId)
+                ->when($channelId, fn ($q) => $q->where('channel_id', $channelId))
                 ->whereBetween('created_at', [$fromDateTime, $toDateTime])
                 ->where('status', '!=', 'cancelled')
                 ->get(['subtotal', 'discount_amount', 'tax_amount']);
@@ -301,12 +328,17 @@ class ReportService
         });
     }
 
-    public function customerDues(int $instanceId): array
+    public function customerDues(int $instanceId, ?int $channelId = null): array
     {
-        return $this->cached("report:customerDues:{$instanceId}", self::TTL_LONG, $instanceId, function () use ($instanceId) {
+        $cacheKey = "report:customerDues:{$instanceId}:ch_{$channelId}";
+
+        return $this->cached($cacheKey, self::TTL_LONG, $instanceId, function () use ($instanceId, $channelId) {
             return Customer::where('instance_id', $instanceId)
-                ->whereHas('orders', fn ($query) => $query->where('due_amount', '>', 0))
-                ->with(['orders' => fn ($query) => $query->where('due_amount', '>', 0)])
+                ->when($channelId, fn ($q) => $q->where('channel_id', $channelId))
+                ->whereHas('orders', fn ($query) => $query->where('due_amount', '>', 0)
+                    ->when($channelId, fn ($q) => $q->where('channel_id', $channelId)))
+                ->with(['orders' => fn ($query) => $query->where('due_amount', '>', 0)
+                    ->when($channelId, fn ($q) => $q->where('channel_id', $channelId))])
                 ->get()
                 ->map(function (Customer $customer): array {
                     $orders = $customer->orders;
@@ -326,12 +358,17 @@ class ReportService
         });
     }
 
-    public function supplierDues(int $instanceId): array
+    public function supplierDues(int $instanceId, ?int $channelId = null): array
     {
-        return $this->cached("report:supplierDues:{$instanceId}", self::TTL_LONG, $instanceId, function () use ($instanceId) {
+        $cacheKey = "report:supplierDues:{$instanceId}:ch_{$channelId}";
+
+        return $this->cached($cacheKey, self::TTL_LONG, $instanceId, function () use ($instanceId, $channelId) {
             return Supplier::where('instance_id', $instanceId)
-                ->whereHas('purchaseOrders', fn ($query) => $query->where('due_amount', '>', 0))
-                ->with(['purchaseOrders' => fn ($query) => $query->where('due_amount', '>', 0)])
+                ->when($channelId, fn ($q) => $q->where('channel_id', $channelId))
+                ->whereHas('purchaseOrders', fn ($query) => $query->where('due_amount', '>', 0)
+                    ->when($channelId, fn ($q) => $q->where('channel_id', $channelId)))
+                ->with(['purchaseOrders' => fn ($query) => $query->where('due_amount', '>', 0)
+                    ->when($channelId, fn ($q) => $q->where('channel_id', $channelId))])
                 ->get()
                 ->map(function (Supplier $supplier): array {
                     $orders = $supplier->purchaseOrders;
@@ -351,15 +388,18 @@ class ReportService
         });
     }
 
-    public function employeeCommissions(int $instanceId, string $from, string $to): array
+    public function employeeCommissions(int $instanceId, string $from, string $to, ?int $channelId = null): array
     {
-        return $this->cached("report:employeeCommissions:{$instanceId}:{$from}:{$to}", self::TTL_LONG, $instanceId, function () use ($instanceId, $from, $to) {
+        $cacheKey = "report:employeeCommissions:{$instanceId}:ch_{$channelId}:{$from}:{$to}";
+
+        return $this->cached($cacheKey, self::TTL_LONG, $instanceId, function () use ($instanceId, $from, $to, $channelId) {
             [$fromDateTime, $toDateTime] = $this->normalizeDateTimeRange($from, $to);
 
             return DB::table('eshop_employee_commissions as ec')
                 ->join('eshop_employees as e', 'e.id', '=', 'ec.employee_id')
                 ->join('eshop_orders as o', 'o.id', '=', 'ec.order_id')
                 ->where('e.instance_id', $instanceId)
+                ->when($channelId, fn ($q) => $q->where('o.channel_id', $channelId))
                 ->whereBetween('ec.created_at', [$fromDateTime, $toDateTime])
                 ->select(
                     'e.name', 'e.position',
@@ -386,13 +426,16 @@ class ReportService
         });
     }
 
-    public function posOverview(int $instanceId, string $from, string $to): array
+    public function posOverview(int $instanceId, string $from, string $to, ?int $channelId = null): array
     {
-        return $this->cached("report:posOverview:{$instanceId}:{$from}:{$to}", self::TTL_SHORT, $instanceId, function () use ($instanceId, $from, $to) {
+        $cacheKey = "report:posOverview:{$instanceId}:ch_{$channelId}:{$from}:{$to}";
+
+        return $this->cached($cacheKey, self::TTL_SHORT, $instanceId, function () use ($instanceId, $from, $to, $channelId) {
             [$fromDateTime, $toDateTime] = $this->normalizeDateTimeRange($from, $to);
 
             $collection = Order::with(['items', 'cashier'])
                 ->where('instance_id', $instanceId)
+                ->when($channelId, fn ($q) => $q->where('channel_id', $channelId))
                 ->where('source', 'pos')
                 ->where('status', '!=', 'cancelled')
                 ->whereBetween('created_at', [$fromDateTime, $toDateTime])
@@ -442,11 +485,14 @@ class ReportService
         });
     }
 
-    public function monthlyRevenue(int $instanceId, int $year): array
+    public function monthlyRevenue(int $instanceId, int $year, ?int $channelId = null): array
     {
-        return $this->cached("report:monthlyRevenue:{$instanceId}:{$year}", self::TTL_LONG, $instanceId, function () use ($instanceId, $year) {
+        $cacheKey = "report:monthlyRevenue:{$instanceId}:ch_{$channelId}:{$year}";
+
+        return $this->cached($cacheKey, self::TTL_LONG, $instanceId, function () use ($instanceId, $year, $channelId) {
             return Order::query()
                 ->where('instance_id', $instanceId)
+                ->when($channelId, fn ($q) => $q->where('channel_id', $channelId))
                 ->whereYear('created_at', $year)
                 ->where('status', '!=', 'cancelled')
                 ->get()
@@ -463,11 +509,14 @@ class ReportService
         });
     }
 
-    public function monthlyExpenses(int $instanceId, int $year): array
+    public function monthlyExpenses(int $instanceId, int $year, ?int $channelId = null): array
     {
-        return $this->cached("report:monthlyExpenses:{$instanceId}:{$year}", self::TTL_LONG, $instanceId, function () use ($instanceId, $year) {
+        $cacheKey = "report:monthlyExpenses:{$instanceId}:ch_{$channelId}:{$year}";
+
+        return $this->cached($cacheKey, self::TTL_LONG, $instanceId, function () use ($instanceId, $year, $channelId) {
             return Expense::query()
                 ->where('instance_id', $instanceId)
+                ->when($channelId, fn ($q) => $q->where('channel_id', $channelId))
                 ->whereYear('date', $year)
                 ->get()
                 ->groupBy(fn (Expense $expense): int => (int) Carbon::parse($expense->date)->month)
@@ -499,6 +548,8 @@ class ReportService
 
     /**
      * Track a cache key in the instance manifest for later invalidation.
+     *
+     * Keys include channel_id (ch_{id}) to prevent cross-channel cache collision.
      */
     private function trackCacheKey(string $key, int $instanceId): void
     {

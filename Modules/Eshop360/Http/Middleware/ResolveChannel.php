@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Modules\Core\Support\CurrentInstance;
 use Modules\Eshop360\Models\DistributionChannel;
+use Modules\Eshop360\Support\CurrentChannel;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -40,6 +41,10 @@ final class ResolveChannel
         }
 
         $request->merge(['resolved_channel' => $channel]);
+
+        // Set CurrentChannel so ChannelScope filters correctly for all users
+        // (portal customers, channel operators, hub admins navigating into a channel)
+        CurrentChannel::set($channel);
 
         return $next($request);
     }

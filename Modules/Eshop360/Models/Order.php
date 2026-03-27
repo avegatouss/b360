@@ -14,9 +14,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Core\Database\Traits\BelongsToInstance;
 use Modules\Eshop360\Database\Scopes\OrderUserAssignmentScope;
 
+use Modules\Eshop360\Database\Traits\BelongsToChannel;
+
 class Order extends Model
 {
-    use HasFactory, BelongsToInstance, SoftDeletes;
+    use HasFactory, BelongsToInstance, SoftDeletes, BelongsToChannel;
 
     protected static function booted(): void
     {
@@ -135,11 +137,6 @@ class Order extends Model
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
-    }
-
-    public function channel(): BelongsTo
-    {
-        return $this->belongsTo(DistributionChannel::class, 'channel_id');
     }
 
     public function channelMarginLogs(): HasMany

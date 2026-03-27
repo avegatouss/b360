@@ -68,16 +68,21 @@ class AttendanceController extends Controller
     public function clockIn(Request $request)
     {
         $validated = $request->validate(['employee_id' => 'required|exists:eshop_employees,id']);
-        $employee = Employee::findOrFail($validated['employee_id']);
+        $employee = Employee::where('instance_id', CurrentInstance::get()->id)->findOrFail($validated['employee_id']);
         $this->hrService->clockIn($employee);
         return redirect()->back()->with('success', __(':name pointe a l\'entree.', ['name' => $employee->name]));
     }
 
     public function clockOut(Request $request, string $slug, ?Attendance $attendance = null): RedirectResponse
     {
+        $instance = CurrentInstance::get();
+
         if (! $attendance) {
             $attendanceId = $request->input('attendance_id');
-            $attendance = Attendance::findOrFail($attendanceId);
+            $attendance = Attendance::whereHas('employee', fn ($q) => $q->where('instance_id', $instance->id))
+                ->findOrFail($attendanceId);
+        } else {
+            abort_unless($attendance->employee && (int) $attendance->employee->instance_id === (int) $instance->id, 403);
         }
 
         $this->hrService->clockOut($attendance);

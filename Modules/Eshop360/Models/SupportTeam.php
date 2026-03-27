@@ -8,13 +8,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Modules\Core\Database\Traits\BelongsToInstance;
 
+use Modules\Eshop360\Database\Traits\BelongsToChannel;
+
 class SupportTeam extends Model
 {
-    use BelongsToInstance;
+    use BelongsToInstance, BelongsToChannel;
 
     protected $table = 'eshop_support_teams';
 
     protected $fillable = [
+        'channel_id',
         'instance_id',
         'name',
         'description',

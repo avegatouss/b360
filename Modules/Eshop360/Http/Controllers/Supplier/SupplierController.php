@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Modules\Eshop360\Models\Supplier;
+use Modules\Eshop360\Services\ChannelAccessService;
 use Modules\Eshop360\Services\SupplierService;
+use Modules\Eshop360\Support\CurrentChannel;
 use Modules\Core\Support\CurrentInstance;
 
 class SupplierController extends Controller
@@ -27,11 +29,17 @@ class SupplierController extends Controller
             ->paginate(20)
             ->withQueryString();
 
+        // Channel isolation
+        $channelId = CurrentChannel::isScoped() ? CurrentChannel::id() : null;
+        $accessibleIds = app(ChannelAccessService::class)->accessibleChannelIds(auth()->user());
+
         // Stats achats par fournisseur
         $purchaseStats = DB::table('eshop_purchase_orders')
             ->join('eshop_suppliers', 'eshop_purchase_orders.supplier_id', '=', 'eshop_suppliers.id')
             ->where('eshop_purchase_orders.instance_id', $instanceId)
             ->where('eshop_purchase_orders.status', '!=', 'cancelled')
+            ->when($channelId, fn ($q) => $q->where('eshop_purchase_orders.channel_id', $channelId))
+            ->when(! $channelId && $accessibleIds !== null, fn ($q) => $q->whereIn('eshop_purchase_orders.channel_id', $accessibleIds->all()))
             ->selectRaw('
                 eshop_suppliers.id as supplier_id, eshop_suppliers.name as supplier_name,
                 COUNT(*) as order_count,
@@ -50,6 +58,8 @@ class SupplierController extends Controller
             ->join('eshop_products', 'eshop_order_items.product_id', '=', 'eshop_products.id')
             ->where('eshop_orders.instance_id', $instanceId)
             ->where('eshop_orders.status', 'completed')
+            ->when($channelId, fn ($q) => $q->where('eshop_orders.channel_id', $channelId))
+            ->when(! $channelId && $accessibleIds !== null, fn ($q) => $q->whereIn('eshop_orders.channel_id', $accessibleIds->all()))
             ->whereNotNull('eshop_products.supplier_id')
             ->selectRaw('
                 eshop_products.supplier_id,

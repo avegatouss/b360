@@ -110,7 +110,9 @@ class PosController extends Controller
 
     public function orders(string $slug, Request $request)
     {
-        $orders = Order::with(['customer', 'items.product', 'cashRegister', 'store', 'cashier'])
+        $user = auth()->user();
+
+        $query = Order::with(['customer', 'items.product', 'cashRegister', 'store', 'cashier'])
             ->where('source', 'pos')
             ->when($request->status, fn ($q, $s) => $q->where('status', $s))
             ->when($request->payment_status, fn ($q, $s) => $q->where('payment_status', $s))
@@ -119,10 +121,9 @@ class PosController extends Controller
                     ->orWhereHas('customer', fn ($customerQuery) => $customerQuery->where('name', 'like', "%{$s}%"));
             }))
             ->when($request->date_from, fn ($q, $d) => $q->whereDate('created_at', '>=', $d))
-            ->when($request->date_to, fn ($q, $d) => $q->whereDate('created_at', '<=', $d))
-            ->latest()
-            ->paginate(20)
-            ->withQueryString();
+            ->when($request->date_to, fn ($q, $d) => $q->whereDate('created_at', '<=', $d));
+
+        $orders = $query->latest()->paginate(20)->withQueryString();
 
         return view('eshop360::pos.orders', compact('orders'));
     }
@@ -301,15 +302,17 @@ class PosController extends Controller
             DistributionChannel::where('instance_id', $instanceId)->where('is_active', true)->orderBy('name')->get()
         );
 
-        // Customers loaded without cache (can be large, paginated via AJAX in future)
-        $customers = Customer::where('is_active', true)->orderBy('name')->limit(500)->get();
-
         $cart = $this->cartService->getCart();
         $coupon = $this->cartService->getCoupon();
         $cartContext = $this->cartService->getContext();
         $activeChannelId = $request->filled('channel_id')
             ? $request->integer('channel_id')
             : ($cartContext['channel_id'] ?? null);
+
+        // Customers scoped by active channel
+        $customers = Customer::where('instance_id', $instanceId)->where('is_active', true)
+            ->when($activeChannelId, fn($q) => $q->where('channel_id', $activeChannelId))
+            ->orderBy('name')->limit(500)->get();
 
         $products->getCollection()->transform(function (Product $product) use ($activeChannelId) {
             $pricing = app(ProductPricingService::class)->resolve($product, $activeChannelId, true);

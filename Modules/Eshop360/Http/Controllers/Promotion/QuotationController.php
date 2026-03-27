@@ -6,6 +6,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
+use Modules\Core\Support\CurrentInstance;
 use Modules\Eshop360\Models\Customer;
 use Modules\Eshop360\Models\Invoice;
 use Modules\Eshop360\Models\InvoiceItem;
@@ -15,21 +16,29 @@ use Modules\Eshop360\Services\PdfService;
 
 class QuotationController extends Controller
 {
+
     public function index(Request $request)
     {
-        $quotations = Quotation::with(['customer', 'items.product'])
+        $instanceId = CurrentInstance::idOrFail();
+
+        $query = Quotation::where('instance_id', $instanceId)->with(['customer', 'items.product'])
             ->when($request->status, fn ($q, $s) => $q->where('status', $s))
-            ->when($request->search, fn ($q, $s) => $q->where('reference', 'like', "%{$s}%")
-                ->orWhereHas('customer', fn ($cq) => $cq->where('name', 'like', "%{$s}%")))
+            ->when($request->search, fn ($q, $s) => $q->where(function ($qq) use ($s) {
+                $qq->where('reference', 'like', "%{$s}%")
+                    ->orWhereHas('customer', fn ($cq) => $cq->where('name', 'like', "%{$s}%"));
+            }))
             ->when($request->customer_id, fn ($q, $c) => $q->where('customer_id', $c))
             ->when($request->date_from, fn ($q, $d) => $q->whereDate('created_at', '>=', $d))
             ->when($request->date_to, fn ($q, $d) => $q->whereDate('created_at', '<=', $d))
-            ->latest()
-            ->paginate(20)
-            ->withQueryString();
+            ->latest();
 
-        $customers = Customer::orderBy('name')->get(['id', 'name']);
-        $products = Product::where('is_active', true)->orderBy('name')->get(['id', 'name', 'sku', 'price', 'tax_rate']);
+        $quotations = $query->paginate(20)->withQueryString();
+
+        $customers = Customer::where('instance_id', $instanceId)
+            ->orderBy('name')->get(['id', 'name']);
+
+        $products = Product::where('instance_id', $instanceId)->where('is_active', true)
+            ->orderBy('name')->get(['id', 'name', 'sku', 'price', 'tax_rate']);
 
         return view('eshop360::promotions.quotations', compact('quotations', 'customers', 'products'));
     }
@@ -77,7 +86,7 @@ class QuotationController extends Controller
             $total = $subtotal + $taxAmount - $discountAmount;
 
             $quotation = Quotation::create([
-                'instance_id'     => session('instance_id'),
+                'instance_id'     => CurrentInstance::idOrFail(),
                 'customer_id'     => $validated['customer_id'] ?? null,
                 'reference'       => 'QUO-' . now()->format('Ymd') . '-' . str_pad(Quotation::count() + 1, 4, '0', STR_PAD_LEFT),
                 'status'          => 'draft',

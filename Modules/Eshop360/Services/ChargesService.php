@@ -4,6 +4,7 @@ namespace Modules\Eshop360\Services;
 
 use Modules\Eshop360\Models\CompanyCharge;
 use Modules\Eshop360\Models\ChargeLog;
+use Modules\Eshop360\Support\CurrentChannel;
 use Carbon\Carbon;
 
 class ChargesService
@@ -17,6 +18,7 @@ class ChargesService
     {
         return CompanyCharge::where('instance_id', $instanceId)
             ->where('is_active', true)
+            ->when(CurrentChannel::isScoped(), fn ($q) => $q->where('channel_id', CurrentChannel::id()))
             ->get()
             ->sum(fn ($charge) => $charge->amount_monthly / self::SECONDS_PER_MONTH);
     }
@@ -39,6 +41,7 @@ class ChargesService
     {
         $charges = CompanyCharge::where('instance_id', $instanceId)
             ->where('is_active', true)
+            ->when(CurrentChannel::isScoped(), fn ($q) => $q->where('channel_id', CurrentChannel::id()))
             ->get()
             ->groupBy('category');
 
@@ -84,6 +87,7 @@ class ChargesService
     {
         $charges = CompanyCharge::where('instance_id', $instanceId)
             ->where('is_active', true)
+            ->when(CurrentChannel::isScoped(), fn ($q) => $q->where('channel_id', CurrentChannel::id()))
             ->get();
 
         foreach ($charges as $charge) {

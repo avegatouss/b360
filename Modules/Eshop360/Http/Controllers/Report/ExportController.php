@@ -17,7 +17,9 @@ use Modules\Eshop360\Services\ExportService;
 
 class ExportController extends Controller
 {
-    public function __construct(private ExportService $export) {}
+    public function __construct(
+        private ExportService $export,
+    ) {}
 
     public function products(Request $request)
     {
@@ -35,41 +37,38 @@ class ExportController extends Controller
     public function sales(Request $request)
     {
         $instance = CurrentInstance::get();
-        $orders = Order::where('instance_id', $instance->id)
+        $query = Order::where('instance_id', $instance->id)
             ->with(['customer', 'channel'])
             ->when($request->date_from, fn ($query, $date) => $query->whereDate('created_at', '>=', $date))
             ->when($request->date_to, fn ($query, $date) => $query->whereDate('created_at', '<=', $date))
             ->when($request->customer_id, fn ($query, $customerId) => $query->where('customer_id', $customerId))
-            ->latest()
-            ->get();
+            ->latest();
 
-        return $this->export->sales($orders, $this->resolveFormat($request));
+        return $this->export->sales($query->get(), $this->resolveFormat($request));
     }
 
     public function invoices(Request $request)
     {
         $instance = CurrentInstance::get();
-        $invoices = Invoice::where('instance_id', $instance->id)
+        $query = Invoice::where('instance_id', $instance->id)
             ->with('customer')
             ->when($request->date_from, fn ($query, $date) => $query->whereDate('created_at', '>=', $date))
             ->when($request->date_to, fn ($query, $date) => $query->whereDate('created_at', '<=', $date))
             ->when($request->status, fn ($query, $status) => $query->where('status', $status))
-            ->latest()
-            ->get();
+            ->latest();
 
-        return $this->export->invoices($invoices, $this->resolveFormat($request));
+        return $this->export->invoices($query->get(), $this->resolveFormat($request));
     }
 
     public function customers(Request $request)
     {
         $instance = CurrentInstance::get();
-        $customers = Customer::where('instance_id', $instance->id)
+        $query = Customer::where('instance_id', $instance->id)
             ->withSum('orders as total_orders_amount', 'total')
             ->when($request->search, fn ($query, $search) => $query->where('name', 'like', "%{$search}%"))
-            ->orderBy('name')
-            ->get();
+            ->orderBy('name');
 
-        return $this->export->customers($customers, $this->resolveFormat($request));
+        return $this->export->customers($query->get(), $this->resolveFormat($request));
     }
 
     public function suppliers(Request $request)

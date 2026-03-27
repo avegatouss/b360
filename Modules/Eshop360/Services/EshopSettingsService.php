@@ -72,6 +72,19 @@ class EshopSettingsService
             'bank_account'       => '',
             'bank_iban'          => '',
         ],
+        'channel_branding' => [
+            'company_name'    => '',
+            'company_address' => '',
+            'company_phone'   => '',
+            'company_email'   => '',
+            'company_logo'    => null,
+            'tax_number'      => '',
+            'invoice_header'  => '',
+            'invoice_footer'  => '',
+            'receipt_header'  => '',
+            'receipt_footer'  => '',
+            'currency_symbol' => 'FCFA',
+        ],
         'features' => [
             'portal' => true,
             'shop' => true,
@@ -218,6 +231,15 @@ class EshopSettingsService
     public function isChannelFeatureEnabled(string $feature, int $channelId, bool $default = false): bool
     {
         return (bool) $this->channelValue('features', $feature, $channelId, $default);
+    }
+
+    /**
+     * Get the branding settings for a channel (logo, company info, PDF headers).
+     * Falls back to instance-level invoice settings when not configured.
+     */
+    public function getChannelBranding(int $channelId): array
+    {
+        return $this->getForChannel('channel_branding', $channelId);
     }
 
     /**

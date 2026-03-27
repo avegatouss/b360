@@ -10,13 +10,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Core\Database\Traits\BelongsToInstance;
 
+use Modules\Eshop360\Database\Traits\BelongsToChannel;
+
 class ImportOrder extends Model
 {
-    use HasFactory, BelongsToInstance, SoftDeletes;
+    use HasFactory, BelongsToInstance, SoftDeletes, BelongsToChannel;
 
     protected $table = 'eshop_import_orders';
 
     protected $fillable = [
+        'channel_id',
         'instance_id',
         'supplier_id',
         'reference',

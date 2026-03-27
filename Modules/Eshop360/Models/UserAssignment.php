@@ -7,11 +7,16 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+use Modules\Eshop360\Database\Traits\BelongsToChannel;
+
 class UserAssignment extends Model
 {
+    use BelongsToChannel;
+
     protected $table = 'eshop_user_assignments';
 
     protected $fillable = [
+        'channel_id',
         'user_id',
         'resource_type',
         'resource_id',

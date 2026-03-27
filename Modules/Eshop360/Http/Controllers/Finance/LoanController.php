@@ -15,7 +15,6 @@ use Modules\Eshop360\Models\Loan;
 use Modules\Eshop360\Models\LoanPayment;
 use Modules\Eshop360\Models\LoanSchedule;
 use Modules\Eshop360\Models\Supplier;
-
 class LoanController extends Controller
 {
     public function index(Request $request)
@@ -47,7 +46,8 @@ class LoanController extends Controller
         $loans = $query->latest()->paginate(25)->withQueryString();
 
         // Lookups for the creation modal
-        $customers = Customer::where('instance_id', $instance->id)->where('is_active', true)->orderBy('name')->get(['id', 'name', 'code']);
+        $customers = Customer::where('instance_id', $instance->id)->where('is_active', true)
+            ->orderBy('name')->get(['id', 'name', 'code']);
         $suppliers = Supplier::where('instance_id', $instance->id)->where('is_active', true)->orderBy('name')->get(['id', 'name', 'company']);
         $employees = Employee::where('instance_id', $instance->id)->where('status', 'active')->orderBy('name')->get(['id', 'name', 'position']);
         $accounts = Account::where('instance_id', $instance->id)->where('is_active', true)->orderBy('name')->get();

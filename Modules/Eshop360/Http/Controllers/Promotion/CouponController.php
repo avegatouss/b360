@@ -13,7 +13,10 @@ class CouponController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Coupon::query()
+        $instanceId = CurrentInstance::idOrFail();
+        $channelId = $request->integer('channel_id') ?: null;
+        $query = Coupon::where('instance_id', $instanceId)
+            ->when($channelId, fn ($q, $c) => $q->where('channel_id', $c))
             ->when($request->search, fn ($q, $s) => $q->where(function ($qq) use ($s) {
                 $qq->where('code', 'like', "%{$s}%")
                     ->orWhere('name', 'like', "%{$s}%")
@@ -103,7 +106,9 @@ class CouponController extends Controller
         ]);
 
         $coupon = Coupon::where('code', strtoupper($request->code))
+            ->where('instance_id', CurrentInstance::idOrFail())
             ->where('is_active', true)
+            ->visibleToChannel($request->integer('channel_id') ?: null)
             ->where(fn ($q) => $q->whereNull('valid_from')->orWhere('valid_from', '<=', now()))
             ->where(fn ($q) => $q->whereNull('valid_until')->orWhere('valid_until', '>=', now()))
             ->first();

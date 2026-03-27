@@ -5,6 +5,7 @@ namespace Modules\Eshop360\Http\Controllers\Settings;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Modules\Core\Support\CurrentInstance;
 use Modules\Eshop360\Models\Customer;
 use Modules\Eshop360\Models\Store;
@@ -45,6 +46,7 @@ class UserAssignmentController extends Controller
     public function edit(Request $request, string $slug, int $userId)
     {
         $instance = CurrentInstance::get();
+        $this->ensureInstanceMember($instance, $userId);
         $user = User::findOrFail($userId);
 
         // Get current assignments
@@ -68,15 +70,17 @@ class UserAssignmentController extends Controller
     public function update(Request $request, string $slug, int $userId)
     {
         $instance = CurrentInstance::get();
+        $this->ensureInstanceMember($instance, $userId);
         $user = User::findOrFail($userId);
 
+        $instanceId = $instance->id;
         $validated = $request->validate([
             'warehouses' => 'nullable|array',
-            'warehouses.*' => 'integer|exists:eshop_warehouses,id',
+            'warehouses.*' => "integer|exists:eshop_warehouses,id,instance_id,{$instanceId}",
             'stores' => 'nullable|array',
-            'stores.*' => 'integer|exists:eshop_stores,id',
+            'stores.*' => "integer|exists:eshop_stores,id,instance_id,{$instanceId}",
             'customers' => 'nullable|array',
-            'customers.*' => 'integer|exists:eshop_customers,id',
+            'customers.*' => "integer|exists:eshop_customers,id,instance_id,{$instanceId}",
         ]);
 
         // Delete existing assignments for this user in this instance
@@ -126,5 +130,17 @@ class UserAssignmentController extends Controller
 
         return redirect()->route('eshop360.settings.user-assignments.edit', [$slug, $userId])
             ->with('success', 'Affectations mises à jour.');
+    }
+
+    private function ensureInstanceMember($instance, int $userId): void
+    {
+        $isMember = DB::connection('system')
+            ->table('instance_user')
+            ->where('instance_id', $instance->id)
+            ->where('user_id', $userId)
+            ->where('status', 'active')
+            ->exists();
+
+        abort_unless($isMember, 403, 'Cet utilisateur ne fait pas partie de cette instance.');
     }
 }

@@ -6,13 +6,16 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+use Modules\Eshop360\Database\Traits\BelongsToChannel;
+
 class CustomerDue extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToChannel;
 
     protected $table = 'eshop_customer_dues';
 
     protected $fillable = [
+        'channel_id',
         'customer_id',
         'order_id',
         'invoice_id',

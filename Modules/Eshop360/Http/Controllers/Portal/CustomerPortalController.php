@@ -35,7 +35,7 @@ class CustomerPortalController extends Controller
 
         $hasSearch = $request->filled('search');
 
-        $products = Product::query()
+        $products = Product::withoutChannelScope()
             ->with(['category', 'brand', 'stocks'])
             ->when($instanceId !== null, fn ($query) => $query->where('instance_id', $instanceId))
             ->active()
@@ -64,11 +64,11 @@ class CustomerPortalController extends Controller
             return $product;
         });
 
-        $categories = Category::query()
+        $categories = Category::withoutChannelScope()
             ->when($instanceId !== null, fn ($query) => $query->where('instance_id', $instanceId))
             ->orderBy('name')
             ->get();
-        $brands = Brand::query()
+        $brands = Brand::withoutChannelScope()
             ->when($instanceId !== null, fn ($query) => $query->where('instance_id', $instanceId))
             ->orderBy('name')
             ->get();
@@ -116,7 +116,7 @@ class CustomerPortalController extends Controller
         }
 
         $channelId = $cartContext['channel_id'] ?? null;
-        $product = Product::query()
+        $product = Product::withoutChannelScope()
             ->when($instanceId !== null, fn ($query) => $query->where('instance_id', $instanceId))
             ->active()
             ->findOrFail($validated['product_id']);
@@ -319,13 +319,13 @@ class CustomerPortalController extends Controller
         $instanceId = $customer->instance_id;
 
         // Wallet transactions (deposits & debits)
-        $transactions = \Modules\Eshop360\Models\CustomerTransaction::where('customer_id', $customer->id)
+        $transactions = \Modules\Eshop360\Models\CustomerTransaction::withoutChannelScope()->where('customer_id', $customer->id)
             ->latest()
             ->paginate(20)
             ->withQueryString();
 
         // Customer dues (credits/debts)
-        $dues = \Modules\Eshop360\Models\CustomerDue::where('customer_id', $customer->id)
+        $dues = \Modules\Eshop360\Models\CustomerDue::withoutChannelScope()->where('customer_id', $customer->id)
             ->latest()
             ->get();
 
@@ -340,9 +340,9 @@ class CustomerPortalController extends Controller
             ->get();
 
         // KPIs
-        $totalDeposits = \Modules\Eshop360\Models\CustomerTransaction::where('customer_id', $customer->id)
+        $totalDeposits = \Modules\Eshop360\Models\CustomerTransaction::withoutChannelScope()->where('customer_id', $customer->id)
             ->where('type', 'credit')->sum('amount');
-        $totalDebits = \Modules\Eshop360\Models\CustomerTransaction::where('customer_id', $customer->id)
+        $totalDebits = \Modules\Eshop360\Models\CustomerTransaction::withoutChannelScope()->where('customer_id', $customer->id)
             ->where('type', 'debit')->sum('amount');
         $totalDueAmount = $dues->whereIn('status', ['pending', 'partial'])
             ->sum(fn ($d) => (float) $d->amount_due - (float) $d->paid_amount);
@@ -380,8 +380,8 @@ class CustomerPortalController extends Controller
         $customer = $this->resolveCustomer();
         $settings = app(\Modules\Eshop360\Services\EshopSettingsService::class)->get('invoice');
 
-        $transactions = \Modules\Eshop360\Models\CustomerTransaction::where('customer_id', $customer->id)->latest()->get();
-        $dues = \Modules\Eshop360\Models\CustomerDue::where('customer_id', $customer->id)->latest()->get();
+        $transactions = \Modules\Eshop360\Models\CustomerTransaction::withoutChannelScope()->where('customer_id', $customer->id)->latest()->get();
+        $dues = \Modules\Eshop360\Models\CustomerDue::withoutChannelScope()->where('customer_id', $customer->id)->latest()->get();
         $payments = \Illuminate\Support\Facades\DB::table('eshop_orders')
             ->where('instance_id', $customer->instance_id)
             ->where('customer_id', $customer->id)
@@ -523,7 +523,8 @@ class CustomerPortalController extends Controller
 
         abort_if(! $instance || ! $user, 403);
 
-        $customer = Customer::query()
+        // Bypass ChannelScope : le portail hub gère son propre contexte via customer_id
+        $customer = Customer::withoutChannelScope()
             ->where('instance_id', $instance->id)
             ->where(function ($query) use ($user) {
                 $query->where('user_id', $user->id);
@@ -536,7 +537,7 @@ class CustomerPortalController extends Controller
 
         // Admin bypass: if user is admin, use first active customer or create a virtual context
         if (! $customer && ($user->hasRole('super-admin') || $user->hasRole('instance-admin'))) {
-            $customer = Customer::query()
+            $customer = Customer::withoutChannelScope()
                 ->where('instance_id', $instance->id)
                 ->where('is_active', true)
                 ->first();

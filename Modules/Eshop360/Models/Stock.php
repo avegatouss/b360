@@ -9,9 +9,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Modules\Core\Database\Traits\BelongsToInstance;
 use Modules\Eshop360\Database\Traits\ScopedByUserAssignment;
 
+use Modules\Eshop360\Database\Traits\BelongsToChannel;
+
 class Stock extends Model
 {
-    use HasFactory, BelongsToInstance, ScopedByUserAssignment;
+    use HasFactory, BelongsToInstance, ScopedByUserAssignment, BelongsToChannel;
 
     protected static array $userAssignmentConfig = [
         ['type' => 'warehouse', 'column' => 'warehouse_id'],
@@ -21,6 +23,7 @@ class Stock extends Model
     protected $table = 'eshop_stocks';
 
     protected $fillable = [
+        'channel_id',
         'instance_id',
         'product_id',
         'warehouse_id',

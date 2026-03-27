@@ -12,9 +12,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Core\Database\Traits\BelongsToInstance;
 
+use Modules\Eshop360\Database\Traits\BelongsToChannel;
+
 class Product extends Model
 {
-    use HasFactory, BelongsToInstance, SoftDeletes;
+    use HasFactory, BelongsToInstance, SoftDeletes, BelongsToChannel;
 
     protected $table = 'eshop_products';
 

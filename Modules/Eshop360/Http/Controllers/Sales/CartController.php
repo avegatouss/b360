@@ -215,6 +215,7 @@ class CartController extends Controller
         $channelId = $cartContext['channel_id'] ?? null;
 
         $coupon = Coupon::where('code', $validated['code'])
+            ->where('instance_id', CurrentInstance::idOrFail())
             ->visibleToChannel($channelId)
             ->valid()
             ->first();

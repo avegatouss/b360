@@ -49,8 +49,8 @@ class IncomeController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'source_id' => 'required|exists:eshop_income_sources,id',
-            'account_id' => 'nullable|exists:eshop_accounts,id',
+            'source_id' => 'required|exists:eshop_income_sources,id,instance_id,' . CurrentInstance::idOrFail(),
+            'account_id' => 'nullable|exists:eshop_accounts,id,instance_id,' . CurrentInstance::idOrFail(),
             'amount' => 'required|numeric|min:0.01',
             'date' => 'required|date',
             'description' => 'nullable|string',

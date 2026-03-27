@@ -97,6 +97,7 @@ Route::middleware([
     'core.instance.member',
     ApplyCurrentInstanceUrlDefaults::class,
     'eshop.user.assignments',
+    'eshop.channel.context',
 ])->prefix('/i/{slug}')->group(function () {
 
     // ─── Hierarchical Menu Navigation ──────────────
@@ -924,7 +925,7 @@ Route::middleware([
 |
 */
 
-Route::middleware(['web'])->prefix('pay')->name('eshop360.payment.')->group(function () {
+Route::middleware(['web', 'throttle:10,1'])->prefix('pay')->name('eshop360.payment.')->group(function () {
     Route::get('/{token}', [\Modules\Eshop360\Http\Controllers\Payment\PublicPaymentController::class, 'show'])->name('show');
     Route::post('/{token}', [\Modules\Eshop360\Http\Controllers\Payment\PublicPaymentController::class, 'initiate'])->name('initiate');
     Route::get('/{token}/success', [\Modules\Eshop360\Http\Controllers\Payment\PublicPaymentController::class, 'success'])->name('success');
@@ -932,6 +933,6 @@ Route::middleware(['web'])->prefix('pay')->name('eshop360.payment.')->group(func
 });
 
 // Payment webhooks (no auth, no CSRF)
-Route::middleware(['api'])->prefix('api/eshop360/payment')->name('eshop360.payment.')->group(function () {
+Route::middleware(['api', 'throttle:30,1'])->prefix('api/eshop360/payment')->name('eshop360.payment.')->group(function () {
     Route::post('/webhook/{gateway}', [\Modules\Eshop360\Http\Controllers\Payment\PublicPaymentController::class, 'webhook'])->name('webhook');
 });

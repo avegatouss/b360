@@ -309,7 +309,8 @@ class ApiController extends Controller
         $service = app(ReportService::class);
         $from = $request->get('from', now()->startOfMonth()->toDateString());
         $to = $request->get('to', now()->toDateString());
-        return response()->json($service->overview($this->instanceId(), $from, $to));
+        $channelId = $this->requestedChannelId($request);
+        return response()->json($service->overview($this->instanceId(), $from, $to, $channelId));
     }
 
     public function reportProfitLoss(Request $request): JsonResponse
@@ -332,7 +333,8 @@ class ApiController extends Controller
         $this->ensureHubAdmin();
         $request->validate(['instance_id' => 'required|integer']);
         $service = app(ReportService::class);
-        return response()->json($service->stockReport($this->instanceId(), $request->get('warehouse_id')));
+        $channelId = $this->requestedChannelId($request);
+        return response()->json($service->stockReport($this->instanceId(), $request->get('warehouse_id'), $channelId));
     }
 
     // ─── Online Orders ──────────────────────────────
@@ -418,7 +420,7 @@ class ApiController extends Controller
         $to = now()->toDateString();
 
         return response()->json([
-            'overview' => $reportService->overview($this->instanceId(), $from, $to),
+            'overview' => $reportService->overview($this->instanceId(), $from, $to, $this->requestedChannelId($request)),
             'charges' => $chargesService->getDashboardData($this->instanceId()),
         ]);
     }

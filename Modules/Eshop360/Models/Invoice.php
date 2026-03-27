@@ -11,13 +11,16 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Core\Database\Traits\BelongsToInstance;
 
+use Modules\Eshop360\Database\Traits\BelongsToChannel;
+
 class Invoice extends Model
 {
-    use HasFactory, BelongsToInstance, SoftDeletes;
+    use HasFactory, BelongsToInstance, SoftDeletes, BelongsToChannel;
 
     protected $table = 'eshop_invoices';
 
     protected $fillable = [
+        'channel_id',
         'instance_id',
         'order_id',
         'customer_id',

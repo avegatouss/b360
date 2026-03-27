@@ -24,7 +24,8 @@ class SupportTicketController extends Controller
             ->withQueryString();
 
         $customers = \Modules\Eshop360\Models\Customer::where('instance_id', $instance->id)
-            ->where('is_active', true)->orderBy('name')->get(['id', 'name']);
+            ->where('is_active', true)
+            ->orderBy('name')->get(['id', 'name']);
 
         return view('eshop360::communication.tickets.index', compact('tickets', 'customers'));
     }

@@ -7,13 +7,16 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+use Modules\Eshop360\Database\Traits\BelongsToChannel;
+
 class GiftCardTopup extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToChannel;
 
     protected $table = 'eshop_gift_card_topups';
 
     protected $fillable = [
+        'channel_id',
         'gift_card_id',
         'amount',
         'notes',

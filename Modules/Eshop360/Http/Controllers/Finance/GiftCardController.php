@@ -10,7 +10,6 @@ use Modules\Core\Support\CurrentInstance;
 use Modules\Eshop360\Models\Customer;
 use Modules\Eshop360\Models\GiftCard;
 use Modules\Eshop360\Models\GiftCardTopup;
-
 class GiftCardController extends Controller
 {
     public function index(Request $request)
@@ -38,7 +37,8 @@ class GiftCardController extends Controller
         ];
 
         $giftCards = $query->latest()->paginate(20)->withQueryString();
-        $customers = Customer::where('instance_id', $instance->id)->where('is_active', true)->orderBy('name')->get(['id', 'name', 'code']);
+        $customers = Customer::where('instance_id', $instance->id)->where('is_active', true)
+            ->orderBy('name')->get(['id', 'name', 'code']);
         $batches = GiftCard::where('instance_id', $instance->id)->whereNotNull('batch_id')->distinct()->pluck('batch_id');
         $codeSettings = app(\Modules\Eshop360\Services\EshopSettingsService::class)->get('gift_card_code');
 

@@ -50,8 +50,8 @@ class ExpenseController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'category_id' => 'required|exists:eshop_expense_categories,id',
-            'account_id' => 'nullable|exists:eshop_accounts,id',
+            'category_id' => 'required|exists:eshop_expense_categories,id,instance_id,' . CurrentInstance::idOrFail(),
+            'account_id' => 'nullable|exists:eshop_accounts,id,instance_id,' . CurrentInstance::idOrFail(),
             'amount' => 'required|numeric|min:0.01',
             'date' => 'required|date',
             'description' => 'nullable|string',

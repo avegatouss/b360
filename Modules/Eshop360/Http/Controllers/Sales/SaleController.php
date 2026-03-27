@@ -18,6 +18,7 @@ use Modules\Eshop360\Services\CartService;
 use Modules\Eshop360\Services\ChannelAccessService;
 use Modules\Eshop360\Services\OrderService;
 use Modules\Eshop360\Services\StockService;
+use Modules\Eshop360\Support\CurrentChannel;
 
 class SaleController extends Controller
 {
@@ -33,48 +34,52 @@ class SaleController extends Controller
     {
         $dateFrom = $request->date_from ?? now()->startOfMonth()->toDateString();
         $dateTo = $request->date_to ?? now()->toDateString();
+        $user = auth()->user();
         $channelId = $request->channel_id;
 
-        $baseQuery = Order::whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
-            ->when($channelId, fn ($q) => $q->where('channel_id', $channelId));
+        $channelFilter = $channelId ?: null;
 
-        $completedQuery = (clone $baseQuery)->where('status', 'completed');
+        $scopedQuery = fn () => Order::whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
+            ->when($channelFilter, fn($q) => $q->where('channel_id', $channelFilter));
+
+        $baseQuery = $scopedQuery();
+        $completedQuery = $scopedQuery()->where('status', 'completed');
 
         $totalSales = round((float) (clone $completedQuery)->sum('total'), 2);
         $totalOrders = (clone $baseQuery)->count();
         $completedOrders = (clone $completedQuery)->count();
-        $pendingOrders = (clone $baseQuery)->where('status', 'pending')->count();
-        $cancelledOrders = (clone $baseQuery)->where('status', 'cancelled')->count();
+        $pendingOrders = $scopedQuery()->where('status', 'pending')->count();
+        $cancelledOrders = $scopedQuery()->where('status', 'cancelled')->count();
         $totalTax = round((float) (clone $completedQuery)->sum('tax_amount'), 2);
         $totalDiscount = round((float) (clone $completedQuery)->sum('discount_amount'), 2);
-        $totalDue = round((float) (clone $baseQuery)->where('payment_status', '!=', 'paid')->sum('due_amount'), 2);
+        $totalDue = round((float) $scopedQuery()->where('payment_status', '!=', 'paid')->sum('due_amount'), 2);
         $totalPaid = round((float) (clone $completedQuery)->sum('paid_amount'), 2);
         $avgOrderValue = $completedOrders > 0 ? round($totalSales / $completedOrders, 2) : 0;
 
         // Today's sales
         $todaySales = round((float) Order::whereDate('created_at', today())
             ->where('status', 'completed')
-            ->when($channelId, fn ($q) => $q->where('channel_id', $channelId))
+            ->when($channelFilter, fn($q) => $q->where('channel_id', $channelFilter))
             ->sum('total'), 2);
 
         // Daily sales for chart
         $dailySales = Order::where('status', 'completed')
             ->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
-            ->when($channelId, fn ($q) => $q->where('channel_id', $channelId))
+            ->when($channelFilter, fn($q) => $q->where('channel_id', $channelFilter))
             ->select(DB::raw('DATE(created_at) as date'), DB::raw('SUM(total) as total'), DB::raw('COUNT(*) as count'))
             ->groupBy('date')
             ->orderBy('date')
             ->get();
 
         // Sales by source (pos, online, manual, channel_portal)
-        $salesBySource = (clone $baseQuery)->where('status', '!=', 'cancelled')
+        $salesBySource = $scopedQuery()->where('status', '!=', 'cancelled')
             ->select('source', DB::raw('COUNT(*) as count'), DB::raw('SUM(total) as total'))
             ->groupBy('source')
             ->get()
             ->keyBy('source');
 
         // Sales by payment method
-        $salesByPayment = (clone $completedQuery)
+        $salesByPayment = $scopedQuery()->where('status', 'completed')
             ->select('payment_method', DB::raw('COUNT(*) as count'), DB::raw('SUM(total) as total'))
             ->groupBy('payment_method')
             ->orderByDesc('total')
@@ -82,10 +87,10 @@ class SaleController extends Controller
 
         // Top selling products
         $topProducts = OrderItem::select('product_id', DB::raw('SUM(quantity) as total_qty'), DB::raw('SUM(total) as total_revenue'))
-            ->whereHas('order', function ($q) use ($dateFrom, $dateTo, $channelId) {
+            ->whereHas('order', function ($q) use ($dateFrom, $dateTo, $channelFilter) {
                 $q->where('status', 'completed')
                     ->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
-                    ->when($channelId, fn ($q2) => $q2->where('channel_id', $channelId));
+                    ->when($channelFilter, fn($qq) => $qq->where('channel_id', $channelFilter));
             })
             ->groupBy('product_id')
             ->orderByDesc('total_qty')
@@ -95,13 +100,11 @@ class SaleController extends Controller
 
         // Recent sales
         $recentSales = Order::with('customer', 'channel')
-            ->when($channelId, fn ($q) => $q->where('channel_id', $channelId))
-            ->latest()
-            ->limit(10)
-            ->get();
+            ->when($channelFilter, fn($q) => $q->where('channel_id', $channelFilter))
+            ->latest()->limit(10)->get();
 
         // Channels for filter (scoped to user access)
-        $channels = $this->channelAccess->availableChannelsForFilter(auth()->user());
+        $channels = $this->channelAccess->availableChannelsForFilter($user);
 
         return view('eshop360::sales.dashboard', compact(
             'totalSales', 'totalOrders', 'completedOrders', 'pendingOrders',
@@ -116,12 +119,13 @@ class SaleController extends Controller
     public function index(Request $request)
     {
         $instance = CurrentInstance::get();
+        $user = auth()->user();
+        $channelFilter = $request->integer('channel_id') ?: null;
 
         $query = Order::with(['customer', 'channel'])
             ->when($request->status, fn ($q, $s) => $q->where('status', $s))
             ->when($request->payment_status, fn ($q, $s) => $q->where('payment_status', $s))
             ->when($request->source, fn ($q, $s) => $q->where('source', $s))
-            ->when($request->channel_id, fn ($q, $c) => $q->where('channel_id', $c))
             ->when($request->payment_method, fn ($q, $m) => $q->where('payment_method', $m))
             ->when($request->search, function ($q, $s) {
                 $q->where(function ($qq) use ($s) {
@@ -133,7 +137,8 @@ class SaleController extends Controller
             ->when($request->date_from, fn ($q, $d) => $q->whereDate('created_at', '>=', $d))
             ->when($request->date_to, fn ($q, $d) => $q->whereDate('created_at', '<=', $d))
             ->when($request->min_total, fn ($q, $m) => $q->where('total', '>=', $m))
-            ->when($request->max_total, fn ($q, $m) => $q->where('total', '<=', $m));
+            ->when($request->max_total, fn ($q, $m) => $q->where('total', '<=', $m))
+            ->when($channelFilter, fn($q) => $q->where('channel_id', $channelFilter));
 
         // KPI from the same filtered query (before pagination)
         $filteredQuery = clone $query;
@@ -149,15 +154,11 @@ class SaleController extends Controller
         $sales = $query->latest()->paginate(25)->withQueryString();
 
         // Lookups for filters
-        $customers = Customer::where('instance_id', $instance->id)
-            ->where('is_active', true)
-            ->orderBy('name')
-            ->get(['id', 'name', 'code']);
+        $customers = Customer::where('instance_id', $instance->id)->where('is_active', true)
+            ->when($channelFilter, fn($q) => $q->where('channel_id', $channelFilter))
+            ->orderBy('name')->get(['id', 'name', 'code']);
 
-        $channels = \Modules\Eshop360\Models\DistributionChannel::where('instance_id', $instance->id)
-            ->where('is_active', true)
-            ->orderBy('name')
-            ->get(['id', 'name']);
+        $channels = $this->channelAccess->availableChannelsForFilter($user);
 
         $paymentMethods = Order::where('instance_id', $instance->id)
             ->whereNotNull('payment_method')
@@ -171,14 +172,20 @@ class SaleController extends Controller
         ));
     }
 
-    public function create(string $slug)
+    public function create(Request $request, string $slug)
     {
         $instance = CurrentInstance::get();
-        $customers = Customer::where('instance_id', $instance->id)->where('is_active', true)->orderBy('name')->get();
-        $products = Product::where('instance_id', $instance->id)->where('is_active', true)->orderBy('name')->get();
-        $channels = \Modules\Eshop360\Models\DistributionChannel::where('instance_id', $instance->id)->where('is_active', true)->orderBy('name')->get(['id', 'name']);
+        $user = auth()->user();
+        $channelId = $request->integer('channel_id') ?: null;
 
-        return view('eshop360::sales.create', compact('customers', 'products', 'channels'));
+        $customers = Customer::where('instance_id', $instance->id)->where('is_active', true)
+            ->when($channelId, fn($q) => $q->where('channel_id', $channelId))
+            ->orderBy('name')->get();
+
+        $products = Product::where('instance_id', $instance->id)->where('is_active', true)->orderBy('name')->get();
+        $channels = $this->channelAccess->availableChannelsForFilter($user);
+
+        return view('eshop360::sales.create', compact('customers', 'products', 'channels', 'channelId'));
     }
 
     public function store(Request $request, string $slug): RedirectResponse
@@ -196,12 +203,22 @@ class SaleController extends Controller
             'items'             => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:eshop_products,id',
             'items.*.quantity'   => 'required|integer|min:1',
-            'items.*.unit_price' => 'nullable|numeric|min:0',
-            'items.*.original_price' => 'nullable|numeric|min:0',
+            'items.*.unit_price' => 'prohibited',
+            'items.*.original_price' => 'prohibited',
             'items.*.discount'   => 'nullable|numeric|min:0',
         ]);
 
         $instance = CurrentInstance::get();
+
+        // Validate channel access for non-hub users
+        $channelId = $validated['channel_id'] ?? null;
+        if ($channelId && !$this->channelAccess->isHubAdmin(auth()->user())) {
+            abort_unless(
+                $this->channelAccess->canAccessChannel(auth()->user(), (int) $channelId),
+                403, 'Vous ne pouvez pas creer de vente pour ce canal.'
+            );
+        }
+
         $orderData = [
             'instance_id' => $instance?->id,
             'customer_id' => $validated['customer_id'] ?? null,
@@ -245,6 +262,9 @@ class SaleController extends Controller
 
     public function show(string $slug, Order $order)
     {
+        // Ensure user can access this order's channel
+        $this->authorizeOrderAccess($order);
+
         $order->load(['customer', 'items.product', 'payments', 'cashRegister.store', 'store', 'holding']);
         $sale = $order;
 
@@ -253,6 +273,7 @@ class SaleController extends Controller
 
     public function update(Request $request, string $slug, Order $order): RedirectResponse
     {
+        $this->authorizeOrderAccess($order);
         $validated = $request->validate([
             'status'         => 'nullable|in:pending,processing,completed,cancelled,refunded',
             'payment_status' => 'nullable|in:unpaid,partial,paid,overdue',
@@ -285,6 +306,7 @@ class SaleController extends Controller
 
     public function destroy(string $slug, Order $order): RedirectResponse
     {
+        $this->authorizeOrderAccess($order);
         $order->delete();
 
         return redirect()->route('eshop360.sales.index', ['slug' => $slug])
@@ -293,14 +315,13 @@ class SaleController extends Controller
 
     public function returns(Request $request, string $slug)
     {
-        $returns = Order::with(['customer', 'items'])
+        $query = Order::with(['customer', 'items'])
             ->where('status', 'refunded')
             ->when($request->search, fn ($q, $s) => $q->where('order_number', 'like', "%{$s}%"))
             ->when($request->date_from, fn ($q, $d) => $q->whereDate('created_at', '>=', $d))
-            ->when($request->date_to, fn ($q, $d) => $q->whereDate('created_at', '<=', $d))
-            ->latest()
-            ->paginate(20)
-            ->withQueryString();
+            ->when($request->date_to, fn ($q, $d) => $q->whereDate('created_at', '<=', $d));
+
+        $returns = $query->latest()->paginate(20)->withQueryString();
 
         return view('eshop360::sales.returns', compact('returns'));
     }
@@ -333,6 +354,12 @@ class SaleController extends Controller
 
         DB::transaction(function () use ($validated, $selectedItems, $instance) {
             $originalOrder = Order::with('items')->findOrFail($validated['order_id']);
+
+            // Verify channel access on the original order
+            if ($originalOrder->channel_id && !$this->channelAccess->canAccessChannel(auth()->user(), $originalOrder->channel_id)) {
+                abort(403, __('Vous n\'avez pas acces a cette commande.'));
+            }
+
             $originalOrder->update(['status' => 'refunded']);
 
             $stockService = app(StockService::class);
@@ -443,13 +470,16 @@ class SaleController extends Controller
     {
         $instance = CurrentInstance::get();
         $instanceId = $instance?->id ?? 0;
+        $user = auth()->user();
+        $channelFilter = $request->integer('channel_id') ?: null;
         $from = $request->input('date_from', now()->startOfMonth()->toDateString());
         $to = $request->input('date_to', now()->toDateString());
 
         // Base query for completed orders — prefix columns to avoid ambiguity in JOINs
         $baseQuery = Order::where('eshop_orders.instance_id', $instanceId)
             ->where('eshop_orders.status', 'completed')
-            ->whereBetween('eshop_orders.created_at', [$from . ' 00:00:00', $to . ' 23:59:59']);
+            ->whereBetween('eshop_orders.created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])
+            ->when($channelFilter, fn($q) => $q->where('eshop_orders.channel_id', $channelFilter));
 
         // Global KPIs
         $globalStats = (clone $baseQuery)->selectRaw('
@@ -509,6 +539,10 @@ class SaleController extends Controller
             ->orderByDesc('revenue')
             ->get();
 
+        // Channel isolation for raw queries
+        $rawChannelId = CurrentChannel::isScoped() ? CurrentChannel::id() : null;
+        $rawAccessibleIds = $this->channelAccess->accessibleChannelIds($user);
+
         // Top products
         $topProducts = DB::table('eshop_order_items')
             ->join('eshop_orders', 'eshop_order_items.order_id', '=', 'eshop_orders.id')
@@ -516,6 +550,8 @@ class SaleController extends Controller
             ->where('eshop_orders.instance_id', $instanceId)
             ->where('eshop_orders.status', 'completed')
             ->whereBetween('eshop_orders.created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])
+            ->when($rawChannelId, fn ($q) => $q->where('eshop_orders.channel_id', $rawChannelId))
+            ->when(! $rawChannelId && $rawAccessibleIds !== null, fn ($q) => $q->whereIn('eshop_orders.channel_id', $rawAccessibleIds->all()))
             ->selectRaw('
                 eshop_order_items.product_id,
                 COALESCE(eshop_products.name, eshop_order_items.product_name) as product_name,
@@ -552,6 +588,7 @@ class SaleController extends Controller
         $monthlyTrend = Order::where('instance_id', $instanceId)
             ->where('status', 'completed')
             ->where('created_at', '>=', now()->subMonths(12)->startOfMonth())
+            ->when($channelFilter, fn($q) => $q->where('channel_id', $channelFilter))
             ->selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, COUNT(*) as orders, SUM(total) as revenue, SUM(paid_amount) as paid')
             ->groupByRaw('YEAR(created_at), MONTH(created_at)')
             ->orderByRaw('YEAR(created_at), MONTH(created_at)')
@@ -562,7 +599,7 @@ class SaleController extends Controller
         $monthlyCharges = $chargesService->getTotalCostPerSecond($instanceId) * \Modules\Eshop360\Services\ChargesService::SECONDS_PER_MONTH;
 
         // Channels and stores for filters
-        $channels = \Modules\Eshop360\Models\DistributionChannel::where('instance_id', $instanceId)->where('is_active', true)->orderBy('name')->get();
+        $channels = $this->channelAccess->availableChannelsForFilter($user);
         $stores = \Modules\Eshop360\Models\Store::where('is_active', true)->orderBy('name')->get(['id', 'name']);
         $warehouses = \Modules\Eshop360\Models\Warehouse::where('is_active', true)->orderBy('name')->get(['id', 'name']);
 
@@ -582,11 +619,9 @@ class SaleController extends Controller
         $channelFilter = $request->integer('channel_id') ?: null;
         $channels = $this->channelAccess->availableChannelsForFilter($user);
 
-        $baseOrderQuery = fn () => $this->channelAccess->scopeWithChannelFilter(
-            Order::where('status', 'completed')
-                ->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59']),
-            $user, $channelFilter
-        );
+        $baseOrderQuery = fn () => Order::where('status', 'completed')
+            ->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
+            ->when($channelFilter, fn($q) => $q->where('channel_id', $channelFilter));
 
         $taxByDay = $baseOrderQuery()
             ->select(
@@ -606,12 +641,10 @@ class SaleController extends Controller
                 DB::raw('SUM(quantity) as total_qty'),
                 DB::raw('SUM(total) as total_revenue')
             )
-            ->whereHas('order', function ($q) use ($dateFrom, $dateTo, $user, $channelFilter) {
-                $this->channelAccess->scopeWithChannelFilter(
-                    $q->where('status', 'completed')
-                        ->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59']),
-                    $user, $channelFilter
-                );
+            ->whereHas('order', function ($q) use ($dateFrom, $dateTo, $channelFilter) {
+                $q->where('status', 'completed')
+                    ->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
+                    ->when($channelFilter, fn($qq) => $qq->where('channel_id', $channelFilter));
             })
             ->groupBy('product_id')
             ->orderByDesc('total_tax')
@@ -624,4 +657,21 @@ class SaleController extends Controller
         return view('eshop360::sales.tax-report', compact('taxByDay', 'taxByProduct', 'totalTax', 'dateFrom', 'dateTo', 'channels', 'channelFilter'));
     }
 
+    /**
+     * Ensure the authenticated user can access the order's channel.
+     */
+    private function authorizeOrderAccess(Order $order): void
+    {
+        $user = auth()->user();
+        if ($this->channelAccess->isHubAdmin($user)) {
+            return;
+        }
+        if ($order->channel_id === null) {
+            abort(403, 'Acces refuse: commande du hub.');
+        }
+        abort_unless(
+            $this->channelAccess->canAccessChannel($user, $order->channel_id),
+            403, 'Acces refuse: cette commande appartient a un autre canal.'
+        );
+    }
 }

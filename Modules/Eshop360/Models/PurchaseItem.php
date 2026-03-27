@@ -6,13 +6,16 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+use Modules\Eshop360\Database\Traits\BelongsToChannel;
+
 class PurchaseItem extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToChannel;
 
     protected $table = 'eshop_purchase_items';
 
     protected $fillable = [
+        'channel_id',
         'purchase_order_id',
         'product_id',
         'quantity',

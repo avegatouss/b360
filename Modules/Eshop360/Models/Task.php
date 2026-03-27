@@ -7,13 +7,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Modules\Core\Database\Traits\BelongsToInstance;
 
+use Modules\Eshop360\Database\Traits\BelongsToChannel;
+
 class Task extends Model
 {
-    use BelongsToInstance;
+    use BelongsToInstance, BelongsToChannel;
 
     protected $table = 'eshop_tasks';
 
     protected $fillable = [
+        'channel_id',
         'instance_id', 'project_id', 'parent_task_id', 'title', 'description',
         'status', 'priority', 'assigned_to', 'created_by',
         'start_date', 'due_date', 'completed_at',
