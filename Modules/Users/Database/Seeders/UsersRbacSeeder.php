@@ -14,6 +14,8 @@ use Spatie\Permission\PermissionRegistrar;
  * COMPLÉMENT au RolesPermissionsSeeder principal.
  * Ajoute les permissions et rôles spécifiques au module Users
  * qui ne sont pas déjà gérés par le seeder principal.
+ *
+ * Idempotent : utilise findOrCreate et givePermissionTo (additive).
  */
 final class UsersRbacSeeder extends Seeder
 {
@@ -27,8 +29,9 @@ final class UsersRbacSeeder extends Seeder
 
         try {
             $perms = [
-                'users.view', 'users.manage',
                 'dashboard.view',
+                'users.view', 'users.manage',
+                'admin.users', 'admin.roles',
                 'settings.view', 'settings.manage',
             ];
 
@@ -41,15 +44,17 @@ final class UsersRbacSeeder extends Seeder
             $manager = Role::findOrCreate('manager');
             $agent = Role::findOrCreate('agent');
 
-            $instanceAdmin->syncPermissions([
-                'users.view', 'users.manage', 'dashboard.view', 'settings.view', 'settings.manage',
+            $instanceAdmin->givePermissionTo([
+                'users.view', 'users.manage', 'dashboard.view',
+                'settings.view', 'settings.manage',
+                'admin.users', 'admin.roles',
             ]);
 
-            $manager->syncPermissions([
+            $manager->givePermissionTo([
                 'users.view', 'dashboard.view', 'settings.view',
             ]);
 
-            $agent->syncPermissions([
+            $agent->givePermissionTo([
                 'dashboard.view',
             ]);
         } finally {

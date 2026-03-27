@@ -1,4 +1,10 @@
     <!-- jQuery -->
+@php
+    $scriptVersion = file_exists(public_path('build/js/script.js')) ? filemtime(public_path('build/js/script.js')) : time();
+    $themeColorpickerVersion = file_exists(public_path('build/js/theme-colorpicker.js')) ? filemtime(public_path('build/js/theme-colorpicker.js')) : $scriptVersion;
+    $modalScriptVersion = file_exists(public_path('build/js/modal.js')) ? filemtime(public_path('build/js/modal.js')) : $scriptVersion;
+    $select2Version = file_exists(public_path('build/plugins/select2/js/select2.min.js')) ? filemtime(public_path('build/plugins/select2/js/select2.min.js')) : $scriptVersion;
+@endphp
     <script src="{{ URL::asset('build/js/jquery-3.7.1.min.js') }}"></script>
 
     <!-- Feather Icon JS -->
@@ -31,7 +37,7 @@
 @endif
 
     <!-- Select2 JS -->
-    <script src="{{ URL::asset('build/plugins/select2/js/select2.min.js') }}"></script>
+    <script src="{{ URL::asset('build/plugins/select2/js/select2.min.js') }}?v={{ $select2Version }}"></script>
 
     <!-- Datetimepicker JS -->
     <script src="{{ URL::asset('build/js/moment.min.js') }}"></script>
@@ -274,7 +280,7 @@
 
 @if (Route::is(['ui-modals']))
     <!-- Modal JS -->
-    <script src="{{URL::asset('build/js/modal.js')}}"></script>
+    <script src="{{URL::asset('build/js/modal.js')}}?v={{ $modalScriptVersion }}"></script>
 @endif
 
     <!-- Color Picker JS -->
@@ -287,5 +293,6 @@
 @endif
 
     <!-- Custom JS -->
-    <script src="{{ URL::asset('build/js/theme-colorpicker.js') }}"></script>
-    <script src="{{ URL::asset('build/js/script.js') }}"></script>
+    @include('layout.partials.select2-config')
+    <script src="{{ URL::asset('build/js/theme-colorpicker.js') }}?v={{ $themeColorpickerVersion }}"></script>
+    <script src="{{ URL::asset('build/js/script.js') }}?v={{ $scriptVersion }}"></script>

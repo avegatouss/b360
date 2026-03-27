@@ -11,14 +11,11 @@ use Spatie\Permission\PermissionRegistrar;
 /**
  * Seeder RBAC du module Core.
  *
- * NOTE : Ce seeder est un COMPLÉMENT au RolesPermissionsSeeder principal
- * (database/seeders/). Il ne crée que les permissions/rôles spécifiques
- * au module Core qui ne sont pas déjà gérés par le seeder principal.
+ * COMPLÉMENT au RolesPermissionsSeeder principal (database/seeders/).
+ * Ne crée que les permissions/rôles spécifiques au module Core
+ * qui ne sont pas déjà gérés par le seeder principal.
  *
- * Le seeder principal (RolesPermissionsSeeder) est exécuté par l'Installer
- * et gère la création initiale de TOUS les rôles et permissions de base.
- * Ce seeder-ci peut être exécuté indépendamment pour ajouter des
- * permissions module-spécifiques.
+ * Peut être exécuté indépendamment et de manière idempotente.
  */
 final class CoreRbacSeeder extends Seeder
 {
@@ -31,13 +28,16 @@ final class CoreRbacSeeder extends Seeder
         $registrar->setPermissionsTeamId(TeamContext::GLOBAL_TEAM_ID);
 
         try {
-            // Permissions additionnelles Core
+            // Permissions Core (subset des permissions principales)
             $permissions = [
+                'dashboard.view',
                 'instances.view', 'instances.manage',
                 'users.view', 'users.manage',
                 'modules.view', 'modules.manage',
                 'settings.view', 'settings.manage',
                 'billing.view', 'billing.manage',
+                'admin.settings', 'admin.users', 'admin.roles',
+                'admin.modules', 'admin.maintenance',
             ];
 
             foreach ($permissions as $perm) {
@@ -46,22 +46,37 @@ final class CoreRbacSeeder extends Seeder
 
             // S'assurer que les rôles existent (idempotent)
             Role::findOrCreate('super-admin');
-            $instanceAdmin = Role::findOrCreate('instance-admin');
-            $user = Role::findOrCreate('user');
 
-            $instanceAdmin->syncPermissions([
-                'instances.view',
+            $instanceAdmin = Role::findOrCreate('instance-admin');
+            $instanceAdmin->givePermissionTo([
+                'dashboard.view',
+                'instances.view', 'instances.manage',
                 'users.view', 'users.manage',
-                'modules.view',
+                'modules.view', 'modules.manage',
                 'settings.view', 'settings.manage',
                 'billing.view', 'billing.manage',
+                'admin.settings', 'admin.users', 'admin.roles',
+                'admin.modules', 'admin.maintenance',
             ]);
 
-            $user->syncPermissions([
+            $manager = Role::findOrCreate('manager');
+            $manager->givePermissionTo([
+                'dashboard.view',
                 'instances.view',
                 'users.view',
                 'modules.view',
                 'settings.view',
+            ]);
+
+            $agent = Role::findOrCreate('agent');
+            $agent->givePermissionTo([
+                'dashboard.view',
+            ]);
+
+            $user = Role::findOrCreate('user');
+            $user->givePermissionTo([
+                'dashboard.view',
+                'instances.view',
             ]);
         } finally {
             // Restaurer le contexte

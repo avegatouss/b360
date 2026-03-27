@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\HealthController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -24,3 +25,6 @@ Route::get('/', function () {
     // n'a pas encore redirigé (cas extrême). On redirige vers /login par sécurité.
     return redirect('/login');
 })->name('home');
+
+// Health check — detailed system status (no auth required)
+Route::get('/health', HealthController::class)->name('health');

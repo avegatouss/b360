@@ -1,9 +1,12 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Modules\Billing\Http\Controllers\CheckoutController;
+use Modules\Billing\Http\Controllers\GatewaySettingsController;
 use Modules\Billing\Http\Controllers\InvoiceController;
 use Modules\Billing\Http\Controllers\PlanController;
 use Modules\Billing\Http\Controllers\SubscriptionController;
+use Modules\Billing\Http\Controllers\UpgradeController;
 
 Route::middleware([
     'web',
@@ -37,4 +40,17 @@ Route::middleware([
     Route::get('/billing/invoices', [InvoiceController::class, 'index'])->name('billing.invoices.index');
     Route::get('/billing/invoices/{invoice}', [InvoiceController::class, 'show'])->name('billing.invoices.show');
     Route::post('/billing/invoices/{invoice}/pay', [InvoiceController::class, 'pay'])->name('billing.invoices.pay');
+
+    // Upgrade & Checkout
+    Route::get('/billing/upgrade', [UpgradeController::class, 'show'])->name('billing.upgrade');
+    Route::post('/billing/checkout', [CheckoutController::class, 'initiate'])->name('billing.checkout');
+
+    // Gateway settings (super-admin only)
+    Route::middleware('core.root.superadmin')->group(function () {
+        Route::get('/billing/gateways', [GatewaySettingsController::class, 'index'])->name('billing.gateways.index');
+        Route::get('/billing/gateways/{gateway}', [GatewaySettingsController::class, 'edit'])->name('billing.gateways.edit');
+        Route::put('/billing/gateways/{gateway}', [GatewaySettingsController::class, 'update'])->name('billing.gateways.update');
+        Route::post('/billing/gateways/{gateway}/toggle', [GatewaySettingsController::class, 'toggle'])->name('billing.gateways.toggle');
+        Route::post('/billing/gateways/{gateway}/test', [GatewaySettingsController::class, 'test'])->name('billing.gateways.test');
+    });
 });

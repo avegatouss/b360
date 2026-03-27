@@ -4,6 +4,8 @@ namespace Modules\Core\Tests;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Modules\Core\Support\TeamContext;
+use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
@@ -38,6 +40,10 @@ abstract class TestCase extends BaseTestCase
 
         // Re-share PDO after RefreshDatabase may have reconnected
         $this->sharePdo();
+
+        // Reset Spatie team/permission state so suite order cannot leak into tests.
+        TeamContext::clear();
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
     }
 
     private function sharePdo(): void

@@ -11,8 +11,9 @@ final class CoreServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__ . '/../config/core.php', 'core');
-        $this->mergeConfigFrom(__DIR__ . '/../config/hooks.php', 'hooks');
+        $this->mergeConfigFrom(__DIR__ . '/../Config/core.php', 'core');
+        $this->mergeConfigFrom(__DIR__ . '/../Config/hooks.php', 'hooks');
+        $this->mergeConfigFrom(__DIR__ . '/../Config/tours.php', 'tours');
 
         $this->app->singleton(HookRegistry::class);
         $this->app->singleton(ModuleManager::class);
@@ -30,8 +31,11 @@ final class CoreServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
+        $this->loadRoutesFrom(__DIR__ . '/../Routes/web.php');
         $this->loadRoutesFrom(__DIR__ . '/../Routes/api.php');
+
+        // Views Core
+        $this->loadViewsFrom(__DIR__ . '/../Resources/views', 'core');
 
         // Migrations Core : instance_user + modules tables
         $this->loadMigrationsFrom(__DIR__ . '/../Database/Migrations');

@@ -3,8 +3,11 @@
 namespace Modules\Core\Hooks\Registry;
 
 use Illuminate\Support\Collection;
+use Modules\Core\Hooks\DTO\BillableFeature;
+use Modules\Core\Hooks\DTO\DemoDataProvider;
 use Modules\Core\Hooks\DTO\MenuItem;
 use Modules\Core\Hooks\DTO\DashboardWidget;
+use Modules\Core\Hooks\DTO\PaymentGatewayDefinition;
 use Modules\Core\Hooks\DTO\PermissionGroup;
 use Modules\Core\Hooks\DTO\SettingsGroup;
 
@@ -17,6 +20,9 @@ final class HookRegistry
         'settings_groups' => [],
         'permissions' => [],
         'notification_types' => [],
+        'features' => [],
+        'payment_gateways' => [],
+        'demo_providers' => [],
     ];
 
     /** @var array<string, array<string, true>> */
@@ -26,6 +32,9 @@ final class HookRegistry
         'settings_groups' => [],
         'permissions' => [],
         'notification_types' => [],
+        'features' => [],
+        'payment_gateways' => [],
+        'demo_providers' => [],
     ];
 
     public function addMenu(MenuItem $item): void { $this->put('menu', $item->id, $item); }
@@ -66,7 +75,41 @@ final class HookRegistry
     }
 
     /** @return Collection<int, MenuItem> */
-    public function menu(): Collection { return $this->sorted('menu'); }
+    public function menu(): Collection
+    {
+        $sorted = $this->sorted('menu');
+
+        // Separate root items from children
+        $roots = [];
+        $children = [];
+
+        foreach ($sorted as $item) {
+            if ($item->parentId) {
+                $children[] = $item;
+            } else {
+                $roots[$item->id] = $item;
+            }
+        }
+
+        // Assign children to their parents
+        foreach ($children as $child) {
+            if (isset($roots[$child->parentId])) {
+                $roots[$child->parentId]->addChild($child);
+            } else {
+                // Parent not found, promote to root
+                $roots[$child->id] = $child;
+            }
+        }
+
+        // Sort children within each parent
+        foreach ($roots as $root) {
+            if ($root->hasChildren()) {
+                $root->sortChildren();
+            }
+        }
+
+        return collect(array_values($roots));
+    }
 
     /** @return Collection<int, DashboardWidget> */
     public function widgets(): Collection { return $this->sorted('widgets'); }
@@ -79,6 +122,21 @@ final class HookRegistry
 
     /** @return Collection<int, object> */
     public function notificationTypes(): Collection { return $this->sorted('notification_types'); }
+
+    public function addFeature(BillableFeature $item): void { $this->put('features', $item->id, $item); }
+
+    /** @return Collection<int, BillableFeature> */
+    public function features(): Collection { return $this->sorted('features'); }
+
+    public function addPaymentGateway(PaymentGatewayDefinition $item): void { $this->put('payment_gateways', $item->id, $item); }
+
+    /** @return Collection<int, PaymentGatewayDefinition> */
+    public function paymentGateways(): Collection { return $this->sorted('payment_gateways'); }
+
+    public function addDemoProvider(DemoDataProvider $item): void { $this->put('demo_providers', $item->id, $item); }
+
+    /** @return Collection<int, DemoDataProvider> */
+    public function demoProviders(): Collection { return $this->sorted('demo_providers'); }
 
     private function put(string $type, string $id, object $obj): void
     {

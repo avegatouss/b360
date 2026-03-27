@@ -42,12 +42,17 @@ class Instance extends Model
         'database',
         'db_driver',
         'is_active',
+        'is_maintenance',
+        'maintenance_message',
+        'maintenance_allowed_ips',
         'installed_at',
         'meta',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'is_maintenance' => 'boolean',
+        'maintenance_allowed_ips' => 'array',
         'installed_at' => 'datetime',
         'meta' => 'array',
     ];

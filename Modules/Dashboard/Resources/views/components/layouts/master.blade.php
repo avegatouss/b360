@@ -13,6 +13,9 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="{{ asset('build/css/bootstrap.min.css') }}">
 
+    <!-- Select2 CSS -->
+    <link rel="stylesheet" href="{{ asset('build/plugins/select2/css/select2.min.css') }}">
+
     <!-- Tabler Icons CSS -->
     <link rel="stylesheet" href="{{ asset('build/plugins/tabler-icons/tabler-icons.min.css') }}">
 
@@ -25,6 +28,25 @@
 
     <!-- Main CSS -->
     <link rel="stylesheet" href="{{ asset('build/css/style.css') }}">
+
+    <!-- Theme CSS -->
+    @php
+        $activeTheme = session('theme', 'default');
+        if ($activeTheme === 'default') {
+            $activeTheme = null; // no extra CSS needed for default
+        }
+        if (auth()->check() && function_exists('setting') && !session()->has('theme')) {
+            $userTheme = setting('user.theme_' . auth()->id());
+            if ($userTheme && $userTheme !== 'default') {
+                $activeTheme = $userTheme;
+                session(['theme' => $userTheme]);
+            }
+        }
+    @endphp
+    @if($activeTheme && file_exists(resource_path("css/themes/{$activeTheme}.css")))
+        <style>{!! file_get_contents(resource_path("css/themes/{$activeTheme}.css")) !!}</style>
+    @endif
+    @stack('styles')
 </head>
 <body>
 
@@ -116,6 +138,104 @@
                     </a>
                 </li>
 
+                {{-- Help button --}}
+                @auth
+                @if(isset($instance))
+                <li class="nav-item nav-item-box" style="position:relative;">
+                    <a href="javascript:void(0);" id="b360-help-btn" title="Aide">
+                        <i class="ti ti-help"></i>
+                    </a>
+                    <div id="b360-help-dropdown" class="b360-help-dropdown">
+                        <div class="b360-help-dropdown-header">Aide et assistance</div>
+                        <a href="{{ route('documentation.index', $instance->slug) }}" class="b360-help-dropdown-item">
+                            <i class="ti ti-book-2"></i>
+                            <span>Documentation</span>
+                        </a>
+                        <div class="b360-help-dropdown-divider"></div>
+                        <div class="b360-help-dropdown-header" style="font-size:12px;padding:10px 16px;">Visites guidees</div>
+                        <div class="b360-help-tour-list" id="b360-tour-list">
+                            <div style="padding:12px 16px;color:#999;font-size:13px;">Cliquez pour charger...</div>
+                        </div>
+                    </div>
+                </li>
+                @endif
+                @endauth
+
+                {{-- Notification bell --}}
+                @auth
+                @if(isset($instance))
+                @php
+                    try {
+                        $unreadCount = auth()->user()->unreadNotifications()->count();
+                        $latestNotifications = auth()->user()->notifications()->latest()->take(5)->get();
+                    } catch (\Exception $e) {
+                        $unreadCount = 0;
+                        $latestNotifications = collect();
+                    }
+                @endphp
+                <li class="nav-item dropdown nav-item-box">
+                    <a href="javascript:void(0);" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="ti ti-bell"></i>
+                        <span class="badge rounded-pill bg-danger badge-notification" id="notification-count"
+                              style="{{ $unreadCount > 0 ? '' : 'display:none' }}">{{ $unreadCount }}</span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end notification-dropdown" style="width:360px;max-height:450px;overflow-y:auto;">
+                        <div class="d-flex align-items-center justify-content-between p-3 pb-2 border-bottom">
+                            <h6 class="fw-semibold mb-0">Notifications</h6>
+                            @if($unreadCount > 0)
+                            <form method="POST" action="{{ route('eshop360.notifications.mark-all-read', $instance->slug) }}" id="mark-all-read-form">
+                                @csrf
+                                <a href="javascript:void(0);" class="text-primary fs-12" onclick="document.getElementById('mark-all-read-form').submit();">
+                                    Tout marquer comme lu
+                                </a>
+                            </form>
+                            @endif
+                        </div>
+                        <div class="p-0">
+                            @forelse($latestNotifications as $notif)
+                            @php
+                                $nd = $notif->data;
+                                $isUnread = is_null($notif->read_at);
+                                $typeBorder = match($nd['type'] ?? 'info') {
+                                    'danger'  => 'border-danger',
+                                    'warning' => 'border-warning',
+                                    'success' => 'border-success',
+                                    default   => 'border-info',
+                                };
+                            @endphp
+                            <form method="POST" action="{{ route('eshop360.notifications.mark-read', [$instance->slug, $notif->id]) }}">
+                                @csrf
+                                <button type="submit" class="dropdown-item d-flex align-items-start p-3 {{ $isUnread ? 'bg-light border-start border-3 ' . $typeBorder : '' }}" style="white-space:normal;">
+                                    <span class="flex-shrink-0 me-2">
+                                        <i class="{{ $nd['icon'] ?? 'ti ti-bell' }} fs-20"></i>
+                                    </span>
+                                    <span class="flex-grow-1">
+                                        <span class="d-block fw-semibold fs-13">{{ $nd['title'] ?? 'Notification' }}</span>
+                                        <span class="d-block text-muted fs-12 text-truncate" style="max-width:250px;">{{ $nd['message'] ?? '' }}</span>
+                                        <span class="d-block text-muted fs-11 mt-1">{{ $notif->created_at->diffForHumans() }}</span>
+                                    </span>
+                                </button>
+                            </form>
+                            @empty
+                            <div class="text-center py-4">
+                                <i class="ti ti-bell-off fs-24 text-muted"></i>
+                                <p class="text-muted fs-12 mb-0 mt-1">Aucune notification</p>
+                            </div>
+                            @endforelse
+                        </div>
+                        <div class="border-top p-2 text-center">
+                            <a href="{{ route('eshop360.notifications.index', $instance->slug) }}" class="text-primary fs-12">
+                                Voir toutes les notifications
+                            </a>
+                        </div>
+                    </div>
+                </li>
+                @endif
+                @endauth
+
+                {{-- Language switcher --}}
+                @include('lang::components.language-switcher')
+
                 {{-- User dropdown --}}
                 <li class="nav-item dropdown has-arrow main-drop profile-nav">
                     <a href="javascript:void(0);" class="nav-link userset" data-bs-toggle="dropdown">
@@ -139,12 +259,19 @@
                             </div>
                         </div>
                         <hr class="my-2">
+                        <form method="POST" action="{{ route('lockscreen.lock') }}" class="d-inline">
+                            @csrf
+                            <button type="submit"
+                                    class="dropdown-item w-100 text-start border-0 bg-transparent">
+                                <i class="ti ti-lock me-2"></i>Verrouiller l'ecran
+                            </button>
+                        </form>
                         <form method="POST"
                               action="{{ isset($instance) ? route('instance.logout', $instance->slug) : route('logout') }}">
                             @csrf
                             <button type="submit"
                                     class="dropdown-item logout pb-0 w-100 text-start border-0 bg-transparent">
-                                <i class="ti ti-logout me-2"></i>Se déconnecter
+                                <i class="ti ti-logout me-2"></i>Se deconnecter
                             </button>
                         </form>
                         @endauth
@@ -185,6 +312,22 @@
     {{-- ============================================================ --}}
     {{-- SIDEBAR                                                      --}}
     {{-- ============================================================ --}}
+    @if(!empty($hierarchicalMenuEnabled))
+        {{-- Hierarchical menu mode: hide sidebar, show floating nav button --}}
+        <div class="sidebar" id="sidebar" style="display:none"></div>
+        <style>
+            .page-wrapper { margin-left: 0 !important; }
+            .header .header-left { display: none; }
+            #mobile_btn { display: none !important; }
+        </style>
+        <div style="position:fixed;bottom:24px;left:24px;z-index:1050;">
+            <a href="{{ route('eshop360.nav.home', $instance->slug ?? '') }}"
+               class="btn btn-primary d-flex align-items-center gap-2 shadow-lg"
+               style="border-radius:12px;padding:12px 20px;font-weight:600;">
+                <i class="ti ti-layout-grid fs-18"></i> Navigation
+            </a>
+        </div>
+    @else
     <div class="sidebar" id="sidebar">
 
         <!-- Logo -->
@@ -240,6 +383,18 @@
                         <ul>
                             <li>
                                 <form method="POST"
+                                      action="{{ route('lockscreen.lock') }}"
+                                      id="sidebar-lock-form">
+                                    @csrf
+                                    <a href="javascript:void(0);"
+                                       onclick="document.getElementById('sidebar-lock-form').submit();">
+                                        <i class="ti ti-lock fs-16 me-2"></i>
+                                        <span>Verrouiller</span>
+                                    </a>
+                                </form>
+                            </li>
+                            <li>
+                                <form method="POST"
                                       action="{{ isset($instance) ? route('instance.logout', $instance->slug) : route('logout') }}"
                                       id="sidebar-logout-form">
                                     @csrf
@@ -256,6 +411,7 @@
             </div>
         </div>
     </div>
+    @endif
     {{-- ============================================================ --}}
     {{-- /SIDEBAR                                                     --}}
     {{-- ============================================================ --}}
@@ -274,7 +430,7 @@
                 </div>
             @endif
 
-            {{-- Page header --}}
+            {{-- Page header
             @if(isset($pageTitle))
             <div class="page-header">
                 <div class="page-title">
@@ -284,7 +440,7 @@
                     @endif
                 </div>
             </div>
-            @endif
+            @endif--}}
 
             {{ $slot }}
 
@@ -296,6 +452,11 @@
 
 </div>
 <!-- /Main Wrapper -->
+@php
+    $scriptVersion = file_exists(public_path('build/js/script.js')) ? filemtime(public_path('build/js/script.js')) : time();
+    $themeColorpickerVersion = file_exists(public_path('build/js/theme-colorpicker.js')) ? filemtime(public_path('build/js/theme-colorpicker.js')) : $scriptVersion;
+    $select2Version = file_exists(public_path('build/plugins/select2/js/select2.min.js')) ? filemtime(public_path('build/plugins/select2/js/select2.min.js')) : $scriptVersion;
+@endphp
 
 <!-- jQuery -->
 <script src="{{ asset('build/js/jquery-3.7.1.min.js') }}"></script>
@@ -305,10 +466,75 @@
 <script src="{{ asset('build/js/jquery.slimscroll.min.js') }}"></script>
 <!-- Bootstrap Core JS -->
 <script src="{{ asset('build/js/bootstrap.bundle.min.js') }}"></script>
+<!-- Select2 JS -->
+<script src="{{ asset('build/plugins/select2/js/select2.min.js') }}?v={{ $select2Version }}"></script>
+@include('layout.partials.select2-config')
 <!-- Theme JS -->
-<script src="{{ asset('build/js/theme-colorpicker.js') }}"></script>
+<script src="{{ asset('build/js/theme-colorpicker.js') }}?v={{ $themeColorpickerVersion }}"></script>
 <!-- Custom JS -->
-<script src="{{ asset('build/js/script.js') }}"></script>
+<script src="{{ asset('build/js/script.js') }}?v={{ $scriptVersion }}"></script>
+
+<!-- Guided Tour System -->
+@include('core::components.guided-tour')
+
+<!-- Notification polling -->
+@auth
+@if(isset($instance))
+<script>
+(function() {
+    setInterval(function() {
+        fetch('/i/{{ $instance->slug }}/notifications/unread-count', {
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            var badge = document.getElementById('notification-count');
+            if (badge) {
+                badge.textContent = data.count;
+                badge.style.display = data.count > 0 ? '' : 'none';
+            }
+        })
+        .catch(function() {});
+    }, 30000);
+})();
+</script>
+@endif
+@endauth
+
+<!-- Auto-lock after inactivity -->
+@auth
+<script>
+(function() {
+    let lockTimeout;
+    const LOCK_MINUTES = {{ setting('security.lockscreen_timeout', 30) }};
+    function resetLockTimer() {
+        clearTimeout(lockTimeout);
+        if (LOCK_MINUTES > 0) {
+            lockTimeout = setTimeout(function() {
+                fetch('/lockscreen/lock', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                }).then(function() {
+                    window.location.href = '/lockscreen';
+                });
+            }, LOCK_MINUTES * 60 * 1000);
+        }
+    }
+    ['mousemove', 'keypress', 'click', 'scroll'].forEach(function(e) {
+        document.addEventListener(e, resetLockTimer);
+    });
+    resetLockTimer();
+})();
+</script>
+@endauth
+
+@stack('scripts')
 
 </body>
 </html>

@@ -1,7 +1,11 @@
 
+@php
+    $themeScriptVersion = file_exists(public_path('build/js/theme-script.js')) ? filemtime(public_path('build/js/theme-script.js')) : time();
+    $select2CssVersion = file_exists(public_path('build/plugins/select2/css/select2.min.css')) ? filemtime(public_path('build/plugins/select2/css/select2.min.css')) : $themeScriptVersion;
+@endphp
 @if (!Route::is(['layout-horizontal','layout-detached','layout-modern','layout-two-column','layout-hovered','layout-boxed','layout-rtl','layout-dark',
 'under-maintenance', 'coming-soon','error-404','error-500','two-step-verification-3','two-step-verification-2','two-step-verification','email-verification-3','email-verification-2','email-verification','reset-password-3','reset-password-2','reset-password','forgot-password-3','forgot-password-2','forgot-password','register-3','register-2','register','signin-3','signin-2','signin','success','success-2','success-3','lock-screen']))
-    <script src="{{URL::asset('build/js/theme-script.js')}}"></script>	
+    <script src="{{URL::asset('build/js/theme-script.js')}}?v={{ $themeScriptVersion }}"></script>	
 @endif
 
 @if (!Route::is(['layout-rtl']))
@@ -24,7 +28,7 @@
     <link rel="stylesheet" href="{{ url('build/css/animate.css') }}">
 
     <!-- Select2 CSS -->
-    <link rel="stylesheet" href="{{ url('build/plugins/select2/css/select2.min.css') }}">
+    <link rel="stylesheet" href="{{ url('build/plugins/select2/css/select2.min.css') }}?v={{ $select2CssVersion }}">
 
 @if (Route::is(['icon-tabler', 'projects', 'search-list', 'social-feed']))
     <!-- Tabler Icon CSS -->

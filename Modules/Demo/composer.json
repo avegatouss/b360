@@ -1,0 +1,10 @@
+{
+    "name": "modules/demo",
+    "description": "Demo data module for B360",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "Modules\\Demo\\": ""
+        }
+    }
+}

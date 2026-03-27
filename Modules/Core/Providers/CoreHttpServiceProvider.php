@@ -4,6 +4,7 @@ namespace Modules\Core\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Modules\Core\Http\Middleware\BindInstanceFromRoute;
+use Modules\Core\Http\Middleware\CheckInstanceMaintenance;
 use Modules\Core\Http\Middleware\EnsureInstanceResolved;
 use Modules\Core\Http\Middleware\EnsureInstanceMembershipActive;
 use Modules\Core\Http\Middleware\SetSpatieTeamContextFromInstance;
@@ -27,7 +28,15 @@ final class CoreHttpServiceProvider extends ServiceProvider
         $router->aliasMiddleware('core.redirect.not_installed', RedirectIfNotInstalled::class);
         $router->aliasMiddleware('core.redirect.root_after_install', RedirectRootAfterInstall::class);
 
+        // Maintenance per-instance (après résolution instance)
+        $router->aliasMiddleware('core.instance.maintenance', CheckInstanceMaintenance::class);
+
         // Accès root + super-admin uniquement
         $router->aliasMiddleware('core.root.superadmin', EnsureRootSuperAdmin::class);
+
+        // Demo mode guard — blocks destructive actions
+        if (class_exists(\Modules\Demo\Http\Middleware\DemoGuard::class)) {
+            $router->aliasMiddleware('demo.guard', \Modules\Demo\Http\Middleware\DemoGuard::class);
+        }
     }
 }

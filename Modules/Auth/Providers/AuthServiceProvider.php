@@ -5,18 +5,33 @@ namespace Modules\Auth\Providers;
 use App\Instances\Instance;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Router;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Modules\Auth\Http\Middleware\CheckIpAccess;
+use Modules\Auth\Http\Middleware\CheckLockscreen;
+use Modules\Auth\Http\Middleware\EnsureTwoFactorChallenge;
 
 final class AuthServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
-        $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
-        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'authmod');
+        $this->loadRoutesFrom(__DIR__ . '/../Routes/web.php');
+        $this->loadViewsFrom(__DIR__ . '/../Resources/views', 'authmod');
+        $this->loadViewsFrom(__DIR__ . '/../Resources/views', 'auth');
+        $this->loadMigrationsFrom(__DIR__ . '/../Database/Migrations');
+        Blade::anonymousComponentPath(__DIR__ . '/../Resources/views/components', 'auth');
+
+        // Register 2FA middleware alias
+        /** @var Router $router */
+        $router = $this->app->make(Router::class);
+        $router->aliasMiddleware('auth.2fa', EnsureTwoFactorChallenge::class);
+        $router->aliasMiddleware('auth.ip-check', CheckIpAccess::class);
+        $router->aliasMiddleware('auth.lockscreen', CheckLockscreen::class);
 
         RateLimiter::for('login', function (Request $request) {
             $email = Str::lower((string) $request->input('email', ''));

@@ -14,6 +14,10 @@ Route::middleware([
     'core.root.superadmin',
 ])->prefix('/i/{slug}')->group(function () {
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
+
+    // Specific action routes MUST come before the {group} wildcard
+    Route::post('/settings/email/test', [SettingsController::class, 'testEmail'])->name('settings.test_email');
+
     Route::get('/settings/{group}', [SettingsController::class, 'group'])->name('settings.group');
     Route::put('/settings/{group}', [SettingsController::class, 'updateGroup'])->name('settings.group.update');
 });
