@@ -133,6 +133,9 @@ final class HRControllerTest extends TestCase
     public function test_commission_auto_calculated_when_order_completed(): void
     {
         $instance  = $this->makeRootInstance();
+        $user = $this->makeRootSuperAdmin($instance);
+        $this->actingAs($user);
+
         $warehouse = Warehouse::create([
             'instance_id' => $instance->id,
             'name'        => 'WH Test',
@@ -177,6 +180,8 @@ final class HRControllerTest extends TestCase
     public function test_no_commission_created_when_employee_rate_is_zero(): void
     {
         $instance = $this->makeRootInstance();
+        $user = $this->makeRootSuperAdmin($instance);
+        $this->actingAs($user);
 
         $employee = Employee::create([
             'instance_id'     => $instance->id,

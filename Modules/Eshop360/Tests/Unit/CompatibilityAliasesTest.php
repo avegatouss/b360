@@ -2,7 +2,6 @@
 
 namespace Modules\Eshop360\Tests\Unit;
 
-use Modules\Core\Tests\TestCase;
 use Modules\Eshop360\Models\InstallmentPayment;
 use Modules\Eshop360\Models\InstallmentPlan;
 use Modules\Eshop360\Models\Invoice;
@@ -10,13 +9,16 @@ use Modules\Eshop360\Models\InvoiceItem;
 use Modules\Eshop360\Models\Order;
 use Modules\Eshop360\Models\OrderItem;
 use Modules\Eshop360\Models\Product;
+use Modules\Eshop360\Tests\TestCase;
 
 final class CompatibilityAliasesTest extends TestCase
 {
     public function test_order_and_invoice_reference_aliases_follow_number_fields(): void
     {
+        [$instance] = $this->setUpInstanceWithAdmin();
+
         $order = Order::create([
-            'instance_id' => 1,
+            'instance_id' => $instance->id,
             'order_number' => 'ORD-20260315-TEST01',
             'status' => 'pending',
             'payment_status' => 'unpaid',
@@ -31,7 +33,7 @@ final class CompatibilityAliasesTest extends TestCase
         ]);
 
         $invoice = Invoice::create([
-            'instance_id' => 1,
+            'instance_id' => $instance->id,
             'order_id' => $order->id,
             'invoice_number' => 'INV-20260315-TEST01',
             'status' => 'unpaid',
@@ -50,8 +52,10 @@ final class CompatibilityAliasesTest extends TestCase
 
     public function test_installment_plan_compatibility_accessors_compute_expected_state(): void
     {
+        [$instance] = $this->setUpInstanceWithAdmin();
+
         $order = Order::create([
-            'instance_id' => 1,
+            'instance_id' => $instance->id,
             'order_number' => 'ORD-20260315-PLAN01',
             'status' => 'pending',
             'payment_status' => 'partial',
@@ -66,7 +70,7 @@ final class CompatibilityAliasesTest extends TestCase
         ]);
 
         $plan = InstallmentPlan::create([
-            'instance_id' => 1,
+            'instance_id' => $instance->id,
             'order_id' => $order->id,
             'total' => 60,
             'installments_count' => 3,
@@ -112,8 +116,10 @@ final class CompatibilityAliasesTest extends TestCase
 
     public function test_item_accessors_expose_description_and_tax_rate_compatibility(): void
     {
+        [$instance] = $this->setUpInstanceWithAdmin();
+
         $order = Order::create([
-            'instance_id' => 1,
+            'instance_id' => $instance->id,
             'order_number' => 'ORD-20260315-ITEM01',
             'status' => 'pending',
             'payment_status' => 'unpaid',
@@ -128,7 +134,7 @@ final class CompatibilityAliasesTest extends TestCase
         ]);
 
         $invoice = Invoice::create([
-            'instance_id' => 1,
+            'instance_id' => $instance->id,
             'order_id' => $order->id,
             'invoice_number' => 'INV-20260315-ITEM01',
             'status' => 'unpaid',
@@ -141,7 +147,7 @@ final class CompatibilityAliasesTest extends TestCase
         ]);
 
         $product = Product::create([
-            'instance_id' => 1,
+            'instance_id' => $instance->id,
             'name' => 'Paracetamol',
             'slug' => 'paracetamol',
             'sku' => 'PARA-001',

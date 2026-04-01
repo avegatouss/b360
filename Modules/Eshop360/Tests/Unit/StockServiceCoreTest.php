@@ -43,8 +43,7 @@ final class StockServiceCoreTest extends TestCase
 
     public function test_stock_entry_increases_quantity(): void
     {
-        $instance = $this->makeRootInstance();
-        CurrentInstance::set($instance);
+        [$instance] = $this->setUpInstanceWithAdmin();
 
         $warehouse = $this->makeWarehouse($instance->id);
         $product = $this->makeProduct($instance->id);
@@ -63,8 +62,7 @@ final class StockServiceCoreTest extends TestCase
 
     public function test_stock_exit_decreases_quantity(): void
     {
-        $instance = $this->makeRootInstance();
-        CurrentInstance::set($instance);
+        [$instance] = $this->setUpInstanceWithAdmin();
 
         $warehouse = $this->makeWarehouse($instance->id);
         $product = $this->makeProduct($instance->id);
@@ -84,8 +82,7 @@ final class StockServiceCoreTest extends TestCase
 
     public function test_stock_transfer_moves_between_warehouses(): void
     {
-        $instance = $this->makeRootInstance();
-        CurrentInstance::set($instance);
+        [$instance] = $this->setUpInstanceWithAdmin();
 
         $warehouseA = $this->makeWarehouse($instance->id, 'Depot A', 'WH-A');
         $warehouseB = $this->makeWarehouse($instance->id, 'Depot B', 'WH-B');
@@ -109,8 +106,7 @@ final class StockServiceCoreTest extends TestCase
 
     public function test_stock_adjustment_updates_quantity(): void
     {
-        $instance = $this->makeRootInstance();
-        CurrentInstance::set($instance);
+        [$instance] = $this->setUpInstanceWithAdmin();
 
         $warehouse = $this->makeWarehouse($instance->id);
         $product = $this->makeProduct($instance->id);
@@ -130,8 +126,7 @@ final class StockServiceCoreTest extends TestCase
 
     public function test_low_stock_detection(): void
     {
-        $instance = $this->makeRootInstance();
-        CurrentInstance::set($instance);
+        [$instance] = $this->setUpInstanceWithAdmin();
 
         $warehouse = $this->makeWarehouse($instance->id);
         $service = app(StockService::class);

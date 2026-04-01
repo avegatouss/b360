@@ -13,6 +13,7 @@ use Modules\Eshop360\Models\Customer;
 use Modules\Eshop360\Models\DistributionChannel;
 use Modules\Eshop360\Models\Employee;
 use Modules\Eshop360\Models\Expense;
+use Modules\Eshop360\Models\ExpenseCategory;
 use Modules\Eshop360\Models\Order;
 use Modules\Eshop360\Models\Product;
 use Modules\Eshop360\Models\Stock;
@@ -490,10 +491,16 @@ final class ChannelIsolationTest extends TestCase
     {
         $ctx = $this->setUpTwoChannels();
 
+        $category = ExpenseCategory::create([
+            'instance_id' => $ctx['instance']->id,
+            'name' => 'Logistique',
+        ]);
+
         Expense::withoutGlobalScopes()->create([
             'instance_id' => $ctx['instance']->id,
             'channel_id' => $ctx['channelA']->id,
-            'category_id' => null,
+            'category_id' => $category->id,
+            'user_id' => $ctx['hubAdmin']->id,
             'amount' => 5000,
             'description' => 'Hub Expense',
             'date' => now(),
@@ -502,7 +509,8 @@ final class ChannelIsolationTest extends TestCase
         Expense::withoutGlobalScopes()->create([
             'instance_id' => $ctx['instance']->id,
             'channel_id' => $ctx['channelB']->id,
-            'category_id' => null,
+            'category_id' => $category->id,
+            'user_id' => $ctx['hubAdmin']->id,
             'amount' => 3000,
             'description' => 'Channel B Expense',
             'date' => now(),

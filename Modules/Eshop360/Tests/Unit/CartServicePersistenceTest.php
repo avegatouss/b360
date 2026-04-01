@@ -17,8 +17,7 @@ final class CartServicePersistenceTest extends TestCase
     {
         parent::setUp();
 
-        $instance = $this->makeRootInstance();
-        CurrentInstance::set($instance);
+        $this->setUpInstanceWithAdmin();
 
         $this->cart = new CartService();
     }
@@ -44,10 +43,10 @@ final class CartServicePersistenceTest extends TestCase
 
     public function test_persist_to_db_saves_cart_for_authenticated_user(): void
     {
+        $product = $this->makeProduct(['price' => 500]);
+
         $user = $this->makeUser('cart-test@test.com');
         $this->actingAs($user);
-
-        $product = $this->makeProduct(['price' => 500]);
         $this->cart->addItem($product, 3);
 
         // Check DB record was created
@@ -77,7 +76,7 @@ final class CartServicePersistenceTest extends TestCase
         $instance = CurrentInstance::get();
 
         // Simulate a previously saved cart
-        PersistentCart::create([
+        PersistentCart::withoutGlobalScopes()->create([
             'instance_id' => $instance->id,
             'user_id' => $user->id,
             'items' => [
@@ -110,15 +109,15 @@ final class CartServicePersistenceTest extends TestCase
 
     public function test_restore_skips_when_session_cart_not_empty(): void
     {
+        // Create product before switching to regular user
+        $product = $this->makeProduct();
+
         $user = $this->makeUser('skip@test.com');
         $this->actingAs($user);
-
-        // Add item to session cart first
-        $product = $this->makeProduct();
         $this->cart->addItem($product, 1);
 
         // Save something different in DB
-        PersistentCart::create([
+        PersistentCart::withoutGlobalScopes()->create([
             'instance_id' => CurrentInstance::get()->id,
             'user_id' => $user->id,
             'items' => ['item_999' => ['product_id' => 999, 'name' => 'DB Product', 'quantity' => 5, 'price' => 300]],
@@ -137,7 +136,7 @@ final class CartServicePersistenceTest extends TestCase
         $user = $this->makeUser('expired@test.com');
         $this->actingAs($user);
 
-        PersistentCart::create([
+        PersistentCart::withoutGlobalScopes()->create([
             'instance_id' => CurrentInstance::get()->id,
             'user_id' => $user->id,
             'items' => ['item_1' => ['product_id' => 1, 'name' => 'Old', 'quantity' => 1, 'price' => 100]],
@@ -152,10 +151,10 @@ final class CartServicePersistenceTest extends TestCase
 
     public function test_clear_deletes_db_record(): void
     {
+        $product = $this->makeProduct();
+
         $user = $this->makeUser('clear@test.com');
         $this->actingAs($user);
-
-        $product = $this->makeProduct();
         $this->cart->addItem($product, 2);
 
         // Verify DB record exists
@@ -170,10 +169,10 @@ final class CartServicePersistenceTest extends TestCase
 
     public function test_update_item_persists_to_db(): void
     {
+        $product = $this->makeProduct();
+
         $user = $this->makeUser('update@test.com');
         $this->actingAs($user);
-
-        $product = $this->makeProduct();
         $this->cart->addItem($product, 2);
 
         $key = 'item_' . $product->id;

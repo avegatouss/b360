@@ -13,8 +13,7 @@ final class StockServiceTest extends TestCase
 {
     public function test_adjust_stock_normalizes_legacy_types_and_resolves_existing_warehouse(): void
     {
-        $instance = $this->makeRootInstance();
-        CurrentInstance::set($instance);
+        [$instance] = $this->setUpInstanceWithAdmin();
 
         $warehouse = Warehouse::create([
             'instance_id' => $instance->id,

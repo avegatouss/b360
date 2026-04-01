@@ -80,7 +80,6 @@ final class PosOperationsTest extends TestCase
                     [
                         'product_id' => $product->id,
                         'quantity' => 2,
-                        'unit_price' => 10,
                     ],
                 ],
             ])

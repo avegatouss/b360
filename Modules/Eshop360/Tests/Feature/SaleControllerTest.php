@@ -107,7 +107,7 @@ final class SaleControllerTest extends TestCase
                 'slug' => $instance->slug,
             ]), [
                 'payment_method' => 'cash',
-                'paid_amount' => 16.8,
+                'paid_amount' => 19,
                 'discount_amount' => 3,
                 'coupon_code' => $coupon->code,
                 'source' => 'pos',
@@ -115,8 +115,6 @@ final class SaleControllerTest extends TestCase
                     [
                         'product_id' => $product->id,
                         'quantity' => 2,
-                        'unit_price' => 9,
-                        'original_price' => 10,
                     ],
                 ],
             ]);
@@ -135,16 +133,16 @@ final class SaleControllerTest extends TestCase
         $this->assertSame('paid', $order->payment_status);
         $this->assertSame('pos', $order->source);
         $this->assertSame(20.0, (float) $order->subtotal);
-        $this->assertSame(1.8, (float) $order->tax_amount);
-        $this->assertSame(5.0, (float) $order->discount_amount);
-        $this->assertSame(16.8, (float) $order->total);
+        $this->assertSame(2.0, (float) $order->tax_amount);
+        $this->assertSame(3.0, (float) $order->discount_amount);
+        $this->assertSame(19.0, (float) $order->total);
         $this->assertCount(1, $order->items);
         $this->assertCount(1, $order->payments);
 
         $this->assertDatabaseHas('eshop_payments', [
             'payable_type' => Order::class,
             'payable_id' => $order->id,
-            'amount' => 16.80,
+            'amount' => 19.0,
             'method' => 'cash',
             'status' => 'completed',
         ]);

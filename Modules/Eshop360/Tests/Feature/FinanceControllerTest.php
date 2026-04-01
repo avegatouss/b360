@@ -145,6 +145,8 @@ final class FinanceControllerTest extends TestCase
             'total'        => 200.0,
         ]);
 
+        $this->actingAs($user);
+
         $service = app(FinanceService::class);
         $data = $service->profitAndLoss(
             $instance->id,

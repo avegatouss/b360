@@ -88,8 +88,7 @@ final class MarginServiceTest extends TestCase
 
     public function test_calculate_tripartite_margin_splits_correctly(): void
     {
-        $instance = $this->makeRootInstance();
-        CurrentInstance::set($instance);
+        [$instance] = $this->setUpInstanceWithAdmin();
 
         $channel = $this->makeChannel([
             'debt_share' => 0.3334,
@@ -116,8 +115,7 @@ final class MarginServiceTest extends TestCase
 
     public function test_margin_calculation_with_custom_shares(): void
     {
-        $instance = $this->makeRootInstance();
-        CurrentInstance::set($instance);
+        [$instance] = $this->setUpInstanceWithAdmin();
 
         $channel = $this->makeChannel([
             'debt_share' => 0.40,
@@ -144,8 +142,7 @@ final class MarginServiceTest extends TestCase
 
     public function test_sync_order_margins_creates_channel_margin_log(): void
     {
-        $instance = $this->makeRootInstance();
-        CurrentInstance::set($instance);
+        [$instance] = $this->setUpInstanceWithAdmin();
 
         $channel = $this->makeChannel([
             'debt_share' => 0.20,
@@ -174,8 +171,7 @@ final class MarginServiceTest extends TestCase
 
     public function test_non_channel_order_has_no_margin_log(): void
     {
-        $instance = $this->makeRootInstance();
-        CurrentInstance::set($instance);
+        [$instance] = $this->setUpInstanceWithAdmin();
 
         $product = $this->makeProduct();
 

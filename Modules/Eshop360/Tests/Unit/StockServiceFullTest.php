@@ -22,8 +22,7 @@ final class StockServiceFullTest extends TestCase
     {
         parent::setUp();
 
-        $this->instance = $this->makeRootInstance();
-        CurrentInstance::set($this->instance);
+        [$this->instance] = $this->setUpInstanceWithAdmin();
 
         $this->warehouse = Warehouse::create([
             'instance_id' => $this->instance->id,

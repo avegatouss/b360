@@ -22,8 +22,7 @@ final class ReportCacheTest extends TestCase
     {
         parent::setUp();
 
-        $instance = $this->makeRootInstance();
-        CurrentInstance::set($instance);
+        [$instance] = $this->setUpInstanceWithAdmin();
         $this->instanceId = $instance->id;
 
         $this->reports = new ReportService();
@@ -41,7 +40,7 @@ final class ReportCacheTest extends TestCase
         $this->assertSame($result1, $result2);
 
         // Cache key should exist
-        $cacheKey = "report:overview:{$this->instanceId}:{$from}:{$to}";
+        $cacheKey = "report:overview:{$this->instanceId}:ch_:{$from}:{$to}";
         $this->assertTrue(Cache::has($cacheKey));
     }
 
@@ -70,9 +69,9 @@ final class ReportCacheTest extends TestCase
         $this->reports->salesByCategory($this->instanceId, $from, $to);
         $this->reports->stockReport($this->instanceId);
 
-        $overviewKey = "report:overview:{$this->instanceId}:{$from}:{$to}";
-        $salesKey = "report:salesByCategory:{$this->instanceId}:{$from}:{$to}";
-        $stockKey = "report:stockReport:{$this->instanceId}:all";
+        $overviewKey = "report:overview:{$this->instanceId}:ch_:{$from}:{$to}";
+        $salesKey = "report:salesByCategory:{$this->instanceId}:ch_:{$from}:{$to}";
+        $stockKey = "report:stockReport:{$this->instanceId}:ch_:all";
 
         $this->assertTrue(Cache::has($overviewKey));
         $this->assertTrue(Cache::has($salesKey));

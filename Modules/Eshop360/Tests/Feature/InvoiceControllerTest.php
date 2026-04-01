@@ -87,7 +87,7 @@ final class InvoiceControllerTest extends TestCase
 
         $this->assertSame(20.0, (float) $invoice->paid_amount);
         $this->assertSame(27.5, (float) $invoice->due_amount);
-        $this->assertSame('unpaid', $invoice->status);
+        $this->assertSame('partial', $invoice->status);
 
         $this->assertDatabaseHas('eshop_payments', [
             'payable_type' => Invoice::class,
