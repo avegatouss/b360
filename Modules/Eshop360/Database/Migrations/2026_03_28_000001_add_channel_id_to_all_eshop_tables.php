@@ -122,12 +122,18 @@ return new class extends Migration
     {
         foreach ($this->tables as $table) {
             if (Schema::hasTable($table) && ! Schema::hasColumn($table, 'channel_id')) {
-                Schema::table($table, function (Blueprint $blueprint) {
-                    $blueprint->foreignId('channel_id')
-                        ->nullable()
-                        ->after('instance_id')
-                        ->constrained('eshop_distribution_channels')
-                        ->nullOnDelete();
+                $hasInstanceId = Schema::hasColumn($table, 'instance_id');
+
+                Schema::table($table, function (Blueprint $blueprint) use ($hasInstanceId) {
+                    $col = $blueprint->foreignId('channel_id')->nullable();
+
+                    if ($hasInstanceId) {
+                        $col->after('instance_id');
+                    } else {
+                        $col->after('id');
+                    }
+
+                    $col->constrained('eshop_distribution_channels')->nullOnDelete();
 
                     $blueprint->index('channel_id');
                 });
