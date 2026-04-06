@@ -539,11 +539,31 @@ class ReportService
      */
     private function cached(string $key, int $ttl, int $instanceId, callable $callback): mixed
     {
+        // Use tagged cache if the driver supports it (Redis, Memcached)
+        if ($this->supportsTags()) {
+            return Cache::tags(["reports.{$instanceId}"])
+                ->remember($key, $ttl, $callback);
+        }
+
+        // Fallback to manifest-based tracking for array/file drivers
         $this->trackCacheKey($key, $instanceId);
 
         return Cache::remember($key, $ttl, function () use ($callback) {
             return $callback();
         });
+    }
+
+    /**
+     * Check if the current cache driver supports tags.
+     */
+    private function supportsTags(): bool
+    {
+        try {
+            $store = Cache::getStore();
+            return $store instanceof \Illuminate\Cache\TaggableStore;
+        } catch (\Throwable) {
+            return false;
+        }
     }
 
     /**

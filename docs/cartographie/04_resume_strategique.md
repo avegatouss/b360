@@ -194,16 +194,19 @@ gantt
 
 ### Priorités absolues (avant toute nouvelle fonctionnalité)
 
-| Priorité | Action | Justification |
-|----------|--------|---------------|
-| **P0** | `lockForUpdate()` dans StockService | Stock corrompu = business cassé |
-| **P0** | UNIQUE constraint + retry sur order/invoice numbers | Doublons = problème légal |
-| **P0** | Fix trait Project/Task | Crash runtime |
-| **P1** | Migration `tax_rate` invoice_items | Intégrité fiscale |
-| **P1** | Pessimistic locking wallet auto-pay | Double-paiement |
-| **P1** | Supprimer double recurring-invoices | Double facturation |
-| **P2** | Nettoyage code mort | Clarté |
-| **P2** | Unification margins (Codifarm → Channel) | Simplification |
+| Priorité | Action | Justification | Statut (2026-04-04) |
+|----------|--------|---------------|---------------------|
+| **P0** | `lockForUpdate()` dans StockService | Stock corrompu = business cassé | ✅ CORRIGÉ |
+| **P0** | UNIQUE constraint + retry sur order/invoice numbers | Doublons = problème légal | ✅ CORRIGÉ |
+| **P0** | Fix trait Project/Task | Crash runtime | ✅ CORRIGÉ (déjà présent) |
+| **P1** | Migration `tax_rate` invoice_items | Intégrité fiscale | ✅ CORRIGÉ (migration créée) |
+| **P1** | Pessimistic locking wallet auto-pay | Double-paiement | ✅ CORRIGÉ (lockForUpdate dans FinanceService) |
+| **P1** | Supprimer double recurring-invoices | Double facturation | ✅ CORRIGÉ (GenerateRecurringInvoices supprimée) |
+| **P1** | Commission idempotence | Double commission | ✅ CORRIGÉ (guard exists + UNIQUE constraint) |
+| **P1** | Webhook déduplication | Double traitement | ✅ CORRIGÉ (deduplication_key) |
+| **P2** | Nettoyage code mort (FeatureGate) | Clarté | ✅ CORRIGÉ (singleton supprimé) |
+| **P2** | Unification margins (Codifarm → Channel) | Simplification | ✅ CORRIGÉ (migration 2026-03-16) |
+| **P2** | Unification audit_logs | Simplification | ✅ CORRIGÉ (AuditService → Core table) |
 
 ---
 

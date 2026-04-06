@@ -4,7 +4,7 @@ namespace Modules\Billing\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Modules\Billing\Services\FeatureRegistry;
+use Modules\Billing\Services\FeatureResolver;
 use Modules\Core\Support\CurrentInstance;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -13,6 +13,11 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * Usage in routes: ->middleware('billing.feature:eshop360.channels')
  *
+ * Resolution order (via FeatureResolver):
+ * 1. Tenant-level override (tenant_feature_overrides table)
+ * 2. Plan-based feature (subscription plan → FeatureRegistry)
+ * 3. Default: blocked
+ *
  * If the feature is not available:
  * - JSON requests get a 403 with upgrade URL
  * - Web requests are redirected to the upgrade page
@@ -20,7 +25,7 @@ use Symfony\Component\HttpFoundation\Response;
 final class EnsureFeature
 {
     public function __construct(
-        private readonly FeatureRegistry $featureRegistry,
+        private readonly FeatureResolver $featureResolver,
     ) {}
 
     public function handle(Request $request, Closure $next, string $feature): Response
@@ -36,7 +41,7 @@ final class EnsureFeature
             return $next($request);
         }
 
-        if ($this->featureRegistry->has($feature, $instance->id)) {
+        if ($this->featureResolver->can($instance->id, $feature)) {
             return $next($request);
         }
 

@@ -30,7 +30,9 @@ class OnlineOrderService
 
             $orderItems = [];
             foreach ($items as $item) {
-                $product = Product::findOrFail($item['product_id']);
+                // Bypass ChannelScope: products are hub-level, linked to channels via pivot
+                $product = Product::withoutGlobalScope(\Modules\Eshop360\Database\Scopes\ChannelScope::class)
+                    ->findOrFail($item['product_id']);
                 $pricing = $pricingService->resolve($product, $channelId);
                 // Always use server-side pricing — never accept client-supplied prices
                 $unitPrice = round((float) $pricing['unit_price'], 2);
@@ -61,6 +63,7 @@ class OnlineOrderService
 
             foreach ($orderItems as $item) {
                 $item['online_order_id'] = $order->id;
+                $item['channel_id'] = $channelId; // Propagate channel context for BelongsToChannel
                 OnlineOrderItem::create($item);
             }
 

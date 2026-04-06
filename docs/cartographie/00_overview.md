@@ -29,10 +29,10 @@
 | Métrique | Valeur |
 |----------|--------|
 | Modules actifs | 13 |
-| Contrôleurs | 95+ |
-| Modèles Eloquent | 108 |
-| Services | 91 |
-| Migrations | 146+ |
+| Contrôleurs | 118 |
+| Modèles Eloquent | 112 |
+| Services | 81 |
+| Migrations | 167 |
 | Middleware | 28 |
 | Service Providers | 30 |
 | Commandes Artisan schedulées | 11 |
@@ -158,7 +158,7 @@ Le Core expose un **HookRegistry** qui permet aux modules de s'enregistrer dynam
 | **Socle plateforme** (Core, Auth, Users, Instances, Billing) | ★★★★☆ | Architecture solide, multi-tenancy fonctionnelle, hooks extensibles |
 | **Eshop360** | ★★★☆☆ | Très riche fonctionnellement mais inégal : POS/stocks/rapports opérationnels, facturation/RH fragiles |
 | **Modules support** (Lang, Currency, Settings, Dashboard) | ★★★★☆ | Simples et efficaces |
-| **Tests** | ★★☆☆☆ | 396 tests passants mais couverture inégale (Auth, Dashboard, Users sans tests dédiés) |
+| **Tests** | ★★★★☆ | 275 tests passants, 0 en échec. Tests POS flow, race conditions, pricing engine, multi-devises. Auth/Users/Dashboard restent sans tests dédiés. |
 
 ### Cohérence d'ensemble
 
@@ -170,7 +170,7 @@ Le Core expose un **HookRegistry** qui permet aux modules de s'enregistrer dynam
 1. **Race condition stock** — Pas de `lockForUpdate()` sur les déductions de stock (risque corruption)
 2. **Eshop360 trop gros** — Candidat au découpage en sous-modules (Catalog, POS, Finance, HR, CRM)
 3. **Double système de feature gates** — `FeatureGate` (Eshop360, deprecated) vs `FeatureRegistry` (Billing) coexistent
-4. **Modèles Project/Task cassés** — Trait `BelongsToInstance` manquant → crash runtime
+4. ~~**Modèles Project/Task cassés**~~ — CORRIGÉ : trait `BelongsToInstance` présent (vérifié 2026-04-04)
 5. **Facturation fragile** — Incohérences `invoice_number` vs `reference`, champ `tax_rate` manquant sur `invoice_items`
 6. **Codifarm/Channel duplication** — Deux systèmes de marge coexistent (`CodifarmMarginConfig` et `DistributionChannel`)
 7. **Absence d'observers** — 0 observer dans tout le projet ; la logique post-save est dispersée dans les contrôleurs

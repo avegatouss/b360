@@ -2,6 +2,7 @@
 
 namespace Modules\Eshop360\Services;
 
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Modules\Core\Support\CurrentInstance;
@@ -27,6 +28,7 @@ class InvoiceService
                 'unit_price' => $orderItem->unit_price,
                 'discount' => $orderItem->discount,
                 'tax' => $orderItem->tax,
+                'tax_rate' => $orderItem->tax_rate,
                 'total' => $orderItem->total,
             ])->all(),
             [
@@ -62,25 +64,42 @@ class InvoiceService
             $total = round($subtotal + $taxAmount - $totalDiscount, 2);
             $targetPaidAmount = round((float) ($invoiceData['paid_amount'] ?? 0), 2);
 
-            $invoice = Invoice::create([
-                'instance_id' => $invoiceData['instance_id'] ?? $instance?->id,
-                'order_id' => $invoiceData['order_id'] ?? null,
-                'customer_id' => $invoiceData['customer_id'] ?? null,
-                'invoice_number' => $invoiceData['invoice_number'] ?? $this->generateInvoiceNumber(),
-                'status' => $invoiceData['status'] ?? 'draft',
-                'due_date' => $invoiceData['due_date'] ?? null,
-                'subtotal' => round($subtotal, 2),
-                'tax_amount' => round($taxAmount, 2),
-                'discount_amount' => $totalDiscount,
-                'total' => $total,
-                'paid_amount' => $targetPaidAmount,
-                'due_amount' => round(max(0, $total - $targetPaidAmount), 2),
-                'notes' => $invoiceData['notes'] ?? null,
-                'terms' => $invoiceData['terms'] ?? null,
-                'footer_text' => $invoiceData['footer_text'] ?? null,
-                'template' => $invoiceData['template'] ?? 'default',
-                'created_by' => $invoiceData['created_by'] ?? auth()->id(),
-            ]);
+            $invoiceNumber = $invoiceData['invoice_number'] ?? $this->generateInvoiceNumber();
+            $invoice = null;
+
+            for ($attempt = 1; $attempt <= self::MAX_NUMBER_ATTEMPTS; $attempt++) {
+                try {
+                    $invoice = Invoice::create([
+                        'instance_id' => $invoiceData['instance_id'] ?? $instance?->id,
+                        'order_id' => $invoiceData['order_id'] ?? null,
+                        'customer_id' => $invoiceData['customer_id'] ?? null,
+                        'invoice_number' => $invoiceNumber,
+                        'status' => $invoiceData['status'] ?? 'draft',
+                        'due_date' => $invoiceData['due_date'] ?? null,
+                        'subtotal' => round($subtotal, 2),
+                        'tax_amount' => round($taxAmount, 2),
+                        'discount_amount' => $totalDiscount,
+                        'total' => $total,
+                        'paid_amount' => $targetPaidAmount,
+                        'due_amount' => round(max(0, $total - $targetPaidAmount), 2),
+                        'notes' => $invoiceData['notes'] ?? null,
+                        'terms' => $invoiceData['terms'] ?? null,
+                        'footer_text' => $invoiceData['footer_text'] ?? null,
+                        'template' => $invoiceData['template'] ?? 'default',
+                        'created_by' => $invoiceData['created_by'] ?? auth()->id(),
+                    ]);
+
+                    break; // Success — exit retry loop
+                } catch (QueryException $e) {
+                    // MySQL error 1062 = duplicate entry
+                    if ($attempt >= self::MAX_NUMBER_ATTEMPTS || (int) $e->errorInfo[1] !== 1062) {
+                        throw $e;
+                    }
+
+                    // Regenerate invoice number and retry
+                    $invoiceNumber = $this->generateInvoiceNumber();
+                }
+            }
 
             foreach ($normalizedItems as $item) {
                 InvoiceItem::create([
@@ -91,6 +110,7 @@ class InvoiceService
                     'unit_price' => $item['unit_price'],
                     'discount' => $item['line_discount'],
                     'tax' => $item['line_tax'],
+                    'tax_rate' => $item['tax_rate'] ?? null,
                     'total' => $item['line_total'],
                 ]);
             }
@@ -112,6 +132,9 @@ class InvoiceService
 
     /**
      * Generate a unique invoice number (e.g. INV-20260312-X7Y8Z9).
+     *
+     * Uniqueness is enforced by a DB unique index. The caller retries
+     * up to MAX_NUMBER_ATTEMPTS times on duplicate key collisions.
      */
     public function generateInvoiceNumber(): string
     {
@@ -119,15 +142,10 @@ class InvoiceService
         $date = now()->format('Ymd');
         $random = Str::upper(Str::random(6));
 
-        $number = "{$prefix}-{$date}-{$random}";
-
-        while (Invoice::where('invoice_number', $number)->exists()) {
-            $random = Str::upper(Str::random(6));
-            $number = "{$prefix}-{$date}-{$random}";
-        }
-
-        return $number;
+        return "{$prefix}-{$date}-{$random}";
     }
+
+    private const MAX_NUMBER_ATTEMPTS = 5;
 
     /**
      * Mark an invoice as paid (fully or partially).
@@ -208,6 +226,7 @@ class InvoiceService
      *     line_subtotal: float,
      *     line_discount: float,
      *     line_tax: float,
+     *     tax_rate: float,
      *     line_total: float
      * }
      */
@@ -235,6 +254,7 @@ class InvoiceService
             'line_subtotal' => $lineSubtotal,
             'line_discount' => $lineDiscount,
             'line_tax' => $lineTax,
+            'tax_rate' => $taxRate,
             'line_total' => $lineTotal,
         ];
     }

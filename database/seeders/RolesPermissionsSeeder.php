@@ -366,11 +366,11 @@ class RolesPermissionsSeeder extends Seeder
             'products.view',
             'stock.view',
             'sales.view', 'sales.create',
-            'pos.access', 'pos.manage',
-            'customers.view', 'customers.create',
+            'pos.access', 'pos.open_register', 'pos.close_register', 'pos.hold_transactions',
+            'clients.view', 'clients.create',
             'invoices.view',
             'online_orders.view',
-            'printing.manage',
+            'printing.receipts', 'printing.barcodes', 'printing.templates',
         ]);
 
         // Responsable entrepot — inventaire, stock, receptions, transferts
@@ -378,11 +378,11 @@ class RolesPermissionsSeeder extends Seeder
         $warehouseManager->syncPermissions([
             'dashboard.view',
             'products.view', 'products.edit',
-            'stock.view', 'stock.manage', 'stock.adjust', 'stock.transfer',
+            'stock.view', 'stock.adjust', 'stock.transfer', 'stock.receive',
             'purchases.view', 'purchases.create', 'purchases.edit',
             'imports.view', 'imports.create', 'imports.edit',
             'suppliers.view',
-            'reports.view',
+            'reports.overview', 'reports.stock',
         ]);
 
         // Restaurer au contexte global

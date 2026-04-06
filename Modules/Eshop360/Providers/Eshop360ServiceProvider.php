@@ -15,7 +15,6 @@ use Modules\Eshop360\Console\RecurringInvoiceCommand;
 use Modules\Eshop360\Console\StockAlertCommand;
 use Modules\Eshop360\Console\Commands\CheckLowStock;
 use Modules\Eshop360\Console\Commands\CheckExpiringProducts;
-use Modules\Eshop360\Console\Commands\GenerateRecurringInvoices;
 use Modules\Eshop360\Http\Middleware\EnsurePaidFeature;
 use Modules\Eshop360\Services\AuditService;
 use Modules\Eshop360\Services\CartService;
@@ -28,7 +27,6 @@ use Modules\Eshop360\Services\ChargesService;
 use Modules\Eshop360\Services\CostCalculatorService;
 use Modules\Eshop360\Services\EmailService;
 use Modules\Eshop360\Services\ExportService;
-use Modules\Eshop360\Services\FeatureGate;
 use Modules\Eshop360\Services\FinanceService;
 use Modules\Eshop360\Services\HoldingService;
 use Modules\Eshop360\Services\HRService;
@@ -76,10 +74,26 @@ final class Eshop360ServiceProvider extends ServiceProvider
         $this->app->singleton(CashRegisterService::class);
         $this->app->singleton(ProductPricingService::class);
 
+        // Pricing Engine v2 (feature-flagged)
+        $this->app->singleton(\Modules\Eshop360\Pricing\Cache\PricingCacheManager::class);
+        $this->app->singleton(\Modules\Eshop360\Pricing\Engines\PricingEngine::class);
+        $this->app->singleton(\Modules\Eshop360\Pricing\Registry\PricingRuleRegistry::class, function ($app) {
+            $registry = new \Modules\Eshop360\Pricing\Registry\PricingRuleRegistry();
+
+            // Register built-in pricing rules
+            $registry->register(new \Modules\Eshop360\Pricing\Rules\Retail\BasePriceRule());
+            $registry->register(new \Modules\Eshop360\Pricing\Rules\Retail\DiscountProductRule());
+            $registry->register(new \Modules\Eshop360\Pricing\Rules\Retail\TaxRule());
+            $registry->register(new \Modules\Eshop360\Pricing\Rules\Retail\MinimumPriceGuard());
+            $registry->register(new \Modules\Eshop360\Pricing\Rules\Channel\ChannelBasePriceRule());
+            $registry->register(new \Modules\Eshop360\Pricing\Rules\Channel\ChannelMarginRule());
+            $registry->register(new \Modules\Eshop360\Pricing\Rules\Wholesale\WholesalePriceRule());
+            $registry->register(new \Modules\Eshop360\Pricing\Rules\Wholesale\PharmacyPriceRule());
+
+            return $registry;
+        });
+
         // Feature services
-        // Note: FeatureGate is deprecated — use Modules\Billing\Services\FeatureRegistry instead.
-        // It is kept as a backward-compatible wrapper.
-        $this->app->singleton(FeatureGate::class);
         $this->app->singleton(PdfService::class);
         $this->app->singleton(ExportService::class);
         $this->app->singleton(EmailService::class);
@@ -143,7 +157,7 @@ final class Eshop360ServiceProvider extends ServiceProvider
                 ExpireSubscriptionsCommand::class,
                 CheckLowStock::class,
                 CheckExpiringProducts::class,
-                GenerateRecurringInvoices::class,
+                \Modules\Eshop360\Console\Commands\ReleaseExpiredCartReservations::class,
             ]);
         }
 
@@ -155,10 +169,10 @@ final class Eshop360ServiceProvider extends ServiceProvider
             $schedule->command('eshop360:installment-reminders')->dailyAt('08:00');
             $schedule->command('eshop360:birthday-alerts')->dailyAt('09:00');
             $schedule->command('eshop360:recurring-invoices')->dailyAt('06:00');
-            $schedule->command('eshop:generate-recurring-invoices')->dailyAt('07:00');
             $schedule->command('eshop360:expire-subscriptions')->hourly();
             $schedule->command('eshop:check-low-stock')->hourly();
             $schedule->command('eshop:check-expiry')->dailyAt('06:00');
+            $schedule->command('eshop:release-expired-carts')->everyFifteenMinutes();
         });
 
         // Share $instance with all eshop360 views automatically

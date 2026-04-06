@@ -34,6 +34,13 @@ class WebhookService
     {
         $instanceId = CurrentInstance::idOrFail();
 
+        // Deduplication: build a unique key from event + entity to prevent duplicate dispatches
+        $deduplicationKey = $this->buildDeduplicationKey($event, $payload);
+        if ($deduplicationKey && WebhookLog::where('deduplication_key', $deduplicationKey)->exists()) {
+            Log::debug("Webhook dispatch skipped (duplicate)", ['event' => $event, 'key' => $deduplicationKey]);
+            return;
+        }
+
         $webhooks = Webhook::where('instance_id', $instanceId)
             ->where('is_active', true)
             ->where('failure_count', '<', 10) // Auto-disable after 10 consecutive failures
@@ -42,16 +49,28 @@ class WebhookService
 
         foreach ($webhooks as $webhook) {
             // Dispatch async via queue to avoid blocking
-            dispatch(function () use ($webhook, $event, $payload) {
-                $this->send($webhook, $event, $payload);
+            dispatch(function () use ($webhook, $event, $payload, $deduplicationKey) {
+                $this->send($webhook, $event, $payload, $deduplicationKey);
             })->onQueue('webhooks')->afterCommit();
         }
     }
 
     /**
+     * Build a deduplication key from event type and entity identifiers.
+     */
+    private function buildDeduplicationKey(string $event, array $payload): ?string
+    {
+        $entityId = $payload['id'] ?? $payload['order_id'] ?? $payload['invoice_id'] ?? null;
+        if ($entityId === null) {
+            return null;
+        }
+        return hash('sha256', "{$event}:{$entityId}");
+    }
+
+    /**
      * Send a webhook payload to a single endpoint.
      */
-    public function send(Webhook $webhook, string $event, array $payload): void
+    public function send(Webhook $webhook, string $event, array $payload, ?string $deduplicationKey = null): void
     {
         $body = [
             'event' => $event,
@@ -96,7 +115,7 @@ class WebhookService
 
         $durationMs = (int) ((microtime(true) - $startTime) * 1000);
 
-        // Log the attempt
+        // Log the attempt with deduplication key for future duplicate detection
         WebhookLog::create([
             'webhook_id' => $webhook->id,
             'event' => $event,
@@ -105,6 +124,7 @@ class WebhookService
             'payload' => json_encode($body),
             'response_body' => $responseBody,
             'success' => $success,
+            'deduplication_key' => $deduplicationKey,
             'created_at' => now(),
         ]);
 

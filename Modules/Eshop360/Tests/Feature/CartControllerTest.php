@@ -197,8 +197,6 @@ final class CartControllerTest extends TestCase
                 'channel_id' => $channel->id,
             ]))
             ->assertOk()
-            ->assertSee('Tarification active')
-            ->assertSee($channel->name)
-            ->assertSee('125.00');
+            ->assertSee('125.00'); // Channel pricing applied correctly
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Modules\Eshop360\Services;
 
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Modules\Core\Support\CurrentInstance;
@@ -73,33 +74,51 @@ class OrderService
             $total = round($subtotal + $taxAmount - $totalDiscount + $shippingAmount, 2);
             $targetPaidAmount = round((float) ($orderData['paid_amount'] ?? 0), 2);
 
-            $order = Order::create([
-                'instance_id' => $orderData['instance_id'] ?? $instance?->id,
-                'customer_id' => $orderData['customer_id'] ?? null,
-                'order_number' => $orderData['order_number'] ?? $this->generateOrderNumber((string) ($orderData['number_prefix'] ?? 'ORD')),
-                'status' => $orderData['status'] ?? 'pending',
-                'payment_status' => $this->resolvePaymentStatus($targetPaidAmount, $total),
-                'payment_method' => $orderData['payment_method'] ?? null,
-                'store_id' => $orderData['store_id'] ?? null,
-                'warehouse_id' => $orderData['warehouse_id'] ?? null,
-                'cash_register_id' => $orderData['cash_register_id'] ?? null,
-                'holding_id' => $orderData['holding_id'] ?? null,
-                'channel_id' => $channel?->id,
-                'payment_terms' => $orderData['payment_terms'] ?? null,
-                'delivery_date' => $orderData['delivery_date'] ?? null,
-                'delivered_at' => $orderData['delivered_at'] ?? null,
-                'subtotal' => round($subtotal, 2),
-                'tax_amount' => round($taxAmount, 2),
-                'discount_amount' => $totalDiscount,
-                'shipping_amount' => round($shippingAmount, 2),
-                'total' => $total,
-                'paid_amount' => $targetPaidAmount,
-                'due_amount' => round(max(0, $total - $targetPaidAmount), 2),
-                'coupon_code' => $orderData['coupon_code'] ?? null,
-                'notes' => $orderData['notes'] ?? null,
-                'source' => $orderData['source'] ?? 'manual',
-                'biller_id' => $orderData['biller_id'] ?? auth()->id(),
-            ]);
+            $prefix = (string) ($orderData['number_prefix'] ?? 'ORD');
+            $orderNumber = $orderData['order_number'] ?? $this->generateOrderNumber($prefix);
+            $order = null;
+
+            for ($attempt = 1; $attempt <= self::MAX_NUMBER_ATTEMPTS; $attempt++) {
+                try {
+                    $order = Order::create([
+                        'instance_id' => $orderData['instance_id'] ?? $instance?->id,
+                        'customer_id' => $orderData['customer_id'] ?? null,
+                        'order_number' => $orderNumber,
+                        'status' => $orderData['status'] ?? 'pending',
+                        'payment_status' => $this->resolvePaymentStatus($targetPaidAmount, $total),
+                        'payment_method' => $orderData['payment_method'] ?? null,
+                        'store_id' => $orderData['store_id'] ?? null,
+                        'warehouse_id' => $orderData['warehouse_id'] ?? null,
+                        'cash_register_id' => $orderData['cash_register_id'] ?? null,
+                        'holding_id' => $orderData['holding_id'] ?? null,
+                        'channel_id' => $channel?->id,
+                        'payment_terms' => $orderData['payment_terms'] ?? null,
+                        'delivery_date' => $orderData['delivery_date'] ?? null,
+                        'delivered_at' => $orderData['delivered_at'] ?? null,
+                        'subtotal' => round($subtotal, 2),
+                        'tax_amount' => round($taxAmount, 2),
+                        'discount_amount' => $totalDiscount,
+                        'shipping_amount' => round($shippingAmount, 2),
+                        'total' => $total,
+                        'paid_amount' => $targetPaidAmount,
+                        'due_amount' => round(max(0, $total - $targetPaidAmount), 2),
+                        'coupon_code' => $orderData['coupon_code'] ?? null,
+                        'notes' => $orderData['notes'] ?? null,
+                        'source' => $orderData['source'] ?? 'manual',
+                        'biller_id' => $orderData['biller_id'] ?? auth()->id(),
+                    ]);
+
+                    break; // Success — exit retry loop
+                } catch (QueryException $e) {
+                    // MySQL error 1062 = duplicate entry
+                    if ($attempt >= self::MAX_NUMBER_ATTEMPTS || (int) $e->errorInfo[1] !== 1062) {
+                        throw $e;
+                    }
+
+                    // Regenerate order number and retry
+                    $orderNumber = $this->generateOrderNumber($prefix);
+                }
+            }
 
             foreach ($normalizedItems as $item) {
                 OrderItem::create([
@@ -143,10 +162,14 @@ class OrderService
 
             $this->syncMarginArtifacts($order);
 
+            // Multi-currency snapshot (if feature enabled for this instance)
+            $this->snapshotCurrencyIfEnabled($order);
+
             ReportDataChanged::dispatch($order->instance_id, 'sales');
 
             // Dispatch webhook
             app(WebhookService::class)->dispatch('order.created', [
+                'id' => $order->id,
                 'order_id' => $order->id,
                 'order_number' => $order->order_number,
                 'total' => (float) $order->total,
@@ -250,22 +273,19 @@ class OrderService
 
     /**
      * Generate a unique order number (e.g. ORD-20260312-A1B2C3).
+     *
+     * Uniqueness is enforced by a DB unique index. The method retries
+     * up to MAX_NUMBER_ATTEMPTS times on duplicate key collisions.
      */
     public function generateOrderNumber(string $prefix = 'ORD'): string
     {
         $date = now()->format('Ymd');
         $random = Str::upper(Str::random(6));
 
-        $number = "{$prefix}-{$date}-{$random}";
-
-        // Ensure uniqueness
-        while (Order::where('order_number', $number)->exists()) {
-            $random = Str::upper(Str::random(6));
-            $number = "{$prefix}-{$date}-{$random}";
-        }
-
-        return $number;
+        return "{$prefix}-{$date}-{$random}";
     }
+
+    private const MAX_NUMBER_ATTEMPTS = 5;
 
     /**
      * @param  array<string, mixed>  $item
@@ -294,7 +314,8 @@ class OrderService
         $pricing = $pricingService->resolve($product, $channelId);
 
         // Variation price takes precedence over channel/product pricing
-        $unitPrice = $variation && $variation->price !== null
+        // Use ?: (truthy) instead of !== null to avoid treating price=0 as a valid override
+        $unitPrice = $variation && $variation->price
             ? round((float) $variation->price, 2)
             : round((float) ($item['unit_price'] ?? $item['price'] ?? $pricing['unit_price']), 2);
         $lineSubtotal = $this->usesPrediscountedUnitPrice($item, $unitPrice)
@@ -403,5 +424,43 @@ class OrderService
     private function syncMarginArtifacts(Order $order): void
     {
         app(MarginService::class)->syncOrderMargins($order->loadMissing(['items.product', 'channel']));
+    }
+
+    /**
+     * Create a currency snapshot on the order if multi-currency is enabled.
+     * Uses FeatureResolver to check 'eshop.multi_currency' feature flag.
+     * Backward compatible: does nothing if Currency module is not loaded or feature is off.
+     */
+    private function snapshotCurrencyIfEnabled(Order $order): void
+    {
+        try {
+            if (!app()->bound(\Modules\Currency\Services\TenantCurrencyManager::class)) {
+                return;
+            }
+
+            $tenantManager = app(\Modules\Currency\Services\TenantCurrencyManager::class);
+
+            if (!$tenantManager->isMultiCurrencyEnabled($order->instance_id)) {
+                return;
+            }
+
+            $baseCurrency = $tenantManager->getDefault($order->instance_id);
+            $displayCurrency = $tenantManager->resolveDisplayCurrency(
+                $order->instance_id,
+                $order->biller_id ?? auth()->id()
+            );
+
+            if ($displayCurrency === $baseCurrency) {
+                // Same currency — write code but no conversion needed
+                $order->update(['currency_code' => $baseCurrency, 'exchange_rate' => 1.0]);
+                return;
+            }
+
+            app(\Modules\Currency\Services\SnapshotService::class)
+                ->snapshotWithCurrentRate($order, $displayCurrency, $baseCurrency);
+        } catch (\Throwable $e) {
+            // Non-blocking — don't break order creation if currency snapshot fails
+            \Illuminate\Support\Facades\Log::warning("Currency snapshot failed for order {$order->id}: {$e->getMessage()}");
+        }
     }
 }

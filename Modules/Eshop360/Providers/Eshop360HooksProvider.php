@@ -869,16 +869,77 @@ final class Eshop360HooksProvider implements RegistersHooks
             parentId: 'eshop360.portails',
         ));
 
+        // =====================================================================
+        // Paramètres eShop (parent)
+        // =====================================================================
         $registry->addMenu(new MenuItem(
-            id: 'eshop360.portails.general_settings',
-            label: 'Paramètres généraux',
+            id: 'eshop360.eshop_settings',
+            label: 'Paramètres eShop',
+            icon: 'ti ti-adjustments-horizontal',
+            priority: 680,
+            requiredPermission: 'eshop.settings.manage',
+            requiredModule: 'Eshop360',
+            group: 'main',
+        ));
+
+        $registry->addMenu(new MenuItem(
+            id: 'eshop360.eshop_settings.general',
+            label: 'Général',
             route: 'eshop360.settings.general',
-            priority: 770,
+            priority: 900,
             requiredPermission: 'eshop.settings.manage',
             requiredModule: 'Eshop360',
             group: 'main',
             activePattern: 'eshop360.settings.general*',
-            parentId: 'eshop360.portails',
+            parentId: 'eshop360.eshop_settings',
+        ));
+
+        $registry->addMenu(new MenuItem(
+            id: 'eshop360.eshop_settings.pos',
+            label: 'Point de vente (POS)',
+            route: 'eshop360.settings.pos',
+            priority: 890,
+            requiredPermission: 'eshop.settings.manage',
+            requiredModule: 'Eshop360',
+            group: 'main',
+            activePattern: 'eshop360.settings.pos*',
+            parentId: 'eshop360.eshop_settings',
+        ));
+
+        $registry->addMenu(new MenuItem(
+            id: 'eshop360.eshop_settings.invoice',
+            label: 'Facturation',
+            route: 'eshop360.settings.invoice',
+            priority: 880,
+            requiredPermission: 'eshop.settings.manage',
+            requiredModule: 'Eshop360',
+            group: 'main',
+            activePattern: 'eshop360.settings.invoice*',
+            parentId: 'eshop360.eshop_settings',
+        ));
+
+        $registry->addMenu(new MenuItem(
+            id: 'eshop360.eshop_settings.printer',
+            label: 'Imprimante',
+            route: 'eshop360.settings.printer',
+            priority: 870,
+            requiredPermission: 'eshop.settings.manage',
+            requiredModule: 'Eshop360',
+            group: 'main',
+            activePattern: 'eshop360.settings.printer*',
+            parentId: 'eshop360.eshop_settings',
+        ));
+
+        $registry->addMenu(new MenuItem(
+            id: 'eshop360.eshop_settings.fne',
+            label: 'FNE (Facture normalisée)',
+            route: 'eshop360.settings.fne',
+            priority: 860,
+            requiredPermission: 'eshop.settings.manage',
+            requiredModule: 'Eshop360',
+            group: 'main',
+            activePattern: 'eshop360.settings.fne*',
+            parentId: 'eshop360.eshop_settings',
         ));
 
         // =====================================================================
@@ -1314,6 +1375,11 @@ final class Eshop360HooksProvider implements RegistersHooks
             'eshop360.audit_logs' => ['Journaux audit', 'admin', 'Tracabilite de toutes les actions.'],
             'eshop360.scheduled_alerts' => ['Alertes planifiees', 'admin', 'Alertes stock, expiration, anniversaires.'],
             'eshop360.projects' => ['Projets et taches', 'projects', 'Gestion de projets et taches.'],
+            'eshop360.pricing.engine_v2' => ['Moteur de pricing v2', 'pricing', 'Calculs de prix avances avec regles extensibles.'],
+            'eshop360.pricing.wholesale_auto' => ['Prix grossiste auto', 'pricing', 'Calcul automatique du prix grossiste depuis PGHT.'],
+            'eshop360.pricing.channel_margins' => ['Marges canal', 'pricing', 'Repartition tripartite (proprietaire/canal/dette).'],
+            'eshop360.channel.credits' => ['Credits canal', 'pricing', 'Suivi des credits canal (achat, remboursement, don).'],
+            'eshop360.products.order_qty_limits' => ['Limites quantite commande', 'catalog', 'Min/max quantite par produit et canal.'],
         ];
 
         $priority = 100;

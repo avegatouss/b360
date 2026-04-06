@@ -16,8 +16,7 @@ final class CartServiceTest extends TestCase
     {
         parent::setUp();
 
-        $instance = $this->makeRootInstance();
-        CurrentInstance::set($instance);
+        $this->setUpInstanceWithAdmin();
 
         $this->cart = new CartService();
     }

@@ -24,6 +24,7 @@ class WebhookLog extends Model
         'payload',
         'response_body',
         'success',
+        'deduplication_key',
         'created_at',
     ];
 

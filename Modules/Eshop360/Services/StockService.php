@@ -38,8 +38,8 @@ class StockService
             $resolvedWarehouseId = $this->resolveWarehouseId($product, $warehouseId, $instance?->id);
             [$movementType, $delta] = $this->normalizeMovement($type, $quantity);
 
-            // Find or create the stock record
-            $stock = Stock::firstOrCreate(
+            // Find or create the stock record with pessimistic locking
+            $stock = Stock::lockForUpdate()->firstOrCreate(
                 [
                     'instance_id'  => $instance?->id,
                     'product_id'   => $product->id,
@@ -50,6 +50,9 @@ class StockService
                     'reserved_quantity' => 0,
                 ],
             );
+
+            // Refresh under the lock to get the latest quantity
+            $stock->refresh();
 
             $newQuantity = $stock->quantity + $delta;
 

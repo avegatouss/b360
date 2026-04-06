@@ -133,7 +133,9 @@ class StockTransferController extends Controller
                     ->firstOrFail();
 
                 $sourceStock->decrement('quantity', $item->quantity);
-                $sourceStock->decrement('reserved_quantity', $item->quantity);
+                // Clamp reserved_quantity to 0 minimum to prevent negative values
+                $newReserved = max(0, (int) $sourceStock->reserved_quantity - $item->quantity);
+                $sourceStock->update(['reserved_quantity' => $newReserved]);
 
                 StockMovement::create([
                     'instance_id'    => $transfer->instance_id,
@@ -201,7 +203,8 @@ class StockTransferController extends Controller
                     ->first();
 
                 if ($sourceStock) {
-                    $sourceStock->decrement('reserved_quantity', $item->quantity);
+                    $newReserved = max(0, (int) $sourceStock->reserved_quantity - $item->quantity);
+                    $sourceStock->update(['reserved_quantity' => $newReserved]);
                 }
             }
 

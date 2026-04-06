@@ -523,8 +523,9 @@ class CustomerPortalController extends Controller
 
         abort_if(! $instance || ! $user, 403);
 
-        // Bypass ChannelScope : le portail hub gère son propre contexte via customer_id
-        $customer = Customer::withoutChannelScope()
+        // Bypass all scopes: we already filter by instance_id explicitly,
+        // and ChannelScope would exclude hub-level customers from portal context.
+        $customer = Customer::withoutGlobalScopes()
             ->where('instance_id', $instance->id)
             ->where(function ($query) use ($user) {
                 $query->where('user_id', $user->id);
@@ -537,7 +538,7 @@ class CustomerPortalController extends Controller
 
         // Admin bypass: if user is admin, use first active customer or create a virtual context
         if (! $customer && ($user->hasRole('super-admin') || $user->hasRole('instance-admin'))) {
-            $customer = Customer::withoutChannelScope()
+            $customer = Customer::withoutGlobalScopes()
                 ->where('instance_id', $instance->id)
                 ->where('is_active', true)
                 ->first();

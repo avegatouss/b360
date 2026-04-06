@@ -181,11 +181,12 @@ final class CompatibilityAliasesTest extends TestCase
             'unit_price' => 50,
             'discount' => 0,
             'tax' => 20,
+            'tax_rate' => 20.0,
             'total' => 120,
         ]);
 
         $this->assertSame('Paracetamol', $orderItem->description);
         $this->assertSame(20.0, $orderItem->tax_rate);
-        $this->assertSame(20.0, $invoiceItem->tax_rate);
+        $this->assertSame(20.0, (float) $invoiceItem->tax_rate);
     }
 }

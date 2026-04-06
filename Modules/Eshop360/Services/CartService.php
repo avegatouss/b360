@@ -2,11 +2,13 @@
 
 namespace Modules\Eshop360\Services;
 
+use Illuminate\Support\Facades\DB;
 use Modules\Core\Support\CurrentInstance;
 use Modules\Eshop360\Models\Coupon;
 use Modules\Eshop360\Models\PersistentCart;
 use Modules\Eshop360\Models\Product;
 use Modules\Eshop360\Models\ProductVariation;
+use Modules\Eshop360\Models\Stock;
 
 class CartService
 {
@@ -121,6 +123,9 @@ class CartService
             ];
         }
 
+        // Reserve stock for the added quantity
+        $this->reserveStock($product->id, $quantity);
+
         session()->put($this->cartKey(), $cart);
         $this->persistToDb();
     }
@@ -136,9 +141,19 @@ class CartService
             return;
         }
 
+        $oldQty = $cart[$key]['quantity'];
+        $productId = $cart[$key]['product_id'];
+
         if ($quantity <= 0) {
+            $this->releaseStock($productId, $oldQty);
             unset($cart[$key]);
         } else {
+            $delta = $quantity - $oldQty;
+            if ($delta > 0) {
+                $this->reserveStock($productId, $delta);
+            } elseif ($delta < 0) {
+                $this->releaseStock($productId, abs($delta));
+            }
             $cart[$key]['quantity'] = $quantity;
         }
 
@@ -258,6 +273,14 @@ class CartService
      */
     public function clear(): void
     {
+        // Release all reserved stock before clearing the cart
+        $cart = $this->getCart();
+        foreach ($cart as $item) {
+            if (!empty($item['product_id']) && !empty($item['quantity'])) {
+                $this->releaseStock($item['product_id'], $item['quantity']);
+            }
+        }
+
         session()->forget([
             $this->cartKey(),
             $this->couponKey(),
@@ -466,5 +489,60 @@ class CartService
         }
 
         $query->delete();
+    }
+
+    // ─── Stock Reservation ────────────────────────────
+
+    /**
+     * Reserve stock when adding to cart.
+     * Uses pessimistic locking to prevent overselling.
+     */
+    private function reserveStock(int $productId, int $quantity): void
+    {
+        try {
+            DB::transaction(function () use ($productId, $quantity) {
+                $stock = Stock::withoutGlobalScopes()
+                    ->where('product_id', $productId)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$stock) {
+                    return;
+                }
+
+                $available = $stock->quantity - $stock->reserved_quantity;
+                if ($available < $quantity) {
+                    return; // Silently skip — stock check at checkout will catch this
+                }
+
+                $stock->increment('reserved_quantity', $quantity);
+            });
+        } catch (\Throwable) {
+            // Non-blocking: reservation is a best-effort optimization
+        }
+    }
+
+    /**
+     * Release reserved stock when removing from cart or clearing.
+     */
+    private function releaseStock(int $productId, int $quantity): void
+    {
+        try {
+            DB::transaction(function () use ($productId, $quantity) {
+                $stock = Stock::withoutGlobalScopes()
+                    ->where('product_id', $productId)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$stock) {
+                    return;
+                }
+
+                $newReserved = max(0, $stock->reserved_quantity - $quantity);
+                $stock->update(['reserved_quantity' => $newReserved]);
+            });
+        } catch (\Throwable) {
+            // Non-blocking
+        }
     }
 }

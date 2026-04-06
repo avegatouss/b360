@@ -207,7 +207,7 @@ final class ChannelPortalTest extends TestCase
 
         $response->assertRedirect();
 
-        $order = Order::where('channel_id', $channel->id)->latest('id')->first();
+        $order = Order::withoutGlobalScopes()->where('channel_id', $channel->id)->latest('id')->first();
         $this->assertNotNull($order);
         $this->assertSame($channel->id, $order->channel_id);
     }

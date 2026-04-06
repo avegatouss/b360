@@ -2,10 +2,10 @@
 
 namespace Modules\Core\Database\Traits;
 
-// Ce trait est un alias vers App\Models\Concerns\BelongsToInstance.
-// Conservé pour compatibilité avec les tests existants du module Core.
-// Les deux implémentations sont identiques et utilisent le même
-// Modules\Core\Database\Scopes\InstanceScope canonique.
+// Canonical BelongsToInstance trait.
+// All models should import this namespace.
+// App\Models\Concerns\BelongsToInstance is a thin re-export kept
+// for backward compatibility only.
 
 use App\Instances\Instance;
 use Illuminate\Database\Eloquent\Builder;

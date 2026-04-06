@@ -136,6 +136,10 @@ class FinanceService
     public function debitWallet(Customer $customer, float $amount, ?int $orderId = null): float
     {
         return DB::transaction(function () use ($customer, $amount, $orderId) {
+            // Pessimistic lock to prevent concurrent wallet operations
+            // Use withoutGlobalScopes() since we already have the PK — scopes are for listing, not locking
+            $customer = Customer::withoutGlobalScopes()->where('id', $customer->id)->lockForUpdate()->firstOrFail();
+
             $walletBalance = (float) $customer->wallet_balance;
             $deductedFromWallet = min($walletBalance, $amount);
             $creditUsed = round($amount - $deductedFromWallet, 2);
@@ -178,6 +182,10 @@ class FinanceService
     public function creditWallet(Customer $customer, float $amount, ?string $notes = null, ?string $refType = null, ?int $refId = null): void
     {
         DB::transaction(function () use ($customer, $amount, $notes, $refType, $refId) {
+            // Pessimistic lock to prevent concurrent wallet operations and double auto-pay
+            // Use withoutGlobalScopes() since we already have the PK
+            $customer = Customer::withoutGlobalScopes()->where('id', $customer->id)->lockForUpdate()->firstOrFail();
+
             $customer->increment('wallet_balance', $amount);
 
             CustomerTransaction::create([
@@ -191,10 +199,11 @@ class FinanceService
                 'created_by'     => auth()->id(),
             ]);
 
-            // Auto-pay pending dues with the new balance
+            // Auto-pay pending dues with the new balance (locked to prevent double-pay)
             $pendingDues = CustomerDue::where('customer_id', $customer->id)
                 ->whereIn('status', ['pending', 'partial'])
                 ->orderBy('due_date')
+                ->lockForUpdate()
                 ->get();
 
             $remaining = $amount;

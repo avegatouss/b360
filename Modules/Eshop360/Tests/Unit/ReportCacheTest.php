@@ -126,6 +126,9 @@ final class ReportCacheTest extends TestCase
 
     public function test_different_date_ranges_produce_different_cache_keys(): void
     {
+        // Clear manifest from previous tests to avoid contamination
+        Cache::forget("report:manifest:{$this->instanceId}");
+
         $this->reports->overview($this->instanceId, '2026-01-01', '2026-01-31');
         $this->reports->overview($this->instanceId, '2026-02-01', '2026-02-28');
 

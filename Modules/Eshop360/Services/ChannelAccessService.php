@@ -37,11 +37,13 @@ final class ChannelAccessService
 
         $instanceId ??= CurrentInstance::get()?->id;
 
+        // Bypass global scopes on DistributionChannel to avoid circular dependency:
+        // ChannelScope calls accessibleChannelIds() which queries channels with ChannelScope...
         return ChannelUser::query()
             ->where('user_id', $user->id)
             ->when($instanceId !== null && $instanceId !== 0, function ($query) use ($instanceId) {
                 $query->whereHas('channel', function ($channelQuery) use ($instanceId) {
-                    $channelQuery
+                    $channelQuery->withoutGlobalScopes()
                         ->where('instance_id', $instanceId)
                         ->where('is_active', true);
                 });

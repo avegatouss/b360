@@ -1,0 +1,234 @@
+<?php
+
+namespace Modules\Currency\Tests\Unit;
+
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
+use Modules\Currency\Models\ExchangeRateHistory;
+use Modules\Currency\Models\OrderCurrencySnapshot;
+use Modules\Currency\Models\TenantCurrencySetting;
+use Modules\Currency\Models\UserCurrencyPreference;
+use Modules\Currency\Services\ExchangeRateService;
+use Modules\Currency\Services\SnapshotService;
+use Modules\Currency\Services\TenantCurrencyManager;
+use Modules\Currency\Tests\Unit\CurrencyManagerTest;
+
+/**
+ * Tests for multi-currency Phase 1 & 2 features.
+ */
+final class MultiCurrencyTest extends \Modules\Billing\Tests\TestCase
+{
+    // ──────────────────────────────────────────
+    // ExchangeRateService
+    // ──────────────────────────────────────────
+
+    public function test_conversion_same_currency_returns_same_amount(): void
+    {
+        $service = app(ExchangeRateService::class);
+
+        $result = $service->convert(1000, 'XOF', 'XOF');
+
+        $this->assertEquals(1000.0, $result);
+    }
+
+    public function test_get_rate_same_currency_returns_one(): void
+    {
+        $service = app(ExchangeRateService::class);
+
+        $rate = $service->getRate('EUR', 'EUR');
+
+        $this->assertEquals(1.0, $rate);
+    }
+
+    public function test_get_rate_uses_cache_on_second_call(): void
+    {
+        Cache::flush();
+
+        // Fake API response
+        Http::fake([
+            'open.er-api.com/*' => Http::response([
+                'result' => 'success',
+                'rates' => ['XOF' => 655.957],
+            ]),
+        ]);
+
+        $service = app(ExchangeRateService::class);
+
+        $rate1 = $service->getRate('EUR', 'XOF');
+        $rate2 = $service->getRate('EUR', 'XOF');
+
+        $this->assertEquals($rate1, $rate2);
+
+        // Only 1 HTTP request should have been made (second call from cache)
+        Http::assertSentCount(1);
+    }
+
+    public function test_persist_history_writes_to_database(): void
+    {
+        $instance = $this->makeRootInstance();
+
+        $service = app(ExchangeRateService::class);
+        $service->persistHistory('EUR', 'XOF', 655.957, 'test');
+
+        $this->assertDatabaseHas('exchange_rate_history', [
+            'base_code' => 'EUR',
+            'target_code' => 'XOF',
+            'source' => 'test',
+        ]);
+    }
+
+    public function test_fallback_to_historical_rate_when_apis_fail(): void
+    {
+        $instance = $this->makeRootInstance();
+        Cache::flush();
+
+        // Insert a historical rate
+        ExchangeRateHistory::create([
+            'base_code' => 'EUR',
+            'target_code' => 'GBP',
+            'rate' => 0.86,
+            'source' => 'manual',
+            'fetched_at' => now(),
+        ]);
+
+        // Both APIs fail
+        Http::fake([
+            'open.er-api.com/*' => Http::response('error', 500),
+            'v6.exchangerate-api.com/*' => Http::response('error', 500),
+        ]);
+
+        $service = app(ExchangeRateService::class);
+        $rate = $service->getRate('EUR', 'GBP');
+
+        $this->assertEquals(0.86, $rate);
+    }
+
+    // ──────────────────────────────────────────
+    // TenantCurrencyManager
+    // ──────────────────────────────────────────
+
+    public function test_tenant_default_currency_is_xof(): void
+    {
+        $instance = $this->makeRootInstance();
+
+        $manager = app(TenantCurrencyManager::class);
+        $default = $manager->getDefault($instance->id);
+
+        $this->assertEquals('XOF', $default);
+    }
+
+    public function test_multi_currency_disabled_by_default(): void
+    {
+        $instance = $this->makeRootInstance();
+
+        $manager = app(TenantCurrencyManager::class);
+
+        $this->assertFalse($manager->isMultiCurrencyEnabled($instance->id));
+    }
+
+    public function test_user_preference_overrides_tenant_default(): void
+    {
+        $instance = $this->makeRootInstance();
+        $user = $this->makeUser('pref@test.com');
+
+        $manager = app(TenantCurrencyManager::class);
+        $manager->setUserPreference($user->id, $instance->id, 'EUR');
+
+        $currency = $manager->resolveDisplayCurrency($instance->id, $user->id);
+
+        $this->assertEquals('EUR', $currency);
+    }
+
+    public function test_session_override_takes_priority(): void
+    {
+        $instance = $this->makeRootInstance();
+        $user = $this->makeUser('session@test.com');
+
+        $manager = app(TenantCurrencyManager::class);
+
+        // Set persistent preference to EUR
+        $manager->setUserPreference($user->id, $instance->id, 'EUR');
+
+        // Set session override to USD
+        $manager->setSessionCurrency($instance->id, 'USD');
+
+        $currency = $manager->resolveDisplayCurrency($instance->id, $user->id);
+
+        $this->assertEquals('USD', $currency);
+    }
+
+    // ──────────────────────────────────────────
+    // SnapshotService
+    // ──────────────────────────────────────────
+
+    public function test_snapshot_creates_immutable_record(): void
+    {
+        $instance = $this->makeRootInstance();
+        $this->makeRootSuperAdmin($instance);
+
+        // Create a mock order-like model
+        $order = \Modules\Eshop360\Models\Order::create([
+            'instance_id' => $instance->id,
+            'order_number' => 'SNP-001',
+            'total' => 5000,
+            'subtotal' => 4237,
+            'status' => 'completed',
+        ]);
+
+        $service = app(SnapshotService::class);
+        $snapshot = $service->snapshot($order, 'EUR', 'XOF', 655.957);
+
+        $this->assertInstanceOf(OrderCurrencySnapshot::class, $snapshot);
+        $this->assertEquals('EUR', $snapshot->display_currency);
+        $this->assertEquals('XOF', $snapshot->base_currency);
+        $this->assertEquals(655.957, $snapshot->exchange_rate);
+        $this->assertArrayHasKey('total_display', $snapshot->amounts);
+        $this->assertArrayHasKey('total_base', $snapshot->amounts);
+        $this->assertEquals(5000, $snapshot->amounts['total_display']);
+    }
+
+    public function test_snapshot_does_not_change_after_rate_update(): void
+    {
+        $instance = $this->makeRootInstance();
+        $this->makeRootSuperAdmin($instance);
+
+        $order = \Modules\Eshop360\Models\Order::create([
+            'instance_id' => $instance->id,
+            'order_number' => 'SNP-002',
+            'total' => 10000,
+            'status' => 'completed',
+        ]);
+
+        $service = app(SnapshotService::class);
+
+        // Snapshot with rate 655
+        $snapshot = $service->snapshot($order, 'EUR', 'XOF', 655.0);
+        $originalBase = $snapshot->amounts['total_base'];
+
+        // Rate changes to 700 — snapshot must NOT change
+        $snapshot->refresh();
+        $this->assertEquals(655.0, $snapshot->exchange_rate);
+        $this->assertEquals($originalBase, $snapshot->amounts['total_base']);
+    }
+
+    // ──────────────────────────────────────────
+    // Backward compatibility
+    // ──────────────────────────────────────────
+
+    public function test_orders_without_currency_code_default_to_null(): void
+    {
+        $instance = $this->makeRootInstance();
+        $this->makeRootSuperAdmin($instance);
+
+        $order = \Modules\Eshop360\Models\Order::create([
+            'instance_id' => $instance->id,
+            'order_number' => 'LEGACY-001',
+            'total' => 3000,
+            'status' => 'pending',
+        ]);
+
+        // Existing orders without currency_code should show null (backward compat)
+        $this->assertNull($order->currency_code);
+        $this->assertNull($order->exchange_rate);
+    }
+}

@@ -40,6 +40,11 @@ class HRService
             return;
         }
 
+        // Idempotence guard — skip if commission already recorded for this order
+        if (EmployeeCommission::where('order_id', $order->id)->where('employee_id', $employeeId)->exists()) {
+            return;
+        }
+
         $employee = Employee::find($employeeId);
         if (!$employee || (float) $employee->commission_rate <= 0) {
             return;

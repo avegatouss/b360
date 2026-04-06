@@ -5,14 +5,15 @@ namespace Modules\Currency\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Modules\Currency\Models\Currency;
+use Modules\Currency\Services\ExchangeRateService;
 
 class UpdateExchangeRates extends Command
 {
     protected $signature = 'currency:update-rates';
 
-    protected $description = 'Fetch and update exchange rates from open.er-api.com';
+    protected $description = 'Fetch and update exchange rates from open.er-api.com with history persistence';
 
-    public function handle(): int
+    public function handle(ExchangeRateService $exchangeRateService): int
     {
         $this->info('Fetching exchange rates...');
 
@@ -26,15 +27,7 @@ class UpdateExchangeRates extends Command
                 $baseCurrency = $default->code;
             }
 
-            $response = Http::timeout(15)->get("https://open.er-api.com/v6/latest/{$baseCurrency}");
-
-            if (!$response->successful()) {
-                $this->error('API request failed: HTTP ' . $response->status());
-                return self::FAILURE;
-            }
-
-            $data = $response->json();
-            $rates = $data['rates'] ?? [];
+            $rates = $exchangeRateService->fetchAllRates($baseCurrency);
 
             if (empty($rates)) {
                 $this->error('No rates returned from API.');
@@ -50,11 +43,22 @@ class UpdateExchangeRates extends Command
             foreach ($currencies as $currency) {
                 if (isset($rates[$currency->code])) {
                     $oldRate = $currency->rate;
+                    $newRate = (float) $rates[$currency->code];
+
                     $currency->update([
-                        'rate' => $rates[$currency->code],
+                        'rate' => $newRate,
                         'rate_updated_at' => now(),
                     ]);
-                    $this->line("  {$currency->code}: {$oldRate} -> {$rates[$currency->code]}");
+
+                    // Persist to exchange_rate_history for audit trail
+                    $exchangeRateService->persistHistory(
+                        $baseCurrency,
+                        $currency->code,
+                        $newRate,
+                        'open.er-api.com'
+                    );
+
+                    $this->line("  {$currency->code}: {$oldRate} -> {$newRate}");
                     $updated++;
                 } else {
                     $this->warn("  {$currency->code}: not found in API response.");

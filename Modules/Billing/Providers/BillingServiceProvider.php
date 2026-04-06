@@ -5,6 +5,7 @@ namespace Modules\Billing\Providers;
 use Illuminate\Support\ServiceProvider;
 use Modules\Billing\Http\Middleware\EnsureFeature;
 use Modules\Billing\Services\FeatureRegistry;
+use Modules\Billing\Services\FeatureResolver;
 use Modules\Billing\Services\GatewayManager;
 use Modules\Billing\Services\InvoiceManager;
 use Modules\Billing\Services\PlanManager;
@@ -20,6 +21,7 @@ final class BillingServiceProvider extends ServiceProvider
         $this->app->singleton(SubscriptionManager::class);
         $this->app->singleton(InvoiceManager::class);
         $this->app->singleton(FeatureRegistry::class);
+        $this->app->singleton(FeatureResolver::class);
         $this->app->singleton(GatewayManager::class);
     }
 

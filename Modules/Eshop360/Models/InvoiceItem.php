@@ -23,6 +23,7 @@ class InvoiceItem extends Model
         'unit_price',
         'discount',
         'tax',
+        'tax_rate',
         'total',
     ];
 
@@ -31,6 +32,7 @@ class InvoiceItem extends Model
         'unit_price' => 'decimal:2',
         'discount' => 'decimal:2',
         'tax' => 'decimal:2',
+        'tax_rate' => 'decimal:4',
         'total' => 'decimal:2',
     ];
 
@@ -44,8 +46,14 @@ class InvoiceItem extends Model
         return $this->belongsTo(Product::class);
     }
 
-    public function getTaxRateAttribute(): float
+    public function getEffectiveTaxRateAttribute(): float
     {
+        // Use the stored tax_rate column if available
+        if ($this->attributes['tax_rate'] !== null) {
+            return (float) $this->attributes['tax_rate'];
+        }
+
+        // Fallback: derive from tax / base amount
         $baseAmount = (float) $this->unit_price * (int) $this->quantity;
 
         if ($baseAmount <= 0) {

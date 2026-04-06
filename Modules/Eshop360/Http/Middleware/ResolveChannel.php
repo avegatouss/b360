@@ -25,7 +25,9 @@ final class ResolveChannel
 
         $instance = CurrentInstance::get();
 
-        $query = DistributionChannel::query()
+        // Bypass ChannelScope — this middleware's job is to RESOLVE the channel,
+        // membership verification is done by the next middleware (eshop.channel.member)
+        $query = DistributionChannel::withoutGlobalScopes()
             ->where('is_active', true);
 
         if ($instance) {

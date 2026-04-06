@@ -5,6 +5,9 @@ namespace Modules\Currency\Providers;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\ServiceProvider;
 use Modules\Currency\Services\CurrencyManager;
+use Modules\Currency\Services\ExchangeRateService;
+use Modules\Currency\Services\SnapshotService;
+use Modules\Currency\Services\TenantCurrencyManager;
 
 class CurrencyServiceProvider extends ServiceProvider
 {
@@ -13,6 +16,9 @@ class CurrencyServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__ . '/../Config/config.php', 'currency');
 
         $this->app->singleton(CurrencyManager::class);
+        $this->app->singleton(ExchangeRateService::class);
+        $this->app->singleton(TenantCurrencyManager::class);
+        $this->app->singleton(SnapshotService::class);
     }
 
     public function boot(): void

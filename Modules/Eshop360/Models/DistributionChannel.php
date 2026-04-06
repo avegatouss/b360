@@ -64,7 +64,10 @@ class DistributionChannel extends Model
 
     public function products(): BelongsToMany
     {
+        // Bypass ChannelScope: the pivot table already provides the channel→product mapping.
+        // Products are hub-level (channel_id = null) and linked to channels via the pivot.
         return $this->belongsToMany(Product::class, 'eshop_channel_product_prices', 'channel_id', 'product_id')
+            ->withoutGlobalScope(\Modules\Eshop360\Database\Scopes\ChannelScope::class)
             ->withPivot('sale_price', 'is_manual_override')
             ->withTimestamps();
     }
