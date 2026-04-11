@@ -4,6 +4,7 @@ namespace Modules\Auth\Tests\Feature;
 
 use App\Instances\Instance;
 use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Modules\Auth\Http\Middleware\CheckIpAccess;
 use Modules\Auth\Models\IpRule;
@@ -19,6 +20,12 @@ final class IpRulesTest extends TestCase
     {
         parent::setUp();
         config(['app.installed' => true]);
+
+        // CheckIpAccess middleware caches IpRule lookups by instance->id with a 5-minute TTL.
+        // The phpunit cache store is `array`, which persists across tests within the same PHP
+        // process. Without flushing here, rules created in test N can pollute the cache for
+        // test N+1 (which often reuses instance->id = 1 due to RefreshDatabase reset).
+        Cache::flush();
     }
 
     private function makeInstance(string $slug = 'acme'): Instance
@@ -81,12 +88,23 @@ final class IpRulesTest extends TestCase
         $instance = $this->makeInstance('blocked');
         CurrentInstance::set($instance);
 
+        // Enable the IP rules engine for this instance (CheckIpAccess bypasses otherwise)
+        app(\Modules\Settings\Services\SettingsManager::class)
+            ->set('security.ip_rules_enabled', true, 0, 'boolean');
+
+        // Create a user so the FK on created_by points to a real row
+        $author = User::create([
+            'full_name' => 'Author',
+            'email' => 'author@test.com',
+            'password' => 'password',
+        ]);
+
         // Create deny rule directly
         IpRule::create([
             'instance_id' => $instance->id,
             'ip_address' => '127.0.0.1',
             'type' => 'deny',
-            'created_by' => 1,
+            'created_by' => $author->id,
         ]);
 
         // Simulate request through the middleware
@@ -112,12 +130,23 @@ final class IpRulesTest extends TestCase
         $instance = $this->makeInstance('whitelist');
         CurrentInstance::set($instance);
 
+        // Enable the IP rules engine for this instance (CheckIpAccess bypasses otherwise)
+        app(\Modules\Settings\Services\SettingsManager::class)
+            ->set('security.ip_rules_enabled', true, 0, 'boolean');
+
+        // Create a user so the FK on created_by points to a real row
+        $author = User::create([
+            'full_name' => 'Author',
+            'email' => 'author@test.com',
+            'password' => 'password',
+        ]);
+
         // Create allow rule for a specific IP
         IpRule::create([
             'instance_id' => $instance->id,
             'ip_address' => '10.0.0.1',
             'type' => 'allow',
-            'created_by' => 1,
+            'created_by' => $author->id,
         ]);
 
         $middleware = new CheckIpAccess();

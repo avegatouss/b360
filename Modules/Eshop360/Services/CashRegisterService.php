@@ -2,32 +2,46 @@
 
 namespace Modules\Eshop360\Services;
 
+use Illuminate\Support\Facades\DB;
 use Modules\Eshop360\Models\CashRegister;
 use Modules\Eshop360\Models\Order;
 
 class CashRegisterService
 {
     /**
-     * Open a cash register
+     * Open a cash register.
+     *
+     * Atomically closes any previously open register for the current user
+     * (regardless of channel scope) before creating a new one. The whole
+     * operation is wrapped in a transaction with `lockForUpdate()` to
+     * prevent two concurrent calls from leaving multiple open registers.
+     *
+     * @see CashRegisterServiceTest for the regression suite
      */
     public function open(int $instanceId, float $openingAmount, ?int $storeId = null, ?int $channelId = null): CashRegister
     {
-        // Close any previously open register for this user (same channel scope)
-        $query = CashRegister::where('user_id', auth()->id())->where('status', 'open');
-        if ($channelId) {
-            $query->where('channel_id', $channelId);
-        }
-        $query->update(['status' => 'closed', 'closed_at' => now()]);
+        return DB::transaction(function () use ($instanceId, $openingAmount, $storeId, $channelId) {
+            // Lock and close ANY previously open register for this user across ALL channels.
+            // We do not filter by channel_id: a single user can never legitimately
+            // hold two open registers at once (one global + one channel-scoped, or
+            // two different channels), so the new open() always supersedes the
+            // previous one regardless of scope.
+            CashRegister::query()
+                ->where('user_id', auth()->id())
+                ->where('status', 'open')
+                ->lockForUpdate()
+                ->update(['status' => 'closed', 'closed_at' => now()]);
 
-        return CashRegister::create([
-            'instance_id' => $instanceId,
-            'channel_id' => $channelId,
-            'store_id' => $storeId,
-            'user_id' => auth()->id(),
-            'opening_amount' => $openingAmount,
-            'status' => 'open',
-            'opened_at' => now(),
-        ]);
+            return CashRegister::create([
+                'instance_id' => $instanceId,
+                'channel_id' => $channelId,
+                'store_id' => $storeId,
+                'user_id' => auth()->id(),
+                'opening_amount' => $openingAmount,
+                'status' => 'open',
+                'opened_at' => now(),
+            ]);
+        });
     }
 
     /**

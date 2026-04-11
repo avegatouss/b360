@@ -1,9 +1,37 @@
 # Eshop360 — Moteur de Pricing Évolutif (v2)
 
 > Architecte Technique Senior | Laravel 12 | Strategy + Pipeline  
-> Version : 2.0 | Date : 2026-04-04  
+> Version : 2.1 | Date : 2026-04-06 (mise à jour post-implémentation) · v2.0 initiale : 2026-04-04  
 > Intègre : Audit pricing 2026-04-04 · Spec pricing_channels  
-> **Convention** : `[D'APRÈS AUDIT]` = code constaté · `[NOUVEAU]` = proposition
+> **Convention** : `[D'APRÈS AUDIT]` = code constaté · `[NOUVEAU]` = proposition · ✅ `[IMPLÉMENTÉ]` = réalisé en code
+
+> ## ✅ STATUT D'IMPLÉMENTATION (vérifié 2026-04-06)
+>
+> **Cette spec v2 est désormais MAJORITAIREMENT IMPLÉMENTÉE en code.** Les sections marquées `[NOUVEAU]` ci-dessous décrivent l'architecture cible — la plupart sont **déjà présentes dans `Modules/Eshop360/Pricing/`** :
+>
+> - ✅ `Modules/Eshop360/Pricing/Engines/PricingEngine.php`
+> - ✅ `Modules/Eshop360/Pricing/Pipelines/RetailPricingPipeline.php`
+> - ✅ `Modules/Eshop360/Pricing/Pipelines/ChannelPricingPipeline.php`
+> - ✅ `Modules/Eshop360/Pricing/Rules/Retail/{BasePriceRule, DiscountProductRule, TaxRule, MinimumPriceGuard}.php`
+> - ✅ `Modules/Eshop360/Pricing/Rules/Channel/{ChannelBasePriceRule, ChannelMarginRule, ChannelCreditRule}.php`
+> - ✅ `Modules/Eshop360/Pricing/Rules/Wholesale/{WholesalePriceRule, PharmacyPriceRule}.php`
+> - ✅ `Modules/Eshop360/Pricing/DTOs/{PricingContext, LineItemPrice, PricingResult, ChannelMarginResult}.php`
+> - ✅ `Modules/Eshop360/Pricing/Registry/PricingRuleRegistry.php`
+> - ✅ `Modules/Eshop360/Pricing/Cache/PricingCacheManager.php`
+> - ✅ `Modules/Eshop360/Pricing/Events/ProductPricingRecalculated.php`
+> - ✅ `Modules/Eshop360/Pricing/Services/{OrderQuantityResolver, WholesaleCalculatorService}.php`
+> - ✅ Migrations DB : `2026_04_04_000005_eshop_create_pricing_rules_tables.php`, `000006_eshop_add_pricing_snapshots_to_order_items.php`, `000002_eshop_add_margin_fields_to_channel_product_prices.php`, `000003_eshop_create_channel_credits_table.php`, `000004_eshop_create_channel_credit_usages_table.php` — toutes appliquées
+> - ✅ Test passant : `Modules/Eshop360/Tests/Unit/PricingEngineTest.php`
+>
+> **Reste à faire** :
+>
+> - ⚠️ **Multi-currency dans Pricing Engine** : `PricingContext` et `PricingResult` ne contiennent pas encore de notion de devise. `cacheKey()` ne discrimine pas par devise → risque de cache pollution si activation multi-currency. Voir `currency_multi_currency_evolution.md` pour le contexte.
+> - ⚠️ **Intégration effective dans le checkout `OrderService`** : à confirmer (le `PricingEngine` est bien instanciable et testé en isolation, mais son utilisation dans `OrderService::createOrder()` reste à vérifier dans cette session — non bloquant pour cette mise à jour de doc).
+> - ⚠️ **Suppression définitive du legacy `CodifarmMarginConfig`** : déjà fait par migration `2026_03_16_100003_drop_codifarm_tables_and_columns.php`. Le système est unifié sur `DistributionChannel` + `ChannelMarginLog`.
+>
+> **Pour les détails de validation, voir [STATUS.md](../STATUS.md) et [audit_comparatif_final.md](../audit_comparatif_final.md) v1.3.**
+
+---
 
 ---
 

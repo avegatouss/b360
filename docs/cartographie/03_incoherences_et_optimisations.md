@@ -7,19 +7,18 @@
 
 ## 1. Duplication de fonctionnalités
 
-### 1.1 Double système de marge (Codifarm vs DistributionChannel)
+### 1.1 ~~Double système de marge (Codifarm vs DistributionChannel)~~ ✅ RÉSOLU (vérifié 2026-04-06)
 
-| Aspect | CodifarmMarginConfig | DistributionChannel |
-|--------|---------------------|---------------------|
-| **Table** | `eshop_codifarm_margin_config` | `eshop_distribution_channels` |
-| **Logs** | `eshop_codifarm_margin_logs` | `eshop_channel_margin_logs` |
-| **Champs** | saphir_margin_rate, codifarm_buy_rate, debt_share, codifarm_share, saphir_share | margin_rate, buy_rate, debt_share, channel_share, owner_share |
-| **Usage** | Legacy (original SAPHIR/Codifarm) | Nouveau système canaux (générique) |
-
-- **Localisation :** `Modules/Eshop360/Models/CodifarmMarginConfig.php`, `Modules/Eshop360/Models/DistributionChannel.php`
-- **Impact :** **Critique** — Double écriture de logs de marge, confusion sur la source de vérité, données potentiellement incohérentes.
-- **Suggestion court terme :** Migrer les données Codifarm vers un DistributionChannel dédié, déprécier le modèle Codifarm.
-- **Suggestion long terme :** Supprimer complètement les tables `eshop_codifarm_*` et le modèle `CodifarmMarginConfig`.
+> **Mise à jour 2026-04-06** — Cette section était **obsolète au moment de sa rédaction** : le système Codifarm a en réalité été supprimé en code applicatif depuis la migration `2026_03_16_100003_drop_codifarm_tables_and_columns.php` (rapatriement des données via `2026_03_16_100002_migrate_codifarm_to_channels.php`). Vérifié par audit du 2026-04-06 :
+>
+> - `Glob Modules/Eshop360/**/Codifarm*.php` → **0 résultat** (aucun modèle, service, controller)
+> - Tables `eshop_codifarm_margin_*` droppées au runtime
+> - Colonnes `is_codifarm` / `sale_price_codifarm` également droppées
+> - **Système unifié** : `DistributionChannel` + `ChannelMarginLog` + `MarginService` (45 fichiers de production + tests)
+> - Seules subsistent **les 7 migrations historiques** (création legacy + migration de données + drop) — **à conserver intactes** car nécessaires pour `migrate:fresh` sur les bases existantes
+> - Quelques traces cosmétiques dans les seeders demo (`demo-codifarm` slug, label "CODIFARM" pour un canal de démo) — non bloquant
+>
+> **Aucune action de code requise.** Le seul écart restant est documentaire (cette section et celle dans `audits/03_incoherences_et_optimisations.md`).
 
 ### 1.2 Double système de feature flags
 
@@ -214,7 +213,7 @@
 |---|--------|--------|--------|
 | 7 | **Ajouter `lockForUpdate()`** dans StockService | Critique → élimine race condition | 2h |
 | 8 | **Remplacer TOCTOU** par UNIQUE constraint + retry sur order/invoice numbers | Haut → élimine doublons | 2h |
-| 9 | **Migrer CodifarmMarginConfig → DistributionChannel** | Haut → un seul système de marge | 4h |
+| ~~9~~ | ~~Migrer CodifarmMarginConfig → DistributionChannel~~ | ✅ **DÉJÀ FAIT** par migration `2026_03_16_100002→100003` (vérifié 2026-04-06) | 0 |
 | 10 | **Supprimer FeatureGate** — remplacer par FeatureRegistry direct | Moyen → simplification | 2h |
 | 11 | **Wrapper transactionnel** pour `CostCalculatorService::updateProductPricing()` | Moyen → atomicité | 30 min |
 | 12 | **Pessimistic locking** sur `FinanceService::creditWallet()` | Haut → évite double-paiement | 1h |

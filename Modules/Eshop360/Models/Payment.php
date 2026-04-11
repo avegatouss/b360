@@ -31,11 +31,18 @@ class Payment extends Model
         'notes',
         'metadata',
         'received_by',
+        // Multi-currency snapshot (Currency module phase 2)
+        'currency_code',
+        'exchange_rate',
+        'amount_in_base_currency',
     ];
 
     protected $casts = [
         'amount' => 'decimal:2',
         'metadata' => 'array',
+        // Multi-currency: high-precision decimal for cross-currency reporting
+        'exchange_rate' => 'decimal:10',
+        'amount_in_base_currency' => 'decimal:4',
     ];
 
     public function payable(): MorphTo

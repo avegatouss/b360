@@ -1,10 +1,50 @@
 # Currency Multi-Devises -- Specification technique d'evolution
 
-> **Version** : 1.0  
-> **Date** : 2026-04-04  
+> **Version** : 1.1 (mise à jour post-implémentation 2026-04-06) · v1.0 initiale : 2026-04-04
 > **Branche cible** : `eshop360`  
-> **Statut** : Draft  
+> **Statut** : Phases 1 et 2 IMPLÉMENTÉES (avec bug latent à corriger) · Phase 3 partielle · Phases 4-5 non démarrées
 > **Auteur** : Architecture B360
+
+> ## ✅ STATUT D'IMPLÉMENTATION (vérifié 2026-04-06)
+>
+> **Phases 1 et 2 implémentées en code** :
+>
+> - ✅ `Modules/Currency/Models/Currency.php` (existant)
+> - ✅ `Modules/Currency/Models/ExchangeRateHistory.php` (Phase 1)
+> - ✅ `Modules/Currency/Models/TenantCurrencySetting.php` (Phase 1)
+> - ✅ `Modules/Currency/Models/UserCurrencyPreference.php` (Phase 2)
+> - ✅ `Modules/Currency/Models/OrderCurrencySnapshot.php` (Phase 2 — polymorphique)
+> - ✅ `Modules/Currency/Services/ExchangeRateService.php` (cache + fallback historique)
+> - ✅ `Modules/Currency/Services/SnapshotService.php`
+> - ✅ `Modules/Currency/Services/TenantCurrencyManager.php`
+> - ✅ Migrations DB : `2026_04_04_300001_multi_currency_phase1.php`, `300002_multi_currency_phase2.php` — appliquées
+> - ✅ Test passant : `Modules/Currency/Tests/Unit/MultiCurrencyTest.php`
+>
+> **🔴 BUG LATENT CRITIQUE — à corriger en priorité** (Phase 3 incomplète) :
+>
+> La migration `2026_04_04_300002` ajoute bien les colonnes `currency_code`, `exchange_rate` sur `eshop_orders`, `eshop_invoices`, `eshop_payments` (et `amount_in_base_currency` sur `eshop_payments`). **MAIS** les modèles Eshop360 n'ont **PAS** ces champs dans leur `$fillable` :
+>
+> - `Modules/Eshop360/Models/Order.php` lignes 30-58 : `$fillable` sans `currency_code`/`exchange_rate`
+> - `Modules/Eshop360/Models/Invoice.php` lignes 22-44 : idem
+> - `Modules/Eshop360/Models/Payment.php` lignes 20-34 : idem
+>
+> Conséquence : Laravel **silently drop** ces attributs lors d'un `update()` ou `create()`. `OrderService::snapshotCurrencyIfEnabled()` (ligne 434-465) tente d'écrire ces colonnes mais elles **restent NULL en DB**. Le test `MultiCurrencyTest` passe en unitaire (via `setAttribute()` direct ou Order::create avec mass-assignment forcé), mais le flux end-to-end est **cassé silencieusement**.
+>
+> **Activable à distance** : il suffit qu'un admin coche `multi_currency_enabled = true` dans `tenant_currency_settings` pour déclencher des warnings logs sans aucune correction effective.
+>
+> **Fix** : ajouter `currency_code`, `exchange_rate` (et `amount_in_base_currency` pour Payment) aux `$fillable` + casts decimal — **15 minutes**.
+>
+> **Reste à faire après le fix** :
+>
+> - ⚠️ **Symétriser** : créer `snapshotCurrencyIfEnabled()` dans `InvoiceService` et `PaymentService` (copier la logique d'`OrderService`)
+> - ⚠️ **Asymétrie `amount_in_base_currency`** : présent uniquement sur `eshop_payments`, à ajouter sur `eshop_orders` et `eshop_invoices` pour cohérence reporting
+> - ⚠️ **`CostCalculatorService`** : reste mono-devise. Décision recommandée : convertir à la frontière (au moment du `purchase_order` import) plutôt que rendre le CUMP multi-currency natif (effort L vs S)
+> - ⚠️ **`PricingContext` / `PricingResult`** : ne contiennent pas de devise. Risque de cache pollution si activation multi-currency. Décision : MVP n'a pas besoin de toucher au Pricing Engine v2 si on convertit à la frontière
+> - ❌ **Money objects vs floats** : décision recommandée → **rester en floats** pour MVP, isolation dans `ExchangeRateService::convert()`. Brick/Money est un sprint XL avec risque élevé pour gain marginal
+> - ❌ **Phases 4-5** (extension autres modules + automatisation API) : non démarrées
+> - ❌ **Vérifier l'ordre d'exécution des migrations** : la migration `300002` utilise `Schema::hasTable('eshop_orders')` comme guard. Si Currency tourne avant Eshop360 lors d'une install fraîche, les colonnes ne sont jamais ajoutées. **À auditer en priorité**.
+>
+> **Pour les détails de validation, voir [STATUS.md](../STATUS.md) et [audit_comparatif_final.md](../audit_comparatif_final.md) v1.3.**
 
 ---
 

@@ -55,6 +55,10 @@ class Order extends Model
         'biller_id',
         'employee_id',
         'project_id',
+        // Multi-currency snapshot (Currency module phase 2)
+        'currency_code',
+        'exchange_rate',
+        'amount_in_base_currency',
     ];
 
     protected $casts = [
@@ -67,6 +71,9 @@ class Order extends Model
         'total' => 'decimal:2',
         'paid_amount' => 'decimal:2',
         'due_amount' => 'decimal:2',
+        // Multi-currency: high-precision decimal for cross-currency reporting
+        'exchange_rate' => 'decimal:10',
+        'amount_in_base_currency' => 'decimal:4',
     ];
 
     public function customer(): BelongsTo

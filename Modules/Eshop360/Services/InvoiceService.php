@@ -115,6 +115,9 @@ class InvoiceService
                 ]);
             }
 
+            // Multi-currency snapshot — no-op if Currency module disabled or feature off
+            $this->snapshotCurrencyIfEnabled($invoice);
+
             if ($targetPaidAmount !== 0.0) {
                 $this->syncPaidAmount(
                     $invoice,
@@ -128,6 +131,24 @@ class InvoiceService
 
             return $invoice->fresh(['items', 'payments']);
         });
+    }
+
+    /**
+     * Snapshot the invoice currency if multi-currency is enabled for its instance.
+     * Delegates to {@see \Modules\Currency\Services\SnapshotService::snapshotIfEnabled()}.
+     * Non-blocking: failures are logged inside the snapshotter.
+     */
+    private function snapshotCurrencyIfEnabled(Invoice $invoice): void
+    {
+        if (!app()->bound(\Modules\Currency\Services\SnapshotService::class)) {
+            return;
+        }
+
+        app(\Modules\Currency\Services\SnapshotService::class)->snapshotIfEnabled(
+            $invoice,
+            $invoice->instance_id,
+            $invoice->created_by ?? auth()->id(),
+        );
     }
 
     /**
@@ -192,6 +213,16 @@ class InvoiceService
             'notes' => $notes ?? 'Payment adjustment',
             'received_by' => auth()->id(),
         ]);
+
+        // Multi-currency snapshot for the payment (independent of invoice snapshot
+        // because the rate at payment time may differ from the rate at invoice time)
+        if (app()->bound(\Modules\Currency\Services\SnapshotService::class)) {
+            app(\Modules\Currency\Services\SnapshotService::class)->snapshotIfEnabled(
+                $payment,
+                $payment->instance_id,
+                auth()->id(),
+            );
+        }
 
         $this->calculateTotals($invoice);
 

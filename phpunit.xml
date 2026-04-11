@@ -44,5 +44,8 @@
         <env name="SESSION_DRIVER" value="array"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
     <env name="APP_INSTALLED" value="false"/>
+        <!-- Force hierarchical_menu OFF in tests so DashboardController renders the dashboard
+             instead of redirecting to eshop360.nav.home (which is the dev default in .env). -->
+        <env name="ESHOP_HIERARCHICAL_MENU" value="false"/>
     </php>
 </phpunit>

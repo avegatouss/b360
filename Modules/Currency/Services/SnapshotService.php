@@ -80,4 +80,56 @@ final class SnapshotService
             ->where('snapshotable_id', $entity->getKey())
             ->first();
     }
+
+    /**
+     * High-level helper: snapshot only if multi-currency is enabled for the instance.
+     *
+     * - If the Currency module is not loaded → no-op (BC: works without Currency)
+     * - If multi-currency is disabled for the instance → no-op
+     * - If display == base currency → just write `currency_code` + `exchange_rate=1.0`
+     *   on the entity (no polymorphic snapshot needed)
+     * - Otherwise → full snapshot with the current live rate
+     *
+     * Non-blocking: any failure is logged as a warning and does not bubble up.
+     *
+     * @param Model    $entity     The model to snapshot (Order, Invoice, Payment)
+     * @param int|null $instanceId Defaults to $entity->instance_id
+     * @param int|null $userId     For per-user currency preference resolution
+     */
+    public function snapshotIfEnabled(Model $entity, ?int $instanceId = null, ?int $userId = null): ?OrderCurrencySnapshot
+    {
+        try {
+            if (!app()->bound(TenantCurrencyManager::class)) {
+                return null;
+            }
+
+            $tenantManager = app(TenantCurrencyManager::class);
+            $instanceId ??= (int) ($entity->instance_id ?? 0);
+
+            if ($instanceId <= 0 || !$tenantManager->isMultiCurrencyEnabled($instanceId)) {
+                return null;
+            }
+
+            $baseCurrency = $tenantManager->getDefault($instanceId);
+            $displayCurrency = $tenantManager->resolveDisplayCurrency($instanceId, $userId);
+
+            if ($displayCurrency === $baseCurrency) {
+                // Same currency: write code but no conversion needed
+                $entity->update([
+                    'currency_code' => $baseCurrency,
+                    'exchange_rate' => 1.0,
+                ]);
+
+                return null;
+            }
+
+            return $this->snapshotWithCurrentRate($entity, $displayCurrency, $baseCurrency);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning(
+                'Currency snapshotIfEnabled failed for ' . get_class($entity) . ' #' . $entity->getKey() . ': ' . $e->getMessage()
+            );
+
+            return null;
+        }
+    }
 }

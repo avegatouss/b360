@@ -428,39 +428,23 @@ class OrderService
 
     /**
      * Create a currency snapshot on the order if multi-currency is enabled.
-     * Uses FeatureResolver to check 'eshop.multi_currency' feature flag.
-     * Backward compatible: does nothing if Currency module is not loaded or feature is off.
+     *
+     * Delegates to {@see \Modules\Currency\Services\SnapshotService::snapshotIfEnabled()}
+     * which centralises the multi-currency activation check, the base/display
+     * currency resolution and the polymorphic snapshot creation.
+     *
+     * Backward compatible: does nothing if Currency module is not loaded.
      */
     private function snapshotCurrencyIfEnabled(Order $order): void
     {
-        try {
-            if (!app()->bound(\Modules\Currency\Services\TenantCurrencyManager::class)) {
-                return;
-            }
-
-            $tenantManager = app(\Modules\Currency\Services\TenantCurrencyManager::class);
-
-            if (!$tenantManager->isMultiCurrencyEnabled($order->instance_id)) {
-                return;
-            }
-
-            $baseCurrency = $tenantManager->getDefault($order->instance_id);
-            $displayCurrency = $tenantManager->resolveDisplayCurrency(
-                $order->instance_id,
-                $order->biller_id ?? auth()->id()
-            );
-
-            if ($displayCurrency === $baseCurrency) {
-                // Same currency — write code but no conversion needed
-                $order->update(['currency_code' => $baseCurrency, 'exchange_rate' => 1.0]);
-                return;
-            }
-
-            app(\Modules\Currency\Services\SnapshotService::class)
-                ->snapshotWithCurrentRate($order, $displayCurrency, $baseCurrency);
-        } catch (\Throwable $e) {
-            // Non-blocking — don't break order creation if currency snapshot fails
-            \Illuminate\Support\Facades\Log::warning("Currency snapshot failed for order {$order->id}: {$e->getMessage()}");
+        if (!app()->bound(\Modules\Currency\Services\SnapshotService::class)) {
+            return;
         }
+
+        app(\Modules\Currency\Services\SnapshotService::class)->snapshotIfEnabled(
+            $order,
+            $order->instance_id,
+            $order->biller_id ?? auth()->id(),
+        );
     }
 }

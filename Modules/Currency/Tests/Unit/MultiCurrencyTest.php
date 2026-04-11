@@ -231,4 +231,194 @@ final class MultiCurrencyTest extends \Modules\Billing\Tests\TestCase
         $this->assertNull($order->currency_code);
         $this->assertNull($order->exchange_rate);
     }
+
+    // ──────────────────────────────────────────
+    // Mass-assignment regression — guards against $fillable drift
+    // ──────────────────────────────────────────
+
+    public function test_order_currency_columns_are_mass_assignable(): void
+    {
+        $instance = $this->makeRootInstance();
+        $this->makeRootSuperAdmin($instance);
+
+        $order = \Modules\Eshop360\Models\Order::create([
+            'instance_id' => $instance->id,
+            'order_number' => 'MA-001',
+            'total' => 10000,
+            'status' => 'completed',
+            'currency_code' => 'EUR',
+            'exchange_rate' => 655.957,
+            'amount_in_base_currency' => 6559570.00,
+        ]);
+
+        $order->refresh();
+
+        // These would all be NULL if currency_code/exchange_rate/amount_in_base_currency
+        // were missing from $fillable (mass-assignment silently dropped).
+        $this->assertSame('EUR', $order->currency_code);
+        $this->assertEquals(655.957, (float) $order->exchange_rate);
+        $this->assertEquals(6559570.00, (float) $order->amount_in_base_currency);
+    }
+
+    public function test_invoice_currency_columns_are_mass_assignable(): void
+    {
+        $instance = $this->makeRootInstance();
+        $this->makeRootSuperAdmin($instance);
+
+        $invoice = \Modules\Eshop360\Models\Invoice::create([
+            'instance_id' => $instance->id,
+            'invoice_number' => 'MA-INV-001',
+            'total' => 5000,
+            'status' => 'unpaid',
+            'currency_code' => 'USD',
+            'exchange_rate' => 600.0,
+            'amount_in_base_currency' => 3000000.0,
+        ]);
+
+        $invoice->refresh();
+
+        $this->assertSame('USD', $invoice->currency_code);
+        $this->assertEquals(600.0, (float) $invoice->exchange_rate);
+        $this->assertEquals(3000000.0, (float) $invoice->amount_in_base_currency);
+    }
+
+    public function test_payment_currency_columns_are_mass_assignable(): void
+    {
+        $instance = $this->makeRootInstance();
+        $this->makeRootSuperAdmin($instance);
+
+        $order = \Modules\Eshop360\Models\Order::create([
+            'instance_id' => $instance->id,
+            'order_number' => 'MA-PAY-001',
+            'total' => 1000,
+            'status' => 'completed',
+        ]);
+
+        $payment = \Modules\Eshop360\Models\Payment::create([
+            'instance_id' => $instance->id,
+            'payable_type' => \Modules\Eshop360\Models\Order::class,
+            'payable_id' => $order->id,
+            'amount' => 1000,
+            'method' => 'cash',
+            'status' => 'completed',
+            'currency_code' => 'EUR',
+            'exchange_rate' => 655.957,
+            'amount_in_base_currency' => 655957.0,
+        ]);
+
+        $payment->refresh();
+
+        $this->assertSame('EUR', $payment->currency_code);
+        $this->assertEquals(655.957, (float) $payment->exchange_rate);
+        $this->assertEquals(655957.0, (float) $payment->amount_in_base_currency);
+    }
+
+    // ──────────────────────────────────────────
+    // SnapshotService::snapshotIfEnabled() — high-level helper
+    // ──────────────────────────────────────────
+
+    public function test_snapshot_if_enabled_is_noop_when_multi_currency_disabled(): void
+    {
+        $instance = $this->makeRootInstance();
+        $this->makeRootSuperAdmin($instance);
+
+        $order = \Modules\Eshop360\Models\Order::create([
+            'instance_id' => $instance->id,
+            'order_number' => 'NOOP-001',
+            'total' => 1000,
+            'status' => 'completed',
+        ]);
+
+        $service = app(SnapshotService::class);
+        $result = $service->snapshotIfEnabled($order, $instance->id);
+
+        $this->assertNull($result);
+
+        $order->refresh();
+        $this->assertNull($order->currency_code);
+        $this->assertNull($order->exchange_rate);
+    }
+
+    public function test_snapshot_if_enabled_writes_base_when_display_equals_base(): void
+    {
+        $instance = $this->makeRootInstance();
+        $this->makeRootSuperAdmin($instance);
+
+        // Enable multi-currency for the instance with default = XOF
+        TenantCurrencySetting::create([
+            'instance_id' => $instance->id,
+            'default_currency' => 'XOF',
+            'allowed_currencies' => ['XOF'],
+            'multi_currency_enabled' => true,
+            'auto_update_rates' => false,
+            'api_source' => 'open.er-api.com',
+        ]);
+
+        $order = \Modules\Eshop360\Models\Order::create([
+            'instance_id' => $instance->id,
+            'order_number' => 'SAME-001',
+            'total' => 2500,
+            'status' => 'completed',
+        ]);
+
+        $service = app(SnapshotService::class);
+        $result = $service->snapshotIfEnabled($order, $instance->id);
+
+        // Same currency: no polymorphic snapshot, but currency_code + exchange_rate = 1.0
+        $this->assertNull($result);
+
+        $order->refresh();
+        $this->assertSame('XOF', $order->currency_code);
+        $this->assertEquals(1.0, (float) $order->exchange_rate);
+    }
+
+    public function test_snapshot_if_enabled_creates_polymorphic_snapshot_when_currencies_differ(): void
+    {
+        Cache::flush();
+
+        $instance = $this->makeRootInstance();
+        $user = $this->makeRootSuperAdmin($instance);
+
+        // Enable multi-currency, allow EUR + XOF, default = XOF
+        TenantCurrencySetting::create([
+            'instance_id' => $instance->id,
+            'default_currency' => 'XOF',
+            'allowed_currencies' => ['XOF', 'EUR'],
+            'multi_currency_enabled' => true,
+            'auto_update_rates' => false,
+            'api_source' => 'open.er-api.com',
+        ]);
+
+        // User prefers EUR
+        app(TenantCurrencyManager::class)->setUserPreference($user->id, $instance->id, 'EUR');
+
+        // Stub the exchange rate API
+        Http::fake([
+            'open.er-api.com/*' => Http::response([
+                'result' => 'success',
+                'rates' => ['EUR' => 0.001525], // 1 XOF = 0.001525 EUR ≈ rate
+            ]),
+        ]);
+
+        $order = \Modules\Eshop360\Models\Order::create([
+            'instance_id' => $instance->id,
+            'order_number' => 'DIFF-001',
+            'total' => 100000,
+            'subtotal' => 100000,
+            'status' => 'completed',
+        ]);
+
+        $service = app(SnapshotService::class);
+        $snapshot = $service->snapshotIfEnabled($order, $instance->id, $user->id);
+
+        $this->assertInstanceOf(OrderCurrencySnapshot::class, $snapshot);
+        $this->assertSame('EUR', $snapshot->display_currency);
+        $this->assertSame('XOF', $snapshot->base_currency);
+        $this->assertGreaterThan(0, (float) $snapshot->exchange_rate);
+
+        // Entity should also have its currency columns populated (mass-assignment fix)
+        $order->refresh();
+        $this->assertSame('EUR', $order->currency_code);
+        $this->assertGreaterThan(0, (float) $order->exchange_rate);
+    }
 }

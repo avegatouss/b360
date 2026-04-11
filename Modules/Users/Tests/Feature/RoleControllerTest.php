@@ -86,9 +86,11 @@ final class RoleControllerTest extends TestCase
         $this->actingAs($this->superAdmin)
             ->get("/i/{$this->root->slug}/roles")
             ->assertOk()
+            // The view renders the permission group LABELS (not the keys) inside
+            // the "Référence des permissions" panel.
             ->assertSee('Tableau de bord')
             ->assertSee('Utilisateurs')
-            ->assertSee('dashboard.view');
+            ->assertSee('Voir le tableau de bord');
     }
 
     public function test_create_page_loads(): void
@@ -96,7 +98,8 @@ final class RoleControllerTest extends TestCase
         $this->actingAs($this->superAdmin)
             ->get("/i/{$this->root->slug}/roles/create")
             ->assertOk()
-            ->assertSee('Nouveau role');
+            // The view renders 'Nouveau rôle' (with the French circumflex).
+            ->assertSee('Nouveau rôle', escape: false);
     }
 
     public function test_store_creates_role(): void
@@ -137,7 +140,8 @@ final class RoleControllerTest extends TestCase
         $this->actingAs($this->superAdmin)
             ->get("/i/{$this->root->slug}/roles/{$role->id}/edit")
             ->assertOk()
-            ->assertSee('editor');
+            // The view renders ucfirst($role->name) → 'Editor' in the page title.
+            ->assertSee('Editor');
     }
 
     public function test_update_syncs_permissions(): void
