@@ -71,8 +71,8 @@ final class EshopInitializer
             'role' => 'manager',
         ]);
 
-        $features = $hubData['features'] ?? $this->settings->defaults('features');
-        $allTrue = array_map(fn () => true, $features);
+        $allFeatures = $this->settings->defaults('features');
+        $allTrue = array_map(fn () => true, $allFeatures);
         $this->settings->setChannelFeatures($allTrue, $hub->id, $instanceId);
 
         return $hub;

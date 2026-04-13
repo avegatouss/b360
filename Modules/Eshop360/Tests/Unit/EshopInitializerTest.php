@@ -97,6 +97,7 @@ final class EshopInitializerTest extends TestCase
             ->first();
         $this->assertNotNull($channel);
         $this->assertSame('Canal Test', $channel->name);
+        $this->assertNotNull($channel->warehouse_id);
 
         // Hierarchical menu activated
         $settings = app(EshopSettingsService::class);
@@ -109,6 +110,10 @@ final class EshopInitializerTest extends TestCase
 
         $pos = $settings->get('pos', $instance->id);
         $this->assertSame('layout2', $pos['default_layout']);
+
+        // Hub branding saved
+        $branding = $settings->getForChannel('channel_branding', $hub->id, $instance->id);
+        $this->assertSame('Test Corp', $branding['company_name']);
 
         // isInitialized returns true
         $this->assertTrue($initializer->isInitialized($instance->id));
