@@ -117,12 +117,22 @@ final class HierarchicalMenuService
             'sections' => ['eshop360.charges'],
             'features' => ['finance'],
         ],
+        'parametres' => [
+            'label' => 'Paramètres',
+            'icon' => 'ti ti-settings',
+            'color' => '#64748b',
+            'sections' => ['eshop360.channel_settings'],
+            'features' => ['settings'],
+        ],
     ];
 
     /**
-     * Slug of the global channel that gives access to all menu items.
+     * Check if a channel is the hub (central) channel.
      */
-    public const GLOBAL_CHANNEL_SLUG = 'saphir-plus';
+    public function isHubChannel(DistributionChannel $channel): bool
+    {
+        return (bool) $channel->is_hub;
+    }
 
     /**
      * Get the active distribution channels for the current instance.
@@ -138,17 +148,26 @@ final class HierarchicalMenuService
         return DistributionChannel::withoutGlobalScopes()
             ->where('instance_id', $instance->id)
             ->where('is_active', true)
-            ->orderByRaw("CASE WHEN slug = ? THEN 0 ELSE 1 END", [self::GLOBAL_CHANNEL_SLUG])
+            ->orderByDesc('is_hub')
             ->orderBy('name')
             ->get();
     }
 
     /**
-     * Check if a slug corresponds to the global channel.
+     * Check if a slug corresponds to the hub channel.
      */
     public function isGlobalChannel(string $slug): bool
     {
-        return $slug === self::GLOBAL_CHANNEL_SLUG;
+        $instance = CurrentInstance::get();
+        if (!$instance) {
+            return false;
+        }
+
+        return DistributionChannel::withoutGlobalScopes()
+            ->where('instance_id', $instance->id)
+            ->where('slug', $slug)
+            ->where('is_hub', true)
+            ->exists();
     }
 
     /**
@@ -180,7 +199,7 @@ final class HierarchicalMenuService
         $groups = [];
         foreach (self::MODULE_GROUPS as $key => $def) {
             // Filter by channel features (global channel sees everything)
-            if ($channel && !$this->isGlobalChannel($channel->slug) && !empty($def['features'])) {
+            if ($channel && !$this->isHubChannel($channel) && !empty($def['features'])) {
                 $hasFeature = false;
                 $featureDefaults = $this->settings->defaults('features');
                 foreach ($def['features'] as $feature) {
