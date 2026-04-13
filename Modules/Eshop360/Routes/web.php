@@ -76,6 +76,7 @@ use Modules\Eshop360\Http\Controllers\Printing\ReceiptTemplateController;
 use Modules\Eshop360\Http\Controllers\Printing\PrinterController;
 use Modules\Eshop360\Http\Controllers\Navigation\HierarchicalMenuController;
 use Modules\Eshop360\Http\Controllers\Setup\SetupWizardController;
+use Modules\Eshop360\Http\Controllers\Settings\ChannelSettingsController;
 use Modules\Eshop360\Http\Middleware\ApplyCurrentInstanceUrlDefaults;
 
 /*
@@ -118,6 +119,14 @@ Route::middleware([
         Route::post('/channels', [SetupWizardController::class, 'storeChannels'])->name('channels.store');
         Route::get('/settings', [SetupWizardController::class, 'settings'])->name('settings');
         Route::post('/settings', [SetupWizardController::class, 'storeSettings'])->name('settings.store');
+    });
+
+    // ─── Channel Settings ─────────────────────────
+    Route::prefix('channel-settings')->name('eshop360.channel-settings.')->middleware('can:eshop.settings.manage')->group(function () {
+        Route::get('/branding', [ChannelSettingsController::class, 'branding'])->name('branding');
+        Route::put('/branding', [ChannelSettingsController::class, 'updateBranding'])->name('branding.update');
+        Route::get('/features', [ChannelSettingsController::class, 'features'])->name('features');
+        Route::put('/features', [ChannelSettingsController::class, 'updateFeatures'])->name('features.update');
     });
 
     // ─── POS Terminal ──────────────────────────────

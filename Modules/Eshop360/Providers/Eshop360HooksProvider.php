@@ -943,6 +943,55 @@ final class Eshop360HooksProvider implements RegistersHooks
         ));
 
         // =====================================================================
+        // Channel Settings (for hierarchical menu "Parametres" group)
+        // =====================================================================
+        $registry->addMenu(new MenuItem(
+            id: 'eshop360.channel_settings',
+            label: 'Paramètres du canal',
+            icon: 'ti ti-settings',
+            priority: 670,
+            requiredPermission: 'eshop.settings.manage',
+            requiredModule: 'Eshop360',
+            group: 'main',
+        ));
+
+        $registry->addMenu(new MenuItem(
+            id: 'eshop360.channel_settings.branding',
+            label: 'Branding du canal',
+            route: 'eshop360.channel-settings.branding',
+            priority: 900,
+            requiredPermission: 'eshop.settings.manage',
+            requiredModule: 'Eshop360',
+            group: 'main',
+            activePattern: 'eshop360.channel-settings.branding*',
+            parentId: 'eshop360.channel_settings',
+        ));
+
+        $registry->addMenu(new MenuItem(
+            id: 'eshop360.channel_settings.features',
+            label: 'Modules du canal',
+            route: 'eshop360.channel-settings.features',
+            priority: 890,
+            requiredPermission: 'eshop.settings.manage',
+            requiredModule: 'Eshop360',
+            group: 'main',
+            activePattern: 'eshop360.channel-settings.features*',
+            parentId: 'eshop360.channel_settings',
+        ));
+
+        $registry->addMenu(new MenuItem(
+            id: 'eshop360.channel_settings.members',
+            label: 'Membres du canal',
+            route: 'eshop360.channels.index',
+            priority: 880,
+            requiredPermission: 'eshop.channels.view',
+            requiredModule: 'Eshop360',
+            group: 'main',
+            activePattern: 'eshop360.channels.*',
+            parentId: 'eshop360.channel_settings',
+        ));
+
+        // =====================================================================
         // Communication
         // =====================================================================
         $registry->addMenu(new MenuItem(
