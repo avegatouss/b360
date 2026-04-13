@@ -25,6 +25,12 @@ final class HierarchicalMenuController extends Controller
         $user = auth()->user();
         $channels = $this->menuService->getChannels();
 
+        // Fallback: if no channels exist and hierarchical menu is active, redirect to wizard
+        if ($channels->isEmpty()) {
+            $instance = CurrentInstance::get();
+            return redirect()->route('eshop360.setup.hub', $instance->slug);
+        }
+
         // Filter channels by user access (hub admins see all)
         if (!$this->channelAccess->isHubAdmin($user)) {
             $accessible = $this->channelAccess->accessibleChannelIds($user);

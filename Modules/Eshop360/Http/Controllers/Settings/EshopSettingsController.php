@@ -30,6 +30,17 @@ class EshopSettingsController extends Controller
 
         $validated['hierarchical_menu'] = $request->boolean('hierarchical_menu');
 
+        // If enabling hierarchical menu and not yet initialized, redirect to wizard
+        if ($validated['hierarchical_menu']) {
+            $instance = \Modules\Core\Support\CurrentInstance::get();
+            $initializer = app(\Modules\Eshop360\Services\EshopInitializer::class);
+
+            if (!$initializer->isInitialized($instance->id)) {
+                return redirect()->route('eshop360.setup.hub', $instance->slug)
+                    ->with('info', __('Configurez votre espace eShop avant d\'activer le menu hierarchique.'));
+            }
+        }
+
         $this->settings->set('general', $validated);
 
         return redirect()->route('eshop360.settings.general')

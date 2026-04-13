@@ -106,6 +106,17 @@ final class ModuleController extends Controller
                     ['is_enabled' => true, 'updated_at' => now(), 'created_at' => now()]
                 );
             $message = "Module « {$name} » activé.";
+
+            // If Eshop360 just enabled and not initialized, redirect to wizard
+            if ($name === 'Eshop360') {
+                $initializer = app(\Modules\Eshop360\Services\EshopInitializer::class);
+                if (!$initializer->isInitialized($instance->id)) {
+                    app(ModuleManager::class)->clearCache();
+                    return redirect()
+                        ->route('eshop360.setup.hub', $instance->slug)
+                        ->with('status', "Module « {$name} » activé. Configurez votre espace de vente.");
+                }
+            }
         }
 
         app(ModuleManager::class)->clearCache();
