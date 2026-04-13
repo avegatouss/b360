@@ -29,6 +29,19 @@
                     @endif
                 </a>
             @endforeach
+
+            {{-- Administration tile — visible for hub admins only --}}
+            @if(app(\Modules\Eshop360\Services\ChannelAccessService::class)->isHubAdmin(auth()->user()))
+                <a href="{{ route('eshop360.nav.admin', [$instance?->slug ?? '']) }}"
+                   class="hm-card hm-card-channel"
+                   style="--card-accent: #475569">
+                    <div class="hm-card-icon" style="background: #475569">
+                        <i class="ti ti-settings-2"></i>
+                    </div>
+                    <div class="hm-card-title">Administration</div>
+                    <div class="hm-card-subtitle">Paramètres & gestion</div>
+                </a>
+            @endif
         </div>
     @else
         <div class="hm-empty">

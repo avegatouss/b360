@@ -104,6 +104,8 @@ Route::middleware([
     // ─── Hierarchical Menu Navigation ──────────────
     Route::prefix('nav')->name('eshop360.nav.')->group(function () {
         Route::get('/', [HierarchicalMenuController::class, 'home'])->name('home');
+        Route::get('/admin', [HierarchicalMenuController::class, 'admin'])->name('admin');
+        Route::get('/admin/{section}', [HierarchicalMenuController::class, 'adminSection'])->name('admin.section');
         Route::get('/{channelSlug}', [HierarchicalMenuController::class, 'modules'])->name('modules');
         Route::get('/{channelSlug}/{moduleKey}', [HierarchicalMenuController::class, 'actions'])->name('actions');
     });

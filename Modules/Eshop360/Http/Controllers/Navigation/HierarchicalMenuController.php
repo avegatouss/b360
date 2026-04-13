@@ -4,6 +4,7 @@ namespace Modules\Eshop360\Http\Controllers\Navigation;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Modules\Core\Hooks\HookManager;
 use Modules\Core\Support\CurrentInstance;
 use Modules\Eshop360\Services\ChannelAccessService;
 use Modules\Eshop360\Services\HierarchicalMenuService;
@@ -97,5 +98,85 @@ final class HierarchicalMenuController extends Controller
         return view('eshop360::hierarchical-menu.actions', compact(
             'channel', 'module', 'instance'
         ));
+    }
+
+    /**
+     * Administration page — shows instance-level menu sections as tiles.
+     * Visible only to super-admin and instance-admin.
+     */
+    public function admin()
+    {
+        $user = auth()->user();
+        abort_unless($this->channelAccess->isHubAdmin($user), 403);
+
+        $instance = CurrentInstance::get();
+        $registry = app(HookManager::class)->registry();
+
+        $allMenus = $registry->menu();
+
+        $adminSections = [];
+
+        // Admin group items (Users, Roles, Modules, Settings, Billing)
+        $adminItems = $allMenus->filter(fn ($item) => $item->group === 'admin' && !$item->parentId);
+        foreach ($adminItems as $item) {
+            $children = $allMenus->filter(fn ($child) => $child->parentId === $item->id);
+            $adminSections[] = [
+                'key' => $item->id,
+                'label' => $item->label,
+                'icon' => $item->icon ?? 'ti ti-settings',
+                'color' => '#475569',
+                'children' => $children->values()->all(),
+                'count' => $children->count(),
+                'route' => $item->route,
+            ];
+        }
+
+        // Eshop settings group
+        $eshopSettings = $allMenus->first(fn ($item) => $item->id === 'eshop360.eshop_settings');
+        if ($eshopSettings) {
+            $eshopChildren = $allMenus->filter(fn ($child) => $child->parentId === 'eshop360.eshop_settings');
+            $adminSections[] = [
+                'key' => 'eshop360.eshop_settings',
+                'label' => $eshopSettings->label,
+                'icon' => $eshopSettings->icon ?? 'ti ti-adjustments-horizontal',
+                'color' => '#4f46e5',
+                'children' => $eshopChildren->values()->all(),
+                'count' => $eshopChildren->count(),
+                'route' => null,
+            ];
+        }
+
+        return view('eshop360::hierarchical-menu.admin', compact('adminSections', 'instance'));
+    }
+
+    /**
+     * Administration sub-section — shows action tiles for a specific admin section.
+     */
+    public function adminSection(Request $request, string $slug, string $section)
+    {
+        $user = auth()->user();
+        abort_unless($this->channelAccess->isHubAdmin($user), 403);
+
+        $instance = CurrentInstance::get();
+        $registry = app(HookManager::class)->registry();
+        $allMenus = $registry->menu();
+
+        $parent = $allMenus->first(fn ($item) => $item->id === $section);
+        if (!$parent) {
+            abort(404, 'Section introuvable');
+        }
+
+        $children = $allMenus->filter(fn ($child) => $child->parentId === $section)->values()->all();
+
+        $sectionData = [
+            'key' => $parent->id,
+            'label' => $parent->label,
+            'icon' => $parent->icon ?? 'ti ti-settings',
+            'color' => '#475569',
+            'children' => $children,
+            'count' => count($children),
+        ];
+
+        return view('eshop360::hierarchical-menu.admin-section', compact('sectionData', 'instance'));
     }
 }
