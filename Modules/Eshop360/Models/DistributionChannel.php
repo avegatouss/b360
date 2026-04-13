@@ -24,6 +24,7 @@ class DistributionChannel extends Model
         'code',
         'description',
         'is_active',
+        'is_hub',
         'margin_rate',
         'buy_rate',
         'debt_share',
@@ -37,6 +38,7 @@ class DistributionChannel extends Model
 
     protected $casts = [
         'is_active' => 'boolean',
+        'is_hub' => 'boolean',
         'margin_rate' => 'decimal:4',
         'buy_rate' => 'decimal:4',
         'debt_share' => 'decimal:4',
