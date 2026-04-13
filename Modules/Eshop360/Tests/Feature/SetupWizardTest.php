@@ -79,4 +79,62 @@ final class SetupWizardTest extends TestCase
         $this->assertNotNull($hub);
         $this->assertSame('Mon Hub', $hub->name);
     }
+
+    public function test_wizard_with_channels_creates_hub_and_channels(): void
+    {
+        [$instance, $admin] = $this->setUpInstanceWithAdmin();
+
+        // Step 1
+        $this->post("/i/{$instance->slug}/setup/hub", [
+            'name' => 'Hub Test',
+            'code' => 'HUB',
+            'theme_color' => '#4f46e5',
+            'features' => ['sales' => '1', 'stock' => '1'],
+        ]);
+
+        // Step 2 with channels
+        $this->post("/i/{$instance->slug}/setup/channels", [
+            'channels' => [
+                [
+                    'name' => 'Canal A',
+                    'code' => 'CA',
+                    'theme_color' => '#2c3e50',
+                    'margin_rate' => '0.13',
+                    'features' => ['sales' => '1', 'stock' => '0'],
+                ],
+            ],
+        ]);
+
+        // Step 3
+        $this->post("/i/{$instance->slug}/setup/settings", [
+            'company_name' => 'Multi Corp',
+            'currency_symbol' => 'FCFA',
+            'pos_layout' => 'layout1',
+            'payment_methods' => ['cash'],
+        ]);
+
+        // Verify hub + 1 channel = 2 total
+        $count = DistributionChannel::withoutGlobalScopes()
+            ->where('instance_id', $instance->id)
+            ->count();
+        $this->assertSame(2, $count);
+
+        // Channel is not hub
+        $channel = DistributionChannel::withoutGlobalScopes()
+            ->where('instance_id', $instance->id)
+            ->where('is_hub', false)
+            ->first();
+        $this->assertSame('Canal A', $channel->name);
+    }
+
+    public function test_settings_redirect_to_wizard_when_enabling_hierarchical_menu(): void
+    {
+        [$instance, $admin] = $this->setUpInstanceWithAdmin();
+
+        $response = $this->put("/i/{$instance->slug}/eshop-settings/general", [
+            'hierarchical_menu' => 1,
+        ]);
+
+        $response->assertRedirect("/i/{$instance->slug}/setup/hub");
+    }
 }
