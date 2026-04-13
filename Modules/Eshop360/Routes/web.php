@@ -75,6 +75,7 @@ use Modules\Eshop360\Http\Controllers\Notification\NotificationController;
 use Modules\Eshop360\Http\Controllers\Printing\ReceiptTemplateController;
 use Modules\Eshop360\Http\Controllers\Printing\PrinterController;
 use Modules\Eshop360\Http\Controllers\Navigation\HierarchicalMenuController;
+use Modules\Eshop360\Http\Controllers\Setup\SetupWizardController;
 use Modules\Eshop360\Http\Middleware\ApplyCurrentInstanceUrlDefaults;
 
 /*
@@ -105,6 +106,16 @@ Route::middleware([
         Route::get('/', [HierarchicalMenuController::class, 'home'])->name('home');
         Route::get('/{channelSlug}', [HierarchicalMenuController::class, 'modules'])->name('modules');
         Route::get('/{channelSlug}/{moduleKey}', [HierarchicalMenuController::class, 'actions'])->name('actions');
+    });
+
+    // ─── Setup Wizard ─────────────────────────────
+    Route::prefix('setup')->name('eshop360.setup.')->middleware('can:eshop.settings.manage')->group(function () {
+        Route::get('/hub', [SetupWizardController::class, 'hub'])->name('hub');
+        Route::post('/hub', [SetupWizardController::class, 'storeHub'])->name('hub.store');
+        Route::get('/channels', [SetupWizardController::class, 'channels'])->name('channels');
+        Route::post('/channels', [SetupWizardController::class, 'storeChannels'])->name('channels.store');
+        Route::get('/settings', [SetupWizardController::class, 'settings'])->name('settings');
+        Route::post('/settings', [SetupWizardController::class, 'storeSettings'])->name('settings.store');
     });
 
     // ─── POS Terminal ──────────────────────────────
