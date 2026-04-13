@@ -154,23 +154,6 @@ final class HierarchicalMenuService
     }
 
     /**
-     * Check if a slug corresponds to the hub channel.
-     */
-    public function isGlobalChannel(string $slug): bool
-    {
-        $instance = CurrentInstance::get();
-        if (!$instance) {
-            return false;
-        }
-
-        return DistributionChannel::withoutGlobalScopes()
-            ->where('instance_id', $instance->id)
-            ->where('slug', $slug)
-            ->where('is_hub', true)
-            ->exists();
-    }
-
-    /**
      * Find a channel by slug.
      */
     public function findChannel(string $slug): ?DistributionChannel

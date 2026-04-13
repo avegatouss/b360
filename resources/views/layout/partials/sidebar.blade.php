@@ -4,7 +4,7 @@
             @php
                 $__instanceSlug = Modules\Core\Support\CurrentInstance::get()?->slug ?? '';
                 $__channel = $currentChannel ?? \Modules\Eshop360\Support\CurrentChannel::get();
-                $__isScoped = $__channel && $__channel->slug !== \Modules\Eshop360\Services\HierarchicalMenuService::GLOBAL_CHANNEL_SLUG;
+                $__isScoped = $__channel && !$__channel->is_hub;
                 $__themeColor = $__channel->portal_settings['theme_color'] ?? '#4f46e5';
                 $__navTarget = $__channel ? route('eshop360.nav.modules', [$__instanceSlug, $__channel->slug]) : route('eshop360.nav.home', $__instanceSlug);
                 $__logoutUrl = route('instance.logout', $__instanceSlug);

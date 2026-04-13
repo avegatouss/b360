@@ -100,7 +100,7 @@ final class CurrentChannel
         if (!$channel) {
             return true; // No channel selected = hub mode
         }
-        return $channel->slug === \Modules\Eshop360\Services\HierarchicalMenuService::GLOBAL_CHANNEL_SLUG;
+        return (bool) $channel->is_hub;
     }
 
     /**
