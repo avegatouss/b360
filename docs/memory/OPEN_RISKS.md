@@ -6,15 +6,6 @@
 
 ## CRITIQUE
 
-### R-001 — Race condition sur le stock
-
-- **Source** : docs/AUDIT-ARCHITECTURE-GO-LIVE.md ISSUE-01
-- **Module** : Eshop360 (StockService, OrderService)
-- **Impact** : stock négatif, commandes non honorables
-- **Statut** : à corriger
-- **Mitigation prévue** : `lockForUpdate()` + transaction sur tous les `adjustStock()`
-- **Tests à ajouter** : tests de concurrence (2 requêtes simultanées)
-
 ### R-002 — Webhook paiement traité deux fois
 
 - **Source** : ISSUE-04
@@ -56,6 +47,17 @@
 - **Plan** : migration documentée dans `docs/Ins/b360_evolution_strategy.md` §2.3
 
 ## FERMÉ
+
+### R-001 — Race condition sur le stock (fermée 2026-04-22)
+
+- **Source** : `docs/AUDIT-ARCHITECTURE-GO-LIVE.md` ISSUE-01
+- **Constat audit** : la mitigation était **déjà codée** (`StockService::adjustStock()` utilise `lockForUpdate()` dans `DB::transaction()` avec refresh et guard `quantity >= 0`) depuis la migration `2026_04_04_100001`. Ce qui manquait : la preuve et la traçabilité.
+- **Ajouts** :
+  - `Modules/Eshop360/Tests/Unit/StockServiceConcurrencyTest.php` — 5 tests : structure (lock+transaction), séquentiel anti-négatif, rollback, multi-tenant, insufficient-first-sale.
+  - `Modules/Eshop360/Tests/Feature/StockCheckConstraintTest.php` — vérifie la présence de la contrainte CHECK SQL en MySQL (skip SQLite).
+  - `docs/adr/ADR-002-stock-concurrency-strategy.md` — stratégie de défense en profondeur (lock applicatif + CHECK SQGBD + unique schéma).
+- **Limite connue** : SQLite :memory: (phpunit.xml) ne reproduit pas une race physique multi-process. Les tests valident la structure du code et le comportement séquentiel. Un stress-test MySQL parallèle reste un "nice to have" (hors scope tests unitaires).
+- **Commit** : branche `test/eshop360-stock-concurrency-coverage`
 
 ### R-102 — FeatureGate deprecated retiré (fermé 2026-04-22)
 
