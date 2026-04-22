@@ -1,8 +1,8 @@
 # CURRENT_STATE — B360
 
-> Fichier auto-généré par `make memory-refresh`. Dernière mise à jour : **2026-04-22 14:57:35    **
-> Branche analysée : `chore/install-vibecoding-pack`
-> HEAD : `dcdeff7`
+> Fichier auto-généré par `make memory-refresh`. Dernière mise à jour : **2026-04-22 19:08:13    **
+> Branche analysée : `refactor/core-unify-belongs-to-instance`
+> HEAD : `fd31585`
 
 ---
 

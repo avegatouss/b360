@@ -13,6 +13,33 @@
 
 ---
 
+## CHG-2026-04-22-001 — R-104 fermé : trait BelongsToInstance unifié
+
+- **Date** : 2026-04-22
+- **Type** : décommissionnement
+- **Modules concernés** : Core (trait canonique), app/ (suppression alias)
+- **Impact** : faible (l'alias était orphelin, 0 usage applicatif)
+- **Breaking change** : non
+
+### Actions appliquées
+
+- Suppression de `app/Models/Concerns/BelongsToInstance.php` (alias 4 lignes `use \Modules\Core\Database\Traits\BelongsToInstance`)
+- Nettoyage du PHPDoc et des commentaires obsolètes dans `Modules/Core/Database/Traits/BelongsToInstance.php` (le trait canonique ne mentionne plus un alias qui n'existe plus)
+- Nettoyage de l'entrée obsolète `App\Models\Concerns\BelongsToInstance` dans `tools/deptrac/baseline.yaml`
+- Mise à jour `docs/memory/OPEN_RISKS.md` (R-104 déplacé en FERMÉ) et `docs/memory/RECENT_DECISIONS.md`
+
+### Statut
+
+- [x] Implémenté
+- [x] Documenté
+- [x] Testé (`InstanceScopeSafetyTest` 2/2, suite complète 626 passed — 2 échecs pré-existants sans lien)
+
+### Lien
+
+- PR : (n° à renseigner)
+
+---
+
 ## CHG-2026-04-19-001 — Installation du pack vibecoding
 
 - **Date** : 2026-04-19

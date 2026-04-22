@@ -1,6 +1,6 @@
 # MODULE_INDEX — B360
 
-> Index machine-friendly des modules. Mise à jour : **2026-04-22 14:57:35    **
+> Index machine-friendly des modules. Mise à jour : **2026-04-22 19:08:13    **
 
 ---
 
