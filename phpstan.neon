@@ -71,14 +71,14 @@ parameters:
     #     uselessCast: true
     #     overwriteVariablesWithLoop: true
 
-## Règle custom désactivée pour baseline initiale — réactiver une fois l'autoload configuré
-## services:
-##     -
-##         class: B360\PHPStan\Rules\NoDirectCrossModuleTableAccess
-##         tags:
-##             - phpstan.rules.rule
-##         arguments:
-##             tablePrefixToNamespace:
-##                 eshop_: 'Modules\\Eshop360'
-##                 billing_: 'Modules\\Billing'
-##                 core_: 'Modules\\Core'
+services:
+    # Règle custom : interdit DB::table('prefix_*') hors du namespace propriétaire
+    -
+        class: B360\PHPStan\Rules\NoDirectCrossModuleTableAccess
+        tags:
+            - phpstan.rules.rule
+        arguments:
+            tablePrefixToNamespace:
+                eshop_: 'Modules\Eshop360'
+                billing_: 'Modules\Billing'
+                core_: 'Modules\Core'
