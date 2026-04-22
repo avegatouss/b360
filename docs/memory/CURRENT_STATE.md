@@ -1,8 +1,8 @@
 # CURRENT_STATE — B360
 
-> Fichier auto-généré par `make memory-refresh`. Dernière mise à jour : **2026-04-22 19:08:13    **
-> Branche analysée : `refactor/core-unify-belongs-to-instance`
-> HEAD : `fd31585`
+> Fichier auto-généré par `make memory-refresh`. Dernière mise à jour : **2026-04-22 20:08:31    **
+> Branche analysée : `chore/pack-suspense-fixes`
+> HEAD : `1bdbf0b`
 
 ---
 

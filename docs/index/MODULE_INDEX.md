@@ -1,6 +1,6 @@
 # MODULE_INDEX — B360
 
-> Index machine-friendly des modules. Mise à jour : **2026-04-22 19:08:13    **
+> Index machine-friendly des modules. Mise à jour : **2026-04-22 20:08:31    **
 
 ---
 
@@ -69,7 +69,7 @@
 - **Chemin** : `Modules/Eshop360/`
 - **Modèles** : 90
 - **Contrôleurs** : 81
-- **Services** : 54
+- **Services** : 53
 - **Migrations** : 144
 - **Tests** : oui (`Modules/Eshop360/Tests`)
 - **module.json** : oui
