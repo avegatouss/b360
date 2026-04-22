@@ -49,13 +49,6 @@
 - **Plan** : extraction en sous-domaines (Catalog, Pricing, Inventory, Sales, Finance, CRM, Channel)
 - **Statut** : roadmap définie, exécution à planifier
 
-### R-102 — Double système FeatureGate / FeatureRegistry
-
-- **Module** : Eshop360 (FeatureGate deprecated) vs Billing (FeatureRegistry actif)
-- **Impact** : confusion, double maintenance
-- **Plan** : migrer tous les appels vers FeatureRegistry, supprimer FeatureGate
-- **Statut** : à programmer
-
 ### R-103 — Double système Codifarm / DistributionChannel
 
 - **Tables** : `eshop_codifarm_margin_config` (legacy SAPHIR) vs `eshop_distribution_channels` (actif)
@@ -63,6 +56,12 @@
 - **Plan** : migration documentée dans `docs/Ins/b360_evolution_strategy.md` §2.3
 
 ## FERMÉ
+
+### R-102 — FeatureGate deprecated retiré (fermé 2026-04-22)
+
+- **Résolution** : suppression de `Modules/Eshop360/Services/FeatureGate.php`. La classe était déjà un wrapper @deprecated délégant à `FeatureRegistry` (Billing), sans appelant production (0 import hors le test unitaire qui l'exerçait directement). Le test obsolète `test_feature_gate_service_returns_free_features_without_instance` supprimé, les 5 autres tests FeatureRegistry conservés.
+- **Canonique** : `Modules\Billing\Services\FeatureRegistry` + `EnsureFeature` middleware, features registrées via `HookRegistry` dans `Eshop360HooksProvider::registerBillableFeatures()` (48 items).
+- **Commit** : branche `refactor/eshop360-remove-feature-gate`
 
 ### R-104 — Trait BelongsToInstance dupliqué (fermé 2026-04-22)
 

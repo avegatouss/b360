@@ -5,6 +5,13 @@
 
 ---
 
+## 2026-04-22 — R-102 fermé : retrait de FeatureGate deprecated
+
+- **Décision** : suppression de `Modules\Eshop360\Services\FeatureGate` (wrapper @deprecated, 0 appelant production)
+- **Canonique** : `Modules\Billing\Services\FeatureRegistry` (source HookRegistry, 48 features Eshop360 registrées), middleware `EnsureFeature`
+- **Validation** : suite pest complète doit rester ≥ 625 passed (1 test obsolète supprimé)
+- **Source** : lot du pack vibecoding, branche `refactor/eshop360-remove-feature-gate`, audit E-10 du comparatif
+
 ## 2026-04-22 — R-104 fermé : trait BelongsToInstance unifié
 
 - **Décision** : suppression de `app/Models/Concerns/BelongsToInstance.php` (alias orphelin 0 usage)
