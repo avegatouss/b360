@@ -6,14 +6,6 @@
 
 ## CRITIQUE
 
-### R-002 — Webhook paiement traité deux fois
-
-- **Source** : ISSUE-04
-- **Module** : Billing, Eshop360 (paiements)
-- **Impact** : double comptabilisation
-- **Statut** : à corriger
-- **Mitigation prévue** : table `webhook_events` avec contrainte unique sur (provider, event_id)
-
 ### R-003 — Solde portefeuille / compte négatif
 
 - **Source** : ISSUE-03
@@ -28,7 +20,6 @@
 - **Module** : Eshop360 (HR, EmployeeCommission)
 - **Impact** : sur-paiement RH
 - **Statut** : à investiguer
-
 
 ## MAJEUR
 
@@ -47,6 +38,18 @@
 - **Plan** : migration documentée dans `docs/Ins/b360_evolution_strategy.md` §2.3
 
 ## FERMÉ
+
+### R-002 — Webhook paiement traité deux fois (fermée 2026-04-22)
+
+- **Source** : `docs/AUDIT-ARCHITECTURE-GO-LIVE.md` ISSUE-04
+- **Constat** : deux surfaces distinctes. Billing `WebhookController` n'avait aucune protection (pas de colonne d'idempotence, pas d'unique, aucun guard). Eshop360 `WebhookService` avait une protection partielle (colonne `deduplication_key` + check applicatif, mais pas de contrainte UNIQUE DB → race window).
+- **Résolution** : défense en profondeur 3 couches (UNIQUE SGBD + guard applicatif + HMAC signature, voir ADR-003).
+  - Billing : migration `2026_04_22_100001` ajoute `billing_webhook_logs.idempotency_key VARCHAR(128) NULLABLE UNIQUE`. `WebhookController::handle()` calcule une clé stable (préfixée par gateway, priorité `payload.id`/`event_id`/`transaction_id`/`cpm_trans_id`/fallback hash du corps) puis wrap la création du log dans un try/catch `UniqueConstraintViolationException` → replay retourne 200 OK sans retraiter.
+  - Eshop360 : migration `2026_04_22_100002` convertit l'index existant sur `eshop_webhook_logs.deduplication_key` en contrainte UNIQUE (ferme la race window du check applicatif).
+- **Tests** : `Modules/Billing/Tests/Feature/WebhookIdempotenceTest` (5 tests) + `Modules/Eshop360/Tests/Feature/WebhookServiceIdempotenceTest` (2 tests, complète le test applicatif existant `P0SafetyGuardsTest::test_webhook_duplique_est_ignore`).
+- **ADR** : `docs/adr/ADR-003-webhook-idempotency-strategy.md`.
+- **Effet de bord** : `Modules\Billing\Services\GatewayManager` dé-finalisé pour permettre le mocking en test (la classe reste singleton par DI, impact pratique nul).
+- **Commit** : branche `feat/billing-webhook-idempotence`.
 
 ### R-001 — Race condition sur le stock (fermée 2026-04-22)
 

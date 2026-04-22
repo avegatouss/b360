@@ -13,6 +13,51 @@
 
 ---
 
+## CHG-2026-04-22-004 — R-002 fermé : idempotence webhooks (Billing + Eshop360)
+
+- **Date** : 2026-04-22
+- **Type** : architecture (nouvelle garantie de correction + couverture tests)
+- **Modules concernés** : Billing (WebhookController, migration, Model), Eshop360 (migration UNIQUE)
+- **Impact** : moyen — nouvelle colonne + contrainte UNIQUE sur 2 tables de logs, modification d'un controller webhook critique (L1)
+- **Breaking change** : non (colonnes nullables, rétrocompatibilité préservée)
+
+### Actions appliquées
+
+- Migration `Modules/Billing/Database/Migrations/2026_04_22_100001_add_idempotency_key_to_billing_webhook_logs` : ajoute `idempotency_key VARCHAR(128) NULLABLE UNIQUE` sur `billing_webhook_logs`.
+- Migration `Modules/Eshop360/Database/Migrations/2026_04_22_100002_add_unique_to_webhook_deduplication_key` : convertit l'index existant sur `eshop_webhook_logs.deduplication_key` (posé par la migration P0 `2026_04_04_200001`) en contrainte UNIQUE. Branche SQLite-safe (skip du drop d'index).
+- `Modules/Billing/Http/Controllers/WebhookController.php` : calcul d'une clé idempotence stable (priorité `payload.id` / `event_id` / `transaction_id` / `cpm_trans_id` / fallback `hash('sha256', raw_body)`, préfixée par le slug de la passerelle et tronquée à 128 caractères), guard `try/catch UniqueConstraintViolationException` → replay détecté = `200 OK (replay)` sans appel au GatewayManager ni à `updatePaymentStatus()`.
+- `Modules/Billing/Models/WebhookLog.php` : ajout de `idempotency_key` dans `$fillable`.
+- `Modules/Billing/Services/GatewayManager.php` : retrait du modificateur `final` pour permettre le mocking dans les tests feature (la classe reste singleton par DI, impact pratique nul — non exposée aux clients pour extension).
+- Ajout `Modules/Billing/Tests/Feature/WebhookIdempotenceTest.php` (5 tests) : replay ne re-traite pas Payment.paid_at, fallback hash, événements distincts = logs distincts, webhook malformé journalisé 400, contrainte UNIQUE DB enforcée.
+- Ajout `Modules/Eshop360/Tests/Feature/WebhookServiceIdempotenceTest.php` (2 tests) : UNIQUE enforcement côté DB, coexistence de `deduplication_key` NULL multiples (rétrocompat).
+- ADR `docs/adr/ADR-003-webhook-idempotency-strategy.md` : défense en profondeur 3 couches (UNIQUE SGBD + guard applicatif fast-path + HMAC signature), 4 alternatives rejetées (guard applicatif seul, table satellite, queue idempotente externe, verrou Redis distribué).
+- R-002 déplacé de CRITIQUE vers FERMÉ dans `docs/memory/OPEN_RISKS.md` ; entrée 2026-04-22 dans `RECENT_DECISIONS.md`.
+
+### Statut
+
+- [x] Implémenté (code + migrations)
+- [x] Documenté (ADR-003)
+- [x] Testé (7 tests nouveaux, suite verte)
+
+### IMPACT_ANALYSIS (zone L1 Billing webhooks + multi-tenant)
+
+- **Périmètre** : ajout d'un guard idempotence avant tout traitement métier + contrainte DB UNIQUE. Aucun changement de la logique de `updatePaymentStatus()` / `markCompleted()` / GatewayManager webhook verification / signature HMAC.
+- **Contrat runtime** : inchangé pour les webhooks valides et uniques. Un webhook **replay** retourne désormais `200 OK (replay)` au lieu de re-déclencher `Payment.status = completed`, `Payment.paid_at = now()`, et les éventuels Observers aval. C'est le comportement attendu par R-002.
+- **Concurrence** : la contrainte UNIQUE au niveau SGBD garantit qu'aucune race ne peut produire deux logs avec la même clé, même si le check applicatif (Eshop360) ou la création optimiste (Billing) sont contournés par deux requêtes simultanées.
+- **Multi-tenant** : `billing_webhook_logs.instance_id` renseigné post-vérification. La clé idempotence est globale (inclut le slug de la passerelle), donc résistante aux collisions inter-instances — un même `event_id` ne peut pas venir de deux instances réelles sur la même passerelle.
+- **Permissions** : non impactées — les endpoints webhook sont publics par conception (callback des gateways).
+- **Idempotence** : le sujet lui-même de ce lot.
+- **Rollback** : `git revert` + `php artisan migrate:rollback` (les migrations ont `down()` qui supprime proprement la colonne / restaure l'index non-unique).
+- **Garde future** : toute PR qui retirerait le `try/catch UniqueConstraintViolationException` ou la contrainte UNIQUE casserait les tests `WebhookIdempotenceTest::test_webhook_replay_does_not_reprocess_payment` et `WebhookServiceIdempotenceTest::test_database_enforces_unique_deduplication_key`.
+
+### Lien
+
+- ADR : `docs/adr/ADR-003-webhook-idempotency-strategy.md`
+- Audit source : `docs/AUDIT-ARCHITECTURE-GO-LIVE.md` ISSUE-04
+- PR : (n° à renseigner)
+
+---
+
 ## CHG-2026-04-22-003 — R-001 fermé : stratégie de concurrence stock validée
 
 - **Date** : 2026-04-22
