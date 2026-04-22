@@ -13,6 +13,33 @@
 
 ---
 
+## CHG-2026-04-22-002 — R-102 fermé : retrait de FeatureGate deprecated
+
+- **Date** : 2026-04-22
+- **Type** : décommissionnement
+- **Modules concernés** : Eshop360 (suppression classe wrapper), Billing (source canonique inchangée)
+- **Impact** : faible (wrapper sans appelant production, seule référence dans le test qui l'exerçait directement)
+- **Breaking change** : non
+
+### Actions appliquées
+
+- Suppression de `Modules/Eshop360/Services/FeatureGate.php` (146 lignes : wrapper `@deprecated` délégant à `FeatureRegistry` + constantes `FREE_FEATURES`/`PAID_FEATURES` obsolètes, remplacées par la registration dynamique via `Eshop360HooksProvider::registerBillableFeatures()`)
+- `Modules/Eshop360/Tests/Feature/FeatureGatingTest.php` : suppression du test `test_feature_gate_service_returns_free_features_without_instance` + retrait de l'import obsolète, nettoyage des commentaires résiduels
+- `Modules/Eshop360/Providers/Eshop360HooksProvider.php` : commentaire rafraîchi (ne référence plus "FeatureGate constants")
+- Mise à jour `docs/memory/OPEN_RISKS.md` (R-102 → FERMÉ) et `docs/memory/RECENT_DECISIONS.md`
+
+### Statut
+
+- [x] Implémenté
+- [x] Documenté
+- [x] Testé (suite pest ≥ 625 passed)
+
+### Lien
+
+- PR : (n° à renseigner)
+
+---
+
 ## CHG-2026-04-22-001 — R-104 fermé : trait BelongsToInstance unifié
 
 - **Date** : 2026-04-22

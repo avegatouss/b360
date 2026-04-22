@@ -11,8 +11,10 @@ use Modules\Core\Hooks\DTO\PermissionGroup;
 use Modules\Core\Hooks\DTO\SettingsGroup;
 use Modules\Core\Hooks\Registry\HookRegistry;
 use Modules\Eshop360\Database\Seeders\DemoCatalogPharmaSeeder;
+use Modules\Eshop360\Database\Seeders\DemoChannelPortalSeeder;
 use Modules\Eshop360\Database\Seeders\DemoChannelsSeeder;
 use Modules\Eshop360\Database\Seeders\DemoCommunicationSeeder;
+use Modules\Eshop360\Database\Seeders\DemoCustomerPortalSeeder;
 use Modules\Eshop360\Database\Seeders\DemoCustomersSeeder;
 use Modules\Eshop360\Database\Seeders\DemoFinanceSeeder;
 use Modules\Eshop360\Database\Seeders\DemoHRSeeder;
@@ -24,8 +26,6 @@ use Modules\Eshop360\Database\Seeders\DemoPromotionsSeeder;
 use Modules\Eshop360\Database\Seeders\DemoSettingsSeeder;
 use Modules\Eshop360\Database\Seeders\DemoSuppliersSeeder;
 use Modules\Eshop360\Database\Seeders\DemoWebhooksSeeder;
-use Modules\Eshop360\Database\Seeders\DemoCustomerPortalSeeder;
-use Modules\Eshop360\Database\Seeders\DemoChannelPortalSeeder;
 
 final class Eshop360HooksProvider implements RegistersHooks
 {
@@ -198,7 +198,7 @@ final class Eshop360HooksProvider implements RegistersHooks
             priority: 800,
             requiredModule: 'Eshop360',
             group: 'main',
-            visibleWhen: fn ($user, $instance) => $user && !$user->hasRole('user'),
+            visibleWhen: fn ($user, $instance) => $user && ! $user->hasRole('user'),
         ));
 
         $registry->addMenu(new MenuItem(
@@ -1360,7 +1360,7 @@ final class Eshop360HooksProvider implements RegistersHooks
     }
 
     /**
-     * Register billable features — replaces hardcoded FeatureGate constants.
+     * Register billable features in HookRegistry (source of truth).
      * Each feature is either 'free' (always available) or 'paid' (requires plan).
      */
     private function registerBillableFeatures(HookRegistry $registry): void
