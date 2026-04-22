@@ -5,6 +5,15 @@
 
 ---
 
+## 2026-04-22 — R-002 fermé : idempotence webhooks (Billing + Eshop360)
+
+- **Décision** : défense en profondeur à 3 couches (UNIQUE SGBD + guard applicatif fast-path + HMAC signature) appliquée uniformément aux deux surfaces webhook.
+- **Billing** : ajout de `billing_webhook_logs.idempotency_key VARCHAR(128) NULLABLE UNIQUE`, guard `try/catch UniqueConstraintViolationException` dans `WebhookController::handle()` — replay retourne 200 OK sans retraiter.
+- **Eshop360** : index existant sur `deduplication_key` converti en UNIQUE, ferme la race window du check applicatif de `WebhookService::dispatch()`.
+- **ADR** : `docs/adr/ADR-003-webhook-idempotency-strategy.md`.
+- **Effet de bord** : `GatewayManager` dé-finalisé pour permettre le mocking en test.
+- **Source** : lot L1 pilote, branche `feat/billing-webhook-idempotence`, audit ISSUE-04.
+
 ## 2026-04-22 — R-001 fermé : stratégie de concurrence stock validée
 
 - **Décision** : le risque R-001 (race condition stock) était en réalité déjà corrigé en code (lockForUpdate + DB::transaction + refresh + guard) depuis l'audit go-live ; le lot consiste à documenter et tester.

@@ -2,6 +2,7 @@
 
 namespace Modules\Billing\Http\Controllers;
 
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
@@ -13,6 +14,12 @@ use Modules\Billing\Services\InvoiceManager;
 /**
  * Centralized webhook handler for all payment gateways.
  * Route: POST /api/billing/webhooks/{gateway}
+ *
+ * R-002 — Idempotence webhook :
+ *   Chaque webhook reçu est dédupliqué via une clé idempotency
+ *   (UNIQUE sur billing_webhook_logs.idempotency_key). Un retry de la
+ *   passerelle (Stripe/CinetPay/etc.) est détecté et ne re-déclenche
+ *   pas `updatePaymentStatus()`. Voir ADR-003.
  */
 final class WebhookController extends Controller
 {
@@ -31,11 +38,21 @@ final class WebhookController extends Controller
         // Store raw body for signature verification
         $payload['_raw_body'] = $request->getContent();
 
-        // Log the webhook
-        $log = WebhookLog::create([
-            'gateway_slug' => $gateway,
-            'payload' => $payload,
-        ]);
+        $idempotencyKey = $this->buildIdempotencyKey($gateway, $payload, $flatHeaders);
+
+        // Idempotence : premier enregistrement gagne. Un retry voit la
+        // contrainte UNIQUE échouer et sort immédiatement en 200 OK sans
+        // re-traiter le paiement. Les 2ᵉ + visibles dans les logs comme
+        // le record initial — pas de pollution.
+        try {
+            $log = WebhookLog::create([
+                'gateway_slug' => $gateway,
+                'idempotency_key' => $idempotencyKey,
+                'payload' => $payload,
+            ]);
+        } catch (UniqueConstraintViolationException) {
+            return response('OK (replay)', 200);
+        }
 
         // Verify webhook
         $result = $this->gatewayManager->handleWebhook($gateway, $payload, $flatHeaders);
@@ -53,15 +70,16 @@ final class WebhookController extends Controller
             'processed_at' => now(),
         ]);
 
-        if (!$result->valid) {
+        if (! $result->valid) {
             return response('Invalid webhook', 400);
         }
 
         // Find the payment by reference
         $payment = $this->findPayment($result->internalReference, $result->gatewayReference);
 
-        if (!$payment) {
+        if (! $payment) {
             $log->update(['result->error' => 'Payment not found']);
+
             return response('Payment not found', 200); // 200 to avoid retries
         }
 
@@ -74,11 +92,47 @@ final class WebhookController extends Controller
         return response('OK', 200);
     }
 
+    /**
+     * Build a stable idempotency key for the incoming webhook.
+     *
+     * Preferred source: explicit event id (Stripe `id`, CinetPay `cpm_trans_id`,
+     * generic `event_id` / `transaction_id`), combined with the gateway slug
+     * so the same id from two different gateways never collides.
+     *
+     * Fallback: SHA-256 of the raw body — covers edge cases where a gateway
+     * does not expose a stable event id (manual gateway, legacy integrations).
+     *
+     * @param  array<string, mixed>  $payload
+     * @param  array<string, mixed>  $headers
+     */
+    private function buildIdempotencyKey(string $gateway, array $payload, array $headers): string
+    {
+        $candidates = [
+            $payload['id'] ?? null,
+            $payload['event_id'] ?? null,
+            $payload['transaction_id'] ?? null,
+            $payload['cpm_trans_id'] ?? null,
+            $headers['stripe-signature'] ?? null,
+        ];
+
+        foreach ($candidates as $candidate) {
+            if (is_string($candidate) && $candidate !== '') {
+                return substr("{$gateway}:{$candidate}", 0, 128);
+            }
+        }
+
+        $rawBody = $payload['_raw_body'] ?? '';
+
+        return substr("{$gateway}:body:".hash('sha256', (string) $rawBody), 0, 128);
+    }
+
     private function findPayment(?string $internalRef, ?string $gatewayRef): ?Payment
     {
         if ($internalRef) {
             $payment = Payment::where('reference', $internalRef)->first();
-            if ($payment) return $payment;
+            if ($payment) {
+                return $payment;
+            }
         }
 
         if ($gatewayRef) {
@@ -111,7 +165,7 @@ final class WebhookController extends Controller
 
         // Mark the invoice as paid
         $invoice = $payment->invoice;
-        if ($invoice && !$invoice->isPaid()) {
+        if ($invoice && ! $invoice->isPaid()) {
             $invoice->update([
                 'status' => 'paid',
                 'paid_at' => now(),

@@ -7,10 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 class WebhookLog extends Model
 {
     protected $connection = 'system';
+
     protected $table = 'billing_webhook_logs';
 
     protected $fillable = [
         'gateway_slug',
+        'idempotency_key',
         'instance_id',
         'event_type',
         'payload',

@@ -17,8 +17,13 @@ use RuntimeException;
  *
  * Gateways are registered as PaymentGatewayDefinition DTOs.
  * Credentials are stored per-instance in the settings table.
+ *
+ * Note : non-final pour permettre le mocking dans WebhookIdempotenceTest
+ * (GatewayManager est injecté dans WebhookController — un double de test
+ * est requis pour exercer le chemin idempotence sans toucher à un vrai
+ * driver de paiement).
  */
-final class GatewayManager
+class GatewayManager
 {
     /** @var array<string, PaymentGatewayInterface> */
     private array $resolved = [];
@@ -40,12 +45,12 @@ final class GatewayManager
         }
 
         $definition = $this->definition($gatewayId);
-        if (!$definition) {
+        if (! $definition) {
             throw new RuntimeException("Payment gateway '{$gatewayId}' is not registered.");
         }
 
         $driverClass = $definition->driverClass;
-        if (!class_exists($driverClass)) {
+        if (! class_exists($driverClass)) {
             throw new RuntimeException("Gateway driver class '{$driverClass}' not found.");
         }
 
@@ -157,7 +162,7 @@ final class GatewayManager
     {
         $driver = $this->resolve($gatewayId, $instanceId);
 
-        if (!$driver->isConfigured()) {
+        if (! $driver->isConfigured()) {
             return new PaymentResponse(
                 success: false,
                 error: "La passerelle '{$gatewayId}' n'est pas configuree.",
@@ -174,12 +179,12 @@ final class GatewayManager
     {
         // For webhooks, we need to resolve without instance context initially
         $definition = $this->definition($gatewayId);
-        if (!$definition) {
+        if (! $definition) {
             return new WebhookResult(valid: false, error: "Unknown gateway: {$gatewayId}");
         }
 
         $driverClass = $definition->driverClass;
-        if (!class_exists($driverClass)) {
+        if (! class_exists($driverClass)) {
             return new WebhookResult(valid: false, error: "Driver not found: {$driverClass}");
         }
 
@@ -197,7 +202,7 @@ final class GatewayManager
         try {
             $driver = $this->resolve($gatewayId, $instanceId);
 
-            if (!$driver->isConfigured()) {
+            if (! $driver->isConfigured()) {
                 return ['success' => false, 'message' => 'Passerelle non configuree. Veuillez saisir les identifiants.'];
             }
 
