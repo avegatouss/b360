@@ -13,6 +13,53 @@
 
 ---
 
+## CHG-2026-04-22-003 — R-001 fermé : stratégie de concurrence stock validée
+
+- **Date** : 2026-04-22
+- **Type** : architecture (décision documentée, pas de changement de code productif)
+- **Modules concernés** : Eshop360 (StockService, tests)
+- **Impact** : faible — la mitigation (lockForUpdate + DB::transaction + guard) était déjà en code depuis la migration `2026_04_04_100001`. Le lot ajoute la traçabilité (ADR, tests, fermeture du risque).
+- **Breaking change** : non
+
+### Actions appliquées
+
+- Ajout de `Modules/Eshop360/Tests/Unit/StockServiceConcurrencyTest.php` (5 tests) :
+  - `test_adjust_stock_source_uses_lock_for_update_within_transaction` — test structurel qui verrouille la présence de `DB::transaction`, `Stock::lockForUpdate()`, `$stock->refresh()` et de la guard `newQuantity < 0` dans le code source. Toute PR supprimant ce pattern casse ce test.
+  - `test_sequential_adjust_stock_never_produces_negative_quantity` — scénario simulé (stock=5, 2 ventes de 3) : la 2ᵉ échoue car le lock + refresh voit quantité=2.
+  - `test_adjust_stock_rollback_on_insufficient_quantity` — vérifie qu'aucun StockMovement n'est persisté en cas d'échec.
+  - `test_adjust_stock_isolates_by_instance` — deux instances indépendantes, mutation sur A n'affecte pas B.
+  - `test_adjust_stock_throws_on_first_sale_with_insufficient_stock` — vente sur stock absent (firstOrCreate → 0) échoue proprement.
+- Ajout de `Modules/Eshop360/Tests/Feature/StockCheckConstraintTest.php` (2 tests) :
+  - migration `2026_04_04_100001` vérifiée structurellement (contenu SQL + branche no-op SQLite),
+  - contrainte CHECK `chk_quantity_non_negative` vérifiée dans `information_schema` si driver = MySQL (sinon skip).
+- Ajout de `docs/adr/ADR-002-stock-concurrency-strategy.md` — décision en profondeur 3 couches avec alternatives rejetées (version optimiste, contrainte SGBD seule, queue asynchrone) et contraintes imposées au futur.
+- R-001 déplacé de la section CRITIQUE vers FERMÉ dans `docs/memory/OPEN_RISKS.md`.
+
+### Statut
+
+- [x] Implémenté (code déjà en place depuis 2026-04-04)
+- [x] Documenté (ADR-002)
+- [x] Testé (5 unit + 2 feature passent sur SQLite, stress MySQL reporté)
+
+### IMPACT_ANALYSIS (zone L1 multi-tenant + stock transactionnel)
+
+- **Périmètre** : ajout de tests et d'une ADR. Aucune modification de code productif (`StockService.php`, migrations, contrôleurs appelants).
+- **Contrat runtime** : inchangé. Les 7 contrôleurs qui appelaient déjà `adjustStock()` continuent via le même chemin.
+- **Concurrence** : tests unitaires valident structure + comportement séquentiel. Concurrence réelle ne peut pas être reproduite sous SQLite (single-threaded, ignore FOR UPDATE).
+- **Multi-tenant** : explicitement testé (`test_adjust_stock_isolates_by_instance`).
+- **Permissions** : non impactées — le gating HTTP via middleware reste côté contrôleurs (hors scope service).
+- **Idempotence** : non applicable — le stock n'est pas triggé par webhook externe.
+- **Rollback** : `git revert` sans risque, pas de migration DB.
+- **Garde future** : le test structurel (grep dans le source de `StockService.php`) bloque toute PR qui retirerait `lockForUpdate`, `DB::transaction`, `refresh` ou la guard `newQuantity < 0`.
+
+### Lien
+
+- ADR : `docs/adr/ADR-002-stock-concurrency-strategy.md`
+- Audit source : `docs/AUDIT-ARCHITECTURE-GO-LIVE.md` ISSUE-01
+- PR : (n° à renseigner)
+
+---
+
 ## CHG-2026-04-22-002 — R-102 fermé : retrait de FeatureGate deprecated
 
 - **Date** : 2026-04-22

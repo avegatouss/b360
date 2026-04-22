@@ -5,6 +5,14 @@
 
 ---
 
+## 2026-04-22 — R-001 fermé : stratégie de concurrence stock validée
+
+- **Décision** : le risque R-001 (race condition stock) était en réalité déjà corrigé en code (lockForUpdate + DB::transaction + refresh + guard) depuis l'audit go-live ; le lot consiste à documenter et tester.
+- **ADR** : `docs/adr/ADR-002-stock-concurrency-strategy.md` — défense en profondeur 3 couches (lock applicatif + CHECK MySQL + UNIQUE schéma)
+- **Tests ajoutés** : 5 unit (structure, séquentiel, rollback, multi-tenant, insufficient-first-sale) + 2 feature (migration + CHECK MySQL)
+- **Limite assumée** : SQLite :memory: ne reproduit pas la race physique ; les tests unit valident la structure du code et le comportement séquentiel, pas la concurrence OS. Stress-test MySQL parallèle reporté.
+- **Source** : lot L1 pilote du pack vibecoding, branche `test/eshop360-stock-concurrency-coverage`
+
 ## 2026-04-22 — R-102 fermé : retrait de FeatureGate deprecated
 
 - **Décision** : suppression de `Modules\Eshop360\Services\FeatureGate` (wrapper @deprecated, 0 appelant production)
