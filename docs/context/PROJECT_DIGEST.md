@@ -1,7 +1,7 @@
 # PROJECT DIGEST — B360
 
 > Compression contextuelle pour les IA. Lis ce fichier en premier.
-> Mise à jour : **2026-04-22 19:08:13    **
+> Mise à jour : **2026-04-22 20:08:31    **
 
 ---
 

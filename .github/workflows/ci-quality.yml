@@ -1,13 +1,14 @@
-## .github/workflows/ci.yml
-## Pipeline qualité miroir du local (make qa)
+## .github/workflows/ci-quality.yml
+## Pipeline qualité (lint + analyse statique + architecture) miroir du local `make qa`.
+## Complémentaire de ci.yml qui gère les tests Pest avec services MySQL/Redis.
 
-name: CI
+name: Quality
 
 on:
   push:
-    branches: [main, develop, 'release/**', 'hotfix/**']
+    branches: [main, develop, base, 'release/**', 'hotfix/**']
   pull_request:
-    branches: [main, develop]
+    branches: [main, develop, base]
 
 permissions:
   contents: read

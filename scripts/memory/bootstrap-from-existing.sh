@@ -1,12 +1,27 @@
 #!/usr/bin/env bash
-# scripts/memory/bootstrap-from-existing.sh
+# scripts/memory/bootstrap-from-existing.sh [--force]
 # Génère la mémoire projet B360 à partir de la documentation et du code existants.
-# Idempotent : peut être relancé, écrase uniquement les fichiers générés.
+#
+# Par défaut : NON-DESTRUCTIF.
+#   - OPEN_RISKS.md et RECENT_DECISIONS.md contiennent les éditions manuelles
+#     (risques fermés, décisions récentes) et sont préservés s'ils existent déjà.
+#   - Les autres fichiers (CURRENT_STATE, PROJECT_DIGEST, MODULE_INDEX, etc.)
+#     sont régénérés car ils sont calculés depuis le code/git.
+#
+# Avec --force : écrase TOUS les fichiers (comportement du bootstrap initial).
+#   À n'utiliser qu'après sauvegarde manuelle.
 
 set -euo pipefail
 
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 cd "$REPO_ROOT"
+
+FORCE=""
+for arg in "$@"; do
+    case "$arg" in
+        --force|-f) FORCE=1 ;;
+    esac
+done
 
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -15,6 +30,17 @@ NC='\033[0m'
 
 log() { echo -e "${GREEN}[bootstrap-memory]${NC} $1"; }
 warn() { echo -e "${YELLOW}[bootstrap-memory]${NC} $1"; }
+
+# Préserve un fichier sensible (éditions manuelles) sauf si --force
+# Usage : if should_write "docs/memory/OPEN_RISKS.md"; then cat > ... fi
+should_write() {
+    local path="$1"
+    if [ -n "$FORCE" ] || [ ! -f "$path" ]; then
+        return 0
+    fi
+    warn "Préservé (édits manuels) : $path — utilise --force pour régénérer"
+    return 1
+}
 
 mkdir -p docs/memory docs/index docs/context docs/architecture docs/governance
 
@@ -153,8 +179,9 @@ Voir `docs/memory/RECENT_DECISIONS.md`.
 EOF
 
 # ════════════════════════════════════════════════════════════════════
-# 5. OPEN_RISKS.md (depuis l'audit existant)
+# 5. OPEN_RISKS.md (depuis l'audit existant) — préservé si édité manuellement
 # ════════════════════════════════════════════════════════════════════
+if should_write "docs/memory/OPEN_RISKS.md"; then
 log "Génération de docs/memory/OPEN_RISKS.md..."
 
 cat > docs/memory/OPEN_RISKS.md <<EOF
@@ -270,10 +297,12 @@ Chaque risque a :
 - Plan de mitigation
 - Lien vers le PR de résolution si en cours
 EOF
+fi
 
 # ════════════════════════════════════════════════════════════════════
-# 6. RECENT_DECISIONS.md
+# 6. RECENT_DECISIONS.md — préservé si édité manuellement
 # ════════════════════════════════════════════════════════════════════
+if should_write "docs/memory/RECENT_DECISIONS.md"; then
 log "Génération de docs/memory/RECENT_DECISIONS.md..."
 
 cat > docs/memory/RECENT_DECISIONS.md <<EOF
@@ -320,9 +349,10 @@ Chaque entrée :
 - Impact concret
 - Source (ADR, audit, conversation, PR)
 EOF
+fi
 
 # ════════════════════════════════════════════════════════════════════
-# 7. PROJECT_DIGEST.md (compression IA)
+# 7. PROJECT_DIGEST.md (compression IA) — regénéré (calculé depuis code/git)
 # ════════════════════════════════════════════════════════════════════
 log "Génération de docs/context/PROJECT_DIGEST.md..."
 

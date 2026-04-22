@@ -27,7 +27,7 @@
         "nunomaduro/phpinsights": "^2.14",
         "pestphp/pest": "^3.8",
         "phpunit/phpunit": "^11.5.3",
-        "qossmic/deptrac-shim": "^1.0",
+        "qossmic/deptrac": "*",
         "rector/rector": "^2.4"
     },
     "autoload": {
