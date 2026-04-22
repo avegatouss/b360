@@ -1,0 +1,97 @@
+#!/usr/bin/env bash
+# .git/hooks/commit-msg
+# Validation Conventional Commits avec scope OBLIGATOIRE (B360 standard).
+# Format requis : <type>(<scope>): <résumé impératif sous 72 chars>
+
+set -euo pipefail
+
+COMMIT_MSG_FILE="$1"
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+FIRST_LINE=$(echo "$COMMIT_MSG" | head -n 1)
+
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+GREEN='\033[0;32m'
+NC='\033[0m'
+
+# Bypass merge / revert / fixup
+if [[ "$FIRST_LINE" =~ ^(Merge|Revert|fixup!|squash!|amend!) ]]; then
+    exit 0
+fi
+
+# Bypass branche release (release-please style)
+if [[ "$FIRST_LINE" =~ ^chore\(release\) ]]; then
+    exit 0
+fi
+
+TYPES="feat|fix|refactor|perf|test|docs|chore|build|ci|style|revert|security"
+SCOPES="core|auth|users|instances|settings|billing|dashboard|lang|currency|modulemanager|installer|demo|eshop360|catalog|pricing|inventory|sales|purchase|invoicing|finance|crm|channel|reporting|hr|projects|communication|platform|tenancy|iam|feature-control|observability|workflow|integration-hub|file-center|shared-kernel|ui-kit|api|deps|ci|docs|governance|security|perf|tests|infra|release|pack"
+
+REGEX="^(${TYPES})\((${SCOPES})\)(!?): .{1,72}$"
+
+if ! [[ "$FIRST_LINE" =~ $REGEX ]]; then
+    echo -e "${RED}╔════════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${RED}║  ✗ Format de commit invalide                                  ║${NC}"
+    echo -e "${RED}╚════════════════════════════════════════════════════════════════╝${NC}"
+    echo ""
+    echo "Ton message :"
+    echo -e "  ${YELLOW}${FIRST_LINE}${NC}"
+    echo ""
+    echo "Format attendu (Conventional Commits + scope obligatoire) :"
+    echo -e "  ${GREEN}<type>(<scope>): <résumé impératif sous 72 caractères>${NC}"
+    echo ""
+    echo "Types autorisés :"
+    echo "  feat, fix, refactor, perf, test, docs, chore, build, ci, style, revert, security"
+    echo ""
+    echo "Scopes B360 reconnus :"
+    echo "  Modules existants : core, auth, users, instances, settings, billing,"
+    echo "                       dashboard, lang, currency, modulemanager, installer,"
+    echo "                       demo, eshop360"
+    echo "  Sous-domaines     : catalog, pricing, inventory, sales, purchase,"
+    echo "                       invoicing, finance, crm, channel, reporting, hr,"
+    echo "                       projects, communication"
+    echo "  Plateforme        : platform, tenancy, iam, feature-control, observability,"
+    echo "                       workflow, integration-hub, file-center, shared-kernel,"
+    echo "                       ui-kit, api"
+    echo "  Transverse        : deps, ci, docs, governance, security, perf, tests,"
+    echo "                       infra, release, pack"
+    echo ""
+    echo "Breaking change : ajoute ! avant : (ex: feat(api)!: ...)"
+    echo ""
+    echo "Exemples valides :"
+    echo -e "  ${GREEN}feat(pricing): add channel-specific price calculator${NC}"
+    echo -e "  ${GREEN}fix(inventory): protect stock decrement with lockForUpdate${NC}"
+    echo -e "  ${GREEN}refactor(core): unify BelongsToInstance trait${NC}"
+    echo -e "  ${GREEN}docs(governance): add ADR-005 for event sourcing${NC}"
+    echo ""
+    echo "Tu peux contourner en urgence : git commit --no-verify"
+    exit 1
+fi
+
+# Vérifier la présence d'un corps si breaking change
+if [[ "$FIRST_LINE" =~ ! ]]; then
+    if ! echo "$COMMIT_MSG" | grep -q "BREAKING CHANGE:"; then
+        echo -e "${RED}✗ Breaking change détecté (!) mais aucune section 'BREAKING CHANGE:' dans le corps.${NC}"
+        echo ""
+        echo "Ajoute dans le corps du commit :"
+        echo "  BREAKING CHANGE: <description de l'impact + procédure de migration>"
+        exit 1
+    fi
+fi
+
+# Vérifier la longueur du sujet
+SUBJECT_LENGTH=${#FIRST_LINE}
+if [ "$SUBJECT_LENGTH" -gt 72 ]; then
+    echo -e "${RED}✗ Sujet trop long ($SUBJECT_LENGTH caractères, max 72).${NC}"
+    exit 1
+fi
+
+# Avertir si pas de corps pour un changement non trivial
+BODY=$(echo "$COMMIT_MSG" | tail -n +3 | grep -v '^#' | sed '/^$/d')
+if [[ "$FIRST_LINE" =~ ^(feat|fix|refactor|perf|security) ]] && [ -z "$BODY" ]; then
+    echo -e "${YELLOW}⚠ Avertissement : commit ${FIRST_LINE%%(*} sans corps explicatif.${NC}"
+    echo "  Pour les changements importants, ajoute un Why / What / Validation."
+    echo ""
+fi
+
+exit 0

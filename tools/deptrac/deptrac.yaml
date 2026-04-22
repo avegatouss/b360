@@ -1,0 +1,202 @@
+## tools/deptrac/deptrac.yaml
+## Règles d'architecture B360 — couches autorisées entre modules
+## Documentation : docs/architecture/MODULE_DEPENDENCY_MAP.md
+
+deptrac:
+  paths:
+    - ./Modules
+    - ./app
+
+  exclude_files:
+    - '#.*Tests.*#'
+    - '#.*Database/Migrations/.*#'
+    - '#.*Database/Seeders/.*#'
+    - '#.*Database/Factories/.*#'
+
+  layers:
+    # ═══════════════════════════════════════════════════════════════
+    # L0 — Socle (aucune dépendance autorisée vers d'autres modules)
+    # ═══════════════════════════════════════════════════════════════
+    - name: Core
+      collectors:
+        - type: directory
+          value: Modules/Core/.*
+
+    # ═══════════════════════════════════════════════════════════════
+    # L1 — Identité & Configuration
+    # ═══════════════════════════════════════════════════════════════
+    - name: Auth
+      collectors:
+        - type: directory
+          value: Modules/Auth/.*
+
+    - name: Users
+      collectors:
+        - type: directory
+          value: Modules/Users/.*
+
+    - name: Instances
+      collectors:
+        - type: directory
+          value: Modules/Instances/.*
+
+    - name: Settings
+      collectors:
+        - type: directory
+          value: Modules/Settings/.*
+
+    # ═══════════════════════════════════════════════════════════════
+    # L2 — Transverse & Support
+    # ═══════════════════════════════════════════════════════════════
+    - name: Billing
+      collectors:
+        - type: directory
+          value: Modules/Billing/.*
+
+    - name: Lang
+      collectors:
+        - type: directory
+          value: Modules/Lang/.*
+
+    - name: Currency
+      collectors:
+        - type: directory
+          value: Modules/Currency/.*
+
+    - name: Dashboard
+      collectors:
+        - type: directory
+          value: Modules/Dashboard/.*
+
+    - name: ModuleManager
+      collectors:
+        - type: directory
+          value: Modules/ModuleManager/.*
+
+    - name: Demo
+      collectors:
+        - type: directory
+          value: Modules/Demo/.*
+
+    - name: Installer
+      collectors:
+        - type: directory
+          value: Modules/Installer/.*
+
+    # ═══════════════════════════════════════════════════════════════
+    # L3 — Métier (Eshop360 — monolithique en cours de découpage)
+    # ═══════════════════════════════════════════════════════════════
+    - name: Eshop360
+      collectors:
+        - type: directory
+          value: Modules/Eshop360/.*
+
+    # ═══════════════════════════════════════════════════════════════
+    # L3+ — Extension future
+    # ═══════════════════════════════════════════════════════════════
+    - name: InventoryX
+      collectors:
+        - type: directory
+          value: Modules/InventoryX/.*
+
+    # ═══════════════════════════════════════════════════════════════
+    # Couche app/ (User, Instance — historique)
+    # ═══════════════════════════════════════════════════════════════
+    - name: AppLayer
+      collectors:
+        - type: directory
+          value: app/.*
+
+  ## ═══════════════════════════════════════════════════════════════
+  ## Règles : qui peut dépendre de qui
+  ## ═══════════════════════════════════════════════════════════════
+  ruleset:
+    Core:
+      - AppLayer
+    Auth:
+      - Core
+      - AppLayer
+    Users:
+      - Core
+      - Instances
+      - AppLayer
+    Instances:
+      - Core
+      - Settings
+      - AppLayer
+    Settings:
+      - Core
+      - AppLayer
+    Billing:
+      - Core
+      - Settings
+      - Instances
+      - Users
+      - AppLayer
+    Lang:
+      - Core
+      - Settings
+      - AppLayer
+    Currency:
+      - Core
+      - Settings
+      - AppLayer
+    Dashboard:
+      - Core
+      - AppLayer
+    ModuleManager:
+      - Core
+      - AppLayer
+    Demo:
+      - Core
+      - Eshop360
+      - AppLayer
+    Installer:
+      - Core
+      - Users
+      - AppLayer
+    Eshop360:
+      - Core
+      - Auth
+      - Users
+      - Settings
+      - Billing
+      - Currency
+      - Lang
+      - AppLayer
+    InventoryX:
+      - Core
+      - Settings
+      - AppLayer
+    AppLayer: ~
+
+  ## ═══════════════════════════════════════════════════════════════
+  ## Skip : violations existantes tolérées (à résorber progressivement)
+  ## Ce fichier est régénéré par : make deptrac-baseline
+  ## ═══════════════════════════════════════════════════════════════
+  skip_violations: { }
+  baseline: tools/deptrac/baseline.yaml
+
+  formatters:
+    graphviz:
+      hidden_layers:
+        - AppLayer
+      groups:
+        L0:
+          - Core
+        L1:
+          - Auth
+          - Users
+          - Instances
+          - Settings
+        L2:
+          - Billing
+          - Lang
+          - Currency
+          - Dashboard
+          - ModuleManager
+          - Demo
+          - Installer
+        L3:
+          - Eshop360
+          - InventoryX

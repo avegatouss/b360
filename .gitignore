@@ -20,5 +20,10 @@ yarn-error.log
 /.fleet
 /.idea
 /.nova
-/.vscode
 /.zed
+
+# Caches outils qualité (vibecoding pack)
+.deptrac.cache
+.phpstan.cache
+.phpinsights.cache
+tools/deptrac/architecture.svg

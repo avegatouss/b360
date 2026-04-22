@@ -1,0 +1,63 @@
+## .github/workflows/architecture-graph.yml
+## Génère le graphe de dépendances et l'attache aux PR (lecture humaine de l'architecture)
+
+name: Architecture graph
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'Modules/**'
+      - 'app/**'
+      - 'tools/deptrac/**'
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  generate-graph:
+    name: Generate dependency graph
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer:v2
+          extensions: dom, mbstring, xml
+
+      - name: Install graphviz
+        run: sudo apt-get update && sudo apt-get install -y graphviz
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Generate graphs
+        run: |
+          mkdir -p artifacts
+          vendor/bin/deptrac analyse \
+            --formatter=graphviz-image \
+            --output=artifacts/dependency-graph.png \
+            || echo "::warning::Graph generation failed"
+          vendor/bin/deptrac analyse \
+            --formatter=mermaid-js \
+            --output=artifacts/dependency-graph.mmd \
+            || echo "::warning::Mermaid generation failed"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: architecture-graph
+          path: artifacts/
+          retention-days: 30
