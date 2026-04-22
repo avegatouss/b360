@@ -1,9 +1,16 @@
 # RECENT_DECISIONS — B360
 
-> Décisions structurantes récentes. Mise à jour : **2026-04-22 14:57:35    **
+> Décisions structurantes récentes. Mise à jour : **2026-04-22 19:08:13    **
 > Pour les décisions complètes argumentées, voir `docs/adr/`.
 
 ---
+
+## 2026-04-22 — R-104 fermé : trait BelongsToInstance unifié
+
+- **Décision** : suppression de `app/Models/Concerns/BelongsToInstance.php` (alias orphelin 0 usage)
+- **Canonique** : `Modules\Core\Database\Traits\BelongsToInstance` (63 modèles)
+- **Validation** : `InstanceScopeSafetyTest` (2/2) + suite complète 626 passed (2 échecs pré-existants non liés : ChannelIsolationTest, EshopSettingsServiceTest isolation cache)
+- **Source** : lot pilote du pack vibecoding, branche `refactor/core-unify-belongs-to-instance`
 
 ## 2026-04-22 — Installation du pack vibecoding
 

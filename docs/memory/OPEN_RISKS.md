@@ -1,6 +1,6 @@
 # OPEN_RISKS — B360
 
-> Risques techniques connus, suivi vivant. Mise à jour : **2026-04-22 14:57:35    **
+> Risques techniques connus, suivi vivant. Mise à jour : **2026-04-22 19:08:13    **
 
 ---
 
@@ -62,12 +62,12 @@
 - **Impact** : double écriture de logs, source de vérité ambiguë
 - **Plan** : migration documentée dans `docs/Ins/b360_evolution_strategy.md` §2.3
 
-### R-104 — Trait BelongsToInstance dupliqué
+## FERMÉ
 
-- **Localisations** : `app/Models/Concerns/BelongsToInstance` ET `Modules/Core/Database/Traits/BelongsToInstance`
-- **Impact** : risque divergence comportement
-- **Plan** : unification sur `Modules/Core/Database/Traits/BelongsToInstance`
-- **Lot pilote recommandé** : oui (faible risque, gain immédiat)
+### R-104 — Trait BelongsToInstance dupliqué (fermé 2026-04-22)
+
+- **Résolution** : suppression de `app/Models/Concerns/BelongsToInstance.php` (alias 4 lignes, 0 usage applicatif). Trait canonique conservé : `Modules\Core\Database\Traits\BelongsToInstance` (63 modèles l'importent). PHPDoc corrigé.
+- **Commit** : branche `refactor/core-unify-belongs-to-instance`
 
 ## MOYEN
 
