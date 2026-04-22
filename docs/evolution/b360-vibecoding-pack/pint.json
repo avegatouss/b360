@@ -1,0 +1,50 @@
+{
+  "preset": "laravel",
+  "exclude": [
+    "bootstrap/cache",
+    "storage",
+    "vendor",
+    "node_modules",
+    "Modules/*/Database/Migrations",
+    "Modules/InventoryX"
+  ],
+  "rules": {
+    "declare_strict_types": true,
+    "strict_param": true,
+    "ordered_imports": {
+      "sort_algorithm": "alpha",
+      "imports_order": ["class", "function", "const"]
+    },
+    "no_unused_imports": true,
+    "no_useless_else": true,
+    "no_useless_return": true,
+    "phpdoc_align": {
+      "align": "left"
+    },
+    "phpdoc_separation": true,
+    "phpdoc_trim": true,
+    "single_quote": true,
+    "trailing_comma_in_multiline": {
+      "elements": ["arrays", "arguments", "parameters"]
+    },
+    "blank_line_after_opening_tag": true,
+    "blank_line_before_statement": {
+      "statements": ["return", "throw", "try"]
+    },
+    "method_chaining_indentation": true,
+    "concat_space": {
+      "spacing": "one"
+    },
+    "binary_operator_spaces": {
+      "default": "single_space",
+      "operators": {
+        "=>": "align_single_space_minimal"
+      }
+    },
+    "global_namespace_import": {
+      "import_classes": false,
+      "import_constants": false,
+      "import_functions": false
+    }
+  }
+}
