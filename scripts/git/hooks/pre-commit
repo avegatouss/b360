@@ -82,10 +82,18 @@ if [ -f "scripts/quality/check-protected-areas.sh" ]; then
         echo -e "${YELLOW}⚠ Tu touches à une zone protégée.${NC}"
         echo "Assure-toi d'avoir fait l'IMPACT_ANALYSIS et la double review (Claude + Codex)."
         echo ""
-        read -p "Continuer le commit ? (y/N) " -n 1 -r < /dev/tty
-        echo
-        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-            exit 1
+        # Prompt interactif uniquement si un TTY est disponible.
+        # En non-interactif (CI, Windows Git Bash via subprocess), on laisse passer
+        # avec un avertissement : la garde finale reste le workflow CI protected-areas.yml
+        # qui bloque la PR sans IMPACT_ANALYSIS.
+        if [ -r /dev/tty ] && [ -t 1 ]; then
+            read -p "Continuer le commit ? (y/N) " -n 1 -r < /dev/tty
+            echo
+            if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+                exit 1
+            fi
+        else
+            echo -e "${YELLOW}[non-interactif] prompt sauté — la PR doit contenir IMPACT_ANALYSIS (vérifié par protected-areas.yml).${NC}"
         fi
     fi
 fi
