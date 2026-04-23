@@ -13,6 +13,53 @@
 
 ---
 
+## CHG-2026-04-23-005 — R-103 fermé : consolidation Codifarm → DistributionChannel
+
+- **Date** : 2026-04-23
+- **Type** : décommissionnement (fermeture formelle + verrouillage anti-régression)
+- **Modules concernés** : Eshop360 (tests + ADR, aucun code applicatif modifié par ce lot)
+- **Impact** : faible — la migration (data + schéma) avait déjà été livrée en P0 mars 2026.
+- **Breaking change** : non.
+
+### Actions appliquées
+
+- Ajout `Modules/Eshop360/Tests/Feature/CodifarmLegacyRemovalTest.php` (3 tests) :
+  - **SCHÉMA TABLES** : `Schema::hasTable('eshop_codifarm_margin_config')` et `eshop_codifarm_margin_logs` retournent `false` (migration `2026_03_16_100003_drop_codifarm_tables_and_columns` ran).
+  - **SCHÉMA COLONNES** : `Schema::hasColumn('eshop_orders', 'is_codifarm')` et `eshop_products.sale_price_codifarm` retournent `false`.
+  - **CODE** : scan récursif de `Modules/Eshop360/{Services,Http/Controllers,Models,Domain}/*.php` — aucune occurrence de `codifarm_margin_config`, `codifarm_margin_log`, `is_codifarm`, `sale_price_codifarm`, `CodifarmMarginConfig`, `CodifarmMarginLog`. Le scan exclut volontairement `Database/Seeders/` et `Tests/` où le mot « CODIFARM » subsiste en tant que **nom métier** (grossiste pharmaceutique ivoirien, slug `demo-codifarm` utilisé comme donnée de canal de démo).
+- Ajout `docs/adr/ADR-007-codifarm-channel-consolidation.md` :
+  - État final documenté (canon : `DistributionChannel` + `ChannelMarginLog` + `ChannelProductPrice`).
+  - Chaîne de migrations livrée (100002 + 100003) avec réversibilité limitée (schéma OK, données non restaurables sans dump).
+  - 3 alternatives rejetées (parallélisation, renommage, migration progressive).
+  - 5 contraintes imposées au futur (scannées par les tests structurels).
+- R-103 déplacé de MAJEUR vers FERMÉ dans `docs/memory/OPEN_RISKS.md`. La section MAJEUR ne contient plus que **R-101** (Eshop360 monolithique — chantier pluri-lots, hors scope session).
+- Entrée 2026-04-23 dans `RECENT_DECISIONS.md`.
+
+### Statut
+
+- [x] Implémenté (migrations livrées en P0, consolidation achevée)
+- [x] Documenté (ADR-007 avec contraintes futures explicites)
+- [x] Testé (3 tests structurels de verrouillage + tests existants DistributionChannel préservés)
+
+### IMPACT_ANALYSIS (zone L2 DistributionChannel / calcul marges canal)
+
+- **Périmètre** : ajout de tests structurels + ADR + fermeture du risque en mémoire. Aucun code applicatif ni migration modifiés par ce lot.
+- **Contrat runtime** : inchangé. La migration vers `DistributionChannel` était déjà en production depuis mars 2026 ; ce lot ne fait que documenter et verrouiller.
+- **Concurrence / Multi-tenant / Permissions** : inchangés. Les tests scannent le code source, pas le runtime.
+- **Idempotence** : non applicable (pas de nouvelle opération runtime).
+- **Rollback** : `git revert` sans risque. La suppression du test et de l'ADR ne touche pas au schéma. Une régression future (réintroduction des tokens legacy) serait à nouveau détectée par le test structurel.
+- **Garde future** : les 3 tests structurels forment un **filet anti-résurrection** permanent. Une PR qui réintroduirait `is_codifarm`, `sale_price_codifarm` ou la table `eshop_codifarm_margin_config` casserait automatiquement ces tests → impossible de contourner sans modifier délibérément le test (action visible en code review).
+
+### Lien
+
+- ADR : `docs/adr/ADR-007-codifarm-channel-consolidation.md`
+- Plan historique : `docs/Ins/b360_evolution_strategy.md` §2.3
+- Audit source : `docs/AUDIT-ARCHITECTURE-GO-LIVE.md`
+- Migrations de migration : `Modules/Eshop360/Database/Migrations/2026_03_16_100002_migrate_codifarm_to_channels.php` + `2026_03_16_100003_drop_codifarm_tables_and_columns.php` (déjà `Ran`).
+- PR : (n° à renseigner)
+
+---
+
 ## CHG-2026-04-23-004 — R-201 fermé : suppression du squelette InventoryX
 
 - **Date** : 2026-04-23
