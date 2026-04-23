@@ -26,6 +26,19 @@ _(aucun risque critique ouvert — R-001, R-002, R-003, R-004 fermés le 2026-04
 
 ## FERMÉ
 
+### R-202 — Numéro facture non atomique (fermée 2026-04-23)
+
+- **Source** : `docs/AUDIT-ARCHITECTURE-GO-LIVE.md` ISSUE-10
+- **Constat** : deux surfaces. Eshop360 `InvoiceService::createFromItems()` et `OrderService::createFromItems()` étaient **déjà corrects** (DB::transaction + retry sur QueryException 1062 + UNIQUE `(instance_id, invoice_number)` via migration P0 `2026_04_04_100002`). Billing `InvoiceManager::generate()` était **vulnérable** : SELECT MAX hors transaction, `Invoice::create()` sans retry → collision = 500 client non rattrapé.
+- **Résolution** : application uniforme du pattern `DB::transaction + boucle for 1..MAX_NUMBER_ATTEMPTS + catch QueryException 1062 + régénération du numéro` sur les 3 services. Voir ADR-006.
+  - Billing `InvoiceManager::generate()` refactorée (+constante MAX_NUMBER_ATTEMPTS=5, +DB::transaction, +boucle for, +catch QueryException, +RuntimeException de sécurité si MAX atteint).
+  - Eshop360 non modifié (pattern déjà en place depuis P0).
+- **Tests nouveaux** (6) :
+  - `Modules/Eshop360/Tests/Feature/InvoiceNumberAtomicityTest` (3 tests) : structural (retry + catch + DB::transaction + 1062 + regenerate), DB-level UNIQUE par (instance_id, invoice_number), happy path numéros distincts.
+  - `Modules/Billing/Tests/Feature/InvoiceNumberAtomicityTest` (3 tests) : structural, DB-level UNIQUE global, happy path séquentiel.
+- **ADR** : `docs/adr/ADR-006-invoice-numbering-atomicity.md` — 4 alternatives rejetées (séquence DB, advisory lock, `ON CONFLICT DO NOTHING`, UUID), contraintes imposées au futur.
+- **Commit** : branche `feat/billing-invoice-number-atomicity`.
+
 ### R-004 — Commissions employés dupliquées (fermée 2026-04-23)
 
 - **Source** : `docs/AUDIT-ARCHITECTURE-GO-LIVE.md` ISSUE-02
@@ -92,11 +105,6 @@ _(aucun risque critique ouvert — R-001, R-002, R-003, R-004 fermés le 2026-04
 
 - **Constat** : dossier visible mais pas de `module.json` ni provider chargé
 - **Plan** : décider — finaliser ou supprimer
-
-### R-202 — Numéro facture non atomique
-
-- **Source** : ISSUE-10 audit go-live
-- **Plan** : utiliser séquence DB ou advisory lock
 
 ## FAIBLE
 
