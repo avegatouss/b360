@@ -14,6 +14,16 @@
 - **Résidus acceptables** : le mot « CODIFARM » reste dans les Seeders/Tests comme nom commercial de grossiste pharmaceutique ivoirien (donnée démo), pas comme technologie. Les tests structurels scannent uniquement le code applicatif, pas les Seeders/Tests.
 - **Source** : lot MAJEUR, branche `chore/eshop360-close-codifarm-consolidation`, audit ISSUE + §2.3 du plan d'évolution.
 
+## 2026-04-23 — R-101 sous-lot S3 : extraction Channel
+
+- **Décision** : pattern S1/S2 appliqué au sous-domaine Channel — 4 modèles (DistributionChannel, ChannelProductPrice, ChannelMarginLog, ChannelUser) déplacés sous `Modules/Eshop360/Domain/Channel/Models/`.
+- **Choix architectural notable** : `BelongsToChannel` trait et `ChannelScope` **ne sont PAS déplacés** sous `Domain/Channel/`. Raison : déplacement créerait une dépendance circulaire (Catalog/CRM utilisent le trait, ChannelProductPrice utilise Product). Le trait reste dans `Modules/Eshop360/Database/Traits/` (infrastructure partagée intra-Eshop360, statut similaire à `BelongsToInstance` dans Core). Décision révisable en S12.
+- **Imports cross-sous-domaine** : DistributionChannel +7 (Product, Customer, Order, Warehouse, CashRegister, Coupon, Holding, User). ChannelProductPrice +1 (Product). ChannelMarginLog +1 (Order). Tous via alias transitoires.
+- **Deptrac** : `EshopChannel` restreint à socles + Eshop360 (pour accès au trait + alias transitoires).
+- **Validation** : 659 tests passed (aucune régression), phpstan OK, deptrac 0 violations.
+- **ADR** : `docs/adr/ADR-011-eshop360-channel-subdomain-extraction.md`.
+- **Source** : lot R-101 S3, branche `refactor/eshop360-s3-channel-extraction`.
+
 ## 2026-04-23 — R-101 sous-lot S2 : extraction CRM
 
 - **Décision** : application du pattern S1 (déplacement + stubs d'alias + deptrac resserré) au sous-domaine CRM.

@@ -305,7 +305,20 @@ deptrac:
       - Lang
       - Eshop360
       - AppLayer
-    EshopChannel: &eshop_sublayer_base
+    # R-101 S3 : EshopChannel restreint (socles + Eshop360 transitoire pour
+    # BelongsToChannel/ChannelScope qui restent dans Database/Traits/ —
+    # infrastructure partagée intra-Eshop360 selon ADR-011).
+    EshopChannel:
+      - Core
+      - Auth
+      - Users
+      - Settings
+      - Billing
+      - Currency
+      - Lang
+      - Eshop360
+      - AppLayer
+    EshopPricing: &eshop_sublayer_base
       - Core
       - Auth
       - Users
@@ -328,7 +341,6 @@ deptrac:
       - EshopProjects
       - EshopReporting
       - AppLayer
-    EshopPricing: *eshop_sublayer_base
     EshopInventory: *eshop_sublayer_base
     EshopPromotions: *eshop_sublayer_base
     EshopPurchasing: *eshop_sublayer_base
