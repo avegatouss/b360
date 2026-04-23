@@ -13,6 +13,53 @@
 
 ---
 
+## CHG-2026-04-23-007 — R-101 sous-lot S1 : extraction Catalog
+
+- **Date** : 2026-04-23
+- **Type** : architecture (refactoring d'extraction progressive)
+- **Modules concernés** : Eshop360 (déplacement de 7 modèles Catalog)
+- **Impact** : nul côté runtime (rétrocompatibilité 100% via stubs d'alias).
+- **Breaking change** : non.
+
+### Actions appliquées
+
+- **7 modèles déplacés** via `git mv` de `Modules/Eshop360/Models/` vers `Modules/Eshop360/Domain/Catalog/Models/` :
+  - `Product.php`, `Category.php`, `Brand.php`, `ProductGroup.php`, `ProductTax.php`, `ProductVariation.php`, `Tax.php`.
+- **Namespace mis à jour** dans chaque fichier déplacé : `Modules\Eshop360\Models` → `Modules\Eshop360\Domain\Catalog\Models`.
+- **Product.php enrichi** de 5 imports pour les relations cross-sous-domaine :
+  - `Stock`, `OrderItem`, `Supplier`, `ChannelProductPrice`, `DistributionChannel` — référencés via les alias `Modules\Eshop360\Models\*` (transition). Ces imports seront remplacés par leurs FQN canoniques au fil des sous-lots S3/S5/S7/S8.
+- **7 stubs d'alias créés** dans `Modules/Eshop360/Models/<Nom>.php` (13 lignes chacun) : classes vides qui `extends` leur canon dans `Domain/Catalog/Models/`. Préservent la rétrocompatibilité 100% pour les 50+ consommateurs existants.
+- **Deptrac `EshopCatalog` restreint** : ruleset passée de permissive (tous les EshopX autorisés) à `socles + Eshop360` uniquement. La dépendance `EshopCatalog → Eshop360` est temporaire, elle sera levée au sous-lot S3 quand `BelongsToChannel` aura migré sous `Domain/Channel/`.
+- **Baseline PHPStan régénérée** : 3647 erreurs baselined (vs 3656 avant) — les erreurs de traits sur les modèles Catalog se sont déplacées vers le nouveau namespace, capturées dans la nouvelle baseline.
+- `tools/deptrac/deptrac.yaml` : synchronisé avec root.
+- ADR `docs/adr/ADR-009-eshop360-catalog-subdomain-extraction.md` : documente le pattern d'extraction en 2 phases (déplacement + alias immédiat, résorption des alias/dépendances au fil des sous-lots).
+- `docs/memory/OPEN_RISKS.md` R-101 : sous-lot S1 ✅.
+- `docs/memory/RECENT_DECISIONS.md` : entrée S1.
+
+### Statut
+
+- [x] Implémenté (7 modèles déplacés, 7 alias créés, deptrac resserré)
+- [x] Documenté (ADR-009)
+- [x] Testé (659 passed, aucune régression)
+
+### IMPACT_ANALYSIS
+
+- **Périmètre** : déplacement de fichiers + stubs d'alias + config deptrac. Aucune modification de logique métier, aucune migration DB, aucun test modifié.
+- **Contrat runtime** : strictement identique. Tous les `use Modules\Eshop360\Models\Product` continuent de résoudre vers la classe canonique via les alias.
+- **Concurrence / Multi-tenant / Permissions / Idempotence** : non applicables à ce sous-lot.
+- **Rollback** : `git revert` sans risque. Les alias sont purement descriptifs, leur suppression revient à l'état pré-S1.
+- **Garde future** : deptrac bloque toute nouvelle dépendance `EshopCatalog → EshopX` (hors Eshop360 transitoire). Les alias marqués « backward-compat » dans leur PHPDoc documentent la dette à résorber en S12.
+- **Pattern répétable** : ce schéma est le template pour S2..S11.
+
+### Lien
+
+- ADR : `docs/adr/ADR-009-eshop360-catalog-subdomain-extraction.md`
+- ADR parent : `docs/adr/ADR-008-eshop360-subdomain-decomposition-strategy.md`
+- Roadmap : `docs/Ins/b360_evolution_strategy.md` §1.4 Phase 2
+- PR : (n° à renseigner)
+
+---
+
 ## CHG-2026-04-23-006 — R-101 sous-lot S0 : préparation découpage Eshop360
 
 - **Date** : 2026-04-23
