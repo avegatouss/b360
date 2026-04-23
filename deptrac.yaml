@@ -85,11 +85,99 @@ deptrac:
 
     # ═══════════════════════════════════════════════════════════════
     # L3 — Métier (Eshop360 — monolithique en cours de découpage)
+    #
+    # R-101 S0 : délimitation intra-Eshop360 par sous-domaine.
+    # Les fichiers déjà déplacés sous Domain/<X>/ ou Pricing/ sont
+    # capturés dans leur sous-layer dédié ; tout le reste reste
+    # dans `Eshop360` et sera extrait sous-lot par sous-lot.
+    #
+    # La ruleset en-dessous est délibérément PERMISSIVE au début
+    # (tous les EshopX peuvent dépendre de tous les autres EshopX
+    # et du "reste" Eshop360) — le resserrement se fait au fil des
+    # sous-lots S1..S11 qui extraient progressivement le code.
+    # Voir ADR-008 pour la stratégie.
     # ═══════════════════════════════════════════════════════════════
-    - name: Eshop360
+    - name: EshopCatalog
       collectors:
         - type: directory
-          value: Modules/Eshop360/.*
+          value: Modules/Eshop360/Domain/Catalog/.*
+
+    - name: EshopCRM
+      collectors:
+        - type: directory
+          value: Modules/Eshop360/Domain/CRM/.*
+
+    - name: EshopChannel
+      collectors:
+        - type: directory
+          value: Modules/Eshop360/Domain/Channel/.*
+
+    - name: EshopPricing
+      collectors:
+        - type: directory
+          value: Modules/Eshop360/Pricing/.*
+        - type: directory
+          value: Modules/Eshop360/Domain/Pricing/.*
+
+    - name: EshopInventory
+      collectors:
+        - type: directory
+          value: Modules/Eshop360/Domain/Inventory/.*
+
+    - name: EshopPromotions
+      collectors:
+        - type: directory
+          value: Modules/Eshop360/Domain/Promotions/.*
+
+    - name: EshopPurchasing
+      collectors:
+        - type: directory
+          value: Modules/Eshop360/Domain/Purchasing/.*
+
+    - name: EshopSales
+      collectors:
+        - type: directory
+          value: Modules/Eshop360/Domain/Sales/.*
+
+    - name: EshopFinance
+      collectors:
+        - type: directory
+          value: Modules/Eshop360/Domain/Finance/.*
+
+    - name: EshopHR
+      collectors:
+        - type: directory
+          value: Modules/Eshop360/Domain/HR/.*
+
+    - name: EshopCommunication
+      collectors:
+        - type: directory
+          value: Modules/Eshop360/Domain/Communication/.*
+
+    - name: EshopProjects
+      collectors:
+        - type: directory
+          value: Modules/Eshop360/Domain/Projects/.*
+
+    - name: EshopReporting
+      collectors:
+        - type: directory
+          value: Modules/Eshop360/Domain/Reporting/.*
+
+    # Eshop360 = "le reste" monolithique non encore extrait.
+    # Au fur et à mesure des sous-lots S1..S11, les fichiers migrent
+    # vers les layers EshopX ci-dessus et ce layer se vide.
+    - name: Eshop360
+      collectors:
+        - type: bool
+          must:
+            - type: directory
+              value: Modules/Eshop360/.*
+          must_not:
+            - type: directory
+              value: Modules/Eshop360/Domain/.*
+            - type: directory
+              value: Modules/Eshop360/Pricing/.*
 
     # ═══════════════════════════════════════════════════════════════
     # Couche app/ (User, Instance — historique)
@@ -147,6 +235,8 @@ deptrac:
       - Core
       - Users
       - AppLayer
+    # Eshop360 "reste" monolithique — peut dépendre des socles + de
+    # tous ses sous-domaines extraits (transition).
     Eshop360:
       - Core
       - Auth
@@ -155,7 +245,73 @@ deptrac:
       - Billing
       - Currency
       - Lang
+      - EshopCatalog
+      - EshopCRM
+      - EshopChannel
+      - EshopPricing
+      - EshopInventory
+      - EshopPromotions
+      - EshopPurchasing
+      - EshopSales
+      - EshopFinance
+      - EshopHR
+      - EshopCommunication
+      - EshopProjects
+      - EshopReporting
       - AppLayer
+
+    # ═══════════════════════════════════════════════════════════════
+    # Sous-domaines Eshop360 — ruleset PERMISSIVE au départ (R-101 S0)
+    #
+    # Au fur et à mesure des sous-lots, chaque EshopX verra sa liste
+    # de dépendances RESTREINTE pour enforcer l'architecture cible :
+    #   - Feuilles : EshopCatalog, EshopCRM (pas de dépendance intra)
+    #   - EshopChannel, EshopPricing, EshopInventory → EshopCatalog
+    #   - EshopPromotions → EshopCatalog, EshopChannel
+    #   - EshopPurchasing → EshopCatalog, EshopInventory, EshopFinance
+    #   - EshopSales → tous les précédents
+    #   - EshopFinance → EshopSales, EshopCRM, EshopPurchasing
+    #   - EshopHR → EshopSales
+    #   - EshopCommunication → EshopCRM, EshopSales
+    #   - EshopProjects → EshopHR, EshopCRM
+    #   - EshopReporting → lecture transverse (tous)
+    # ═══════════════════════════════════════════════════════════════
+    EshopCatalog: &eshop_sublayer_base
+      - Core
+      - Auth
+      - Users
+      - Settings
+      - Billing
+      - Currency
+      - Lang
+      - Eshop360
+      - EshopCatalog
+      - EshopCRM
+      - EshopChannel
+      - EshopPricing
+      - EshopInventory
+      - EshopPromotions
+      - EshopPurchasing
+      - EshopSales
+      - EshopFinance
+      - EshopHR
+      - EshopCommunication
+      - EshopProjects
+      - EshopReporting
+      - AppLayer
+    EshopCRM: *eshop_sublayer_base
+    EshopChannel: *eshop_sublayer_base
+    EshopPricing: *eshop_sublayer_base
+    EshopInventory: *eshop_sublayer_base
+    EshopPromotions: *eshop_sublayer_base
+    EshopPurchasing: *eshop_sublayer_base
+    EshopSales: *eshop_sublayer_base
+    EshopFinance: *eshop_sublayer_base
+    EshopHR: *eshop_sublayer_base
+    EshopCommunication: *eshop_sublayer_base
+    EshopProjects: *eshop_sublayer_base
+    EshopReporting: *eshop_sublayer_base
+
     AppLayer: ~
 
   ## ═══════════════════════════════════════════════════════════════
@@ -207,3 +363,16 @@ deptrac:
           - Installer
         L3:
           - Eshop360
+          - EshopCatalog
+          - EshopCRM
+          - EshopChannel
+          - EshopPricing
+          - EshopInventory
+          - EshopPromotions
+          - EshopPurchasing
+          - EshopSales
+          - EshopFinance
+          - EshopHR
+          - EshopCommunication
+          - EshopProjects
+          - EshopReporting
