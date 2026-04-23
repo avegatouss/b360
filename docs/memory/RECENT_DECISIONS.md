@@ -5,6 +5,14 @@
 
 ---
 
+## 2026-04-23 — R-202 fermé : atomicité numéros de facture
+
+- **Décision** : pattern uniforme `DB::transaction + for-loop MAX_NUMBER_ATTEMPTS + catch QueryException 1062 + régénération` pour tous les générateurs de numéros métier (factures Eshop360, factures Billing, commandes Eshop360).
+- **Chantier** : `Billing\InvoiceManager::generate()` refactorée (était vulnérable : SELECT MAX sans transaction, pas de retry). Eshop360 non modifié (déjà correct depuis P0 `2026_04_04_100002`).
+- **ADR** : `docs/adr/ADR-006-invoice-numbering-atomicity.md` — 4 alternatives rejetées (séquence DB, advisory lock, ON CONFLICT, UUID).
+- **Tests nouveaux** : 6 (3 Eshop360 + 3 Billing) — structural, DB-level UNIQUE, happy path distinct numbers.
+- **Source** : lot L2 SENSIBLE, branche `feat/billing-invoice-number-atomicity`, audit ISSUE-10.
+
 ## 2026-04-23 — R-004 fermé : idempotence commissions employés
 
 - **Décision** : défense en profondeur 2 couches + absorption silencieuse de la race (guard applicatif `exists()` + contrainte UNIQUE SGBD + `try/catch UniqueConstraintViolationException` avec `Log::info`).

@@ -13,6 +13,62 @@
 
 ---
 
+## CHG-2026-04-23-002 — R-202 fermé : atomicité des numéros de facture
+
+- **Date** : 2026-04-23
+- **Type** : architecture (hardening pattern existant + uniformisation entre modules)
+- **Modules concernés** : Billing (InvoiceManager refactoré), Eshop360 (tests ajoutés, code inchangé)
+- **Impact** : moyen — Billing générait potentiellement des 500 sur collision de numéro. Eshop360 était déjà correct.
+- **Breaking change** : non — la signature publique `InvoiceManager::generate()` est inchangée, le comportement utilisateur final est identique (tous les cas normaux et la majorité des cas de race sont transparents).
+
+### Actions appliquées
+
+- `Modules/Billing/Services/InvoiceManager.php` :
+  - `generate()` refactorée : wrap dans `DB::transaction`, boucle `for` jusqu'à `MAX_NUMBER_ATTEMPTS = 5`, `try/catch QueryException` filtré sur code 1062, régénération du numéro à chaque retry via `nextNumber()`.
+  - Ajout import `Illuminate\Database\QueryException`.
+  - Ajout constante privée `MAX_NUMBER_ATTEMPTS = 5`.
+  - Fallback `RuntimeException` si la boucle se termine sans succès (protection anti-livelock).
+- Ajout `Modules/Eshop360/Tests/Feature/InvoiceNumberAtomicityTest.php` (3 tests) :
+  - **STRUCTURAL** : grep du source de `InvoiceService.php` vérifie présence de `MAX_NUMBER_ATTEMPTS`, boucle `for`, import `QueryException`, `catch (QueryException`, code `1062`, `generateInvoiceNumber()` dans la boucle, et `DB::transaction`.
+  - **DB-LEVEL** : tentative directe de créer deux `Invoice` avec même `(instance_id, invoice_number)` → `QueryException` levée (prouve que la contrainte UNIQUE P0 est active).
+  - **HAPPY PATH** : `createFromItems()` appelé deux fois successivement produit bien deux numéros distincts, préfixés par `INV-`.
+- Ajout `Modules/Billing/Tests/Feature/InvoiceNumberAtomicityTest.php` (3 tests) :
+  - **STRUCTURAL** : grep du source de `InvoiceManager.php` verrouille le même pattern (constante, transaction, import, catch, code 1062, boucle for).
+  - **DB-LEVEL** : deux `Invoice` avec même `number` → `QueryException` (contrainte UNIQUE globale).
+  - **HAPPY PATH** : deux appels successifs à `generate(Subscription)` produisent des numéros distincts.
+- ADR `docs/adr/ADR-006-invoice-numbering-atomicity.md` : stratégie détaillée (retry optimiste sur UNIQUE vs séquence DB vs advisory lock vs `ON CONFLICT` vs UUID), contraintes imposées au futur (pattern uniforme obligatoire pour tout nouveau générateur de numéro métier).
+- R-202 déplacé de MOYEN vers FERMÉ dans `docs/memory/OPEN_RISKS.md` ; entrée 2026-04-23 dans `RECENT_DECISIONS.md`.
+
+### Statut
+
+- [x] Implémenté (refactor Billing + alignement pattern avec Eshop360)
+- [x] Documenté (ADR-006)
+- [x] Testé (6 tests nouveaux, `InvoiceServiceTest` existant inchangé)
+
+### IMPACT_ANALYSIS (zone L2 Numérotation factures)
+
+- **Périmètre** : hardening de `Billing\InvoiceManager::generate()` et ajout de tests sur les 2 modules. Aucune modification de code Eshop360, aucune migration DB, aucune modification du format du numéro.
+- **Contrat runtime** :
+  - Scénario normal (aucune collision) : **identique** à avant — mêmes numéros générés, même ordre.
+  - Scénario de race (collision détectée par la contrainte UNIQUE) : **avant** = `QueryException 1062` non rattrapée → 500 client ; **après** = retry interne jusqu'à 4 fois, un numéro différent est généré à chaque itération, réponse succès transparente pour le client.
+  - Scénario pathologique (5 collisions consécutives) : `RuntimeException` explicite avec message diagnostique, au lieu de `QueryException` brute. Mieux tracé en prod.
+- **Concurrence** : deux `generate()` simultanés peuvent désormais produire des numéros séquentiels adjacents sans 500. La contrainte UNIQUE reste le filet final, le retry absorbe les collisions attendues.
+- **Multi-tenant** : non impacté. Billing stocke sur la connexion `system` (numérotation globale par design). Eshop360 utilise une UNIQUE par `(instance_id, invoice_number)` (isolation naturelle).
+- **Permissions** : non impactées — les appelants de `generate()` (SubscriptionManager, scheduled jobs) conservent leurs garde-fous d'authentification.
+- **Idempotence** : préservée. Un appel est idempotent au niveau DB (contrainte UNIQUE), l'application gère la race de façon déterministe.
+- **Rollback** : `git revert` sans risque (pas de migration DB, pas de schema change).
+- **Garde future** : les tests structurels `*_source_has_retry_loop_*` dans les deux modules bloquent toute PR qui retirerait le pattern (transaction, try/catch, constante MAX, boucle).
+
+### Lien
+
+- ADR : `docs/adr/ADR-006-invoice-numbering-atomicity.md`
+- Audit source : `docs/AUDIT-ARCHITECTURE-GO-LIVE.md` ISSUE-10
+- Migration UNIQUE Eshop360 (existante) : `Modules/Eshop360/Database/Migrations/2026_04_04_100002_add_unique_order_and_invoice_numbers.php`
+- Migration UNIQUE Billing (existante) : `Modules/Billing/Database/Migrations/2026_03_07_000003_create_invoices_table.php`
+- PR : (n° à renseigner)
+
+---
+
 ## CHG-2026-04-23-001 — R-004 fermé : idempotence commissions employés
 
 - **Date** : 2026-04-23
