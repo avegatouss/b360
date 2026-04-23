@@ -292,7 +292,20 @@ deptrac:
       - Lang
       - Eshop360
       - AppLayer
-    EshopCRM: &eshop_sublayer_base
+    # R-101 S2 : EshopCRM restreint (feuille, sauf Eshop360 transitoire
+    # pour BelongsToChannel, ScopedByUserAssignment et alias cross-domain
+    # vers Order/Invoice/OnlineOrder/SupportTicket — levés au fil des sous-lots).
+    EshopCRM:
+      - Core
+      - Auth
+      - Users
+      - Settings
+      - Billing
+      - Currency
+      - Lang
+      - Eshop360
+      - AppLayer
+    EshopChannel: &eshop_sublayer_base
       - Core
       - Auth
       - Users
@@ -315,7 +328,6 @@ deptrac:
       - EshopProjects
       - EshopReporting
       - AppLayer
-    EshopChannel: *eshop_sublayer_base
     EshopPricing: *eshop_sublayer_base
     EshopInventory: *eshop_sublayer_base
     EshopPromotions: *eshop_sublayer_base
