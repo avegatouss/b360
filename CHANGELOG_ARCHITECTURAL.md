@@ -13,6 +13,56 @@
 
 ---
 
+## CHG-2026-04-22-005 — R-003 fermé : intégrité du solde portefeuille
+
+- **Date** : 2026-04-22
+- **Type** : architecture (renforcement garde-fous financiers) + refactor (consolidation point d'entrée unique)
+- **Modules concernés** : Eshop360 (WalletDriver, FinanceService, ChannelPortalCustomerController, SaleController, migration)
+- **Impact** : élevé sur la zone L2 Wallet — nouvelle contrainte SGBD, refonte TOCTOU, suppression de deux chemins de mutation directe
+- **Breaking change** : non (tous les callers existants continuent via les mêmes signatures de méthode, la sémantique métier est inchangée)
+
+### Actions appliquées
+
+- Migration `Modules/Eshop360/Database/Migrations/2026_04_22_110001_add_check_constraint_wallet_balance` : ajoute `CHECK (wallet_balance >= 0)` sur `eshop_customers` en MySQL/PostgreSQL. Branche SQLite no-op (même pattern que la migration CHECK stock de R-001).
+- `Modules/Eshop360/Services/Payment/Drivers/WalletDriver.php` :
+  - `initiate()` : le check `wallet_balance < amount` est déplacé DANS la transaction, sous `lockForUpdate()`. Ferme la fenêtre TOCTOU entre l'ancien check ligne 29 (hors txn) et le decrement ligne 38.
+  - `refund()` : ajout de `lockForUpdate()` avant l'increment pour sérialiser les remboursements concurrents.
+  - Sortie de l'exception typée `InsufficientWalletBalanceException` sur solde insuffisant (meilleure ergonomie métier vs check silencieux).
+- `Modules/Eshop360/Services/Payment/Drivers/InsufficientWalletBalanceException.php` : nouvelle exception typée (public readonly `$available`, `$requested`).
+- `Modules/Eshop360/Http/Controllers/ChannelPortal/ChannelPortalCustomerController.php` : `walletTopup()` injecte `FinanceService` et appelle `creditWallet()` au lieu de `$customer->increment('wallet_balance', ...)` direct. Gain : lock pessimiste + `CustomerTransaction` d'audit + auto-pay des `CustomerDue` en attente.
+- `Modules/Eshop360/Http/Controllers/Sales/SaleController.php` : `storeReturn()` refund=wallet utilise `app(FinanceService::class)->creditWallet()` avec `Order::class` + `returnOrder->id` comme référence (trace du retour dans `CustomerTransaction`).
+- Ajout `Modules/Eshop360/Tests/Feature/WalletIntegrityTest.php` (7 tests) : structure migration + SQL CHECK, contrainte DB MySQL, WalletDriver source uses lock (TOCTOU fermée), débits séquentiels anti-négatif, audit trail FinanceService, structure ChannelPortal refactor, structure SaleReturn refactor.
+- ADR `docs/adr/ADR-004-wallet-integrity-strategy.md` : stratégie détaillée, 4 alternatives rejetées (CHECK seul, versioning optimiste, ledger double-entry, queue idempotente), contraintes imposées au futur.
+- R-003 déplacé de CRITIQUE vers FERMÉ dans `docs/memory/OPEN_RISKS.md` ; entrée 2026-04-22 dans `RECENT_DECISIONS.md`.
+
+### Statut
+
+- [x] Implémenté (code + migration)
+- [x] Documenté (ADR-004)
+- [x] Testé (7 tests nouveaux ; 3 tests wallet existants de `P0SafetyGuardsTest` conservés ; suite verte)
+
+### IMPACT_ANALYSIS (zone L2 Wallet + multi-tenant)
+
+- **Périmètre** : 2 modifications de code productif (WalletDriver + 2 controllers refactorés), 1 migration, 1 exception nouvelle, 7 tests, 1 ADR. La logique de `FinanceService::creditWallet/debitWallet` n'est PAS modifiée (elle était déjà correcte).
+- **Contrat runtime** :
+  - Solde insuffisant dans `WalletDriver::initiate()` retourne toujours `['success' => false, 'error' => "Solde insuffisant..."]` (message métier inchangé, seul le chemin d'obtention change : via exception typée au lieu de check direct).
+  - Le refund wallet depuis `SaleController::storeReturn` produit désormais un `CustomerTransaction` d'audit en plus du `Payment` négatif — amélioration de traçabilité, pas de breaking change.
+  - Le topup depuis le portail canal produit un `CustomerTransaction` et déclenche l'auto-pay des dues — correction d'une lacune connue.
+- **Concurrence** : tous les chemins muant `wallet_balance` sont désormais sous `lockForUpdate()`. Deux débits simultanés sur le même client se sérialisent. Le test `test_wallet_driver_sequential_debits_never_produce_negative` prouve le comportement.
+- **Multi-tenant** : les mutations restent dans l'instance du customer (FinanceService respecte `BelongsToInstance`, WalletDriver utilise `withoutGlobalScopes()->where('id', ...)` qui borne sur la PK donc sur une seule ligne).
+- **Permissions** : non impactées — le gating HTTP (middleware `channel.access`, permissions Spatie) reste côté controllers.
+- **Idempotence** : un double-click sur walletTopup crée 2 CustomerTransaction distinctes (comportement normal : chaque opération est une transaction distincte, à dédupliquer côté UI si besoin). Le refund de vente est protégé par la transaction englobante de `storeReturn`.
+- **Rollback** : `git revert` + `php artisan migrate:rollback` (la migration a un `down()` qui retire la contrainte CHECK en MySQL/PG).
+- **Garde future** : les 4 tests structurels (`test_check_constraint_migration_exists_with_correct_sql`, `test_wallet_driver_source_uses_lock_for_balance_check`, `test_channel_portal_topup_source_uses_finance_service`, `test_sale_return_source_uses_finance_service_for_wallet_refund`) bloquent toute régression par grep du source code — toute PR qui retirerait les imports, le lock, ou utiliserait à nouveau `Customer::increment('wallet_balance')` directement casse un test.
+
+### Lien
+
+- ADR : `docs/adr/ADR-004-wallet-integrity-strategy.md`
+- Audit source : `docs/AUDIT-ARCHITECTURE-GO-LIVE.md` ISSUE-03
+- PR : (n° à renseigner)
+
+---
+
 ## CHG-2026-04-22-004 — R-002 fermé : idempotence webhooks (Billing + Eshop360)
 
 - **Date** : 2026-04-22

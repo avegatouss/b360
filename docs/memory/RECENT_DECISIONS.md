@@ -5,6 +5,18 @@
 
 ---
 
+## 2026-04-22 — R-003 fermé : intégrité solde portefeuille (4 chantiers)
+
+- **Décision** : défense en profondeur 3 couches (CHECK SGBD `wallet_balance >= 0` + point d'entrée unique `FinanceService` + lock pessimiste `WalletDriver`).
+- **Chantiers** :
+  1. Migration `2026_04_22_110001` avec CHECK constraint (MySQL/PG, no-op SQLite).
+  2. `WalletDriver::initiate/refund` : check + mutation sous `lockForUpdate()` dans `DB::transaction`. Nouvelle exception typée `InsufficientWalletBalanceException`.
+  3. `ChannelPortalCustomerController::walletTopup` refactoré → passe par `FinanceService::creditWallet()`.
+  4. `SaleController::storeReturn` refund=wallet refactoré → idem.
+- **ADR** : `docs/adr/ADR-004-wallet-integrity-strategy.md`.
+- **Tests nouveaux** : 7 tests feature (WalletIntegrityTest).
+- **Source** : lot L1 CRITIQUE, branche `feat/eshop360-wallet-integrity`, audit ISSUE-03.
+
 ## 2026-04-22 — R-002 fermé : idempotence webhooks (Billing + Eshop360)
 
 - **Décision** : défense en profondeur à 3 couches (UNIQUE SGBD + guard applicatif fast-path + HMAC signature) appliquée uniformément aux deux surfaces webhook.
