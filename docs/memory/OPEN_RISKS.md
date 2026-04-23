@@ -22,8 +22,9 @@ _(aucun risque critique ouvert — R-001, R-002, R-003, R-004 fermés le 2026-04
   - ✅ **S1 — Catalog** (2026-04-23) : 7 modèles déplacés sous `Domain/Catalog/Models/` (Product, Category, Brand, ProductGroup, ProductTax, ProductVariation, Tax) + stubs d'alias rétrocompatibles dans `Models/` + ruleset `EshopCatalog` restreinte (socles + Eshop360 temp) + ADR-009. 0 régression (659 passed).
   - ✅ **S2 — CRM** (2026-04-23) : 4 modèles déplacés sous `Domain/CRM/Models/` (Customer, CustomerGroup, CustomerDue, CustomerTransaction) + stubs d'alias + ruleset `EshopCRM` restreinte + ADR-010. 0 régression (659 passed).
   - ✅ **S3 — Channel** (2026-04-23) : 4 modèles déplacés sous `Domain/Channel/Models/` (DistributionChannel, ChannelProductPrice, ChannelMarginLog, ChannelUser) + stubs d'alias + ruleset `EshopChannel` restreinte + ADR-011. Décision architecturale : `BelongsToChannel` + `ChannelScope` restent dans `Database/Traits/Scopes/` (infrastructure partagée intra-Eshop360, évite dépendance circulaire Catalog↔Channel). 0 régression (659 passed).
-  - ⏳ S4 — Pricing normalisation (déjà sous `Pricing/`, 3 jours)
+  - ✅ **S4 — Pricing normalisation** (2026-04-23) : **aucun fichier déplacé** — `Modules/Eshop360/Pricing/` reste à son emplacement historique (sous-domaine déjà auto-contenu sous son propre namespace avec 23 classes). Seule action : ruleset deptrac `EshopPricing` resserrée de permissive → `socles + EshopCatalog + Eshop360 (transitoire)`. Pricing confirmé feuille logique (0 dépendance vers CRM/Channel/Inventory/Sales/Finance). ADR-012. 0 régression.
   - ⏳ S5 — Inventory (déjà partiellement extrait, **L1**, 5 jours)
+  - ⏳ S5 — Inventory (déjà partiellement extrait, **L1**, 5 jours) ← prochain
   - ⏳ S6 — Promotions (2 jours)
   - ⏳ S7 — Purchasing (3 jours)
   - ⏳ S8 — Sales (**L1**, 7 jours)

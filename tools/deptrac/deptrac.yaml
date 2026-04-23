@@ -318,7 +318,25 @@ deptrac:
       - Lang
       - Eshop360
       - AppLayer
-    EshopPricing: &eshop_sublayer_base
+    # R-101 S4 : EshopPricing restreint.
+    # Dépendances réelles observées : socles + Product (via alias Eshop360
+    # transitoire). Pricing est une FEUILLE logique : aucune dépendance
+    # intra-Eshop360 vers les autres sous-domaines (CRM, Channel, Inventory,
+    # Sales…). Voir ADR-012.
+    # Le sous-domaine Pricing reste physiquement sous `Modules/Eshop360/Pricing/`
+    # (non déplacé vers `Domain/Pricing/`) — cohérence du découpage existant.
+    EshopPricing:
+      - Core
+      - Auth
+      - Users
+      - Settings
+      - Billing
+      - Currency
+      - Lang
+      - Eshop360
+      - EshopCatalog
+      - AppLayer
+    EshopInventory: &eshop_sublayer_base
       - Core
       - Auth
       - Users
@@ -341,7 +359,6 @@ deptrac:
       - EshopProjects
       - EshopReporting
       - AppLayer
-    EshopInventory: *eshop_sublayer_base
     EshopPromotions: *eshop_sublayer_base
     EshopPurchasing: *eshop_sublayer_base
     EshopSales: *eshop_sublayer_base
