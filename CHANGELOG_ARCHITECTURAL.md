@@ -13,6 +13,48 @@
 
 ---
 
+## CHG-2026-04-23-006 — R-101 sous-lot S0 : préparation découpage Eshop360
+
+- **Date** : 2026-04-23
+- **Type** : architecture (préparation d'extraction, aucun code applicatif déplacé)
+- **Modules concernés** : Eshop360 (configuration deptrac intra-module), outillage (`deptrac.yaml` + miroir `tools/`)
+- **Impact** : nul côté runtime — aucun fichier PHP applicatif modifié. Préparation structurelle pour les sous-lots S1..S11.
+- **Breaking change** : non.
+
+### Actions appliquées
+
+- `deptrac.yaml` : ajout de **13 layers intra-Eshop360** (`EshopCatalog`, `EshopCRM`, `EshopChannel`, `EshopPricing`, `EshopInventory`, `EshopPromotions`, `EshopPurchasing`, `EshopSales`, `EshopFinance`, `EshopHR`, `EshopCommunication`, `EshopProjects`, `EshopReporting`).
+- Le layer `Eshop360` est modifié pour utiliser un collector `bool` avec `must`/`must_not` : il capture tout `Modules/Eshop360/.*` SAUF `Modules/Eshop360/Domain/.*` et `Modules/Eshop360/Pricing/.*`. Au fil des sous-lots, ce layer se vide à mesure que le code migre vers les sous-layers.
+- Ruleset **permissive** au départ : chaque sous-layer peut dépendre de tous les autres + du reste `Eshop360` + des socles (`Core`, `Auth`, `Users`, `Settings`, `Billing`, `Currency`, `Lang`, `AppLayer`). Le resserrement sera progressif à chaque sous-lot (S1..S11) pour enforcer l'architecture cible.
+- `graphviz.groups.L3` enrichi avec les 13 nouveaux sous-layers (visualisation architecture).
+- `tools/deptrac/deptrac.yaml` : synchronisé avec root.
+- Ajout `docs/adr/ADR-008-eshop360-subdomain-decomposition-strategy.md` : stratégie C (hybride) documentée avec 4 alternatives rejetées, séquencement des 13 sous-lots, règles de dépendance cibles, contraintes imposées au futur.
+- `docs/memory/OPEN_RISKS.md` R-101 : statut passé de « roadmap définie, exécution à planifier » à « en cours, sous-lot S0 livré » + plan détaillé des sous-lots S0..S12.
+- `docs/memory/RECENT_DECISIONS.md` : entrée 2026-04-23 S0.
+
+### Statut
+
+- [x] Implémenté (config deptrac)
+- [x] Documenté (ADR-008)
+- [x] Testé (deptrac : 0 violations, 13 skipped cross-module préservés)
+
+### IMPACT_ANALYSIS
+
+- **Périmètre** : purement structurel (configuration + ADR + mémoire). Aucun fichier PHP applicatif modifié, aucune migration DB, aucun test modifié.
+- **Contrat runtime** : strictement identique. Aucune classe déplacée, aucun namespace changé.
+- **Concurrence / Multi-tenant / Permissions / Idempotence** : non applicables à ce sous-lot.
+- **Rollback** : `git revert` sans risque. Les layers ajoutés sont purement descriptifs ; leur suppression revient à l'état pré-S0.
+- **Garde future** : deptrac enforce désormais que tout nouveau fichier doit respecter les layers déclarés. Les sous-lots S1..S11 vont progressivement resserrer la ruleset.
+
+### Lien
+
+- ADR : `docs/adr/ADR-008-eshop360-subdomain-decomposition-strategy.md`
+- Roadmap source : `docs/Ins/b360_evolution_strategy.md` §1.4
+- Audit cartographie : `docs/cartographie/02_eshop360_focus.md`
+- PR : (n° à renseigner)
+
+---
+
 ## CHG-2026-04-23-005 — R-103 fermé : consolidation Codifarm → DistributionChannel
 
 - **Date** : 2026-04-23

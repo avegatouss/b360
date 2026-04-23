@@ -14,6 +14,16 @@
 - **Résidus acceptables** : le mot « CODIFARM » reste dans les Seeders/Tests comme nom commercial de grossiste pharmaceutique ivoirien (donnée démo), pas comme technologie. Les tests structurels scannent uniquement le code applicatif, pas les Seeders/Tests.
 - **Source** : lot MAJEUR, branche `chore/eshop360-close-codifarm-consolidation`, audit ISSUE + §2.3 du plan d'évolution.
 
+## 2026-04-23 — R-101 sous-lot S0 : préparation découpage Eshop360
+
+- **Décision** : adoption de la **stratégie C (hybride)** pour extraire Eshop360 monolithique en sous-domaines — voir ADR-008.
+  - Phase 1 : sous-dossiers `Modules/Eshop360/Domain/<X>/` disciplinés par deptrac (S0 à S11).
+  - Phase 2 : promotion en vrais modules Laravel différée jusqu'à besoin externe concret (ex. Menuiserie360 consomme Catalog).
+- **Sous-lot S0 livré** : 13 layers deptrac intra-Eshop360 (`EshopCatalog`, `EshopCRM`, `EshopChannel`, `EshopPricing`, `EshopInventory`, `EshopPromotions`, `EshopPurchasing`, `EshopSales`, `EshopFinance`, `EshopHR`, `EshopCommunication`, `EshopProjects`, `EshopReporting`) + ruleset permissive temporaire + layer résiduel `Eshop360` (le "reste" monolithique qui se vide au fil des sous-lots).
+- **Choix non-trivial** : ruleset **permissive** au départ, resserrement **progressif** à chaque sous-lot (au lieu d'une baseline géante capturant toutes les violations actuelles). Plus lisible, plus maintenable.
+- **Prochains sous-lots** : S1 Catalog (5j) → S2 CRM (3j) → S3 Channel (3j) → ... → S12 Clôture. Total ~44 jours étalés.
+- **Source** : lot MAJEUR, branche `chore/eshop360-domain-layers-baseline`, ADR-008 + roadmap `docs/Ins/b360_evolution_strategy.md` §1.4.
+
 ## 2026-04-23 — R-201 fermé : suppression du squelette InventoryX
 
 - **Décision** : SUPPRIMER le module InventoryX (preuves convergentes : 0 fichier PHP, 0 référence prod, roadmap explicite task #22, jamais chargé par le système de modules).

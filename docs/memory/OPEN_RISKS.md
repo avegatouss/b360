@@ -13,10 +13,26 @@ _(aucun risque critique ouvert — R-001, R-002, R-003, R-004 fermés le 2026-04
 ### R-101 — Eshop360 monolithique
 
 - **Source** : cartographie 2026-04-04
-- **Constat** : 83 modèles, 78 contrôleurs, 128 migrations
-- **Impact** : maintenance difficile, couplage fort
-- **Plan** : extraction en sous-domaines (Catalog, Pricing, Inventory, Sales, Finance, CRM, Channel)
-- **Statut** : roadmap définie, exécution à planifier
+- **Constat** : 89 modèles / 81 contrôleurs / 54 services / 146 migrations / ~22 276 LOC (chiffres 2026-04-23)
+- **Impact** : maintenance difficile, couplage fort, empêche un module tiers (Menuiserie360) de consommer proprement une partie d'Eshop360
+- **Plan** : extraction progressive en 13 sous-domaines (`Catalog`, `CRM`, `Channel`, `Pricing`, `Inventory`, `Promotions`, `Purchasing`, `Sales`, `Finance`, `HR`, `Communication`, `Projects`, `Reporting`) selon ADR-008 — stratégie C (hybride `Modules/Eshop360/Domain/<X>/` + deptrac sub-layers, promotion en vrais modules Laravel différée jusqu'à besoin externe concret)
+- **Statut** : **en cours** — Phase 0 (R-001..R-004) et Phase 1 (R-102, R-103, R-104, R-201, R-202, R-301) livrées, Phase 2 démarrée
+- **Sous-lots** :
+  - ✅ **S0 — Préparation** (2026-04-23) : 13 layers deptrac intra-Eshop360 + ruleset permissive + ADR-008
+  - ⏳ S1 — Catalog (feuille, 5 jours)
+  - ⏳ S2 — CRM (feuille, 3 jours)
+  - ⏳ S3 — Channel (déjà partiellement extrait, 3 jours)
+  - ⏳ S4 — Pricing normalisation (déjà sous `Pricing/`, 3 jours)
+  - ⏳ S5 — Inventory (déjà partiellement extrait, **L1**, 5 jours)
+  - ⏳ S6 — Promotions (2 jours)
+  - ⏳ S7 — Purchasing (3 jours)
+  - ⏳ S8 — Sales (**L1**, 7 jours)
+  - ⏳ S9 — Finance (**L1**, 5 jours)
+  - ⏳ S10 — HR (2 jours)
+  - ⏳ S11 — Communication + Projects + Reporting (3 jours)
+  - ⏳ S12 — Clôture R-101 (2 jours)
+- **Effort total** : ~44 jours étalés (9-10 semaines plein temps, 4-5 mois à 20%)
+- **ADR** : `docs/adr/ADR-008-eshop360-subdomain-decomposition-strategy.md`
 
 ## FERMÉ
 
