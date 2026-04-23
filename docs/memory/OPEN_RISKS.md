@@ -6,12 +6,7 @@
 
 ## CRITIQUE
 
-### R-004 — Commissions employés dupliquées
-
-- **Source** : ISSUE-02
-- **Module** : Eshop360 (HR, EmployeeCommission)
-- **Impact** : sur-paiement RH
-- **Statut** : à investiguer
+_(aucun risque critique ouvert — R-001, R-002, R-003, R-004 fermés le 2026-04-22 et 2026-04-23. Voir section **FERMÉ** ci-dessous.)_
 
 ## MAJEUR
 
@@ -30,6 +25,18 @@
 - **Plan** : migration documentée dans `docs/Ins/b360_evolution_strategy.md` §2.3
 
 ## FERMÉ
+
+### R-004 — Commissions employés dupliquées (fermée 2026-04-23)
+
+- **Source** : `docs/AUDIT-ARCHITECTURE-GO-LIVE.md` ISSUE-02
+- **Constat** : le code avait déjà un guard applicatif (`exists()`) et la migration P0 `2026_04_04_200001` avait ajouté la contrainte UNIQUE `(order_id, employee_id)` sur `eshop_employee_commissions`. Manquait : l'absorption gracieuse de la race (une requête concurrente gagnant entre `exists()` et `create()` faisait remonter `UniqueConstraintViolationException` en 500), la suppression de la méthode orpheline `HRService::recordCommission()` (0 appelant prod, sans guard), et les tests de la couverture complète.
+- **Résolution** : défense en profondeur 2 couches + absorption silencieuse (voir ADR-005).
+  - `HRService::calculateCommissionForSale()` wrap désormais `EmployeeCommission::create()` dans un `try/catch UniqueConstraintViolationException` → race absorbée, `Log::info` pour observabilité, pas de 500.
+  - `HRService::recordCommission()` (orpheline, sans guard) supprimée — piège futur écarté.
+- **Tests** : `Modules/Eshop360/Tests/Feature/CommissionIdempotenceTest` (3 tests) — structurel (guard + catch + import exception + Log::info présents), DB-level UNIQUE enforced, graceful absorption via le flow réel. `P0SafetyGuardsTest::test_commission_idempotente_si_ordre_completed_deux_fois` conservé.
+- **Correction documentation** : `docs/governance/PROTECTED_AREAS.md` ligne 94 corrigée (référençait un `CommissionService` inexistant → `HRService::calculateCommissionForSale`).
+- **ADR** : `docs/adr/ADR-005-commission-idempotency-strategy.md`.
+- **Commit** : branche `feat/eshop360-commission-idempotence-hardening`.
 
 ### R-003 — Solde portefeuille / compte négatif (fermée 2026-04-22)
 

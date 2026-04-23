@@ -5,6 +5,17 @@
 
 ---
 
+## 2026-04-23 — R-004 fermé : idempotence commissions employés
+
+- **Décision** : défense en profondeur 2 couches + absorption silencieuse de la race (guard applicatif `exists()` + contrainte UNIQUE SGBD + `try/catch UniqueConstraintViolationException` avec `Log::info`).
+- **Chantiers** :
+  1. `HRService::calculateCommissionForSale` durci avec try/catch sur la violation UNIQUE → race absorbée en `Log::info`, plus de 500.
+  2. `HRService::recordCommission()` (orpheline, 0 appelant prod, sans guard) supprimée.
+  3. `PROTECTED_AREAS.md` corrigé (`CommissionService` inexistant → `HRService`).
+- **ADR** : `docs/adr/ADR-005-commission-idempotency-strategy.md`.
+- **Tests nouveaux** : 3 (CommissionIdempotenceTest) — structure pattern, UNIQUE enforced, absorption gracieuse.
+- **Source** : lot L2 SENSIBLE, branche `feat/eshop360-commission-idempotence-hardening`, audit ISSUE-02.
+
 ## 2026-04-22 — R-003 fermé : intégrité solde portefeuille (4 chantiers)
 
 - **Décision** : défense en profondeur 3 couches (CHECK SGBD `wallet_balance >= 0` + point d'entrée unique `FinanceService` + lock pessimiste `WalletDriver`).

@@ -91,7 +91,7 @@
 
 - Numérotation factures (`InvoiceNumberGenerator`)
 - Wallet / soldes clients (`Modules/Eshop360/Services/WalletService`)
-- Commissions employés (`Modules/Eshop360/Services/CommissionService`)
+- Commissions employés (`Modules/Eshop360/Services/HRService::calculateCommissionForSale` — cf. ADR-005)
 - Migrations de schéma sur tables Eshop360 critiques (products, orders, invoices, stocks)
 - HookRegistry (modification du registre central)
 - ModuleManager (activation/désactivation modules)
