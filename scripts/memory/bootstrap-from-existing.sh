@@ -138,11 +138,6 @@ for module in "${MODULES[@]}"; do
             stabilite="stable"
             note="socle plateforme"
             ;;
-        InventoryX)
-            statut="expérimental"
-            stabilite="squelette"
-            note="non chargé par le système de modules"
-            ;;
         *)
             note="—"
             ;;
@@ -267,15 +262,7 @@ cat >> docs/memory/OPEN_RISKS.md <<'EOF'
 
 ## MOYEN
 
-### R-201 — InventoryX squelette non chargé
-
-- **Constat** : dossier visible mais pas de `module.json` ni provider chargé
-- **Plan** : décider — finaliser ou supprimer
-
-### R-202 — Numéro facture non atomique
-
-- **Source** : ISSUE-10 audit go-live
-- **Plan** : utiliser séquence DB ou advisory lock
+_(aucun risque moyen ouvert à la date de bootstrap — section préservée pour évolution future.)_
 
 ## FAIBLE
 
@@ -389,7 +376,7 @@ B360 est une plateforme SaaS multi-tenant Laravel 12 modulaire (nwidart/laravel-
 Couche système     : Installer, Core, Auth, Users, Instances, Settings, ModuleManager
 Couche transverse  : Billing, Lang, Currency, Dashboard, Demo
 Couche métier      : Eshop360 (monolithique, en découpage)
-Couche future      : InventoryX (squelette), Menuiserie360 (à concevoir)
+Couche future      : Menuiserie360 (à concevoir)
 \`\`\`
 
 ## Mécanisme d'extension central

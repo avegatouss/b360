@@ -23,7 +23,6 @@ parameters:
             - public/*
             - node_modules/*
             - Modules/*/Database/Migrations/*
-            - Modules/InventoryX/*
             # Fichiers référençant des traits non installés (MediaLibrary)
             - app/Models/Personne.php
             - app/Models/PersonneMorale.php
