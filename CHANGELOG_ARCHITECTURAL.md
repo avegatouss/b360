@@ -13,6 +13,58 @@
 
 ---
 
+## CHG-2026-04-23-001 — R-004 fermé : idempotence commissions employés
+
+- **Date** : 2026-04-23
+- **Type** : architecture (hardening existant) + décommissionnement (méthode orpheline)
+- **Modules concernés** : Eshop360 (HRService, tests, doc gouvernance)
+- **Impact** : faible — le guard et la contrainte étaient déjà en place depuis P0 (2026-04-04). Ce lot ajoute l'absorption gracieuse de la race et ferme formellement R-004.
+- **Breaking change** : non — la méthode supprimée (`HRService::recordCommission()`) n'avait aucun appelant production.
+
+### Actions appliquées
+
+- `Modules/Eshop360/Services/HRService.php` :
+  - `calculateCommissionForSale()` : ajout d'un `try/catch UniqueConstraintViolationException` autour de `EmployeeCommission::create()`. Si la contrainte UNIQUE `(order_id, employee_id)` refuse l'insertion (race gagnée par une autre requête entre notre `exists()` et notre `create()`), l'exception est journalisée (`Log::info`) et absorbée silencieusement — plus d'erreur 500 client.
+  - Suppression de la méthode orpheline `recordCommission(Employee, Order)` (66→0 appelants prod, pas de guard, piège pour évolution future).
+  - Imports réorganisés alphabétiquement (ajouts : `UniqueConstraintViolationException`, `Log`).
+- Ajout `Modules/Eshop360/Tests/Feature/CommissionIdempotenceTest.php` (3 tests) :
+  - **STRUCTURAL** : grep du source de `HRService` pour verrouiller la présence du guard applicatif, de l'import de l'exception, du try/catch, et de `Log::info`.
+  - **DB-LEVEL** : insertion directe de 2 commissions avec même `(order_id, employee_id)` → la 2ᵉ lève `UniqueConstraintViolationException` (preuve que la contrainte UNIQUE P0 est bien active).
+  - **GRACEFUL** : scénario réel (commission pré-existante) → `calculateCommissionForSale()` via fast-path garde le compte à 1, pas d'exception propagée.
+- Correction `docs/governance/PROTECTED_AREAS.md` ligne 94 : le chemin `Modules/Eshop360/Services/CommissionService` n'existe pas ; remplacé par `HRService::calculateCommissionForSale` avec référence ADR-005.
+- ADR `docs/adr/ADR-005-commission-idempotency-strategy.md` : défense en profondeur 2 couches + absorption gracieuse ; 4 alternatives rejetées (guard seul, UNIQUE seul, `firstOrCreate`, `lockForUpdate` sur Order) ; contraintes imposées au futur.
+- R-004 déplacé de CRITIQUE vers FERMÉ dans `docs/memory/OPEN_RISKS.md`. La section CRITIQUE est désormais **entièrement vide** (R-001, R-002, R-003, R-004 fermés).
+- Entrée 2026-04-23 dans `docs/memory/RECENT_DECISIONS.md`.
+
+### Statut
+
+- [x] Implémenté (guard + try/catch + suppression méthode orpheline)
+- [x] Documenté (ADR-005 + correction PROTECTED_AREAS)
+- [x] Testé (3 tests nouveaux ; P0SafetyGuardsTest::test_commission_idempotente_si_ordre_completed_deux_fois conservé)
+
+### IMPACT_ANALYSIS (zone L2 Commissions employés)
+
+- **Périmètre** : hardening d'un service HRService existant (try/catch ajouté, méthode orpheline supprimée). La logique de calcul (`$order->total * commission_rate / 100`) est strictement inchangée.
+- **Contrat runtime** :
+  - Comportement observable pour l'utilisateur : identique en scénario normal (même fast-path, même calcul, même retour void).
+  - Scénario de race (requêtes concurrentes) : avant = 500 HTTP client + doublon potentiel si guard contourné ; après = 200 HTTP client + journal `Log::info`, toujours une seule commission.
+  - L'appelant unique (`OrderService::updateStatus`) est inchangé.
+- **Concurrence** : la race window entre `exists()` et `create()` est désormais explicitement gérée. La contrainte UNIQUE P0 (déjà en place) bloque toute race qui passerait le guard ; notre catch la traduit en succès idempotent.
+- **Multi-tenant** : non impacté — la clé UNIQUE est `(order_id, employee_id)` qui contient implicitement l'instance via les FK.
+- **Permissions** : non impactées.
+- **Idempotence** : sujet même du lot.
+- **Rollback** : `git revert` sans risque, pas de migration DB (la contrainte UNIQUE reste en place côté P0).
+- **Garde future** : 3 tests structurels bloquent toute PR qui retirerait le guard, l'import de l'exception, le try/catch ou le `Log::info`. La suppression de `recordCommission()` empêche toute résurrection accidentelle d'un chemin non protégé.
+
+### Lien
+
+- ADR : `docs/adr/ADR-005-commission-idempotency-strategy.md`
+- Audit source : `docs/AUDIT-ARCHITECTURE-GO-LIVE.md` ISSUE-02
+- Migration P0 (existante) : `Modules/Eshop360/Database/Migrations/2026_04_04_200001_add_p0_safety_guards.php`
+- PR : (n° à renseigner)
+
+---
+
 ## CHG-2026-04-22-005 — R-003 fermé : intégrité du solde portefeuille
 
 - **Date** : 2026-04-22
