@@ -14,6 +14,18 @@
 - **Résidus acceptables** : le mot « CODIFARM » reste dans les Seeders/Tests comme nom commercial de grossiste pharmaceutique ivoirien (donnée démo), pas comme technologie. Les tests structurels scannent uniquement le code applicatif, pas les Seeders/Tests.
 - **Source** : lot MAJEUR, branche `chore/eshop360-close-codifarm-consolidation`, audit ISSUE + §2.3 du plan d'évolution.
 
+## 2026-04-23 — R-101 sous-lot S1 : extraction Catalog
+
+- **Décision** : premier sous-lot d'extraction effective. 7 modèles Catalog (Product, Category, Brand, ProductGroup, ProductTax, ProductVariation, Tax) déplacés physiquement de `Modules/Eshop360/Models/` vers `Modules/Eshop360/Domain/Catalog/Models/` avec mise à jour du namespace.
+- **Rétrocompatibilité 100%** : stubs d'alias de 13 lignes créés dans `Modules/Eshop360/Models/<Nom>.php` qui `extends` le canon. Les 50+ consommateurs existants continuent de fonctionner sans aucune modification.
+- **Product.php** : ajout de 5 imports pour les relations cross-sous-domaine (Stock, OrderItem, Supplier, ChannelProductPrice, DistributionChannel) — ces imports pointent vers les alias `Modules\Eshop360\Models\*` et seront remplacés par leurs FQN canoniques au fil des sous-lots S3/S5/S7/S8.
+- **Deptrac** : ruleset `EshopCatalog` restreinte à socles + Eshop360 (dépendance transitoire liée à BelongsToChannel, à lever au sous-lot S3).
+- **PHPStan** : baseline régénérée (3647 erreurs baselined vs 3656 avant) — les erreurs de traits sur les modèles Catalog se sont déplacées vers le nouveau namespace.
+- **Validation** : 659 tests passed (aucune régression), phpstan OK, deptrac 0 violations.
+- **Pattern répétable** : ce schéma (git mv + namespace update + stubs d'alias + resserrement deptrac + baseline régénérée) sera appliqué aux sous-lots S2..S11.
+- **ADR** : `docs/adr/ADR-009-eshop360-catalog-subdomain-extraction.md`.
+- **Source** : lot R-101 S1, branche `refactor/eshop360-s1-catalog-extraction`.
+
 ## 2026-04-23 — R-101 sous-lot S0 : préparation découpage Eshop360
 
 - **Décision** : adoption de la **stratégie C (hybride)** pour extraire Eshop360 monolithique en sous-domaines — voir ADR-008.

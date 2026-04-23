@@ -19,7 +19,7 @@ _(aucun risque critique ouvert — R-001, R-002, R-003, R-004 fermés le 2026-04
 - **Statut** : **en cours** — Phase 0 (R-001..R-004) et Phase 1 (R-102, R-103, R-104, R-201, R-202, R-301) livrées, Phase 2 démarrée
 - **Sous-lots** :
   - ✅ **S0 — Préparation** (2026-04-23) : 13 layers deptrac intra-Eshop360 + ruleset permissive + ADR-008
-  - ⏳ S1 — Catalog (feuille, 5 jours)
+  - ✅ **S1 — Catalog** (2026-04-23) : 7 modèles déplacés sous `Domain/Catalog/Models/` (Product, Category, Brand, ProductGroup, ProductTax, ProductVariation, Tax) + stubs d'alias rétrocompatibles dans `Models/` + ruleset `EshopCatalog` restreinte (socles + Eshop360 temp) + ADR-009. 0 régression (659 passed).
   - ⏳ S2 — CRM (feuille, 3 jours)
   - ⏳ S3 — Channel (déjà partiellement extrait, 3 jours)
   - ⏳ S4 — Pricing normalisation (déjà sous `Pricing/`, 3 jours)

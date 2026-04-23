@@ -276,7 +276,23 @@ deptrac:
     #   - EshopProjects → EshopHR, EshopCRM
     #   - EshopReporting → lecture transverse (tous)
     # ═══════════════════════════════════════════════════════════════
-    EshopCatalog: &eshop_sublayer_base
+    # R-101 S1 : EshopCatalog est désormais RESTREINT.
+    # Dépendances autorisées : socles + Eshop360 (transition, pour
+    # BelongsToChannel et les alias Stock/OrderItem/Supplier/...).
+    # Aucune dépendance vers les autres sous-layers EshopX.
+    # Le lien Eshop360 → socles uniquement sera atteint au sous-lot S3
+    # (déplacement de BelongsToChannel vers Domain/Channel/).
+    EshopCatalog:
+      - Core
+      - Auth
+      - Users
+      - Settings
+      - Billing
+      - Currency
+      - Lang
+      - Eshop360
+      - AppLayer
+    EshopCRM: &eshop_sublayer_base
       - Core
       - Auth
       - Users
@@ -299,7 +315,6 @@ deptrac:
       - EshopProjects
       - EshopReporting
       - AppLayer
-    EshopCRM: *eshop_sublayer_base
     EshopChannel: *eshop_sublayer_base
     EshopPricing: *eshop_sublayer_base
     EshopInventory: *eshop_sublayer_base
