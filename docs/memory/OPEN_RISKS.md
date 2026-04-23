@@ -18,13 +18,20 @@ _(aucun risque critique ouvert — R-001, R-002, R-003, R-004 fermés le 2026-04
 - **Plan** : extraction en sous-domaines (Catalog, Pricing, Inventory, Sales, Finance, CRM, Channel)
 - **Statut** : roadmap définie, exécution à planifier
 
-### R-103 — Double système Codifarm / DistributionChannel
-
-- **Tables** : `eshop_codifarm_margin_config` (legacy SAPHIR) vs `eshop_distribution_channels` (actif)
-- **Impact** : double écriture de logs, source de vérité ambiguë
-- **Plan** : migration documentée dans `docs/Ins/b360_evolution_strategy.md` §2.3
-
 ## FERMÉ
+
+### R-103 — Double système Codifarm / DistributionChannel (fermée 2026-04-23)
+
+- **Source** : `docs/AUDIT-ARCHITECTURE-GO-LIVE.md` + `docs/Ins/b360_evolution_strategy.md` §2.3.
+- **Constat au jour du lot** : la migration avait déjà été exécutée (chaîne `2026_03_16_100002_migrate_codifarm_to_channels` + `2026_03_16_100003_drop_codifarm_tables_and_columns` — statut `Ran` confirmé par `migrate:status`). Les tables `eshop_codifarm_margin_config` et `eshop_codifarm_margin_logs` ont été supprimées, les colonnes `orders.is_codifarm` et `products.sale_price_codifarm` aussi. Aucun code applicatif actif (Services/Controllers/Models/Domain) ne référence la structure legacy. Seules subsistent des mentions du mot « codifarm » dans les Seeders de démo et les Tests comme **nom métier** (`[DEMO] CODIFARM` = nom d'un grossiste pharmaceutique ivoirien utilisé comme donnée de canal de démo, slug `demo-codifarm`) — acceptables car ce sont des données, pas de la structure technique.
+- **Résolution** : fermeture formelle du risque + verrouillage anti-régression via ADR-007 et tests structurels.
+- **Tests nouveaux** : `Modules/Eshop360/Tests/Feature/CodifarmLegacyRemovalTest` (3 tests) :
+  - Les tables legacy `eshop_codifarm_margin_config` et `eshop_codifarm_margin_logs` n'existent plus.
+  - Les colonnes `eshop_orders.is_codifarm` et `eshop_products.sale_price_codifarm` n'existent plus.
+  - Scan récursif de `Modules/Eshop360/{Services,Http/Controllers,Models,Domain}/` → aucune référence à `codifarm_margin_config`, `codifarm_margin_log`, `is_codifarm`, `sale_price_codifarm`, `CodifarmMarginConfig`, `CodifarmMarginLog`. Toute PR qui réintroduirait ces tokens casse ce test.
+- **ADR** : `docs/adr/ADR-007-codifarm-channel-consolidation.md`.
+- **Canon** : `DistributionChannel` + `ChannelMarginLog` + `ChannelProductPrice` (générique, N canaux par instance, support hub/portail/pricing per-canal).
+- **Commit** : branche `chore/eshop360-close-codifarm-consolidation`.
 
 ### R-201 — InventoryX squelette non chargé (fermée 2026-04-23)
 

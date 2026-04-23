@@ -5,6 +5,15 @@
 
 ---
 
+## 2026-04-23 — R-103 fermé : consolidation Codifarm → DistributionChannel
+
+- **Décision** : acter la suppression du système legacy Codifarm (déjà migré+droppé par la chaîne P0 `2026_03_16_100002/100003`) et poser les verrous anti-régression. Canon unique désormais : `DistributionChannel` + `ChannelMarginLog` + `ChannelProductPrice`.
+- **Constat clé** : aucun chantier de code à faire — migration et refactor applicatif déjà livrés en P0 (mars 2026). Il manquait la **fermeture formelle** + **tests structurels anti-résurrection**.
+- **Tests nouveaux** : 3 (`CodifarmLegacyRemovalTest`) — tables absentes, colonnes absentes, aucune référence legacy dans le code applicatif.
+- **ADR** : `docs/adr/ADR-007-codifarm-channel-consolidation.md` (contraintes imposées au futur : réintroduire les tokens legacy dans Services/Controllers/Models/Domain casse le test structurel).
+- **Résidus acceptables** : le mot « CODIFARM » reste dans les Seeders/Tests comme nom commercial de grossiste pharmaceutique ivoirien (donnée démo), pas comme technologie. Les tests structurels scannent uniquement le code applicatif, pas les Seeders/Tests.
+- **Source** : lot MAJEUR, branche `chore/eshop360-close-codifarm-consolidation`, audit ISSUE + §2.3 du plan d'évolution.
+
 ## 2026-04-23 — R-201 fermé : suppression du squelette InventoryX
 
 - **Décision** : SUPPRIMER le module InventoryX (preuves convergentes : 0 fichier PHP, 0 référence prod, roadmap explicite task #22, jamais chargé par le système de modules).
