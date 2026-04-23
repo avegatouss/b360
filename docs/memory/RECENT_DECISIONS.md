@@ -5,6 +5,16 @@
 
 ---
 
+## 2026-04-23 — R-301 fermé : audit PasswordReset
+
+- **Décision** : ajout d'un listener `Modules\Auth\Listeners\LogPasswordReset` qui écrit dans `login_logs` avec `status = 'password_reset'`. Plus d'event orphelin.
+- **Chantiers** :
+  1. Listener créé (pattern miroir de `LogSuccessfulLogin`).
+  2. Enregistrement dans EventServiceProvider + ajout du provider dans `module.json` (n'y figurait pas).
+  3. Migration convertit `login_logs.status` ENUM → VARCHAR(30) pour accepter le nouveau statut et faciliter l'extension future.
+- **Tests nouveaux** : 3 (PasswordResetAuditTest) — registration, event dispatch crée log, listener direct.
+- **Source** : lot L1 Auth (zone critique, ajout pur sans modif existant), branche `feat/auth-log-password-reset`, audit ISSUE-12.
+
 ## 2026-04-23 — R-202 fermé : atomicité numéros de facture
 
 - **Décision** : pattern uniforme `DB::transaction + for-loop MAX_NUMBER_ATTEMPTS + catch QueryException 1062 + régénération` pour tous les générateurs de numéros métier (factures Eshop360, factures Billing, commandes Eshop360).

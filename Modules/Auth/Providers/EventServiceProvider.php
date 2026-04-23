@@ -18,6 +18,9 @@ class EventServiceProvider extends ServiceProvider
         \Illuminate\Auth\Events\Failed::class => [
             \Modules\Auth\Listeners\LogFailedLogin::class,
         ],
+        \Illuminate\Auth\Events\PasswordReset::class => [
+            \Modules\Auth\Listeners\LogPasswordReset::class,
+        ],
     ];
 
     /**

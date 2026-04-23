@@ -26,6 +26,18 @@ _(aucun risque critique ouvert — R-001, R-002, R-003, R-004 fermés le 2026-04
 
 ## FERMÉ
 
+### R-301 — Event PasswordReset orphelin (fermée 2026-04-23)
+
+- **Source** : `docs/AUDIT-ARCHITECTURE-GO-LIVE.md` ISSUE-12
+- **Constat** : `ResetPasswordController` dispatche `Illuminate\Auth\Events\PasswordReset` après chaque réinitialisation de mot de passe. Aucun listener n'était enregistré → event orphelin, aucun trace d'audit. Les events `Login` et `Failed` étaient déjà couverts (via `LogSuccessfulLogin` et `LogFailedLogin`).
+- **Résolution** :
+  - Nouveau listener `Modules/Auth/Listeners/LogPasswordReset.php` : écrit dans `login_logs` avec `status = 'password_reset'` (pattern identique à `LogSuccessfulLogin`).
+  - Enregistrement dans `Modules/Auth/Providers/EventServiceProvider.php`.
+  - Ajout de `Modules\Auth\Providers\EventServiceProvider` dans `Modules/Auth/module.json` (n'y figurait pas — raison pour laquelle Login/Failed fonctionnaient via auto-discovery mais le nouveau listener n'aurait pas été pris sans registration explicite).
+  - Migration `2026_04_23_100001_extend_login_logs_status_for_password_reset` : convertit la colonne `login_logs.status` de ENUM('success','failed','locked') en VARCHAR(30) pour accepter `password_reset` et permettre de futurs statuts (logout, session_expired, etc.) sans migration enum. Branches SQLite (rebuild), MySQL (MODIFY COLUMN), PostgreSQL (ALTER TYPE).
+- **Tests** : `Modules/Auth/Tests/Feature/PasswordResetAuditTest` (3 tests) — registration du listener via Event::getListeners, dispatch event crée un LoginLog avec bon status, handle direct du listener.
+- **Commit** : branche `feat/auth-log-password-reset`.
+
 ### R-202 — Numéro facture non atomique (fermée 2026-04-23)
 
 - **Source** : `docs/AUDIT-ARCHITECTURE-GO-LIVE.md` ISSUE-10
@@ -108,10 +120,7 @@ _(aucun risque critique ouvert — R-001, R-002, R-003, R-004 fermés le 2026-04
 
 ## FAIBLE
 
-### R-301 — Event PasswordReset orphelin
-
-- **Source** : ISSUE-12 audit go-live
-- **Plan** : ajouter listener d'audit
+_(aucun risque faible ouvert — R-301 fermé le 2026-04-23, voir section **FERMÉ**.)_
 
 ---
 
