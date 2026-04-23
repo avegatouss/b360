@@ -26,6 +26,22 @@ _(aucun risque critique ouvert — R-001, R-002, R-003, R-004 fermés le 2026-04
 
 ## FERMÉ
 
+### R-201 — InventoryX squelette non chargé (fermée 2026-04-23)
+
+- **Source** : `docs/AUDIT-ARCHITECTURE-GO-LIVE.md` + `docs/cartographie/01_modules/inventoryx.md` + `docs/Ins/b360_evolution_strategy.md` task #22.
+- **Constat** : `Modules/InventoryX/` contenait **0 fichier PHP** et **0 fichier de config** — uniquement 10 dossiers vides (`Console/Commands`, `Database/Seeders`, `Resources/views/partials`, `Tests/Feature`). Pas de `module.json`, pas de `composer.json`, pas de ServiceProvider, absent de `modules_statuses.json` → jamais chargé par le système de modules. 0 référence depuis le code prod (grep `Modules\InventoryX` → 0 match applicatif).
+- **Décision** : **SUPPRIMER**. Preuves convergentes :
+  - Roadmap évolution explicite (`docs/Ins/b360_evolution_strategy.md` task #22 « Supprimer module InventoryX (vide) — 30min »).
+  - La cartographie module (`docs/cartographie/01_modules/inventoryx.md`) recommandait : « Soit développer selon le besoin identifié, soit supprimer pour éviter la confusion ».
+  - La phase 2 d'extraction Eshop360 créera un *nouveau* module Inventory à partir du code `eshop_stocks/stock_movements/warehouses`, pas une résurrection de ce squelette.
+- **Actions** :
+  - Suppression complète de `Modules/InventoryX/` (10 dossiers vides).
+  - Nettoyage des références actives : `rector.php` (skip path), `phpstan.neon` (excludePath) + `tools/phpstan/phpstan.neon` (template désormais synchronisé avec root), `deptrac.yaml` (layer + ruleset + graphviz group L3) + `tools/deptrac/deptrac.yaml` (template synchronisé), `scripts/memory/bootstrap-from-existing.sh` (case InventoryX + section MOYEN R-201 + ligne « Couche future »), `.vscode/settings.json` (cSpell.words), `docs/context/PROJECT_DIGEST.md`.
+  - Suppression des docs dédiés : `docs/cartographie/01_modules/inventoryx.md`, `docs/audits/01_modules/inventoryx.md`.
+  - Effet de bord propre : synchronisation de `tools/phpstan/phpstan.neon` et `tools/deptrac/deptrac.yaml` avec leurs versions root (drift accumulé depuis l'install du pack corrigé).
+- **Validation** : 0 référence active restante dans le code. Références résiduelles dans les docs historiques (`docs/AUDIT-ARCHITECTURE-GO-LIVE.md`, `docs/audits/`, `docs/cartographie/0*.md`, `docs/audit_comparatif_final.md`) conservées en tant qu'archive des décisions passées.
+- **Commit** : branche `chore/eshop360-remove-inventoryx-skeleton`.
+
 ### R-301 — Event PasswordReset orphelin (fermée 2026-04-23)
 
 - **Source** : `docs/AUDIT-ARCHITECTURE-GO-LIVE.md` ISSUE-12
@@ -113,10 +129,7 @@ _(aucun risque critique ouvert — R-001, R-002, R-003, R-004 fermés le 2026-04
 
 ## MOYEN
 
-### R-201 — InventoryX squelette non chargé
-
-- **Constat** : dossier visible mais pas de `module.json` ni provider chargé
-- **Plan** : décider — finaliser ou supprimer
+_(aucun risque moyen ouvert — R-201 et R-202 fermés le 2026-04-23.)_
 
 ## FAIBLE
 

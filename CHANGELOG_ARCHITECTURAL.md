@@ -13,6 +13,54 @@
 
 ---
 
+## CHG-2026-04-23-004 — R-201 fermé : suppression du squelette InventoryX
+
+- **Date** : 2026-04-23
+- **Type** : décommissionnement
+- **Modules concernés** : InventoryX (supprimé), tooling (rector, phpstan, deptrac, bootstrap), docs
+- **Impact** : faible — le module était vide (0 fichier PHP) et jamais chargé.
+- **Breaking change** : non.
+
+### Actions appliquées
+
+- Suppression complète de `Modules/InventoryX/` (10 dossiers vides, 0 fichier).
+- Nettoyage des références tooling :
+  - `rector.php` : retrait du skip path `Modules/InventoryX`.
+  - `phpstan.neon` : retrait de `Modules/InventoryX/*` des `excludePaths`.
+  - `tools/phpstan/phpstan.neon` : synchronisé avec root (drift historique corrigé, fait hors scope pour maintenir la cohérence).
+  - `deptrac.yaml` : retrait du layer InventoryX (définition + collectors), de la ruleset `InventoryX → [Core, Settings, AppLayer]`, du graphviz group L3.
+  - `tools/deptrac/deptrac.yaml` : synchronisé avec root.
+  - `scripts/memory/bootstrap-from-existing.sh` : retrait de la case `InventoryX` dans la détection des modules, retrait de la section `R-201` du template OPEN_RISKS, retrait de la ligne « Couche future : InventoryX » de PROJECT_DIGEST.
+  - `.vscode/settings.json` : retrait de `InventoryX` de `cSpell.words`.
+- Nettoyage docs :
+  - `docs/cartographie/01_modules/inventoryx.md` supprimé.
+  - `docs/audits/01_modules/inventoryx.md` supprimé.
+  - `docs/context/PROJECT_DIGEST.md` : ligne « Couche future » corrigée.
+- R-201 déplacé de MOYEN vers FERMÉ dans `docs/memory/OPEN_RISKS.md`. La section MOYEN est désormais **entièrement vide** (R-201, R-202 fermés).
+- Entrée 2026-04-23 dans `RECENT_DECISIONS.md`.
+
+### Statut
+
+- [x] Implémenté (module supprimé, tooling nettoyé)
+- [x] Documenté (OPEN_RISKS FERMÉ, RECENT_DECISIONS, CHANGELOG)
+- [x] Testé (aucun code productif modifié, suite pest verte identique)
+
+### IMPACT_ANALYSIS
+
+- **Périmètre** : suppression d'un artefact vide + nettoyage des références tooling qui pointaient vers cet artefact. Aucun code productif modifié, aucune migration DB.
+- **Contrat runtime** : inchangé. InventoryX n'était pas dans `modules_statuses.json` (jamais chargé), pas de service provider, pas de route, pas de classe → aucune API exposée n'est impactée.
+- **Concurrence / Multi-tenant / Permissions / Idempotence** : non applicables (module vide).
+- **Rollback** : `git revert` sans risque. Les dossiers vides se recréent si besoin (mais pas d'intérêt à le faire — la phase 2 d'extraction Eshop360 créera un nouveau module Inventory depuis zéro avec le code réel).
+- **Garde future** : la roadmap `docs/Ins/b360_evolution_strategy.md` §2 (extraction phase 2) précise que le futur module Inventory sera créé *from scratch* à partir de l'extraction de `eshop_stocks`/`eshop_stock_movements`/`eshop_warehouses` depuis Eshop360, pas d'un squelette recyclé. La suppression de ce squelette évite toute confusion future.
+
+### Lien
+
+- Roadmap source : `docs/Ins/b360_evolution_strategy.md` task #22 « Supprimer module InventoryX (vide) — 30min ».
+- Audit source : `docs/AUDIT-ARCHITECTURE-GO-LIVE.md` + `docs/cartographie/01_modules/inventoryx.md` (supprimé par ce lot).
+- PR : (n° à renseigner)
+
+---
+
 ## CHG-2026-04-23-003 — R-301 fermé : audit PasswordReset
 
 - **Date** : 2026-04-23

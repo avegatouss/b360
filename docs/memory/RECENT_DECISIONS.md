@@ -5,6 +5,14 @@
 
 ---
 
+## 2026-04-23 — R-201 fermé : suppression du squelette InventoryX
+
+- **Décision** : SUPPRIMER le module InventoryX (preuves convergentes : 0 fichier PHP, 0 référence prod, roadmap explicite task #22, jamais chargé par le système de modules).
+- **Actions** : suppression de `Modules/InventoryX/` (10 dossiers vides), nettoyage des références actives dans `rector.php`, `phpstan.neon` (+ copie `tools/phpstan/`), `deptrac.yaml` (+ copie `tools/deptrac/`), `scripts/memory/bootstrap-from-existing.sh`, `.vscode/settings.json`, `docs/context/PROJECT_DIGEST.md`. Suppression des docs dédiés (`docs/cartographie/01_modules/inventoryx.md`, `docs/audits/01_modules/inventoryx.md`).
+- **Effet de bord propre** : synchronisation de `tools/phpstan/phpstan.neon` et `tools/deptrac/deptrac.yaml` avec leurs versions root (drift accumulé depuis l'install du pack corrigé à cette occasion).
+- **Bénéfice** : réduction de la surface « squelettes morts », clarification de la roadmap (la future extraction Inventory partira du code Eshop360, pas d'un squelette recyclé).
+- **Source** : lot MOYEN, branche `chore/eshop360-remove-inventoryx-skeleton`, audit ISSUE + roadmap task #22.
+
 ## 2026-04-23 — R-301 fermé : audit PasswordReset
 
 - **Décision** : ajout d'un listener `Modules\Auth\Listeners\LogPasswordReset` qui écrit dans `login_logs` avec `status = 'password_reset'`. Plus d'event orphelin.

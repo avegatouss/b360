@@ -17,7 +17,6 @@ return RectorConfig::configure()
         __DIR__.'/Modules/*/Database/Migrations',
         __DIR__.'/Modules/*/Database/Seeders',
         __DIR__.'/Modules/*/Database/Factories',
-        __DIR__.'/Modules/InventoryX',
 
         // Skip rules trop agressives sur le legacy
         ReadOnlyClassRector::class,

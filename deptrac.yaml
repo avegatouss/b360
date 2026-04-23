@@ -92,14 +92,6 @@ deptrac:
           value: Modules/Eshop360/.*
 
     # ═══════════════════════════════════════════════════════════════
-    # L3+ — Extension future
-    # ═══════════════════════════════════════════════════════════════
-    - name: InventoryX
-      collectors:
-        - type: directory
-          value: Modules/InventoryX/.*
-
-    # ═══════════════════════════════════════════════════════════════
     # Couche app/ (User, Instance — historique)
     # ═══════════════════════════════════════════════════════════════
     - name: AppLayer
@@ -164,10 +156,6 @@ deptrac:
       - Currency
       - Lang
       - AppLayer
-    InventoryX:
-      - Core
-      - Settings
-      - AppLayer
     AppLayer: ~
 
   ## ═══════════════════════════════════════════════════════════════
@@ -219,4 +207,3 @@ deptrac:
           - Installer
         L3:
           - Eshop360
-          - InventoryX

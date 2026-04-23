@@ -92,14 +92,6 @@ deptrac:
           value: Modules/Eshop360/.*
 
     # ═══════════════════════════════════════════════════════════════
-    # L3+ — Extension future
-    # ═══════════════════════════════════════════════════════════════
-    - name: InventoryX
-      collectors:
-        - type: directory
-          value: Modules/InventoryX/.*
-
-    # ═══════════════════════════════════════════════════════════════
     # Couche app/ (User, Instance — historique)
     # ═══════════════════════════════════════════════════════════════
     - name: AppLayer
@@ -164,18 +156,34 @@ deptrac:
       - Currency
       - Lang
       - AppLayer
-    InventoryX:
-      - Core
-      - Settings
-      - AppLayer
     AppLayer: ~
 
   ## ═══════════════════════════════════════════════════════════════
   ## Skip : violations existantes tolérées (à résorber progressivement)
-  ## Ce fichier est régénéré par : make deptrac-baseline
+  ##
+  ## Régénération :
+  ##   vendor/bin/deptrac analyse --formatter=baseline --output=tools/deptrac/baseline.tmp.yaml
+  ## puis copier-coller le bloc `skip_violations` de tools/deptrac/baseline.tmp.yaml
+  ## dans ce fichier (qossmic/deptrac v3 ne supporte plus `baseline:` en config).
   ## ═══════════════════════════════════════════════════════════════
-  skip_violations: { }
-  baseline: tools/deptrac/baseline.yaml
+  skip_violations:
+    App\Instances\Instance:
+      - Modules\Billing\Models\Subscription
+      - Modules\Core\Models\License
+    App\Models\User:
+      - Modules\Eshop360\Models\UserAssignment
+    Modules\Core\Http\Controllers\ThemeController:
+      - Modules\Settings\Services\SettingsManager
+    Modules\Core\Providers\CoreHttpServiceProvider:
+      - Modules\Demo\Http\Middleware\DemoGuard
+    Modules\Dashboard\Http\Controllers\DashboardController:
+      - Modules\Eshop360\Services\EshopSettingsService
+    Modules\ModuleManager\Http\Controllers\ModuleController:
+      - Modules\Eshop360\Services\EshopInitializer
+    currency():
+      - Modules\Currency\Services\CurrencyManager
+    format_currency():
+      - Modules\Currency\Services\CurrencyManager
 
   formatters:
     graphviz:
@@ -199,4 +207,3 @@ deptrac:
           - Installer
         L3:
           - Eshop360
-          - InventoryX
