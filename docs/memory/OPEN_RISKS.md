@@ -6,14 +6,6 @@
 
 ## CRITIQUE
 
-### R-003 — Solde portefeuille / compte négatif
-
-- **Source** : ISSUE-03
-- **Module** : Eshop360 (Wallet, CustomerAccount)
-- **Impact** : crédit non autorisé, perte financière
-- **Statut** : à corriger
-- **Mitigation prévue** : contrainte CHECK + lock pessimiste
-
 ### R-004 — Commissions employés dupliquées
 
 - **Source** : ISSUE-02
@@ -38,6 +30,20 @@
 - **Plan** : migration documentée dans `docs/Ins/b360_evolution_strategy.md` §2.3
 
 ## FERMÉ
+
+### R-003 — Solde portefeuille / compte négatif (fermée 2026-04-22)
+
+- **Source** : `docs/AUDIT-ARCHITECTURE-GO-LIVE.md` ISSUE-03
+- **Constat** : `FinanceService::creditWallet/debitWallet` étaient déjà protégés (lockForUpdate + transaction + guard). Mais deux call sites court-circuitaient ce service (`ChannelPortalCustomerController::walletTopup` et `SaleController::storeReturn` refund=wallet : `Customer::increment()` direct, zéro protection). `WalletDriver::initiate()` avait un TOCTOU (check hors transaction). Aucune contrainte SGBD `wallet_balance >= 0`.
+- **Résolution** : défense en profondeur 3 couches (CHECK SGBD + point d'entrée unique `FinanceService` + lock pessimiste `WalletDriver`). Voir ADR-004.
+  - Migration `2026_04_22_110001` : ajoute `CHECK (wallet_balance >= 0)` sur `eshop_customers` (MySQL/PG, no-op SQLite).
+  - `WalletDriver::initiate()` : check solde déplacé **dans** la transaction, sous `lockForUpdate()`. Lève `InsufficientWalletBalanceException` typée.
+  - `WalletDriver::refund()` : `lockForUpdate()` ajouté avant increment.
+  - `ChannelPortalCustomerController::walletTopup` : refactoré pour passer par `FinanceService::creditWallet()` (audit CustomerTransaction + auto-pay dues).
+  - `SaleController::storeReturn` refund=wallet : idem, plus de `Customer::where(...)->increment('wallet_balance')` direct.
+- **Tests** : `Modules/Eshop360/Tests/Feature/WalletIntegrityTest` (7 tests : structure migration, CHECK MySQL-only, WalletDriver lock structurel, débits séquentiels anti-négatif, audit trail FinanceService, structure refactor ChannelPortal, structure refactor SaleReturn). `P0SafetyGuardsTest` (3 tests wallet FinanceService) conservé.
+- **ADR** : `docs/adr/ADR-004-wallet-integrity-strategy.md`.
+- **Commit** : branche `feat/eshop360-wallet-integrity`.
 
 ### R-002 — Webhook paiement traité deux fois (fermée 2026-04-22)
 

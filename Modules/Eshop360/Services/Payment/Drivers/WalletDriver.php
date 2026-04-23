@@ -16,29 +16,40 @@ final class WalletDriver implements PaymentGatewayInterface
     {
         $customerId = $meta['customer_id'] ?? null;
 
-        if (!$customerId) {
+        if (! $customerId) {
             return ['success' => false, 'redirect_url' => null, 'transaction_id' => null, 'error' => 'Customer ID required'];
         }
 
+        // Existence check hors transaction (pas critique, juste pour message d'erreur propre).
         $customer = Customer::find($customerId);
 
-        if (!$customer) {
+        if (! $customer) {
             return ['success' => false, 'redirect_url' => null, 'transaction_id' => null, 'error' => 'Customer not found'];
         }
 
-        if ((float) $customer->wallet_balance < $amount) {
-            return ['success' => false, 'redirect_url' => null, 'transaction_id' => null,
-                'error' => "Solde insuffisant ({$customer->wallet_balance} < {$amount})"];
-        }
+        $txnId = 'WALLET-'.$customerId.'-'.now()->format('YmdHis').'-'.strtoupper(substr(md5(uniqid('', true)), 0, 6));
 
         try {
-            $txnId = 'WALLET-' . $customerId . '-' . now()->format('YmdHis') . '-' . strtoupper(substr(md5(uniqid('', true)), 0, 6));
+            // R-003 : check + decrement sous lock pessimiste pour fermer la race TOCTOU.
+            // La vérification du solde hors transaction (ancienne version) laissait une
+            // fenêtre entre check ligne 29 et decrement ligne 38. Désormais le check
+            // est refait sous le lock, et l'opération entière est atomique.
+            DB::transaction(function () use ($customerId, $amount, $txnId, $meta) {
+                $locked = Customer::withoutGlobalScopes()
+                    ->where('id', $customerId)
+                    ->lockForUpdate()
+                    ->firstOrFail();
 
-            DB::transaction(function () use ($customer, $amount, $txnId, $meta) {
-                $customer->decrement('wallet_balance', $amount);
+                $balance = (float) $locked->getAttribute('wallet_balance');
 
-                $customer->transactions()->create([
-                    'instance_id' => $customer->instance_id,
+                if ($balance < $amount) {
+                    throw new InsufficientWalletBalanceException($balance, $amount);
+                }
+
+                $locked->decrement('wallet_balance', $amount);
+
+                $locked->transactions()->create([
+                    'instance_id' => $locked->getAttribute('instance_id'),
                     'type' => 'debit',
                     'amount' => $amount,
                     'reference' => $txnId,
@@ -47,8 +58,12 @@ final class WalletDriver implements PaymentGatewayInterface
             });
 
             return ['success' => true, 'redirect_url' => null, 'transaction_id' => $txnId];
+        } catch (InsufficientWalletBalanceException $e) {
+            return ['success' => false, 'redirect_url' => null, 'transaction_id' => null,
+                'error' => "Solde insuffisant ({$e->available} < {$e->requested})"];
         } catch (\Throwable $e) {
             Log::error('Wallet payment failed', ['error' => $e->getMessage(), 'customer_id' => $customerId]);
+
             return ['success' => false, 'redirect_url' => null, 'transaction_id' => null, 'error' => 'Wallet deduction failed'];
         }
     }
@@ -64,20 +79,26 @@ final class WalletDriver implements PaymentGatewayInterface
         // Extract customer ID from transaction ID format: WALLET-{customer_id}-...
         $parts = explode('-', $transactionId);
         $customerId = $parts[1] ?? null;
-        $customer = $customerId ? Customer::find($customerId) : null;
 
-        if (!$customer) {
+        if (! $customerId) {
             return ['success' => false, 'refund_id' => null, 'error' => 'Customer not found for refund'];
         }
 
+        $refundId = 'WREF-'.uniqid();
+
         try {
-            $refundId = 'WREF-' . uniqid();
+            // R-003 : increment sous lock pessimiste pour garantir l'atomicité
+            // entre plusieurs refunds concurrents sur le même client.
+            DB::transaction(function () use ($customerId, $amount, $refundId, $transactionId) {
+                $locked = Customer::withoutGlobalScopes()
+                    ->where('id', $customerId)
+                    ->lockForUpdate()
+                    ->firstOrFail();
 
-            DB::transaction(function () use ($customer, $amount, $refundId, $transactionId) {
-                $customer->increment('wallet_balance', $amount);
+                $locked->increment('wallet_balance', $amount);
 
-                $customer->transactions()->create([
-                    'instance_id' => $customer->instance_id,
+                $locked->transactions()->create([
+                    'instance_id' => $locked->getAttribute('instance_id'),
                     'type' => 'credit',
                     'amount' => $amount,
                     'reference' => $refundId,

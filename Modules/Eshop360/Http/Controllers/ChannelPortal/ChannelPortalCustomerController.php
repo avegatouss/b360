@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Modules\Core\Support\CurrentInstance;
 use Modules\Eshop360\Models\Customer;
 use Modules\Eshop360\Models\Order;
+use Modules\Eshop360\Services\FinanceService;
 
 class ChannelPortalCustomerController extends Controller
 {
@@ -30,8 +31,8 @@ class ChannelPortalCustomerController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%");
             });
         }
 
@@ -159,8 +160,13 @@ class ChannelPortalCustomerController extends Controller
 
     /**
      * Credit wallet balance for a customer.
+     *
+     * R-003 : passe par FinanceService::creditWallet() qui garantit
+     * la transaction + lock pessimiste + création du CustomerTransaction
+     * d'audit + auto-pay des dues en attente. L'ancien chemin faisait
+     * un `$customer->increment()` direct sans garde-fou.
      */
-    public function walletTopup(Request $request, $channelParam, $customerId)
+    public function walletTopup(Request $request, $channelParam, $customerId, FinanceService $financeService)
     {
         $channel = $request->resolved_channel;
 
@@ -171,8 +177,12 @@ class ChannelPortalCustomerController extends Controller
             'notes' => 'nullable|string|max:255',
         ]);
 
-        $customer->increment('wallet_balance', $validated['amount']);
+        $financeService->creditWallet(
+            $customer,
+            (float) $validated['amount'],
+            $validated['notes'] ?? 'Rechargement portefeuille (portail canal)',
+        );
 
-        return back()->with('success', 'Portefeuille crédité de ' . number_format($validated['amount'], 2) . '.');
+        return back()->with('success', 'Portefeuille crédité de '.number_format((float) $validated['amount'], 2).'.');
     }
 }

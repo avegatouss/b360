@@ -8,14 +8,15 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Modules\Core\Support\CurrentInstance;
+use Modules\Eshop360\Http\Controllers\Traits\ResolvesPosContext;
 use Modules\Eshop360\Models\Coupon;
 use Modules\Eshop360\Models\Customer;
 use Modules\Eshop360\Models\Order;
 use Modules\Eshop360\Models\OrderItem;
 use Modules\Eshop360\Models\Product;
-use Modules\Eshop360\Http\Controllers\Traits\ResolvesPosContext;
 use Modules\Eshop360\Services\CartService;
 use Modules\Eshop360\Services\ChannelAccessService;
+use Modules\Eshop360\Services\FinanceService;
 use Modules\Eshop360\Services\OrderService;
 use Modules\Eshop360\Services\StockService;
 use Modules\Eshop360\Support\CurrentChannel;
@@ -23,12 +24,12 @@ use Modules\Eshop360\Support\CurrentChannel;
 class SaleController extends Controller
 {
     use ResolvesPosContext;
+
     public function __construct(
         private readonly OrderService $orderService,
         private readonly CartService $cartService,
         private readonly ChannelAccessService $channelAccess,
-    ) {
-    }
+    ) {}
 
     public function dashboard(Request $request)
     {
@@ -39,8 +40,8 @@ class SaleController extends Controller
 
         $channelFilter = $channelId ?: null;
 
-        $scopedQuery = fn () => Order::whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
-            ->when($channelFilter, fn($q) => $q->where('channel_id', $channelFilter));
+        $scopedQuery = fn () => Order::whereBetween('created_at', [$dateFrom, $dateTo.' 23:59:59'])
+            ->when($channelFilter, fn ($q) => $q->where('channel_id', $channelFilter));
 
         $baseQuery = $scopedQuery();
         $completedQuery = $scopedQuery()->where('status', 'completed');
@@ -59,13 +60,13 @@ class SaleController extends Controller
         // Today's sales
         $todaySales = round((float) Order::whereDate('created_at', today())
             ->where('status', 'completed')
-            ->when($channelFilter, fn($q) => $q->where('channel_id', $channelFilter))
+            ->when($channelFilter, fn ($q) => $q->where('channel_id', $channelFilter))
             ->sum('total'), 2);
 
         // Daily sales for chart
         $dailySales = Order::where('status', 'completed')
-            ->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
-            ->when($channelFilter, fn($q) => $q->where('channel_id', $channelFilter))
+            ->whereBetween('created_at', [$dateFrom, $dateTo.' 23:59:59'])
+            ->when($channelFilter, fn ($q) => $q->where('channel_id', $channelFilter))
             ->select(DB::raw('DATE(created_at) as date'), DB::raw('SUM(total) as total'), DB::raw('COUNT(*) as count'))
             ->groupBy('date')
             ->orderBy('date')
@@ -89,8 +90,8 @@ class SaleController extends Controller
         $topProducts = OrderItem::select('product_id', DB::raw('SUM(quantity) as total_qty'), DB::raw('SUM(total) as total_revenue'))
             ->whereHas('order', function ($q) use ($dateFrom, $dateTo, $channelFilter) {
                 $q->where('status', 'completed')
-                    ->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
-                    ->when($channelFilter, fn($qq) => $qq->where('channel_id', $channelFilter));
+                    ->whereBetween('created_at', [$dateFrom, $dateTo.' 23:59:59'])
+                    ->when($channelFilter, fn ($qq) => $qq->where('channel_id', $channelFilter));
             })
             ->groupBy('product_id')
             ->orderByDesc('total_qty')
@@ -100,7 +101,7 @@ class SaleController extends Controller
 
         // Recent sales
         $recentSales = Order::with('customer', 'channel')
-            ->when($channelFilter, fn($q) => $q->where('channel_id', $channelFilter))
+            ->when($channelFilter, fn ($q) => $q->where('channel_id', $channelFilter))
             ->latest()->limit(10)->get();
 
         // Channels for filter (scoped to user access)
@@ -130,7 +131,7 @@ class SaleController extends Controller
             ->when($request->search, function ($q, $s) {
                 $q->where(function ($qq) use ($s) {
                     $qq->where('order_number', 'like', "%{$s}%")
-                       ->orWhereHas('customer', fn ($cq) => $cq->where('name', 'like', "%{$s}%"));
+                        ->orWhereHas('customer', fn ($cq) => $cq->where('name', 'like', "%{$s}%"));
                 });
             })
             ->when($request->customer_id, fn ($q, $c) => $q->where('customer_id', $c))
@@ -138,7 +139,7 @@ class SaleController extends Controller
             ->when($request->date_to, fn ($q, $d) => $q->whereDate('created_at', '<=', $d))
             ->when($request->min_total, fn ($q, $m) => $q->where('total', '>=', $m))
             ->when($request->max_total, fn ($q, $m) => $q->where('total', '<=', $m))
-            ->when($channelFilter, fn($q) => $q->where('channel_id', $channelFilter));
+            ->when($channelFilter, fn ($q) => $q->where('channel_id', $channelFilter));
 
         // KPI from the same filtered query (before pagination)
         $filteredQuery = clone $query;
@@ -155,7 +156,7 @@ class SaleController extends Controller
 
         // Lookups for filters
         $customers = Customer::where('instance_id', $instance->id)->where('is_active', true)
-            ->when($channelFilter, fn($q) => $q->where('channel_id', $channelFilter))
+            ->when($channelFilter, fn ($q) => $q->where('channel_id', $channelFilter))
             ->orderBy('name')->get(['id', 'name', 'code']);
 
         $channels = $this->channelAccess->availableChannelsForFilter($user);
@@ -179,7 +180,7 @@ class SaleController extends Controller
         $channelId = $request->integer('channel_id') ?: null;
 
         $customers = Customer::where('instance_id', $instance->id)->where('is_active', true)
-            ->when($channelId, fn($q) => $q->where('channel_id', $channelId))
+            ->when($channelId, fn ($q) => $q->where('channel_id', $channelId))
             ->orderBy('name')->get();
 
         $products = Product::where('instance_id', $instance->id)->where('is_active', true)->orderBy('name')->get();
@@ -191,28 +192,28 @@ class SaleController extends Controller
     public function store(Request $request, string $slug): RedirectResponse
     {
         $validated = $request->validate([
-            'customer_id'       => 'nullable|exists:eshop_customers,id',
-            'channel_id'        => 'nullable|exists:eshop_distribution_channels,id',
-            'payment_method'    => 'required|string|in:cash,card,cheque,paypal,bank_transfer,points,deposit,gift_card,external',
-            'paid_amount'       => 'required|numeric|min:0',
-            'discount_amount'   => 'nullable|numeric|min:0',
-            'shipping_amount'   => 'nullable|numeric|min:0',
-            'notes'             => 'nullable|string|max:1000',
-            'coupon_code'       => 'nullable|string|max:50',
-            'source'            => 'nullable|in:pos,online,manual',
-            'items'             => 'required|array|min:1',
+            'customer_id' => 'nullable|exists:eshop_customers,id',
+            'channel_id' => 'nullable|exists:eshop_distribution_channels,id',
+            'payment_method' => 'required|string|in:cash,card,cheque,paypal,bank_transfer,points,deposit,gift_card,external',
+            'paid_amount' => 'required|numeric|min:0',
+            'discount_amount' => 'nullable|numeric|min:0',
+            'shipping_amount' => 'nullable|numeric|min:0',
+            'notes' => 'nullable|string|max:1000',
+            'coupon_code' => 'nullable|string|max:50',
+            'source' => 'nullable|in:pos,online,manual',
+            'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:eshop_products,id',
-            'items.*.quantity'   => 'required|integer|min:1',
+            'items.*.quantity' => 'required|integer|min:1',
             'items.*.unit_price' => 'prohibited',
             'items.*.original_price' => 'prohibited',
-            'items.*.discount'   => 'nullable|numeric|min:0',
+            'items.*.discount' => 'nullable|numeric|min:0',
         ]);
 
         $instance = CurrentInstance::get();
 
         // Validate channel access for non-hub users
         $channelId = $validated['channel_id'] ?? null;
-        if ($channelId && !$this->channelAccess->isHubAdmin(auth()->user())) {
+        if ($channelId && ! $this->channelAccess->isHubAdmin(auth()->user())) {
             abort_unless(
                 $this->channelAccess->canAccessChannel(auth()->user(), (int) $channelId),
                 403, 'Vous ne pouvez pas creer de vente pour ce canal.'
@@ -275,10 +276,10 @@ class SaleController extends Controller
     {
         $this->authorizeOrderAccess($order);
         $validated = $request->validate([
-            'status'         => 'nullable|in:pending,processing,completed,cancelled,refunded',
+            'status' => 'nullable|in:pending,processing,completed,cancelled,refunded',
             'payment_status' => 'nullable|in:unpaid,partial,paid,overdue',
-            'paid_amount'    => 'nullable|numeric|min:0',
-            'notes'          => 'nullable|string|max:1000',
+            'paid_amount' => 'nullable|numeric|min:0',
+            'notes' => 'nullable|string|max:1000',
         ]);
 
         $updateData = array_filter($validated, fn ($v) => $v !== null);
@@ -329,21 +330,21 @@ class SaleController extends Controller
     public function storeReturn(Request $request, string $slug): RedirectResponse
     {
         $validated = $request->validate([
-            'order_id'              => 'required|exists:eshop_orders,id',
-            'items'                 => 'required|array|min:1',
-            'items.*.selected'      => 'nullable',
-            'items.*.product_id'    => 'required|exists:eshop_products,id',
-            'items.*.quantity'      => 'required|integer|min:1',
-            'items.*.stock_action'  => 'nullable|in:return_stock,adjustment',
-            'items.*.reason'        => 'nullable|string|max:500',
-            'refund_amount'         => 'required|numeric|min:0',
-            'refund_method'         => 'nullable|in:cash,wallet,original',
-            'notes'                 => 'nullable|string|max:1000',
+            'order_id' => 'required|exists:eshop_orders,id',
+            'items' => 'required|array|min:1',
+            'items.*.selected' => 'nullable',
+            'items.*.product_id' => 'required|exists:eshop_products,id',
+            'items.*.quantity' => 'required|integer|min:1',
+            'items.*.stock_action' => 'nullable|in:return_stock,adjustment',
+            'items.*.reason' => 'nullable|string|max:500',
+            'refund_amount' => 'required|numeric|min:0',
+            'refund_method' => 'nullable|in:cash,wallet,original',
+            'notes' => 'nullable|string|max:1000',
         ]);
 
         // Filter only selected items
         $selectedItems = collect($validated['items'])->filter(
-            fn ($item) => !array_key_exists('selected', $item) || !empty($item['selected'])
+            fn ($item) => ! array_key_exists('selected', $item) || ! empty($item['selected'])
         );
 
         if ($selectedItems->isEmpty()) {
@@ -356,7 +357,7 @@ class SaleController extends Controller
             $originalOrder = Order::with('items')->findOrFail($validated['order_id']);
 
             // Verify channel access on the original order
-            if ($originalOrder->channel_id && !$this->channelAccess->canAccessChannel(auth()->user(), $originalOrder->channel_id)) {
+            if ($originalOrder->channel_id && ! $this->channelAccess->canAccessChannel(auth()->user(), $originalOrder->channel_id)) {
                 abort(403, __('Vous n\'avez pas acces a cette commande.'));
             }
 
@@ -365,19 +366,19 @@ class SaleController extends Controller
             $stockService = app(StockService::class);
 
             $returnOrder = Order::create([
-                'instance_id'     => $instance?->id,
-                'customer_id'     => $originalOrder->customer_id,
-                'order_number'    => 'RET-' . now()->format('Ymd') . '-' . str_pad(Order::where('order_number', 'like', 'RET-%')->count() + 1, 4, '0', STR_PAD_LEFT),
-                'status'          => 'refunded',
-                'payment_status'  => 'paid',
-                'payment_method'  => $originalOrder->payment_method,
-                'subtotal'        => -$validated['refund_amount'],
-                'total'           => -$validated['refund_amount'],
-                'paid_amount'     => -$validated['refund_amount'],
-                'due_amount'      => 0,
-                'notes'           => $validated['notes'] ?? "Return for order {$originalOrder->order_number}",
-                'source'          => $originalOrder->source,
-                'biller_id'       => auth()->id(),
+                'instance_id' => $instance?->id,
+                'customer_id' => $originalOrder->customer_id,
+                'order_number' => 'RET-'.now()->format('Ymd').'-'.str_pad(Order::where('order_number', 'like', 'RET-%')->count() + 1, 4, '0', STR_PAD_LEFT),
+                'status' => 'refunded',
+                'payment_status' => 'paid',
+                'payment_method' => $originalOrder->payment_method,
+                'subtotal' => -$validated['refund_amount'],
+                'total' => -$validated['refund_amount'],
+                'paid_amount' => -$validated['refund_amount'],
+                'due_amount' => 0,
+                'notes' => $validated['notes'] ?? "Return for order {$originalOrder->order_number}",
+                'source' => $originalOrder->source,
+                'biller_id' => auth()->id(),
             ]);
 
             foreach ($selectedItems as $item) {
@@ -404,14 +405,14 @@ class SaleController extends Controller
                 $lineTotal = round(((float) $orderItem->total / $maxQuantity) * $returnQuantity, 2);
 
                 $returnOrder->items()->create([
-                    'product_id'   => $item['product_id'],
+                    'product_id' => $item['product_id'],
                     'product_name' => $product->name,
-                    'sku'          => $product->sku,
-                    'quantity'     => -$returnQuantity,
-                    'unit_price'   => $orderItem->unit_price,
-                    'discount'     => -$lineDiscount,
-                    'tax'          => -$lineTax,
-                    'total'        => -$lineTotal,
+                    'sku' => $product->sku,
+                    'quantity' => -$returnQuantity,
+                    'unit_price' => $orderItem->unit_price,
+                    'discount' => -$lineDiscount,
+                    'tax' => -$lineTax,
+                    'total' => -$lineTotal,
                 ]);
 
                 $stockAction = $item['stock_action'] ?? 'return_stock';
@@ -447,15 +448,26 @@ class SaleController extends Controller
             $refundMethod = $validated['refund_method'] ?? 'cash';
 
             if ($refundMethod === 'wallet' && $originalOrder->customer_id) {
-                Customer::where('id', $originalOrder->customer_id)
-                    ->increment('wallet_balance', (float) $validated['refund_amount']);
+                // R-003 : passe par FinanceService::creditWallet() qui garantit
+                // lock pessimiste + CustomerTransaction d'audit + auto-pay dues.
+                // L'ancien chemin faisait un `Customer::increment()` direct sans
+                // protection ni traçabilité.
+                $customer = Customer::withoutGlobalScopes()->findOrFail($originalOrder->customer_id);
+                $orderNumber = (string) Order::query()->where('id', $returnOrder->id)->value('order_number');
+                app(FinanceService::class)->creditWallet(
+                    $customer,
+                    (float) $validated['refund_amount'],
+                    "Remboursement retour vente #{$orderNumber}",
+                    Order::class,
+                    $returnOrder->id,
+                );
             }
 
             $returnOrder->payments()->create([
                 'instance_id' => $returnOrder->instance_id,
                 'amount' => -((float) $validated['refund_amount']),
                 'method' => $refundMethod,
-                'reference' => 'SALE-REFUND-' . $returnOrder->id,
+                'reference' => 'SALE-REFUND-'.$returnOrder->id,
                 'status' => 'refunded',
                 'notes' => $validated['notes'] ?? 'Sales refund',
                 'received_by' => auth()->id(),
@@ -478,8 +490,8 @@ class SaleController extends Controller
         // Base query for completed orders — prefix columns to avoid ambiguity in JOINs
         $baseQuery = Order::where('eshop_orders.instance_id', $instanceId)
             ->where('eshop_orders.status', 'completed')
-            ->whereBetween('eshop_orders.created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])
-            ->when($channelFilter, fn($q) => $q->where('eshop_orders.channel_id', $channelFilter));
+            ->whereBetween('eshop_orders.created_at', [$from.' 00:00:00', $to.' 23:59:59'])
+            ->when($channelFilter, fn ($q) => $q->where('eshop_orders.channel_id', $channelFilter));
 
         // Global KPIs
         $globalStats = (clone $baseQuery)->selectRaw('
@@ -549,7 +561,7 @@ class SaleController extends Controller
             ->leftJoin('eshop_products', 'eshop_order_items.product_id', '=', 'eshop_products.id')
             ->where('eshop_orders.instance_id', $instanceId)
             ->where('eshop_orders.status', 'completed')
-            ->whereBetween('eshop_orders.created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])
+            ->whereBetween('eshop_orders.created_at', [$from.' 00:00:00', $to.' 23:59:59'])
             ->when($rawChannelId, fn ($q) => $q->where('eshop_orders.channel_id', $rawChannelId))
             ->when(! $rawChannelId && $rawAccessibleIds !== null, fn ($q) => $q->whereIn('eshop_orders.channel_id', $rawAccessibleIds->all()))
             ->selectRaw('
@@ -577,6 +589,7 @@ class SaleController extends Controller
             $totalCost = $costPrice * $qtySold;
             $grossMargin = $revenue - $totalCost;
             $marginPct = $revenue > 0 ? round($grossMargin / $revenue * 100, 1) : 0;
+
             return (object) array_merge((array) $p, [
                 'total_cost' => $totalCost,
                 'gross_margin' => $grossMargin,
@@ -588,7 +601,7 @@ class SaleController extends Controller
         $monthlyTrend = Order::where('instance_id', $instanceId)
             ->where('status', 'completed')
             ->where('created_at', '>=', now()->subMonths(12)->startOfMonth())
-            ->when($channelFilter, fn($q) => $q->where('channel_id', $channelFilter))
+            ->when($channelFilter, fn ($q) => $q->where('channel_id', $channelFilter))
             ->selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, COUNT(*) as orders, SUM(total) as revenue, SUM(paid_amount) as paid')
             ->groupByRaw('YEAR(created_at), MONTH(created_at)')
             ->orderByRaw('YEAR(created_at), MONTH(created_at)')
@@ -620,8 +633,8 @@ class SaleController extends Controller
         $channels = $this->channelAccess->availableChannelsForFilter($user);
 
         $baseOrderQuery = fn () => Order::where('status', 'completed')
-            ->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
-            ->when($channelFilter, fn($q) => $q->where('channel_id', $channelFilter));
+            ->whereBetween('created_at', [$dateFrom, $dateTo.' 23:59:59'])
+            ->when($channelFilter, fn ($q) => $q->where('channel_id', $channelFilter));
 
         $taxByDay = $baseOrderQuery()
             ->select(
@@ -636,15 +649,15 @@ class SaleController extends Controller
             ->get();
 
         $taxByProduct = OrderItem::select(
-                'product_id',
-                DB::raw('SUM(tax) as total_tax'),
-                DB::raw('SUM(quantity) as total_qty'),
-                DB::raw('SUM(total) as total_revenue')
-            )
+            'product_id',
+            DB::raw('SUM(tax) as total_tax'),
+            DB::raw('SUM(quantity) as total_qty'),
+            DB::raw('SUM(total) as total_revenue')
+        )
             ->whereHas('order', function ($q) use ($dateFrom, $dateTo, $channelFilter) {
                 $q->where('status', 'completed')
-                    ->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
-                    ->when($channelFilter, fn($qq) => $qq->where('channel_id', $channelFilter));
+                    ->whereBetween('created_at', [$dateFrom, $dateTo.' 23:59:59'])
+                    ->when($channelFilter, fn ($qq) => $qq->where('channel_id', $channelFilter));
             })
             ->groupBy('product_id')
             ->orderByDesc('total_tax')
