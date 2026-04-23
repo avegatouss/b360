@@ -13,6 +13,52 @@
 
 ---
 
+## CHG-2026-04-23-008 — R-101 sous-lot S2 : extraction CRM
+
+- **Date** : 2026-04-23
+- **Type** : architecture (extraction sous-domaine, pattern S1 répété)
+- **Modules concernés** : Eshop360 (déplacement 4 modèles CRM)
+- **Impact** : nul côté runtime (rétrocompatibilité via alias).
+- **Breaking change** : non.
+
+### Actions appliquées
+
+- **4 modèles déplacés** via `git mv` vers `Modules/Eshop360/Domain/CRM/Models/` : `Customer`, `CustomerGroup`, `CustomerDue`, `CustomerTransaction`.
+- **Namespace mis à jour** : `Modules\Eshop360\Models` → `Modules\Eshop360\Domain\CRM\Models`.
+- **Imports cross-sous-domaine ajoutés** :
+  - `Customer.php` : +4 (Order, OnlineOrder, Invoice, SupportTicket — alias transitoires).
+  - `CustomerDue.php` : +2 (Order, Invoice — alias transitoires).
+  - `CustomerGroup.php`, `CustomerTransaction.php` : 0 import supplémentaire nécessaire.
+- **4 stubs d'alias** rétrocompatibles dans `Modules/Eshop360/Models/<Name>.php`.
+- **Deptrac `EshopCRM` restreint** : ruleset passée de permissive à `socles + Eshop360` uniquement. Les dépendances `EshopCRM → Eshop360` sont transitoires (BelongsToChannel, ScopedByUserAssignment, alias cross-domain).
+- **Baseline PHPStan régénérée** : 3647 erreurs baselined (diff lié aux traits sur modèles CRM).
+- `tools/deptrac/deptrac.yaml` : synchronisé avec root.
+- ADR `docs/adr/ADR-010-eshop360-crm-subdomain-extraction.md`.
+- `docs/memory/OPEN_RISKS.md` R-101 : sous-lot S2 ✅.
+- `docs/memory/RECENT_DECISIONS.md` : entrée S2.
+
+### Statut
+
+- [x] Implémenté (4 modèles déplacés, 4 alias créés, deptrac resserré)
+- [x] Documenté (ADR-010)
+- [x] Testé (659 passed, aucune régression)
+
+### IMPACT_ANALYSIS
+
+- **Périmètre** : déplacement + stubs + config. Aucune modification de logique métier, aucune migration DB, aucun test modifié.
+- **Contrat runtime** : strictement identique. Tous les `use Modules\Eshop360\Models\Customer` résolvent vers le canon via alias.
+- **Concurrence / Multi-tenant / Permissions / Idempotence** : non applicables.
+- **Rollback** : `git revert` sans risque.
+- **Garde future** : deptrac bloque toute nouvelle dépendance `EshopCRM → EshopX` (hors Eshop360 transitoire).
+
+### Lien
+
+- ADR : `docs/adr/ADR-010-eshop360-crm-subdomain-extraction.md`
+- ADR parent : ADR-008 (stratégie), ADR-009 (pattern S1)
+- PR : (n° à renseigner)
+
+---
+
 ## CHG-2026-04-23-007 — R-101 sous-lot S1 : extraction Catalog
 
 - **Date** : 2026-04-23

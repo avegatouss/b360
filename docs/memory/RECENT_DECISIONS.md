@@ -14,6 +14,16 @@
 - **Résidus acceptables** : le mot « CODIFARM » reste dans les Seeders/Tests comme nom commercial de grossiste pharmaceutique ivoirien (donnée démo), pas comme technologie. Les tests structurels scannent uniquement le code applicatif, pas les Seeders/Tests.
 - **Source** : lot MAJEUR, branche `chore/eshop360-close-codifarm-consolidation`, audit ISSUE + §2.3 du plan d'évolution.
 
+## 2026-04-23 — R-101 sous-lot S2 : extraction CRM
+
+- **Décision** : application du pattern S1 (déplacement + stubs d'alias + deptrac resserré) au sous-domaine CRM.
+- **Modèles migrés** : 4 fichiers (Customer, CustomerGroup, CustomerDue, CustomerTransaction) vers `Modules/Eshop360/Domain/CRM/Models/`. 4 stubs d'alias rétrocompatibles créés dans `Models/`.
+- **Imports cross-sous-domaine** : Customer.php +4 (Order, OnlineOrder, Invoice, SupportTicket). CustomerDue.php +2 (Order, Invoice). Tous via alias `Modules\Eshop360\Models\*` transitoires.
+- **Deptrac** : `EshopCRM` restreint à socles + Eshop360 (pour BelongsToChannel, ScopedByUserAssignment, alias cross-domain — levés aux sous-lots S3, S8, S9, S11).
+- **Validation** : 659 tests passed (aucune régression), phpstan OK, deptrac 0 violations.
+- **ADR** : `docs/adr/ADR-010-eshop360-crm-subdomain-extraction.md`.
+- **Source** : lot R-101 S2, branche `refactor/eshop360-s2-crm-extraction`.
+
 ## 2026-04-23 — R-101 sous-lot S1 : extraction Catalog
 
 - **Décision** : premier sous-lot d'extraction effective. 7 modèles Catalog (Product, Category, Brand, ProductGroup, ProductTax, ProductVariation, Tax) déplacés physiquement de `Modules/Eshop360/Models/` vers `Modules/Eshop360/Domain/Catalog/Models/` avec mise à jour du namespace.
