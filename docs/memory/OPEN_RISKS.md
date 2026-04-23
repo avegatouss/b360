@@ -21,7 +21,7 @@ _(aucun risque critique ouvert — R-001, R-002, R-003, R-004 fermés le 2026-04
   - ✅ **S0 — Préparation** (2026-04-23) : 13 layers deptrac intra-Eshop360 + ruleset permissive + ADR-008
   - ✅ **S1 — Catalog** (2026-04-23) : 7 modèles déplacés sous `Domain/Catalog/Models/` (Product, Category, Brand, ProductGroup, ProductTax, ProductVariation, Tax) + stubs d'alias rétrocompatibles dans `Models/` + ruleset `EshopCatalog` restreinte (socles + Eshop360 temp) + ADR-009. 0 régression (659 passed).
   - ✅ **S2 — CRM** (2026-04-23) : 4 modèles déplacés sous `Domain/CRM/Models/` (Customer, CustomerGroup, CustomerDue, CustomerTransaction) + stubs d'alias + ruleset `EshopCRM` restreinte + ADR-010. 0 régression (659 passed).
-  - ⏳ S3 — Channel (déjà partiellement extrait, 3 jours)
+  - ✅ **S3 — Channel** (2026-04-23) : 4 modèles déplacés sous `Domain/Channel/Models/` (DistributionChannel, ChannelProductPrice, ChannelMarginLog, ChannelUser) + stubs d'alias + ruleset `EshopChannel` restreinte + ADR-011. Décision architecturale : `BelongsToChannel` + `ChannelScope` restent dans `Database/Traits/Scopes/` (infrastructure partagée intra-Eshop360, évite dépendance circulaire Catalog↔Channel). 0 régression (659 passed).
   - ⏳ S4 — Pricing normalisation (déjà sous `Pricing/`, 3 jours)
   - ⏳ S5 — Inventory (déjà partiellement extrait, **L1**, 5 jours)
   - ⏳ S6 — Promotions (2 jours)

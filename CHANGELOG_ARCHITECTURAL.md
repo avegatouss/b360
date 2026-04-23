@@ -13,6 +13,51 @@
 
 ---
 
+## CHG-2026-04-23-009 — R-101 sous-lot S3 : extraction Channel
+
+- **Date** : 2026-04-23
+- **Type** : architecture (extraction sous-domaine, pattern S1/S2 répété)
+- **Modules concernés** : Eshop360 (4 modèles Channel déplacés)
+- **Impact** : nul côté runtime (rétrocompatibilité via alias).
+- **Breaking change** : non.
+
+### Actions appliquées
+
+- **4 modèles déplacés** via `git mv` vers `Modules/Eshop360/Domain/Channel/Models/` : DistributionChannel, ChannelProductPrice, ChannelMarginLog, ChannelUser.
+- **Namespace mis à jour** : `Modules\Eshop360\Models` → `Modules\Eshop360\Domain\Channel\Models`.
+- **Imports cross-sous-domaine** : DistributionChannel +7 (Product, Customer, Order, Warehouse, CashRegister, Coupon, Holding, User). ChannelProductPrice +1 (Product). ChannelMarginLog +1 (Order).
+- **4 stubs d'alias** rétrocompatibles dans `Modules/Eshop360/Models/`.
+- **Décision architecturale clé** : `BelongsToChannel` trait et `ChannelScope` **restent dans `Modules/Eshop360/Database/{Traits,Scopes}/`** (pas déplacés sous `Domain/Channel/`). Justification : éviter dépendance circulaire `EshopCatalog ↔ EshopChannel` (86 fichiers utilisent le trait, Catalog+CRM+Inventory+Sales+... en dépendent ; ChannelProductPrice dépend de Product côté Channel → boucle interdite). Le trait est traité comme infrastructure intra-Eshop360 (statut similaire à `BelongsToInstance` dans Core). Révisable en S12.
+- **Deptrac `EshopChannel` restreint** : socles + Eshop360 transitoire.
+- **Baseline PHPStan régénérée** : 3647 erreurs baselined.
+- `tools/deptrac/deptrac.yaml` : synchronisé avec root.
+- ADR `docs/adr/ADR-011-eshop360-channel-subdomain-extraction.md` : documente la décision architecturale + 3 alternatives rejetées (promotion dans Core, création couche Shared, mass-rewrite des 86 imports).
+- `docs/memory/OPEN_RISKS.md` R-101 : sous-lot S3 ✅.
+- `docs/memory/RECENT_DECISIONS.md` : entrée S3.
+
+### Statut
+
+- [x] Implémenté (4 modèles déplacés, 4 alias créés, deptrac resserré, trait infrastructure préservé en place)
+- [x] Documenté (ADR-011 avec justification du choix non-évident)
+- [x] Testé (659 passed, aucune régression)
+
+### IMPACT_ANALYSIS
+
+- **Périmètre** : déplacement + stubs + config. Aucune modification de logique métier, aucune migration DB, aucun test modifié.
+- **Contrat runtime** : strictement identique. Tous les `use Modules\Eshop360\Models\DistributionChannel` résolvent vers le canon via alias.
+- **Concurrence / Multi-tenant / Permissions / Idempotence** : non applicables.
+- **Rollback** : `git revert` sans risque.
+- **Garde future** : deptrac bloque toute nouvelle dépendance `EshopChannel → EshopX` (hors Eshop360 transitoire).
+
+### Lien
+
+- ADR : `docs/adr/ADR-011-eshop360-channel-subdomain-extraction.md`
+- ADR parents : ADR-008 (stratégie), ADR-009 (S1), ADR-010 (S2)
+- Contexte connexe : ADR-007 (consolidation Codifarm → DistributionChannel)
+- PR : (n° à renseigner)
+
+---
+
 ## CHG-2026-04-23-008 — R-101 sous-lot S2 : extraction CRM
 
 - **Date** : 2026-04-23
