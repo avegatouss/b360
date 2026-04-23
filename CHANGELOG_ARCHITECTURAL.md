@@ -13,6 +13,48 @@
 
 ---
 
+## CHG-2026-04-23-010 — R-101 sous-lot S4 : normalisation Pricing (ruleset only)
+
+- **Date** : 2026-04-23
+- **Type** : architecture (délimitation deptrac d'un sous-domaine déjà isolé)
+- **Modules concernés** : Eshop360 (sous-domaine Pricing — aucun fichier déplacé)
+- **Impact** : nul côté runtime, nul côté PHP (YAML deptrac + ADR uniquement).
+- **Breaking change** : non.
+
+### Actions appliquées
+
+- **Aucun déplacement de fichier** : `Modules/Eshop360/Pricing/` reste à son emplacement historique (23 classes auto-contenues avec namespace `Modules\Eshop360\Pricing\*` — déjà un sous-domaine extrait de facto).
+- **Ruleset deptrac `EshopPricing` resserrée** : passée de l'ancre permissive `eshop_sublayer_base` (tous les EshopX) à une liste explicite minimale observée : `socles + EshopCatalog + Eshop360 (transitoire)`.
+  - Dépendances réelles confirmées par grep exhaustif : 1 × `Modules\Eshop360\Models\Product` (via alias, dans `WholesaleCalculatorService`) + 1 × `Modules\Billing\Services\FeatureRegistry` (dans `ChannelCreditRule`).
+  - Aucune dépendance intra-Eshop360 vers CRM / Channel / Inventory / Sales / Finance etc. — Pricing est une feuille logique.
+- `tools/deptrac/deptrac.yaml` : synchronisé avec root.
+- ADR `docs/adr/ADR-012-eshop360-pricing-normalization.md` : documente le choix de ne PAS déplacer Pricing vers `Domain/Pricing/` (asymétrie de localisation acceptée, cohérence git history, YAGNI).
+- `docs/memory/OPEN_RISKS.md` R-101 : sous-lot S4 ✅.
+- `docs/memory/RECENT_DECISIONS.md` : entrée S4.
+
+### Statut
+
+- [x] Implémenté (ruleset deptrac resserrée, 0 fichier déplacé, aucun stub nécessaire)
+- [x] Documenté (ADR-012 avec justification "déjà isolé" + alternatives rejetées)
+- [x] Testé (deptrac 0 violations / pest 659 passed — inchangé vs S3)
+
+### IMPACT_ANALYSIS
+
+- **Périmètre** : 1 fichier YAML (root) + 1 copie (tools/) + 1 ADR + 3 fichiers mémoire. Zéro fichier PHP modifié.
+- **Contrat runtime** : strictement identique (aucune classe ni namespace n'a bougé).
+- **Concurrence / Multi-tenant / Permissions / Idempotence** : non applicables.
+- **Rollback** : `git revert` trivial (YAML-only).
+- **Garde future** : deptrac bloque désormais toute nouvelle dépendance `EshopPricing → EshopX` (hors Catalog et Eshop360 transitoire). Toute tentative d'importer `Modules\Eshop360\Domain\Sales\*` ou `Domain\CRM\*` depuis une règle Pricing déclenchera une violation CI.
+
+### Lien
+
+- ADR : `docs/adr/ADR-012-eshop360-pricing-normalization.md`
+- ADR parents : ADR-008 (stratégie), ADR-009 (S1), ADR-010 (S2), ADR-011 (S3)
+- Contexte connexe : ADR-007 (pricing tripartite Codifarm)
+- PR : (n° à renseigner)
+
+---
+
 ## CHG-2026-04-23-009 — R-101 sous-lot S3 : extraction Channel
 
 - **Date** : 2026-04-23

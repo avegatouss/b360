@@ -14,6 +14,16 @@
 - **Résidus acceptables** : le mot « CODIFARM » reste dans les Seeders/Tests comme nom commercial de grossiste pharmaceutique ivoirien (donnée démo), pas comme technologie. Les tests structurels scannent uniquement le code applicatif, pas les Seeders/Tests.
 - **Source** : lot MAJEUR, branche `chore/eshop360-close-codifarm-consolidation`, audit ISSUE + §2.3 du plan d'évolution.
 
+## 2026-04-23 — R-101 sous-lot S4 : normalisation Pricing (ruleset-only)
+
+- **Décision** : Pricing déjà auto-contenu sous `Modules/Eshop360/Pricing/` (23 classes, namespace propre, 10 sous-dossiers). **Pas de déplacement** vers `Domain/Pricing/` — coût élevé (23 fichiers + 25 imports à réécrire + rupture git history) pour gain nul (deptrac couvre déjà les deux chemins). Principe YAGNI.
+- **Action unique** : ruleset deptrac `EshopPricing` resserrée de permissive (`eshop_sublayer_base` → tous les EshopX) vers le minimum réel observé : `socles + EshopCatalog + Eshop360 (transitoire)`. Analyse exhaustive confirmée : Pricing ne dépend d'aucun autre sous-domaine que Catalog (via alias `Modules\Eshop360\Models\Product` dans `WholesaleCalculatorService`) + Billing (`FeatureRegistry` dans `ChannelCreditRule`).
+- **Asymétrie assumée** : Pricing reste sous `Modules/Eshop360/Pricing/` alors que Catalog/CRM/Channel vivent sous `Modules/Eshop360/Domain/<X>/`. Documenté dans ADR-012 — révisable uniquement si un besoin concret émerge (promotion en vrai module).
+- **Pattern enrichi** : S4 établit qu'un sous-domaine déjà bien isolé ailleurs ne nécessite qu'une restriction deptrac + ADR — pas de déplacement formel. Applicable potentiellement à Inventory (S5) si une partie est déjà sous `Domain/Inventory/`.
+- **Validation** : deptrac 0 violations (inchangé), pest 659 passed (inchangé), phpstan OK (aucun code PHP modifié).
+- **ADR** : `docs/adr/ADR-012-eshop360-pricing-normalization.md`.
+- **Source** : lot R-101 S4, branche `refactor/eshop360-s4-pricing-normalization`.
+
 ## 2026-04-23 — R-101 sous-lot S3 : extraction Channel
 
 - **Décision** : pattern S1/S2 appliqué au sous-domaine Channel — 4 modèles (DistributionChannel, ChannelProductPrice, ChannelMarginLog, ChannelUser) déplacés sous `Modules/Eshop360/Domain/Channel/Models/`.
