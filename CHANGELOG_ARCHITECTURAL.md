@@ -13,6 +13,57 @@
 
 ---
 
+## CHG-2026-04-23-003 — R-301 fermé : audit PasswordReset
+
+- **Date** : 2026-04-23
+- **Type** : sécurité (ajout audit trail sur event authentification)
+- **Modules concernés** : Auth (nouveau listener, migration status column, module.json)
+- **Impact** : faible — ajout pur, aucune modification de code existant.
+- **Breaking change** : non.
+
+### Actions appliquées
+
+- Nouveau listener `Modules/Auth/Listeners/LogPasswordReset.php` (~30 lignes) : écrit dans `login_logs` avec `status = 'password_reset'`. Structure identique à `LogSuccessfulLogin`.
+- `Modules/Auth/Providers/EventServiceProvider.php` : ajout de l'entrée `Illuminate\Auth\Events\PasswordReset::class => [LogPasswordReset::class]` dans le tableau `$listen`.
+- `Modules/Auth/module.json` : ajout de `EventServiceProvider` dans la liste des providers. Sans cette registration, le `$listen` du EventServiceProvider n'est pas appliqué — raison pour laquelle l'existant Login/Failed fonctionnait via l'auto-discovery par réflexion mais le nouveau listener n'aurait pas été découvert en l'absence de cette fix.
+- Migration `Modules/Auth/Database/Migrations/2026_04_23_100001_extend_login_logs_status_for_password_reset.php` : convertit la colonne `login_logs.status` de `ENUM('success','failed','locked')` en `VARCHAR(30)`. Branches cross-driver :
+  - **SQLite** : rebuild de la table (CREATE new + copy + drop + rename), seul moyen de modifier un CHECK SQLite généré par ENUM.
+  - **MySQL** : `ALTER TABLE login_logs MODIFY COLUMN status VARCHAR(30) NOT NULL`.
+  - **PostgreSQL** : `ALTER TABLE login_logs ALTER COLUMN status TYPE VARCHAR(30)`.
+  Justification VARCHAR vs nouvel ENUM : faciliter l'ajout futur de statuts (logout, session_expired, 2fa_challenge, etc.) sans migration enum.
+- Ajout `Modules/Auth/Tests/Feature/PasswordResetAuditTest.php` (3 tests) :
+  - Registration du listener vérifiée via `Event::getListeners(PasswordReset::class)`.
+  - `event(new PasswordReset($user))` crée bien une entrée `LoginLog` avec `status = 'password_reset'`.
+  - Appel direct `$listener->handle($event)` crée l'entrée attendue.
+- R-301 déplacé de FAIBLE vers FERMÉ dans `docs/memory/OPEN_RISKS.md`. La section FAIBLE est désormais **entièrement vide** (tous les audits identifiés sont fermés).
+- Entrée 2026-04-23 dans `RECENT_DECISIONS.md`.
+
+### Statut
+
+- [x] Implémenté (listener + registration + migration)
+- [x] Documenté (entrée OPEN_RISKS FERMÉ, RECENT_DECISIONS, CHANGELOG)
+- [x] Testé (3 tests nouveaux, suite verte)
+
+### IMPACT_ANALYSIS (zone L1 Auth — ajout pur, aucune modif existant)
+
+- **Périmètre** : nouveau listener + enregistrement + migration VARCHAR. Le code existant (`ResetPasswordController`, autres listeners, `LoginLog` model) n'est pas modifié.
+- **Contrat runtime** :
+  - Après une réinitialisation de mot de passe, une ligne est désormais insérée dans `login_logs` avec `status = 'password_reset'`. Aucune autre différence observable côté utilisateur.
+  - Les logs existants (status='success', 'failed', 'locked') restent intouchés par la migration (copie complète).
+- **Concurrence** : le listener est synchrone, pas de nouveau vector de race. L'existant gère déjà la concurrence des login events.
+- **Multi-tenant** : la colonne `instance_id` de `login_logs` est renseignée via `CurrentInstance::get()` comme pour les autres statuts.
+- **Permissions** : non impactées — le reset de mot de passe reste un endpoint public accessible sans auth.
+- **Idempotence** : non applicable (chaque reset = un log). Si un user clique plusieurs fois sur "Reset", chaque clic réussi = un log supplémentaire (comportement attendu pour audit).
+- **Rollback** : `git revert` + `php artisan migrate:rollback` (la migration a un `down()` qui restore l'ENUM sur chaque driver).
+- **Observabilité** : l'audit sécurité peut désormais corréler Login/Failed/PasswordReset sur la timeline d'un même utilisateur via `SELECT * FROM login_logs WHERE user_id = ? ORDER BY created_at`.
+
+### Lien
+
+- Audit source : `docs/AUDIT-ARCHITECTURE-GO-LIVE.md` ISSUE-12
+- PR : (n° à renseigner)
+
+---
+
 ## CHG-2026-04-23-002 — R-202 fermé : atomicité des numéros de facture
 
 - **Date** : 2026-04-23
