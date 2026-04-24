@@ -3,11 +3,11 @@
 namespace Modules\Eshop360\Services;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Modules\Eshop360\Domain\Sales\Models\OnlineOrderItem;
 use Modules\Eshop360\Models\OnlineOrder;
-use Modules\Eshop360\Models\OnlineOrderItem;
 use Modules\Eshop360\Models\Order;
 use Modules\Eshop360\Models\Product;
-use Illuminate\Support\Str;
 
 class OnlineOrderService
 {
@@ -21,8 +21,7 @@ class OnlineOrderService
         ?string $deliveryAddress = null,
         ?string $notes = null,
         ?int $channelId = null,
-    ): OnlineOrder
-    {
+    ): OnlineOrder {
         return DB::transaction(function () use ($instanceId, $customerId, $items, $deliveryAddress, $notes, $channelId) {
             $subtotal = 0;
             $taxAmount = 0;
@@ -52,7 +51,7 @@ class OnlineOrderService
                 'instance_id' => $instanceId,
                 'customer_id' => $customerId,
                 'channel_id' => $channelId,
-                'reference' => 'ONL-' . strtoupper(Str::random(8)),
+                'reference' => 'ONL-'.strtoupper(Str::random(8)),
                 'status' => 'pending_validation',
                 'subtotal' => $subtotal,
                 'tax_amount' => $taxAmount,
@@ -87,16 +86,23 @@ class OnlineOrderService
         ];
 
         $allowed = $validTransitions[$order->status] ?? [];
-        if (!in_array($newStatus, $allowed)) {
+        if (! in_array($newStatus, $allowed)) {
             throw new \InvalidArgumentException("Cannot transition from {$order->status} to {$newStatus}");
         }
 
         $updates = ['status' => $newStatus];
-        if ($newStatus === 'delivered') $updates['delivered_at'] = now();
-        if ($newStatus === 'received') $updates['received_at'] = now();
-        if ($newStatus === 'validated') $updates['confirmed_at'] = now();
+        if ($newStatus === 'delivered') {
+            $updates['delivered_at'] = now();
+        }
+        if ($newStatus === 'received') {
+            $updates['received_at'] = now();
+        }
+        if ($newStatus === 'validated') {
+            $updates['confirmed_at'] = now();
+        }
 
         $order->update($updates);
+
         return $order->fresh();
     }
 
@@ -108,7 +114,7 @@ class OnlineOrderService
         return DB::transaction(function () use ($onlineOrder, $orderService) {
             $existingOrder = Order::where('instance_id', $onlineOrder->instance_id)
                 ->where('source', 'online')
-                ->where('notes', 'like', '%online order #' . $onlineOrder->reference . '%')
+                ->where('notes', 'like', '%online order #'.$onlineOrder->reference.'%')
                 ->first();
 
             if ($existingOrder) {
@@ -129,7 +135,7 @@ class OnlineOrderService
                     'channel_id' => $onlineOrder->channel_id,
                     'status' => 'completed',
                     'source' => 'online',
-                    'notes' => 'From online order #' . $onlineOrder->reference,
+                    'notes' => 'From online order #'.$onlineOrder->reference,
                 ],
                 false,
             );

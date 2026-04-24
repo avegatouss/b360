@@ -5425,6 +5425,618 @@ parameters:
 			path: ../../Modules/Eshop360/Domain/Purchasing/Models/Supplier.php
 
 		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$channel_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/CashRegister.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$instance_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/CashRegister.php
+
+		-
+			message: '#^Class Modules\\Eshop360\\Domain\\Sales\\Models\\CashRegister uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/CashRegister.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\CashRegister\:\:channel\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/CashRegister.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\CashRegister\:\:instance\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/CashRegister.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\CashRegister\:\:orders\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/CashRegister.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\CashRegister\:\:scopeOpen\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/CashRegister.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\CashRegister\:\:scopeOpen\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/CashRegister.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\CashRegister\:\:store\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/CashRegister.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\CashRegister\:\:user\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/CashRegister.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\CashRegister\:\:withoutChannelScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/CashRegister.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\CashRegister\:\:withoutInstanceScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/CashRegister.php
+
+		-
+			message: '#^Property Modules\\Eshop360\\Domain\\Sales\\Models\\CashRegister\:\:\$morphClass has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/CashRegister.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$channel_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/OnlineOrder.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$instance_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/OnlineOrder.php
+
+		-
+			message: '#^Access to an undefined property Modules\\Eshop360\\Domain\\Sales\\Models\\OnlineOrder\:\:\$channel_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/OnlineOrder.php
+
+		-
+			message: '#^Class Modules\\Eshop360\\Domain\\Sales\\Models\\OnlineOrder uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/OnlineOrder.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\OnlineOrder\:\:channel\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/OnlineOrder.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\OnlineOrder\:\:customer\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/OnlineOrder.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\OnlineOrder\:\:instance\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/OnlineOrder.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\OnlineOrder\:\:items\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/OnlineOrder.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\OnlineOrder\:\:withoutChannelScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/OnlineOrder.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\OnlineOrder\:\:withoutInstanceScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/OnlineOrder.php
+
+		-
+			message: '#^Property Modules\\Eshop360\\Domain\\Sales\\Models\\OnlineOrder\:\:\$morphClass has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/OnlineOrder.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$channel_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/OnlineOrderItem.php
+
+		-
+			message: '#^Class Modules\\Eshop360\\Domain\\Sales\\Models\\OnlineOrderItem uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/OnlineOrderItem.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\OnlineOrderItem\:\:channel\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/OnlineOrderItem.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\OnlineOrderItem\:\:onlineOrder\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/OnlineOrderItem.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\OnlineOrderItem\:\:product\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/OnlineOrderItem.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\OnlineOrderItem\:\:withoutChannelScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/OnlineOrderItem.php
+
+		-
+			message: '#^Property Modules\\Eshop360\\Domain\\Sales\\Models\\OnlineOrderItem\:\:\$morphClass has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/OnlineOrderItem.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$channel_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/Order.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$instance_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/Order.php
+
+		-
+			message: '#^Access to an undefined property Modules\\Eshop360\\Domain\\Sales\\Models\\Order\:\:\$channel_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/Order.php
+
+		-
+			message: '#^Class Modules\\Eshop360\\Domain\\Sales\\Models\\Order uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/Order.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\Order\:\:biller\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/Order.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\Order\:\:cashRegister\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/Order.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\Order\:\:cashier\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/Order.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\Order\:\:channel\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/Order.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\Order\:\:channelMarginLogs\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/Order.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\Order\:\:creator\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/Order.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\Order\:\:customer\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/Order.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\Order\:\:employeeCommissions\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/Order.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\Order\:\:holding\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/Order.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\Order\:\:installmentPlan\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasOne does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/Order.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\Order\:\:instance\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/Order.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\Order\:\:invoice\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasOne does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/Order.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\Order\:\:items\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/Order.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\Order\:\:payments\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\MorphMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/Order.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\Order\:\:project\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/Order.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\Order\:\:scopeForChannel\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/Order.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\Order\:\:scopeForChannel\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/Order.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\Order\:\:store\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/Order.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\Order\:\:warehouse\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/Order.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\Order\:\:withoutChannelScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/Order.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\Order\:\:withoutInstanceScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/Order.php
+
+		-
+			message: '#^Property Modules\\Eshop360\\Domain\\Sales\\Models\\Order\:\:\$morphClass has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/Order.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$channel_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/OrderItem.php
+
+		-
+			message: '#^Access to an undefined property Modules\\Eshop360\\Domain\\Sales\\Models\\OrderItem\:\:\$product_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/OrderItem.php
+
+		-
+			message: '#^Access to an undefined property Modules\\Eshop360\\Domain\\Sales\\Models\\OrderItem\:\:\$quantity\.$#'
+			identifier: property.notFound
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/OrderItem.php
+
+		-
+			message: '#^Access to an undefined property Modules\\Eshop360\\Domain\\Sales\\Models\\OrderItem\:\:\$tax\.$#'
+			identifier: property.notFound
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/OrderItem.php
+
+		-
+			message: '#^Access to an undefined property Modules\\Eshop360\\Domain\\Sales\\Models\\OrderItem\:\:\$unit_price\.$#'
+			identifier: property.notFound
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/OrderItem.php
+
+		-
+			message: '#^Class Modules\\Eshop360\\Domain\\Sales\\Models\\OrderItem uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/OrderItem.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\OrderItem\:\:channel\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/OrderItem.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\OrderItem\:\:order\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/OrderItem.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\OrderItem\:\:product\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/OrderItem.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\OrderItem\:\:variation\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/OrderItem.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\OrderItem\:\:withoutChannelScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/OrderItem.php
+
+		-
+			message: '#^Property Modules\\Eshop360\\Domain\\Sales\\Models\\OrderItem\:\:\$morphClass has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/OrderItem.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$channel_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/PersistentCart.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\PersistentCart\:\:channel\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/PersistentCart.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\PersistentCart\:\:withoutChannelScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/PersistentCart.php
+
+		-
+			message: '#^Property Modules\\Eshop360\\Domain\\Sales\\Models\\PersistentCart\:\:\$morphClass has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/PersistentCart.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$channel_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/Quotation.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$instance_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/Quotation.php
+
+		-
+			message: '#^Class Modules\\Eshop360\\Domain\\Sales\\Models\\Quotation uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/Quotation.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\Quotation\:\:channel\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/Quotation.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\Quotation\:\:creator\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/Quotation.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\Quotation\:\:customer\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/Quotation.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\Quotation\:\:instance\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/Quotation.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\Quotation\:\:items\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/Quotation.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\Quotation\:\:withoutChannelScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/Quotation.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\Quotation\:\:withoutInstanceScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/Quotation.php
+
+		-
+			message: '#^Property Modules\\Eshop360\\Domain\\Sales\\Models\\Quotation\:\:\$morphClass has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/Quotation.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$channel_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/QuotationItem.php
+
+		-
+			message: '#^Class Modules\\Eshop360\\Domain\\Sales\\Models\\QuotationItem uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/QuotationItem.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\QuotationItem\:\:channel\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/QuotationItem.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\QuotationItem\:\:product\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/QuotationItem.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\QuotationItem\:\:quotation\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/QuotationItem.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\QuotationItem\:\:withoutChannelScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/QuotationItem.php
+
+		-
+			message: '#^Property Modules\\Eshop360\\Domain\\Sales\\Models\\QuotationItem\:\:\$morphClass has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/QuotationItem.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$channel_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/SaleReturn.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$instance_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/SaleReturn.php
+
+		-
+			message: '#^Class Modules\\Eshop360\\Domain\\Sales\\Models\\SaleReturn uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/SaleReturn.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\SaleReturn\:\:channel\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/SaleReturn.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\SaleReturn\:\:customer\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/SaleReturn.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\SaleReturn\:\:instance\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/SaleReturn.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\SaleReturn\:\:order\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/SaleReturn.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\SaleReturn\:\:product\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/SaleReturn.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\SaleReturn\:\:withoutChannelScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/SaleReturn.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Sales\\Models\\SaleReturn\:\:withoutInstanceScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/SaleReturn.php
+
+		-
+			message: '#^Property Modules\\Eshop360\\Domain\\Sales\\Models\\SaleReturn\:\:\$morphClass has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Sales/Models/SaleReturn.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\>\|Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
 			identifier: property.notFound
 			count: 2
@@ -10624,78 +11236,6 @@ parameters:
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$channel_id\.$#'
 			identifier: property.notFound
 			count: 1
-			path: ../../Modules/Eshop360/Models/CashRegister.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$instance_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: ../../Modules/Eshop360/Models/CashRegister.php
-
-		-
-			message: '#^Class Modules\\Eshop360\\Models\\CashRegister uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/CashRegister.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\CashRegister\:\:channel\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/CashRegister.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\CashRegister\:\:instance\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../../Modules/Eshop360/Models/CashRegister.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\CashRegister\:\:orders\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/CashRegister.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\CashRegister\:\:scopeOpen\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/CashRegister.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\CashRegister\:\:scopeOpen\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/CashRegister.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\CashRegister\:\:store\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/CashRegister.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\CashRegister\:\:user\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/CashRegister.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\CashRegister\:\:withoutChannelScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/CashRegister.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\CashRegister\:\:withoutInstanceScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/CashRegister.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$channel_id\.$#'
-			identifier: property.notFound
-			count: 1
 			path: ../../Modules/Eshop360/Models/ChargeCategory.php
 
 		-
@@ -11974,318 +12514,6 @@ parameters:
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$channel_id\.$#'
 			identifier: property.notFound
 			count: 1
-			path: ../../Modules/Eshop360/Models/OnlineOrder.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$instance_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: ../../Modules/Eshop360/Models/OnlineOrder.php
-
-		-
-			message: '#^Access to an undefined property Modules\\Eshop360\\Models\\OnlineOrder\:\:\$channel_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: ../../Modules/Eshop360/Models/OnlineOrder.php
-
-		-
-			message: '#^Class Modules\\Eshop360\\Models\\OnlineOrder uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/OnlineOrder.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\OnlineOrder\:\:channel\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/OnlineOrder.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\OnlineOrder\:\:customer\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/OnlineOrder.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\OnlineOrder\:\:instance\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../../Modules/Eshop360/Models/OnlineOrder.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\OnlineOrder\:\:items\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/OnlineOrder.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\OnlineOrder\:\:withoutChannelScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/OnlineOrder.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\OnlineOrder\:\:withoutInstanceScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/OnlineOrder.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$channel_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: ../../Modules/Eshop360/Models/OnlineOrderItem.php
-
-		-
-			message: '#^Class Modules\\Eshop360\\Models\\OnlineOrderItem uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/OnlineOrderItem.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\OnlineOrderItem\:\:channel\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/OnlineOrderItem.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\OnlineOrderItem\:\:onlineOrder\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/OnlineOrderItem.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\OnlineOrderItem\:\:product\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/OnlineOrderItem.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\OnlineOrderItem\:\:withoutChannelScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/OnlineOrderItem.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$channel_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: ../../Modules/Eshop360/Models/Order.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$instance_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: ../../Modules/Eshop360/Models/Order.php
-
-		-
-			message: '#^Access to an undefined property Modules\\Eshop360\\Models\\Order\:\:\$channel_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: ../../Modules/Eshop360/Models/Order.php
-
-		-
-			message: '#^Class Modules\\Eshop360\\Models\\Order uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/Order.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\Order\:\:biller\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/Order.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\Order\:\:cashRegister\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/Order.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\Order\:\:cashier\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/Order.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\Order\:\:channel\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/Order.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\Order\:\:channelMarginLogs\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/Order.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\Order\:\:creator\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/Order.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\Order\:\:customer\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/Order.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\Order\:\:employeeCommissions\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/Order.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\Order\:\:holding\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/Order.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\Order\:\:installmentPlan\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasOne does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/Order.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\Order\:\:instance\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../../Modules/Eshop360/Models/Order.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\Order\:\:invoice\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasOne does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/Order.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\Order\:\:items\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/Order.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\Order\:\:payments\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\MorphMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/Order.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\Order\:\:project\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/Order.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\Order\:\:scopeForChannel\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/Order.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\Order\:\:scopeForChannel\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/Order.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\Order\:\:store\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/Order.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\Order\:\:warehouse\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/Order.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\Order\:\:withoutChannelScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/Order.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\Order\:\:withoutInstanceScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/Order.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$channel_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: ../../Modules/Eshop360/Models/OrderItem.php
-
-		-
-			message: '#^Access to an undefined property Modules\\Eshop360\\Models\\OrderItem\:\:\$product_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: ../../Modules/Eshop360/Models/OrderItem.php
-
-		-
-			message: '#^Access to an undefined property Modules\\Eshop360\\Models\\OrderItem\:\:\$quantity\.$#'
-			identifier: property.notFound
-			count: 1
-			path: ../../Modules/Eshop360/Models/OrderItem.php
-
-		-
-			message: '#^Access to an undefined property Modules\\Eshop360\\Models\\OrderItem\:\:\$tax\.$#'
-			identifier: property.notFound
-			count: 1
-			path: ../../Modules/Eshop360/Models/OrderItem.php
-
-		-
-			message: '#^Access to an undefined property Modules\\Eshop360\\Models\\OrderItem\:\:\$unit_price\.$#'
-			identifier: property.notFound
-			count: 1
-			path: ../../Modules/Eshop360/Models/OrderItem.php
-
-		-
-			message: '#^Class Modules\\Eshop360\\Models\\OrderItem uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/OrderItem.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\OrderItem\:\:channel\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/OrderItem.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\OrderItem\:\:order\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/OrderItem.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\OrderItem\:\:product\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/OrderItem.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\OrderItem\:\:variation\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/OrderItem.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\OrderItem\:\:withoutChannelScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/OrderItem.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$channel_id\.$#'
-			identifier: property.notFound
-			count: 1
 			path: ../../Modules/Eshop360/Models/Payment.php
 
 		-
@@ -12382,24 +12610,6 @@ parameters:
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$channel_id\.$#'
 			identifier: property.notFound
 			count: 1
-			path: ../../Modules/Eshop360/Models/PersistentCart.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\PersistentCart\:\:channel\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/PersistentCart.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\PersistentCart\:\:withoutChannelScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/PersistentCart.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$channel_id\.$#'
-			identifier: property.notFound
-			count: 1
 			path: ../../Modules/Eshop360/Models/Project.php
 
 		-
@@ -12491,102 +12701,6 @@ parameters:
 			identifier: missingType.iterableValue
 			count: 1
 			path: ../../Modules/Eshop360/Models/Project.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$channel_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: ../../Modules/Eshop360/Models/Quotation.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$instance_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: ../../Modules/Eshop360/Models/Quotation.php
-
-		-
-			message: '#^Class Modules\\Eshop360\\Models\\Quotation uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/Quotation.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\Quotation\:\:channel\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/Quotation.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\Quotation\:\:creator\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/Quotation.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\Quotation\:\:customer\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/Quotation.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\Quotation\:\:instance\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../../Modules/Eshop360/Models/Quotation.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\Quotation\:\:items\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/Quotation.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\Quotation\:\:withoutChannelScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/Quotation.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\Quotation\:\:withoutInstanceScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/Quotation.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$channel_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: ../../Modules/Eshop360/Models/QuotationItem.php
-
-		-
-			message: '#^Class Modules\\Eshop360\\Models\\QuotationItem uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/QuotationItem.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\QuotationItem\:\:channel\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/QuotationItem.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\QuotationItem\:\:product\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/QuotationItem.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\QuotationItem\:\:quotation\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/QuotationItem.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\QuotationItem\:\:withoutChannelScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/QuotationItem.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$channel_id\.$#'
@@ -12701,66 +12815,6 @@ parameters:
 			identifier: missingType.iterableValue
 			count: 1
 			path: ../../Modules/Eshop360/Models/RecurringInvoice.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$channel_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: ../../Modules/Eshop360/Models/SaleReturn.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$instance_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: ../../Modules/Eshop360/Models/SaleReturn.php
-
-		-
-			message: '#^Class Modules\\Eshop360\\Models\\SaleReturn uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/SaleReturn.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\SaleReturn\:\:channel\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/SaleReturn.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\SaleReturn\:\:customer\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/SaleReturn.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\SaleReturn\:\:instance\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../../Modules/Eshop360/Models/SaleReturn.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\SaleReturn\:\:order\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/SaleReturn.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\SaleReturn\:\:product\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/SaleReturn.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\SaleReturn\:\:withoutChannelScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/SaleReturn.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\SaleReturn\:\:withoutInstanceScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/SaleReturn.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$channel_id\.$#'
@@ -14737,6 +14791,24 @@ parameters:
 			path: ../../Modules/Eshop360/Services/OnlineOrderService.php
 
 		-
+			message: '#^Access to an undefined property Modules\\Eshop360\\Domain\\Sales\\Models\\OnlineOrderItem\:\:\$product_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: ../../Modules/Eshop360/Services/OnlineOrderService.php
+
+		-
+			message: '#^Access to an undefined property Modules\\Eshop360\\Domain\\Sales\\Models\\OnlineOrderItem\:\:\$quantity\.$#'
+			identifier: property.notFound
+			count: 1
+			path: ../../Modules/Eshop360/Services/OnlineOrderService.php
+
+		-
+			message: '#^Access to an undefined property Modules\\Eshop360\\Domain\\Sales\\Models\\OnlineOrderItem\:\:\$unit_price\.$#'
+			identifier: property.notFound
+			count: 1
+			path: ../../Modules/Eshop360/Services/OnlineOrderService.php
+
+		-
 			message: '#^Access to an undefined property Modules\\Eshop360\\Models\\OnlineOrder\:\:\$channel_id\.$#'
 			identifier: property.notFound
 			count: 1
@@ -14767,24 +14839,6 @@ parameters:
 			path: ../../Modules/Eshop360/Services/OnlineOrderService.php
 
 		-
-			message: '#^Access to an undefined property Modules\\Eshop360\\Models\\OnlineOrderItem\:\:\$product_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: ../../Modules/Eshop360/Services/OnlineOrderService.php
-
-		-
-			message: '#^Access to an undefined property Modules\\Eshop360\\Models\\OnlineOrderItem\:\:\$quantity\.$#'
-			identifier: property.notFound
-			count: 1
-			path: ../../Modules/Eshop360/Services/OnlineOrderService.php
-
-		-
-			message: '#^Access to an undefined property Modules\\Eshop360\\Models\\OnlineOrderItem\:\:\$unit_price\.$#'
-			identifier: property.notFound
-			count: 1
-			path: ../../Modules/Eshop360/Services/OnlineOrderService.php
-
-		-
 			message: '#^Method Modules\\Eshop360\\Services\\OnlineOrderService\:\:createOrder\(\) has parameter \$items with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -14797,7 +14851,7 @@ parameters:
 			path: ../../Modules/Eshop360/Services/OnlineOrderService.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{product_id\: mixed, quantity\: mixed, unit_price\: mixed, product_name\: mixed, sku\: mixed\}, Closure\(Modules\\Eshop360\\Models\\OnlineOrderItem\)\: array\{product_id\: mixed, quantity\: mixed, unit_price\: mixed, product_name\: mixed, sku\: mixed\} given\.$#'
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{product_id\: mixed, quantity\: mixed, unit_price\: mixed, product_name\: mixed, sku\: mixed\}, Closure\(Modules\\Eshop360\\Domain\\Sales\\Models\\OnlineOrderItem\)\: array\{product_id\: mixed, quantity\: mixed, unit_price\: mixed, product_name\: mixed, sku\: mixed\} given\.$#'
 			identifier: argument.type
 			count: 1
 			path: ../../Modules/Eshop360/Services/OnlineOrderService.php

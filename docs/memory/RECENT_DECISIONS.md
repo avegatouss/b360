@@ -14,6 +14,19 @@
 - **Résidus acceptables** : le mot « CODIFARM » reste dans les Seeders/Tests comme nom commercial de grossiste pharmaceutique ivoirien (donnée démo), pas comme technologie. Les tests structurels scannent uniquement le code applicatif, pas les Seeders/Tests.
 - **Source** : lot MAJEUR, branche `chore/eshop360-close-codifarm-consolidation`, audit ISSUE + §2.3 du plan d'évolution.
 
+## 2026-04-24 — R-101 sous-lot S8 : extraction Sales (L1 critique, approche défensive)
+
+- **Décision** : extraction de 9 modèles Sales (Order, OrderItem, OnlineOrder, OnlineOrderItem, PersistentCart, SaleReturn, CashRegister, Quotation, QuotationItem) vers `Modules/Eshop360/Domain/Sales/Models/` avec **approche défensive** héritée du retour d'expérience S7 (ADR-015).
+- **Mesure clé — `$morphClass` pinning** : chaque classe canonique définit `protected $morphClass = \Modules\Eshop360\Models\<Legacy>::class;`. Avec 7+ services/contrôleurs passant `Order::class` / `OnlineOrder::class` / etc. à des colonnes morph (reference_type, payable_type, invoiceable_type), le pinning garantit que la FQN legacy reste celle stockée en base, indépendamment des imports des consumers. Protège : (a) données production existantes, (b) tests historiques (`Order::class` en assertion), (c) consumers futurs. 
+- **Choix de l'approche** : plutôt qu'auditer 7+ sites et garantir des imports alias partout (approche S7), on centralise la garantie sur les 9 modèles déplacés. Moins de points de défaillance.
+- **Imports cross-sous-domaine** : Order+10 (10 modèles d'autres sous-domaines via alias `Modules\Eshop360\Models\*`). Les peers intra-Sales (OrderItem, CashRegister) référencés sans import (même namespace).
+- **Deptrac** : `EshopSales` restreint à socles + `EshopCatalog` (Product, ProductVariation) + `EshopCRM` (Customer) + `EshopChannel` (ChannelMarginLog) + `EshopInventory` (Store, Warehouse) + Eshop360 transitoire (Invoice, Payment, Holding, InstallmentPlan, EmployeeCommission, Project — levés S9/S10/S11).
+- **Baseline PHPStan** régénérée : 3656 (+9 vs S7 — les 9 `protected $morphClass` sans type annotation, bruit baseliné).
+- **Validation** : deptrac 0 violations, phpstan OK, pest 659 passed (inchangé grâce au pinning).
+- **ADR** : `docs/adr/ADR-016-eshop360-sales-subdomain-extraction.md`.
+- **Plan S12** : remplacer les 9 `$morphClass` pinning par un `Relation::enforceMorphMap([...])` formel dans `Eshop360ServiceProvider`, avec migration progressive des class-strings stockées vers des short names stables.
+- **Source** : lot R-101 S8 (L1 critique), branche `refactor/eshop360-s8-sales-extraction`.
+
 ## 2026-04-24 — R-101 sous-lot S7 : extraction Purchasing
 
 - **Décision** : pattern S1/S2/S3/S5/S6 appliqué au sous-domaine Purchasing. 9 modèles (Supplier, PurchaseOrder, PurchaseItem, PurchaseReturn, PurchaseReturnItem, ImportOrder, ImportOrderItem, ImportCost, ImportCostType) déplacés vers `Modules/Eshop360/Domain/Purchasing/Models/`. 9 stubs d'alias rétrocompatibles créés.

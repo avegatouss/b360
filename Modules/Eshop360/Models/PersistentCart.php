@@ -2,30 +2,11 @@
 
 namespace Modules\Eshop360\Models;
 
-use Illuminate\Database\Eloquent\Model;
-
-use Modules\Eshop360\Database\Traits\BelongsToChannel;
-
-class PersistentCart extends Model
-{
-    use BelongsToChannel;
-
-    protected $table = 'eshop_carts';
-
-    protected $fillable = [
-        'instance_id',
-        'channel_id',
-        'user_id',
-        'items',
-        'coupon',
-        'context',
-        'expires_at',
-    ];
-
-    protected $casts = [
-        'items' => 'array',
-        'coupon' => 'array',
-        'context' => 'array',
-        'expires_at' => 'datetime',
-    ];
-}
+/**
+ * Backward-compatibility alias.
+ *
+ * Canonical location: Modules\Eshop360\Domain\Sales\Models\PersistentCart
+ *
+ * R-101 S8 : extraction du sous-domaine Sales (L1 critique).
+ */
+class PersistentCart extends \Modules\Eshop360\Domain\Sales\Models\PersistentCart {}

@@ -13,6 +13,48 @@
 
 ---
 
+## CHG-2026-04-24-004 — R-101 sous-lot S8 : extraction Sales (L1 critique)
+
+- **Date** : 2026-04-24
+- **Type** : architecture (extraction sous-domaine L1, application défensive du piège alias)
+- **Modules concernés** : Eshop360 (9 modèles Sales déplacés)
+- **Impact** : nul côté runtime (rétrocompatibilité via alias + `$morphClass` pinning).
+- **Breaking change** : non.
+
+### Actions appliquées
+
+- **9 modèles déplacés** via `git mv` vers `Modules/Eshop360/Domain/Sales/Models/` : `Order`, `OrderItem`, `OnlineOrder`, `OnlineOrderItem`, `PersistentCart`, `SaleReturn`, `CashRegister`, `Quotation`, `QuotationItem`.
+- **Namespace mis à jour** : `Modules\Eshop360\Models` → `Modules\Eshop360\Domain\Sales\Models`.
+- **Imports cross-sous-domaine via alias** : Order+10 (ChannelMarginLog, Customer, EmployeeCommission, Holding, InstallmentPlan, Invoice, Payment, Project, Store, Warehouse). OrderItem+2 (Product, ProductVariation). OnlineOrder+1 (Customer). OnlineOrderItem+1 (Product). SaleReturn+2 (Customer, Product). CashRegister+1 (Store). Quotation+1 (Customer). QuotationItem+1 (Product). PersistentCart+0.
+- **9 stubs d'alias** rétrocompatibles dans `Modules/Eshop360/Models/`.
+- **Mesure défensive L1 — `$morphClass` pinning** : chaque modèle canonique définit `protected $morphClass = \Modules\Eshop360\Models\<Legacy>::class;`. Garantit que toute morph reference (stock_movement.reference_type, payment.payable_type, fne_invoice.invoiceable_type, etc.) stocke la FQN legacy — indépendamment de l'import utilisé par le consumer. Protège les données production existantes + tous les tests historiques + tous les futurs sites qui passeraient `Order::class`.
+- **Deptrac `EshopSales` restreint** : permissive → socles + `EshopCatalog` + `EshopCRM` + `EshopChannel` + `EshopInventory` + Eshop360 transitoire (Invoice/Payment/Holding/InstallmentPlan/EmployeeCommission/Project pas encore extraits — levés S9/S10/S11).
+- **Baseline PHPStan régénérée** : **3656 erreurs** baselined (vs 3647 S7 — **+9** nouvelles entrées `missingType.property` pour les 9 `$morphClass`, bruit baseliné).
+- `tools/deptrac/deptrac.yaml` : synchronisé avec root.
+- ADR `docs/adr/ADR-016-eshop360-sales-subdomain-extraction.md` : documente l'extraction + la décision défensive + plan de clôture S12 (remplacement `$morphClass` par `enforceMorphMap` formel).
+
+### Statut
+
+- [x] Implémenté (9 modèles déplacés, 9 alias créés, 9 `$morphClass` pinning, deptrac resserré)
+- [x] Documenté (ADR-016 avec justification défensive L1)
+- [x] Testé (659 passed attendu, confirmé par pest full — morphClass pinning a évité toute régression)
+
+### IMPACT_ANALYSIS
+
+- **Périmètre** : déplacement + stubs + `$morphClass` pinning + config. Aucune logique métier modifiée, aucune migration DB, aucun service modifié, aucun contrôleur modifié.
+- **Contrat runtime** : strictement identique (les 7+ sites qui passent `Order::class` à des colonnes morph continuent de fonctionner sans modification — ils importent l'alias via `use Modules\Eshop360\Models\Order`, et même s'ils n'avaient pas fait, le `$morphClass` canonique stockerait toujours la legacy FQN).
+- **Concurrence / Multi-tenant / Permissions / Idempotence** : préservés.
+- **Rollback** : `git revert` sans risque.
+- **Garde future** : deptrac bloque toute nouvelle dépendance `EshopSales → EshopX` (hors Catalog/CRM/Channel/Inventory/Eshop360 transitoire).
+
+### Lien
+
+- ADR : `docs/adr/ADR-016-eshop360-sales-subdomain-extraction.md`
+- ADR parents : ADR-008 (stratégie), ADR-015 (piège découvert en S7)
+- PR : (n° à renseigner)
+
+---
+
 ## CHG-2026-04-24-003 — R-101 sous-lot S7 : extraction Purchasing
 
 - **Date** : 2026-04-24

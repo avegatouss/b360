@@ -386,7 +386,28 @@ deptrac:
       - EshopCatalog
       - EshopInventory
       - AppLayer
-    EshopSales: &eshop_sublayer_base
+    # R-101 S8 : EshopSales restreint (L1 critique).
+    # Dépendances réelles : socles + toutes les feuilles métier consommées par
+    # Order / OnlineOrder / SaleReturn / Quotation / CashRegister : Catalog
+    # (Product, ProductVariation), CRM (Customer), Channel (ChannelMarginLog),
+    # Inventory (Store, Warehouse), + Eshop360 transitoire (Invoice, Payment,
+    # Holding, InstallmentPlan, EmployeeCommission, Project via alias — pas
+    # encore extraits). Morph stabilisé via `$morphClass` sur les canoniques.
+    EshopSales:
+      - Core
+      - Auth
+      - Users
+      - Settings
+      - Billing
+      - Currency
+      - Lang
+      - Eshop360
+      - EshopCatalog
+      - EshopCRM
+      - EshopChannel
+      - EshopInventory
+      - AppLayer
+    EshopFinance: &eshop_sublayer_base
       - Core
       - Auth
       - Users
@@ -409,7 +430,6 @@ deptrac:
       - EshopProjects
       - EshopReporting
       - AppLayer
-    EshopFinance: *eshop_sublayer_base
     EshopHR: *eshop_sublayer_base
     EshopCommunication: *eshop_sublayer_base
     EshopProjects: *eshop_sublayer_base
