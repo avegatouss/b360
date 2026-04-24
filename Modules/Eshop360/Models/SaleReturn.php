@@ -2,53 +2,11 @@
 
 namespace Modules\Eshop360\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Modules\Core\Database\Traits\BelongsToInstance;
-
-use Modules\Eshop360\Database\Traits\BelongsToChannel;
-
-class SaleReturn extends Model
-{
-    use HasFactory, BelongsToInstance, BelongsToChannel;
-
-    protected $table = 'eshop_sale_returns';
-
-    protected $fillable = [
-        'channel_id',
-        'instance_id',
-        'order_id',
-        'customer_id',
-        'product_id',
-        'date',
-        'status',
-        'total',
-        'paid_amount',
-        'due_amount',
-        'payment_status',
-        'notes',
-    ];
-
-    protected $casts = [
-        'date' => 'date',
-        'total' => 'decimal:2',
-        'paid_amount' => 'decimal:2',
-        'due_amount' => 'decimal:2',
-    ];
-
-    public function order(): BelongsTo
-    {
-        return $this->belongsTo(Order::class);
-    }
-
-    public function customer(): BelongsTo
-    {
-        return $this->belongsTo(Customer::class);
-    }
-
-    public function product(): BelongsTo
-    {
-        return $this->belongsTo(Product::class);
-    }
-}
+/**
+ * Backward-compatibility alias.
+ *
+ * Canonical location: Modules\Eshop360\Domain\Sales\Models\SaleReturn
+ *
+ * R-101 S8 : extraction du sous-domaine Sales (L1 critique).
+ */
+class SaleReturn extends \Modules\Eshop360\Domain\Sales\Models\SaleReturn {}
