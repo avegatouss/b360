@@ -10,7 +10,7 @@ use Modules\Eshop360\Database\Traits\BelongsToChannel;
 
 class EmployeeSalary extends Model
 {
-    use HasFactory, BelongsToChannel;
+    use BelongsToChannel, HasFactory;
 
     protected $table = 'eshop_employee_salaries';
 

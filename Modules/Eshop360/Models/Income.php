@@ -2,48 +2,13 @@
 
 namespace Modules\Eshop360\Models;
 
-use App\Models\User;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Modules\Core\Database\Traits\BelongsToInstance;
-
-use Modules\Eshop360\Database\Traits\BelongsToChannel;
-
-class Income extends Model
-{
-    use HasFactory, BelongsToInstance, BelongsToChannel;
-
-    protected $table = 'eshop_incomes';
-
-    protected $fillable = [
-        'channel_id',
-        'instance_id',
-        'source_id',
-        'account_id',
-        'amount',
-        'date',
-        'description',
-        'user_id',
-    ];
-
-    protected $casts = [
-        'amount' => 'decimal:2',
-        'date' => 'date',
-    ];
-
-    public function source(): BelongsTo
-    {
-        return $this->belongsTo(IncomeSource::class, 'source_id');
-    }
-
-    public function account(): BelongsTo
-    {
-        return $this->belongsTo(Account::class);
-    }
-
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
-    }
-}
+/**
+ * Backward-compatibility alias.
+ *
+ * Canonical location: Modules\Eshop360\Domain\Finance\Models\Income
+ *
+ * R-101 S9 : extraction du sous-domaine Finance (L1 critique).
+ * The canonical pins $morphClass to this legacy FQN so stored morph
+ * _type values remain stable across the extraction.
+ */
+class Income extends \Modules\Eshop360\Domain\Finance\Models\Income {}

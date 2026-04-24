@@ -11,7 +11,7 @@ use Modules\Eshop360\Database\Traits\BelongsToChannel;
 
 class Task extends Model
 {
-    use BelongsToInstance, BelongsToChannel;
+    use BelongsToChannel, BelongsToInstance;
 
     protected $table = 'eshop_tasks';
 
@@ -65,5 +65,6 @@ class Task extends Model
     }
 
     public static array $statuses = ['todo', 'in_progress', 'review', 'done', 'cancelled'];
+
     public static array $priorities = ['low', 'medium', 'high', 'urgent'];
 }

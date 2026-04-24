@@ -10,7 +10,7 @@ use Modules\Eshop360\Database\Traits\BelongsToChannel;
 
 class Attendance extends Model
 {
-    use HasFactory, BelongsToChannel;
+    use BelongsToChannel, HasFactory;
 
     protected $table = 'eshop_attendance';
 

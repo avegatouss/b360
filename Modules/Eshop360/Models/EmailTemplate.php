@@ -11,7 +11,7 @@ use Modules\Eshop360\Database\Traits\BelongsToChannel;
 
 class EmailTemplate extends Model
 {
-    use HasFactory, BelongsToInstance, BelongsToChannel;
+    use BelongsToChannel, BelongsToInstance, HasFactory;
 
     protected $table = 'eshop_email_templates';
 
@@ -37,7 +37,7 @@ class EmailTemplate extends Model
     public static function getTemplate(string $name): ?self
     {
         $instance = CurrentInstance::get();
-        if (!$instance) {
+        if (! $instance) {
             return null;
         }
 
@@ -53,8 +53,9 @@ class EmailTemplate extends Model
     {
         $html = $this->body;
         foreach ($data as $key => $value) {
-            $html = str_replace('{{' . $key . '}}', (string) $value, $html);
+            $html = str_replace('{{'.$key.'}}', (string) $value, $html);
         }
+
         return $html;
     }
 
@@ -65,8 +66,9 @@ class EmailTemplate extends Model
     {
         $subject = $this->subject;
         foreach ($data as $key => $value) {
-            $subject = str_replace('{{' . $key . '}}', (string) $value, $subject);
+            $subject = str_replace('{{'.$key.'}}', (string) $value, $subject);
         }
+
         return $subject;
     }
 }

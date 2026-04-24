@@ -11,7 +11,7 @@ use Modules\Eshop360\Database\Traits\BelongsToChannel;
 
 class TicketMessage extends Model
 {
-    use HasFactory, BelongsToChannel;
+    use BelongsToChannel, HasFactory;
 
     protected $table = 'eshop_ticket_messages';
 

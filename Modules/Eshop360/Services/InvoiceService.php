@@ -140,7 +140,7 @@ class InvoiceService
      */
     private function snapshotCurrencyIfEnabled(Invoice $invoice): void
     {
-        if (!app()->bound(\Modules\Currency\Services\SnapshotService::class)) {
+        if (! app()->bound(\Modules\Currency\Services\SnapshotService::class)) {
             return;
         }
 
@@ -189,7 +189,7 @@ class InvoiceService
         ?string $method = null,
         string $referencePrefix = 'INV-ADJ',
         ?string $notes = null,
-    ): ?\Modules\Eshop360\Models\Payment {
+    ): ?\Modules\Eshop360\Domain\Finance\Models\Payment {
         $currentPaidAmount = (float) $invoice->payments()
             ->where('status', 'completed')
             ->sum('amount');
@@ -208,7 +208,7 @@ class InvoiceService
             'instance_id' => $invoice->instance_id ?? $instance?->id,
             'amount' => $delta,
             'method' => $method ?? 'cash',
-            'reference' => $referencePrefix . '-' . $invoice->id . '-' . ($invoice->payments()->count() + 1),
+            'reference' => $referencePrefix.'-'.$invoice->id.'-'.($invoice->payments()->count() + 1),
             'status' => 'completed',
             'notes' => $notes ?? 'Payment adjustment',
             'received_by' => auth()->id(),
@@ -242,8 +242,8 @@ class InvoiceService
 
         $invoice->update([
             'paid_amount' => round($paidAmount, 2),
-            'due_amount'  => round(max(0, $dueAmount), 2),
-            'status'      => $this->resolveStatus($paidAmount, (float) $invoice->total),
+            'due_amount' => round(max(0, $dueAmount), 2),
+            'status' => $this->resolveStatus($paidAmount, (float) $invoice->total),
         ]);
     }
 

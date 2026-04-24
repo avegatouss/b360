@@ -14,7 +14,7 @@ use Modules\Eshop360\Database\Traits\BelongsToChannel;
 
 class Employee extends Model
 {
-    use HasFactory, BelongsToInstance, SoftDeletes, BelongsToChannel;
+    use BelongsToChannel, BelongsToInstance, HasFactory, SoftDeletes;
 
     protected $table = 'eshop_employees';
 

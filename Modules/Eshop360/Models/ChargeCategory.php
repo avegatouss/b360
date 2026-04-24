@@ -2,28 +2,13 @@
 
 namespace Modules\Eshop360\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Modules\Core\Database\Traits\BelongsToInstance;
-
-use Modules\Eshop360\Database\Traits\BelongsToChannel;
-
-class ChargeCategory extends Model
-{
-    use BelongsToInstance, BelongsToChannel;
-
-    protected $table = 'eshop_charge_categories';
-
-    protected $fillable = ['instance_id', 'channel_id', 'code', 'label', 'is_active', 'sort_order'];
-
-    protected $casts = ['is_active' => 'boolean', 'sort_order' => 'integer'];
-
-    public static function getForInstance(int $instanceId): \Illuminate\Support\Collection
-    {
-        return static::withoutGlobalScopes()
-            ->where('instance_id', $instanceId)
-            ->where('is_active', true)
-            ->orderBy('sort_order')
-            ->orderBy('label')
-            ->get();
-    }
-}
+/**
+ * Backward-compatibility alias.
+ *
+ * Canonical location: Modules\Eshop360\Domain\Finance\Models\ChargeCategory
+ *
+ * R-101 S9 : extraction du sous-domaine Finance (L1 critique).
+ * The canonical pins $morphClass to this legacy FQN so stored morph
+ * _type values remain stable across the extraction.
+ */
+class ChargeCategory extends \Modules\Eshop360\Domain\Finance\Models\ChargeCategory {}

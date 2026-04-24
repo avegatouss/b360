@@ -11,7 +11,7 @@ use Modules\Eshop360\Database\Traits\BelongsToChannel;
 
 class SmsGateway extends Model
 {
-    use HasFactory, BelongsToInstance, BelongsToChannel;
+    use BelongsToChannel, BelongsToInstance, HasFactory;
 
     protected $table = 'eshop_sms_gateways';
 

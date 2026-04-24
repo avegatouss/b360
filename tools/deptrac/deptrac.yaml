@@ -407,7 +407,27 @@ deptrac:
       - EshopChannel
       - EshopInventory
       - AppLayer
-    EshopFinance: &eshop_sublayer_base
+    # R-101 S9 : EshopFinance restreint (L1 critique).
+    # Dépendances : socles + EshopCRM (Customer sur Invoice, InstallmentPlan,
+    # RecurringInvoice) + EshopSales (Order sur Invoice, InstallmentPlan) +
+    # EshopCatalog (Product sur InvoiceItem) + Eshop360 transitoire (Project,
+    # LoanPayment ancienne ref Loan, etc.).
+    # Tous les modèles Finance pinnent `$morphClass` sur legacy FQN pour
+    # stabilité morph (voir ADR-017).
+    EshopFinance:
+      - Core
+      - Auth
+      - Users
+      - Settings
+      - Billing
+      - Currency
+      - Lang
+      - Eshop360
+      - EshopCatalog
+      - EshopCRM
+      - EshopSales
+      - AppLayer
+    EshopHR: &eshop_sublayer_base
       - Core
       - Auth
       - Users
@@ -430,7 +450,6 @@ deptrac:
       - EshopProjects
       - EshopReporting
       - AppLayer
-    EshopHR: *eshop_sublayer_base
     EshopCommunication: *eshop_sublayer_base
     EshopProjects: *eshop_sublayer_base
     EshopReporting: *eshop_sublayer_base

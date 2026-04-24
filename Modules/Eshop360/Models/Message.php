@@ -13,7 +13,7 @@ use Modules\Eshop360\Database\Traits\BelongsToChannel;
 
 class Message extends Model
 {
-    use HasFactory, BelongsToInstance, BelongsToChannel;
+    use BelongsToChannel, BelongsToInstance, HasFactory;
 
     protected $table = 'eshop_messages';
 

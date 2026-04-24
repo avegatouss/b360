@@ -12,7 +12,7 @@ use Modules\Eshop360\Database\Traits\BelongsToChannel;
 
 class SupportTeam extends Model
 {
-    use BelongsToInstance, BelongsToChannel;
+    use BelongsToChannel, BelongsToInstance;
 
     protected $table = 'eshop_support_teams';
 
@@ -27,7 +27,7 @@ class SupportTeam extends Model
 
     protected $casts = [
         'is_default' => 'boolean',
-        'is_active'  => 'boolean',
+        'is_active' => 'boolean',
     ];
 
     public function members(): BelongsToMany
