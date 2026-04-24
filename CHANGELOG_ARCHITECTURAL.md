@@ -13,6 +13,41 @@
 
 ---
 
+## CHG-2026-04-24-007 — R-101 sous-lot S11 : extraction Communication + Projects + Reporting + rattrapages
+
+- **Date** : 2026-04-24
+- **Type** : architecture (3 sous-domaines combinés + rattrapages S8/S9)
+- **Modules concernés** : Eshop360 (20 modèles déplacés)
+- **Impact** : nul côté runtime.
+- **Breaking change** : non.
+
+### Actions appliquées
+
+- **11 modèles Communication** déplacés vers `Domain/Communication/Models/` : EmailTemplate, BulkMessageLog, Message, SmsGateway, SmsLog, SupportTeam, SupportTicket, TicketMessage, ReceiptTemplate, Webhook, WebhookLog.
+- **4 modèles Projects** vers `Domain/Projects/Models/` : Project, Task, TaskComment, Event.
+- **2 modèles Reporting** vers `Domain/Reporting/Models/` : ApiLog, AuditLog.
+- **3 rattrapages** : Holding → Sales (oubli S8), Loan + LoanSchedule → Finance (oubli S9).
+- Namespace rewrite + `$morphClass` pinning universel via PowerShell.
+- Imports cross-subdomain sur 5 fichiers : ReceiptTemplate+Store, SupportTeam+Customer, SupportTicket+Customer, Project+Customer/Invoice/Order, Holding+Customer.
+- 20 alias stubs créés.
+- Deptrac rulesets resserrés : `EshopCommunication` (socles+CRM+Inventory+Eshop360), `EshopProjects` (socles+CRM+Sales+Finance+Eshop360), `EshopReporting` (socles+Eshop360). Fin de la ruleset permissive pour TOUS les sous-layers R-101.
+- Baseline PHPStan : **3704** (+18 vs S10).
+- ADR `docs/adr/ADR-019-eshop360-communication-projects-reporting-extraction.md`.
+
+### Progression R-101
+
+**13/13 sous-domaines délimités (100 %)**. L'extraction physique est complète. Reste S12 (clôture) pour supprimer les ~90 alias stubs, formaliser le morph map, et lever les dépendances transitoires `EshopX → Eshop360`.
+
+### Statut
+
+- [x] Implémenté, documenté, testé
+
+### Lien
+
+- ADR : `docs/adr/ADR-019-eshop360-communication-projects-reporting-extraction.md`
+
+---
+
 ## CHG-2026-04-24-006 — R-101 sous-lot S10 : extraction HR
 
 - **Date** : 2026-04-24
