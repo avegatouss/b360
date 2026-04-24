@@ -14,6 +14,14 @@
 - **Résidus acceptables** : le mot « CODIFARM » reste dans les Seeders/Tests comme nom commercial de grossiste pharmaceutique ivoirien (donnée démo), pas comme technologie. Les tests structurels scannent uniquement le code applicatif, pas les Seeders/Tests.
 - **Source** : lot MAJEUR, branche `chore/eshop360-close-codifarm-consolidation`, audit ISSUE + §2.3 du plan d'évolution.
 
+## 2026-04-24 — R-101 sous-lot S10 : extraction HR
+
+- **Décision** : 4 modèles HR (Employee, EmployeeCommission, EmployeeSalary, Attendance) déplacés vers `Domain/HR/Models/`. 4 alias stubs + `$morphClass` pinning. Pattern bulk PowerShell appliqué.
+- **Imports cross-subdomain** : seul `EmployeeCommission` importe Order (via alias, EshopSales).
+- **Deptrac** : `EshopHR` restreint à socles + `EshopSales` + Eshop360 transitoire.
+- **Validation** : deptrac 0 violations, phpstan OK (baseline 3686), pest 659 passed.
+- **ADR** : `docs/adr/ADR-018-eshop360-hr-subdomain-extraction.md`.
+
 ## 2026-04-24 — R-101 sous-lot S9 : extraction Finance (L1 critique, 20 modèles)
 
 - **Décision** : plus gros sous-lot R-101 à ce jour. 20 modèles Finance déplacés vers `Modules/Eshop360/Domain/Finance/Models/` : Invoice, InvoiceItem, RecurringInvoice, Payment, PaymentMethod, EshopPaymentGateway, Account, AccountTransaction, AccountTransfer, Expense, ExpenseCategory, Income, IncomeSource, ChargeCategory, ChargeLog, CompanyCharge, InstallmentPayment, InstallmentPlan, LoanPayment, FneInvoice. 20 stubs d'alias rétrocompatibles.

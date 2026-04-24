@@ -13,6 +13,34 @@
 
 ---
 
+## CHG-2026-04-24-006 — R-101 sous-lot S10 : extraction HR
+
+- **Date** : 2026-04-24
+- **Type** : architecture (extraction sous-domaine, pattern bulk rodé)
+- **Modules concernés** : Eshop360 (4 modèles HR déplacés)
+- **Impact** : nul côté runtime.
+- **Breaking change** : non.
+
+### Actions appliquées
+
+- **4 modèles déplacés** vers `Modules/Eshop360/Domain/HR/Models/` : `Employee`, `EmployeeCommission`, `EmployeeSalary`, `Attendance`.
+- Namespace rewrite + `$morphClass` pinning via PowerShell bulk.
+- **1 seul import cross-sous-domaine** : `EmployeeCommission` +Order (alias, EshopSales).
+- 4 alias stubs créés.
+- **Deptrac `EshopHR` restreint** : socles + `EshopSales` + Eshop360 transitoire.
+- Baseline PHPStan : 3686 (+4 vs S9).
+- ADR `docs/adr/ADR-018-eshop360-hr-subdomain-extraction.md`.
+
+### Statut
+
+- [x] Implémenté, documenté, testé
+
+### Lien
+
+- ADR : `docs/adr/ADR-018-eshop360-hr-subdomain-extraction.md`
+
+---
+
 ## CHG-2026-04-24-005 — R-101 sous-lot S9 : extraction Finance (L1 critique, 20 modèles)
 
 - **Date** : 2026-04-24
