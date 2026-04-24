@@ -14,6 +14,20 @@
 - **Résidus acceptables** : le mot « CODIFARM » reste dans les Seeders/Tests comme nom commercial de grossiste pharmaceutique ivoirien (donnée démo), pas comme technologie. Les tests structurels scannent uniquement le code applicatif, pas les Seeders/Tests.
 - **Source** : lot MAJEUR, branche `chore/eshop360-close-codifarm-consolidation`, audit ISSUE + §2.3 du plan d'évolution.
 
+## 2026-04-24 — R-101 sous-lot S11 : extraction Communication + Projects + Reporting + rattrapages (13/13 = 100 %)
+
+- **Décision** : finir l'extraction physique R-101 en combinant 3 sous-domaines modestes + rattrapages retroactifs sur 2 oublis.
+- **Sous-domaine Communication** (11 modèles) : EmailTemplate, BulkMessageLog, Message, SmsGateway, SmsLog, SupportTeam, SupportTicket, TicketMessage, ReceiptTemplate, Webhook, WebhookLog → `Domain/Communication/Models/`.
+- **Sous-domaine Projects** (4 modèles) : Project, Task, TaskComment, Event → `Domain/Projects/Models/`.
+- **Sous-domaine Reporting** (2 modèles) : ApiLog, AuditLog → `Domain/Reporting/Models/`.
+- **Rattrapages** : Holding → Sales (oubli S8), Loan + LoanSchedule → Finance (oubli S9).
+- **Total** : 20 modèles déplacés + 20 alias stubs + `$morphClass` pinning + imports cross-subdomain minimaux (5 fichiers).
+- **Deptrac** : `EshopCommunication` (socles + CRM + Inventory + Eshop360), `EshopProjects` (socles + CRM + Sales + Finance + Eshop360), `EshopReporting` (socles + Eshop360 uniquement — le cross-reporting passe par services, pas imports typés).
+- **Statut R-101** : **13/13 sous-domaines extraits (100 %)**. Il ne reste que S12 (clôture) : supprimer les ~90 alias stubs, remplacer `$morphClass` par `enforceMorphMap`, basculer imports alias → FQN canonique dans services/controllers, lever dépendances transitoires `EshopX → Eshop360`.
+- **Validation** : deptrac 0 violations, phpstan OK (baseline 3704), pest 659 passed.
+- **ADR** : `docs/adr/ADR-019-eshop360-communication-projects-reporting-extraction.md`.
+- **Source** : lot R-101 S11, branche `refactor/eshop360-s11-communication-projects-reporting`.
+
 ## 2026-04-24 — R-101 sous-lot S10 : extraction HR
 
 - **Décision** : 4 modèles HR (Employee, EmployeeCommission, EmployeeSalary, Attendance) déplacés vers `Domain/HR/Models/`. 4 alias stubs + `$morphClass` pinning. Pattern bulk PowerShell appliqué.

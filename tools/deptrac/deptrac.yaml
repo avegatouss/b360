@@ -441,7 +441,10 @@ deptrac:
       - Eshop360
       - EshopSales
       - AppLayer
-    EshopCommunication: &eshop_sublayer_base
+    # R-101 S11 : EshopCommunication restreint.
+    # Dépendances : socles + EshopCRM (Customer) + EshopInventory (Store) +
+    # Eshop360 transitoire.
+    EshopCommunication:
       - Core
       - Auth
       - Users
@@ -450,22 +453,39 @@ deptrac:
       - Currency
       - Lang
       - Eshop360
-      - EshopCatalog
       - EshopCRM
-      - EshopChannel
-      - EshopPricing
       - EshopInventory
-      - EshopPromotions
-      - EshopPurchasing
+      - AppLayer
+    # R-101 S11 : EshopProjects restreint.
+    # Dépendances : socles + EshopCRM (Customer) + EshopFinance (Invoice) +
+    # EshopSales (Order) + Eshop360 transitoire.
+    EshopProjects:
+      - Core
+      - Auth
+      - Users
+      - Settings
+      - Billing
+      - Currency
+      - Lang
+      - Eshop360
+      - EshopCRM
       - EshopSales
       - EshopFinance
-      - EshopHR
-      - EshopCommunication
-      - EshopProjects
-      - EshopReporting
       - AppLayer
-    EshopProjects: *eshop_sublayer_base
-    EshopReporting: *eshop_sublayer_base
+    # R-101 S11 : EshopReporting restreint (ApiLog, AuditLog).
+    # Dépendances : socles + Eshop360 transitoire uniquement. Le reporting
+    # complexe cross-subdomain passe par des services, pas par des imports
+    # typés de modèle.
+    EshopReporting:
+      - Core
+      - Auth
+      - Users
+      - Settings
+      - Billing
+      - Currency
+      - Lang
+      - Eshop360
+      - AppLayer
 
     AppLayer: ~
 
