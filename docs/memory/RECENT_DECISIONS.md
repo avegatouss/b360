@@ -14,6 +14,16 @@
 - **Résidus acceptables** : le mot « CODIFARM » reste dans les Seeders/Tests comme nom commercial de grossiste pharmaceutique ivoirien (donnée démo), pas comme technologie. Les tests structurels scannent uniquement le code applicatif, pas les Seeders/Tests.
 - **Source** : lot MAJEUR, branche `chore/eshop360-close-codifarm-consolidation`, audit ISSUE + §2.3 du plan d'évolution.
 
+## 2026-04-24 — R-101 sous-lot S6 : extraction Promotions
+
+- **Décision** : pattern S1/S2/S3/S5 appliqué au sous-domaine Promotions. 5 modèles (Coupon, Discount, DiscountPlan, GiftCard, GiftCardTopup) déplacés vers `Modules/Eshop360/Domain/Promotions/Models/`. 5 stubs d'alias rétrocompatibles créés.
+- **Imports cross-sous-domaine** : GiftCard.php +1 (Customer via alias — propriétaire carte cadeau). Autres modèles = feuilles (0 import métier externe).
+- **Deptrac** : `EshopPromotions` restreint à socles + `EshopCRM` + Eshop360 transitoire. **Pas de dépendance `EshopCatalog`** : Discount.product_ids est une colonne JSON (array cast), pas une relation typée. Si un pivot `discount_product` émerge plus tard, la règle sera élargie à ce moment-là.
+- **Baseline PHPStan** régénérée (3647 erreurs baselined — inchangé vs S5).
+- **Validation** : deptrac 0 violations, phpstan OK, pest 659 passed (inchangé vs S5).
+- **ADR** : `docs/adr/ADR-014-eshop360-promotions-subdomain-extraction.md`.
+- **Source** : lot R-101 S6, branche `refactor/eshop360-s6-promotions-extraction`.
+
 ## 2026-04-24 — R-101 sous-lot S5 : extraction Inventory (L1 critique)
 
 - **Décision** : pattern S1/S2/S3 (déplacement + stubs d'alias + deptrac resserré) appliqué au sous-domaine Inventory — malgré son statut L1.

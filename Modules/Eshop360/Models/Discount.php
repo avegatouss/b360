@@ -2,39 +2,11 @@
 
 namespace Modules\Eshop360\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Modules\Core\Database\Traits\BelongsToInstance;
-
-use Modules\Eshop360\Database\Traits\BelongsToChannel;
-
-class Discount extends Model
-{
-    use HasFactory, BelongsToInstance, BelongsToChannel;
-
-    protected $table = 'eshop_discounts';
-
-    protected $fillable = [
-        'channel_id',
-        'instance_id',
-        'name',
-        'type',
-        'value',
-        'plan_type',
-        'valid_from',
-        'valid_until',
-        'active_days',
-        'applies_to',
-        'product_ids',
-        'is_active',
-    ];
-
-    protected $casts = [
-        'value' => 'decimal:2',
-        'active_days' => 'array',
-        'product_ids' => 'array',
-        'valid_from' => 'date',
-        'valid_until' => 'date',
-        'is_active' => 'boolean',
-    ];
-}
+/**
+ * Backward-compatibility alias.
+ *
+ * Canonical location: Modules\Eshop360\Domain\Promotions\Models\Discount
+ *
+ * R-101 S6 : extraction du sous-domaine Promotions.
+ */
+class Discount extends \Modules\Eshop360\Domain\Promotions\Models\Discount {}
