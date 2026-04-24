@@ -14,6 +14,20 @@
 - **Résidus acceptables** : le mot « CODIFARM » reste dans les Seeders/Tests comme nom commercial de grossiste pharmaceutique ivoirien (donnée démo), pas comme technologie. Les tests structurels scannent uniquement le code applicatif, pas les Seeders/Tests.
 - **Source** : lot MAJEUR, branche `chore/eshop360-close-codifarm-consolidation`, audit ISSUE + §2.3 du plan d'évolution.
 
+## 2026-04-24 — R-101 sous-lot S7 : extraction Purchasing
+
+- **Décision** : pattern S1/S2/S3/S5/S6 appliqué au sous-domaine Purchasing. 9 modèles (Supplier, PurchaseOrder, PurchaseItem, PurchaseReturn, PurchaseReturnItem, ImportOrder, ImportOrderItem, ImportCost, ImportCostType) déplacés vers `Modules/Eshop360/Domain/Purchasing/Models/`. 9 stubs d'alias rétrocompatibles créés.
+- **Imports cross-sous-domaine** : Supplier+1 (Store), PurchaseOrder+2 (Payment, Warehouse), PurchaseItem/PurchaseReturnItem/ImportOrderItem+1 (Product), PurchaseReturn/ImportOrder+1 (Warehouse). Tous via alias `Modules\Eshop360\Models\*`.
+- **Deptrac** : `EshopPurchasing` restreint à socles + `EshopCatalog` (Product) + `EshopInventory` (Warehouse/Store) + Eshop360 transitoire (pour Payment pas encore extrait). Pas de CRM (les paiements fournisseur sont via Payment morph, pas Customer).
+- **Piège révélé + pattern affiné** : S7 a mis en lumière 2 contraintes subtiles du pattern alias stub :
+  1. **Covariance return type** : si un Service appelle `$parent->relation()->create()` sur un modèle dont la relation hasMany vit dans le canonique, Eloquent renvoie le canonique (parent). Return type annoté avec l'alias (sous-classe) → erreur PHP. **Règle** : pour le return type, importer la classe **canonique**.
+  2. **Polymorphisme stable** : `reference_type` stocké est `$instance->getMorphClass()` = `static::class`. Pour ne pas changer le FQN stocké (rétrocompat données + tests), les Services doivent importer le **legacy alias** quand ils passent `Model::class` à `$stockService->adjustStock($refType)` ou équivalent.
+  Les deux règles se cumulent facilement sans friction. Appliquées à `ImportService` pendant S7 (fix inclus dans le commit S7).
+- **Baseline PHPStan** régénérée (3647 erreurs baselined — inchangé vs S6).
+- **Validation** : deptrac 0 violations, phpstan OK, pest 659 passed (inchangé vs S6).
+- **ADR** : `docs/adr/ADR-015-eshop360-purchasing-subdomain-extraction.md`.
+- **Source** : lot R-101 S7, branche `refactor/eshop360-s7-purchasing-extraction`.
+
 ## 2026-04-24 — R-101 sous-lot S6 : extraction Promotions
 
 - **Décision** : pattern S1/S2/S3/S5 appliqué au sous-domaine Promotions. 5 modèles (Coupon, Discount, DiscountPlan, GiftCard, GiftCardTopup) déplacés vers `Modules/Eshop360/Domain/Promotions/Models/`. 5 stubs d'alias rétrocompatibles créés.
