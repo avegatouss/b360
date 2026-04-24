@@ -13,6 +13,48 @@
 
 ---
 
+## CHG-2026-04-24-005 — R-101 sous-lot S9 : extraction Finance (L1 critique, 20 modèles)
+
+- **Date** : 2026-04-24
+- **Type** : architecture (plus grosse extraction à ce jour, L1 critique)
+- **Modules concernés** : Eshop360 (20 modèles Finance déplacés)
+- **Impact** : nul côté runtime (rétrocompatibilité via alias + `$morphClass` pinning universel).
+- **Breaking change** : non.
+
+### Actions appliquées
+
+- **20 modèles déplacés** via `git mv` vers `Modules/Eshop360/Domain/Finance/Models/` : `Invoice`, `InvoiceItem`, `RecurringInvoice`, `Payment`, `PaymentMethod`, `EshopPaymentGateway`, `Account`, `AccountTransaction`, `AccountTransfer`, `Expense`, `ExpenseCategory`, `Income`, `IncomeSource`, `ChargeCategory`, `ChargeLog`, `CompanyCharge`, `InstallmentPayment`, `InstallmentPlan`, `LoanPayment`, `FneInvoice`.
+- **Namespace mis à jour** via PowerShell script : `Modules\Eshop360\Models` → `Modules\Eshop360\Domain\Finance\Models`.
+- **`$morphClass` pinning universel** via PowerShell : chaque canonique définit `protected $morphClass = \Modules\Eshop360\Models\<Legacy>::class;`. Couvre les morph targets confirmés (Invoice via Payment.payable, FneInvoice via invoiceable) et anticipe tout futur morph sur Finance.
+- **Imports cross-sous-domaine ajoutés** sur 4 fichiers seulement : Invoice+2 (Customer, Order), InvoiceItem+1 (Product), InstallmentPlan+2 (Customer, Order), RecurringInvoice+1 (Customer). Les 16 autres sont feuilles.
+- **20 stubs d'alias** rétrocompatibles générés via PowerShell template.
+- **Deptrac `EshopFinance` restreint** : socles + `EshopCatalog` + `EshopCRM` + `EshopSales` + Eshop360 transitoire. Pas de dépendance vers Channel/Inventory/Purchasing/Promotions/etc. (Finance est une feuille côté consumer morph).
+- **Baseline PHPStan régénérée** : **3682 erreurs** (+26 vs S8 — 20 nouvelles `missingType.property` pour `$morphClass` + 6 autres generics sur les relations déplacées).
+- `tools/deptrac/deptrac.yaml` : synchronisé avec root.
+- ADR `docs/adr/ADR-017-eshop360-finance-subdomain-extraction.md` : documente l'extraction + catégorisation (invoicing, payments, accounts, expenses, charges, installments, fiscal FNE).
+
+### Statut
+
+- [x] Implémenté (20 modèles déplacés, 20 alias créés, 20 `$morphClass` pinning, deptrac resserré)
+- [x] Documenté (ADR-017)
+- [x] Testé (659 passed attendu grâce au pinning)
+
+### IMPACT_ANALYSIS
+
+- **Périmètre** : déplacement + stubs + `$morphClass` pinning + config. Aucune logique métier modifiée.
+- **Contrat runtime** : strictement identique grâce au pinning universel (évite l'audit de 32+ sites consommateurs).
+- **Concurrence / Multi-tenant / Permissions / Idempotence** : préservés.
+- **Rollback** : `git revert` sans risque.
+- **Garde future** : deptrac bloque toute nouvelle dépendance `EshopFinance → EshopX` (hors Catalog/CRM/Sales/Eshop360 transitoire).
+
+### Lien
+
+- ADR : `docs/adr/ADR-017-eshop360-finance-subdomain-extraction.md`
+- ADR parents : ADR-008 (stratégie), ADR-015 (piège découvert S7), ADR-016 (pinning systématisé S8)
+- PR : (n° à renseigner)
+
+---
+
 ## CHG-2026-04-24-004 — R-101 sous-lot S8 : extraction Sales (L1 critique)
 
 - **Date** : 2026-04-24

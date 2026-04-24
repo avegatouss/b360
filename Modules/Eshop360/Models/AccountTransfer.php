@@ -2,48 +2,13 @@
 
 namespace Modules\Eshop360\Models;
 
-use App\Models\User;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Modules\Core\Database\Traits\BelongsToInstance;
-
-use Modules\Eshop360\Database\Traits\BelongsToChannel;
-
-class AccountTransfer extends Model
-{
-    use HasFactory, BelongsToInstance, BelongsToChannel;
-
-    protected $table = 'eshop_account_transfers';
-
-    protected $fillable = [
-        'channel_id',
-        'instance_id',
-        'from_account_id',
-        'to_account_id',
-        'amount',
-        'fee',
-        'notes',
-        'user_id',
-    ];
-
-    protected $casts = [
-        'amount' => 'decimal:2',
-        'fee' => 'decimal:2',
-    ];
-
-    public function fromAccount(): BelongsTo
-    {
-        return $this->belongsTo(Account::class, 'from_account_id');
-    }
-
-    public function toAccount(): BelongsTo
-    {
-        return $this->belongsTo(Account::class, 'to_account_id');
-    }
-
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
-    }
-}
+/**
+ * Backward-compatibility alias.
+ *
+ * Canonical location: Modules\Eshop360\Domain\Finance\Models\AccountTransfer
+ *
+ * R-101 S9 : extraction du sous-domaine Finance (L1 critique).
+ * The canonical pins $morphClass to this legacy FQN so stored morph
+ * _type values remain stable across the extraction.
+ */
+class AccountTransfer extends \Modules\Eshop360\Domain\Finance\Models\AccountTransfer {}

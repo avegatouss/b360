@@ -10,7 +10,7 @@ use Modules\Eshop360\Database\Traits\BelongsToChannel;
 
 class Webhook extends Model
 {
-    use BelongsToInstance, BelongsToChannel;
+    use BelongsToChannel, BelongsToInstance;
 
     protected $table = 'eshop_webhooks';
 

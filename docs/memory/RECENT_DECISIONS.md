@@ -14,6 +14,19 @@
 - **Résidus acceptables** : le mot « CODIFARM » reste dans les Seeders/Tests comme nom commercial de grossiste pharmaceutique ivoirien (donnée démo), pas comme technologie. Les tests structurels scannent uniquement le code applicatif, pas les Seeders/Tests.
 - **Source** : lot MAJEUR, branche `chore/eshop360-close-codifarm-consolidation`, audit ISSUE + §2.3 du plan d'évolution.
 
+## 2026-04-24 — R-101 sous-lot S9 : extraction Finance (L1 critique, 20 modèles)
+
+- **Décision** : plus gros sous-lot R-101 à ce jour. 20 modèles Finance déplacés vers `Modules/Eshop360/Domain/Finance/Models/` : Invoice, InvoiceItem, RecurringInvoice, Payment, PaymentMethod, EshopPaymentGateway, Account, AccountTransaction, AccountTransfer, Expense, ExpenseCategory, Income, IncomeSource, ChargeCategory, ChargeLog, CompanyCharge, InstallmentPayment, InstallmentPlan, LoanPayment, FneInvoice. 20 stubs d'alias rétrocompatibles.
+- **Approche défensive systématique** héritée d'ADR-016 : `$morphClass` pinning universel sur les 20 canonicals. Couvre les morph targets confirmés (Invoice dans payable_type des Tests, FneInvoice dans invoiceable_type) et préempte tous les morphs futurs. Coût : +20 erreurs phpstan baselined (`missingType.property`) — bruit acceptable.
+- **Automatisation bulk** : namespace rewrite + `$morphClass` injection + alias stubs création tous scriptés en PowerShell. Pattern replicable pour d'autres sous-lots volumineux.
+- **Imports cross-sous-domaine** : seulement 4 fichiers concernés (Invoice+Customer/Order, InvoiceItem+Product, InstallmentPlan+Customer/Order, RecurringInvoice+Customer). Les 16 autres sont feuilles.
+- **Fix covariance** : `InvoiceService::syncPaidAmount()` return type basculé vers canonique `\Modules\Eshop360\Domain\Finance\Models\Payment` (la relation `$invoice->payments()->create()` retourne canonique depuis la classe canonique Invoice).
+- **Deptrac** : `EshopFinance` restreint à socles + `EshopCatalog` (Product) + `EshopCRM` (Customer) + `EshopSales` (Order) + Eshop360 transitoire. Pas de dépendance Channel/Inventory/Promotions/Pricing/Purchasing/HR/Communication/Projects/Reporting.
+- **Baseline PHPStan** : 3682 (+26 vs S8, 20 morphClass + 6 generics sur relations déplacées).
+- **Validation** : deptrac 0 violations, phpstan OK, pest 659 passed (après fix covariance).
+- **ADR** : `docs/adr/ADR-017-eshop360-finance-subdomain-extraction.md`.
+- **Source** : lot R-101 S9 (L1 critique), branche `refactor/eshop360-s9-finance-extraction`.
+
 ## 2026-04-24 — R-101 sous-lot S8 : extraction Sales (L1 critique, approche défensive)
 
 - **Décision** : extraction de 9 modèles Sales (Order, OrderItem, OnlineOrder, OnlineOrderItem, PersistentCart, SaleReturn, CashRegister, Quotation, QuotationItem) vers `Modules/Eshop360/Domain/Sales/Models/` avec **approche défensive** héritée du retour d'expérience S7 (ADR-015).

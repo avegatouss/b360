@@ -14,7 +14,7 @@ use Modules\Eshop360\Database\Traits\BelongsToChannel;
 
 class Loan extends Model
 {
-    use HasFactory, BelongsToInstance, BelongsToChannel;
+    use BelongsToChannel, BelongsToInstance, HasFactory;
 
     protected $table = 'eshop_loans';
 
@@ -79,6 +79,7 @@ class Loan extends Model
     public function getTotalWithInterestAttribute(): float
     {
         $interest = (float) $this->amount * ((float) $this->interest_rate / 100) * ((int) $this->duration_months / 12);
+
         return (float) $this->amount + $interest;
     }
 
@@ -90,6 +91,7 @@ class Loan extends Model
         if ($this->party) {
             return $this->party->name ?? $this->party->full_name ?? '—';
         }
+
         return '—';
     }
 }

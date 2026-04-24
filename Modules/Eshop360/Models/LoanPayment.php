@@ -2,33 +2,13 @@
 
 namespace Modules\Eshop360\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-
-use Modules\Eshop360\Database\Traits\BelongsToChannel;
-
-class LoanPayment extends Model
-{
-    use HasFactory, BelongsToChannel;
-
-    protected $table = 'eshop_loan_payments';
-
-    protected $fillable = [
-        'channel_id',
-        'loan_id',
-        'amount',
-        'date',
-        'notes',
-    ];
-
-    protected $casts = [
-        'amount' => 'decimal:2',
-        'date' => 'date',
-    ];
-
-    public function loan(): BelongsTo
-    {
-        return $this->belongsTo(Loan::class);
-    }
-}
+/**
+ * Backward-compatibility alias.
+ *
+ * Canonical location: Modules\Eshop360\Domain\Finance\Models\LoanPayment
+ *
+ * R-101 S9 : extraction du sous-domaine Finance (L1 critique).
+ * The canonical pins $morphClass to this legacy FQN so stored morph
+ * _type values remain stable across the extraction.
+ */
+class LoanPayment extends \Modules\Eshop360\Domain\Finance\Models\LoanPayment {}

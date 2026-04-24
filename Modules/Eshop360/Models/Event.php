@@ -11,7 +11,7 @@ use Modules\Eshop360\Database\Traits\BelongsToChannel;
 
 class Event extends Model
 {
-    use BelongsToInstance, BelongsToChannel;
+    use BelongsToChannel, BelongsToInstance;
 
     protected $table = 'eshop_events';
 
@@ -29,8 +29,8 @@ class Event extends Model
 
     protected $casts = [
         'start_at' => 'datetime',
-        'end_at'   => 'datetime',
-        'all_day'  => 'boolean',
+        'end_at' => 'datetime',
+        'all_day' => 'boolean',
     ];
 
     public function user(): BelongsTo

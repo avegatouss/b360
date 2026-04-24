@@ -11,7 +11,7 @@ use Modules\Eshop360\Database\Traits\BelongsToChannel;
 
 class Project extends Model
 {
-    use BelongsToInstance, BelongsToChannel;
+    use BelongsToChannel, BelongsToInstance;
 
     protected $table = 'eshop_projects';
 
@@ -65,7 +65,9 @@ class Project extends Model
     public function updateProgress(): void
     {
         $total = $this->totalTasksCount();
-        if ($total === 0) return;
+        if ($total === 0) {
+            return;
+        }
 
         $completed = $this->completedTasksCount();
         $this->update(['progress' => (int) round(($completed / $total) * 100)]);
@@ -79,9 +81,10 @@ class Project extends Model
     public function scopeOverdue($query)
     {
         return $query->where('status', '!=', 'completed')
-                     ->where('end_date', '<', now());
+            ->where('end_date', '<', now());
     }
 
     public static array $statuses = ['active', 'on_hold', 'completed', 'cancelled'];
+
     public static array $priorities = ['low', 'medium', 'high', 'urgent'];
 }

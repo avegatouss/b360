@@ -2,69 +2,13 @@
 
 namespace Modules\Eshop360\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Modules\Core\Database\Traits\BelongsToInstance;
-
-use Modules\Eshop360\Database\Traits\BelongsToChannel;
-
-class RecurringInvoice extends Model
-{
-    use BelongsToInstance, BelongsToChannel;
-
-    protected $table = 'eshop_recurring_invoices';
-
-    protected $fillable = [
-        'channel_id',
-        'instance_id',
-        'customer_id',
-        'template_invoice_id',
-        'frequency',
-        'next_due_date',
-        'last_generated_at',
-        'is_active',
-        'total_generated',
-        'notes',
-    ];
-
-    protected $casts = [
-        'next_due_date'     => 'date',
-        'last_generated_at' => 'datetime',
-        'is_active'         => 'boolean',
-        'total_generated'   => 'integer',
-    ];
-
-    public function customer(): BelongsTo
-    {
-        return $this->belongsTo(Customer::class);
-    }
-
-    public function templateInvoice(): BelongsTo
-    {
-        return $this->belongsTo(Invoice::class, 'template_invoice_id');
-    }
-
-    public function calculateNextDueDate(): \Carbon\Carbon
-    {
-        $from = $this->next_due_date ?? now();
-
-        return match ($this->frequency) {
-            'weekly'    => $from->copy()->addWeek(),
-            'biweekly'  => $from->copy()->addWeeks(2),
-            'monthly'   => $from->copy()->addMonth(),
-            'quarterly' => $from->copy()->addMonths(3),
-            'yearly'    => $from->copy()->addYear(),
-            default     => $from->copy()->addMonth(),
-        };
-    }
-
-    public static array $frequencies = ['weekly', 'biweekly', 'monthly', 'quarterly', 'yearly'];
-
-    public static array $frequencyLabels = [
-        'weekly'    => 'Hebdomadaire',
-        'biweekly'  => 'Bimensuel',
-        'monthly'   => 'Mensuel',
-        'quarterly' => 'Trimestriel',
-        'yearly'    => 'Annuel',
-    ];
-}
+/**
+ * Backward-compatibility alias.
+ *
+ * Canonical location: Modules\Eshop360\Domain\Finance\Models\RecurringInvoice
+ *
+ * R-101 S9 : extraction du sous-domaine Finance (L1 critique).
+ * The canonical pins $morphClass to this legacy FQN so stored morph
+ * _type values remain stable across the extraction.
+ */
+class RecurringInvoice extends \Modules\Eshop360\Domain\Finance\Models\RecurringInvoice {}
