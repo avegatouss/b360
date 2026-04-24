@@ -13,6 +13,54 @@
 
 ---
 
+## CHG-2026-04-24-001 — R-101 sous-lot S5 : extraction Inventory (L1 critique)
+
+- **Date** : 2026-04-24
+- **Type** : architecture (extraction sous-domaine, pattern S1/S2/S3 répété sur zone L1)
+- **Modules concernés** : Eshop360 (5 modèles Inventory déplacés)
+- **Impact** : nul côté runtime (rétrocompatibilité via alias, services inchangés).
+- **Breaking change** : non.
+
+### Actions appliquées
+
+- **5 modèles déplacés** via `git mv` vers `Modules/Eshop360/Domain/Inventory/Models/` : `StockMovement`, `StockTransfer`, `StockTransferItem`, `Warehouse`, `Store`. (Stock était déjà en place depuis un chantier antérieur.)
+- **Namespace mis à jour** : `Modules\Eshop360\Models` → `Modules\Eshop360\Domain\Inventory\Models`.
+- **Imports cross-sous-domaine** : StockMovement / StockTransferItem +1 (Product via alias). Warehouse +1 (Employee via alias — HR). Stock canonique nettoyé (Warehouse/Store désormais peers intra-namespace, lignes `use` supprimées).
+- **5 stubs d'alias** rétrocompatibles dans `Modules/Eshop360/Models/`.
+- **Deptrac `EshopInventory` restreint** : passé de permissive → socles + `EshopCatalog` + Eshop360 transitoire. Autres sous-layers (CRM, Channel, Sales, Finance…) explicitement exclus — Inventory ne dépend d'aucun d'entre eux.
+- **Baseline PHPStan régénérée** : 3647 erreurs baselined (inchangé vs S3/S4 — les erreurs generics sur Eloquent relations se sont déplacées avec les classes).
+- `tools/deptrac/deptrac.yaml` : synchronisé avec root.
+- ADR `docs/adr/ADR-013-eshop360-inventory-subdomain-extraction.md` : documente l'extraction + garanties L1 préservées (StockService lockForUpdate + DB::transaction intacts, R-001 intouchée).
+
+### Discipline L1 respectée
+
+- **Zéro modification de service** : `StockService` et toute sa logique de concurrence (`lockForUpdate`, `DB::transaction`, retry sur UniqueConstraintViolationException) **intacts**.
+- **Zéro modification de migration** : schémas de tables `eshop_stocks` / `eshop_stock_movements` / `eshop_stock_transfers` / `eshop_warehouses` / `eshop_stores` inchangés.
+- **Tests de concurrence passent** : `StockServiceConcurrencyTest`, `StockServiceFullTest`, `StockServiceCoreTest`, `StockServiceTest` inclus dans les 659 tests OK.
+
+### Statut
+
+- [x] Implémenté (5 modèles déplacés, 5 alias créés, Stock canonique nettoyé, deptrac resserré)
+- [x] Documenté (ADR-013 avec garanties L1 explicites)
+- [x] Testé (659 passed, 2 failed pré-existants, 5 skipped — inchangé vs S4)
+
+### IMPACT_ANALYSIS
+
+- **Périmètre** : déplacement + stubs + config. Aucune logique métier modifiée, aucune migration DB, aucun test modifié, aucun service modifié, aucun contrôleur modifié.
+- **Contrat runtime** : strictement identique. Les 59 fichiers consommateurs de `Modules\Eshop360\Models\(Stock|StockMovement|StockTransfer|StockTransferItem|Warehouse|Store)` résolvent via alias vers le canon — aucune modification requise.
+- **Concurrence / Multi-tenant** : garanties L1 préservées (StockService intact, BelongsToInstance + BelongsToChannel sur tous les modèles migrés).
+- **Rollback** : `git revert` sans risque.
+- **Garde future** : deptrac bloque toute nouvelle dépendance `EshopInventory → EshopX` (hors Catalog et Eshop360 transitoire).
+
+### Lien
+
+- ADR : `docs/adr/ADR-013-eshop360-inventory-subdomain-extraction.md`
+- ADR parents : ADR-008 (stratégie), ADR-009 (S1), ADR-010 (S2), ADR-011 (S3), ADR-012 (S4)
+- Contexte connexe : R-001 fermée (race stock — garanties dans StockService, intouchées)
+- PR : (n° à renseigner)
+
+---
+
 ## CHG-2026-04-23-010 — R-101 sous-lot S4 : normalisation Pricing (ruleset only)
 
 - **Date** : 2026-04-23

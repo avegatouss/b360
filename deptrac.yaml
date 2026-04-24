@@ -336,7 +336,24 @@ deptrac:
       - Eshop360
       - EshopCatalog
       - AppLayer
-    EshopInventory: &eshop_sublayer_base
+    # R-101 S5 : EshopInventory restreint.
+    # Dépendances : socles + EshopCatalog (Product) + Eshop360 transitoire
+    # (BelongsToChannel / ScopedByUserAssignment / alias Employee via HR stub).
+    # Inventory est un sous-domaine L1 CRITIQUE (stock race — R-001) : les
+    # contraintes de concurrence vivent dans les services (StockService avec
+    # lockForUpdate), pas dans les modèles — déplacement sans risque runtime.
+    EshopInventory:
+      - Core
+      - Auth
+      - Users
+      - Settings
+      - Billing
+      - Currency
+      - Lang
+      - Eshop360
+      - EshopCatalog
+      - AppLayer
+    EshopPromotions: &eshop_sublayer_base
       - Core
       - Auth
       - Users
@@ -359,7 +376,6 @@ deptrac:
       - EshopProjects
       - EshopReporting
       - AppLayer
-    EshopPromotions: *eshop_sublayer_base
     EshopPurchasing: *eshop_sublayer_base
     EshopSales: *eshop_sublayer_base
     EshopFinance: *eshop_sublayer_base

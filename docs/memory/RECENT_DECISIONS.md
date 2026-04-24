@@ -14,6 +14,18 @@
 - **Résidus acceptables** : le mot « CODIFARM » reste dans les Seeders/Tests comme nom commercial de grossiste pharmaceutique ivoirien (donnée démo), pas comme technologie. Les tests structurels scannent uniquement le code applicatif, pas les Seeders/Tests.
 - **Source** : lot MAJEUR, branche `chore/eshop360-close-codifarm-consolidation`, audit ISSUE + §2.3 du plan d'évolution.
 
+## 2026-04-24 — R-101 sous-lot S5 : extraction Inventory (L1 critique)
+
+- **Décision** : pattern S1/S2/S3 (déplacement + stubs d'alias + deptrac resserré) appliqué au sous-domaine Inventory — malgré son statut L1.
+- **Modèles migrés** : 5 fichiers (StockMovement, StockTransfer, StockTransferItem, Warehouse, Store) vers `Modules/Eshop360/Domain/Inventory/Models/`. Stock était déjà en place. 5 stubs d'alias rétrocompatibles créés dans `Models/`.
+- **Nettoyage Stock canonique** : les imports `use Modules\Eshop360\Models\{Warehouse,Store}` supprimés (peers désormais dans le même namespace).
+- **Discipline L1 stricte** : aucun service modifié (StockService + lockForUpdate + DB::transaction + retry UniqueConstraintViolationException intacts), aucune migration modifiée, aucun contrôleur modifié. R-001 (race stock) non impactée.
+- **Deptrac** : `EshopInventory` restreint à socles + `EshopCatalog` + Eshop360 transitoire (pour BelongsToChannel + alias Employee HR). Aucune dépendance intra vers CRM/Channel/Sales/Finance/etc.
+- **Baseline PHPStan** régénérée (3647 erreurs baselined — inchangé vs S3/S4).
+- **Validation** : 659 tests passed (incluant StockServiceConcurrencyTest, StockServiceFullTest, StockServiceCoreTest) — aucune régression vs S4. Deptrac 0 violations. Phpstan OK.
+- **ADR** : `docs/adr/ADR-013-eshop360-inventory-subdomain-extraction.md`.
+- **Source** : lot R-101 S5, branche `refactor/eshop360-s5-inventory-extraction`.
+
 ## 2026-04-23 — R-101 sous-lot S4 : normalisation Pricing (ruleset-only)
 
 - **Décision** : Pricing déjà auto-contenu sous `Modules/Eshop360/Pricing/` (23 classes, namespace propre, 10 sous-dossiers). **Pas de déplacement** vers `Domain/Pricing/` — coût élevé (23 fichiers + 25 imports à réécrire + rupture git history) pour gain nul (deptrac couvre déjà les deux chemins). Principe YAGNI.

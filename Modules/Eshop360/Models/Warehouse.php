@@ -2,55 +2,11 @@
 
 namespace Modules\Eshop360\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Modules\Core\Database\Traits\BelongsToInstance;
-use Modules\Eshop360\Database\Traits\ScopedByUserAssignment;
-
-use Modules\Eshop360\Database\Traits\BelongsToChannel;
-
-class Warehouse extends Model
-{
-    use HasFactory, BelongsToInstance, ScopedByUserAssignment, BelongsToChannel;
-
-    protected static array $userAssignmentConfig = [
-        ['type' => 'warehouse', 'column' => 'id'],
-    ];
-
-    protected $table = 'eshop_warehouses';
-
-    protected $fillable = [
-        'channel_id',
-        'instance_id',
-        'name',
-        'code',
-        'address',
-        'city',
-        'phone',
-        'email',
-        'manager_name',
-        'manager_id',
-        'is_active',
-    ];
-
-    protected $casts = [
-        'is_active' => 'boolean',
-    ];
-
-    public function manager(): BelongsTo
-    {
-        return $this->belongsTo(Employee::class, 'manager_id');
-    }
-
-    public function stores(): HasMany
-    {
-        return $this->hasMany(Store::class);
-    }
-
-    public function stocks(): HasMany
-    {
-        return $this->hasMany(Stock::class);
-    }
-}
+/**
+ * Backward-compatibility alias.
+ *
+ * Canonical location: Modules\Eshop360\Domain\Inventory\Models\Warehouse
+ *
+ * R-101 S5 : extraction du sous-domaine Inventory.
+ */
+class Warehouse extends \Modules\Eshop360\Domain\Inventory\Models\Warehouse {}

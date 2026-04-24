@@ -7,11 +7,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Modules\Core\Database\Traits\BelongsToInstance;
-use Modules\Eshop360\Database\Traits\ScopedByUserAssignment;
 use Modules\Eshop360\Database\Traits\BelongsToChannel;
+use Modules\Eshop360\Database\Traits\ScopedByUserAssignment;
 use Modules\Eshop360\Models\Product;
-use Modules\Eshop360\Models\Store;
-use Modules\Eshop360\Models\Warehouse;
 
 /**
  * Canonical location for the Stock model (Domain/Inventory).
@@ -21,7 +19,7 @@ use Modules\Eshop360\Models\Warehouse;
  */
 class Stock extends Model
 {
-    use HasFactory, BelongsToInstance, ScopedByUserAssignment, BelongsToChannel;
+    use BelongsToChannel, BelongsToInstance, HasFactory, ScopedByUserAssignment;
 
     protected static array $userAssignmentConfig = [
         ['type' => 'warehouse', 'column' => 'warehouse_id'],
