@@ -13,6 +13,52 @@
 
 ---
 
+## CHG-2026-04-24-003 — R-101 sous-lot S7 : extraction Purchasing
+
+- **Date** : 2026-04-24
+- **Type** : architecture (extraction sous-domaine, pattern S1/S2/S3/S5/S6 répété)
+- **Modules concernés** : Eshop360 (9 modèles Purchasing déplacés)
+- **Impact** : nul côté runtime (rétrocompatibilité via alias).
+- **Breaking change** : non.
+
+### Actions appliquées
+
+- **9 modèles déplacés** via `git mv` vers `Modules/Eshop360/Domain/Purchasing/Models/` : `Supplier`, `PurchaseOrder`, `PurchaseItem`, `PurchaseReturn`, `PurchaseReturnItem`, `ImportOrder`, `ImportOrderItem`, `ImportCost`, `ImportCostType`.
+- **Namespace mis à jour** : `Modules\Eshop360\Models` → `Modules\Eshop360\Domain\Purchasing\Models`.
+- **Imports cross-sous-domaine** : Supplier+1 (Store). PurchaseOrder+2 (Payment, Warehouse). PurchaseItem+1 (Product). PurchaseReturn+1 (Warehouse). PurchaseReturnItem+1 (Product). ImportOrder+1 (Warehouse). ImportOrderItem+1 (Product). Tous via alias `Modules\Eshop360\Models\*`.
+- **9 stubs d'alias** rétrocompatibles dans `Modules/Eshop360/Models/`.
+- **Deptrac `EshopPurchasing` restreint** : passé de permissive → socles + `EshopCatalog` (Product) + `EshopInventory` (Warehouse/Store) + Eshop360 transitoire (Payment pas encore extrait).
+- **Baseline PHPStan régénérée** : 3647 erreurs baselined (inchangé vs S6).
+- `tools/deptrac/deptrac.yaml` : synchronisé avec root.
+- ADR `docs/adr/ADR-015-eshop360-purchasing-subdomain-extraction.md` : documente l'extraction + les 3 groupes fonctionnels (fournisseurs, commandes fournisseur, commandes d'import) + **piège alias-covariance/morphClass révélé par S7** (règle applicable S8+).
+
+### Ajustement post-extraction révélé par tests (ImportService)
+
+- **Fix 1 — covariance return type** : `ImportService::addCost(): ImportCost` invoquait `$order->costs()->create()` via une relation `hasMany` définie sur le modèle canonique ; Eloquent renvoyait donc un `Domain\Purchasing\Models\ImportCost` (parent) là où le return type annotait l'alias (sous-classe). **Correction** : `use Modules\Eshop360\Domain\Purchasing\Models\ImportCost` dans le Service.
+- **Fix 2 — stabilité polymorphisme** : `ImportService::receiveImport()` passe `ImportOrder::class` à `StockService::adjustStock()` pour `reference_type`. Déplacer ImportOrder aurait changé la FQN stockée (`Domain\Purchasing\Models\ImportOrder` au lieu de `Models\ImportOrder`), brisant les assertions de tests et la rétrocompatibilité des données existantes. **Correction** : conserver `use Modules\Eshop360\Models\ImportOrder` (alias) dans le Service — le stockage morphique reste sur l'alias FQN.
+
+### Statut
+
+- [x] Implémenté (9 modèles déplacés, 9 alias créés, deptrac resserré)
+- [x] Documenté (ADR-015)
+- [x] Testé (659 passed, aucune régression)
+
+### IMPACT_ANALYSIS
+
+- **Périmètre** : déplacement + stubs + config. Aucune logique métier modifiée (notamment le calcul de coût landed dans ImportOrder reste intact).
+- **Contrat runtime** : strictement identique.
+- **Concurrence / Multi-tenant** : préservés (BelongsToInstance + BelongsToChannel conservés).
+- **Rollback** : `git revert` sans risque.
+- **Garde future** : deptrac bloque toute nouvelle dépendance `EshopPurchasing → EshopX` (hors Catalog, Inventory, Eshop360 transitoire).
+
+### Lien
+
+- ADR : `docs/adr/ADR-015-eshop360-purchasing-subdomain-extraction.md`
+- ADR parents : ADR-008 (stratégie), ADR-009..ADR-014 (S1..S6)
+- PR : (n° à renseigner)
+
+---
+
 ## CHG-2026-04-24-002 — R-101 sous-lot S6 : extraction Promotions
 
 - **Date** : 2026-04-24

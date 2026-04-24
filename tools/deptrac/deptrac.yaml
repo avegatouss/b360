@@ -369,7 +369,24 @@ deptrac:
       - Eshop360
       - EshopCRM
       - AppLayer
-    EshopPurchasing: &eshop_sublayer_base
+    # R-101 S7 : EshopPurchasing restreint.
+    # Dépendances réelles : socles + EshopCatalog (Product) + EshopInventory
+    # (Warehouse) + Eshop360 transitoire (BelongsToChannel + alias Payment,
+    # Store via Models/). Suppliers, PurchaseOrders et ImportOrders dépendent
+    # de Product + Warehouse ; Payment (Finance) reste en alias transitoire.
+    EshopPurchasing:
+      - Core
+      - Auth
+      - Users
+      - Settings
+      - Billing
+      - Currency
+      - Lang
+      - Eshop360
+      - EshopCatalog
+      - EshopInventory
+      - AppLayer
+    EshopSales: &eshop_sublayer_base
       - Core
       - Auth
       - Users
@@ -392,7 +409,6 @@ deptrac:
       - EshopProjects
       - EshopReporting
       - AppLayer
-    EshopSales: *eshop_sublayer_base
     EshopFinance: *eshop_sublayer_base
     EshopHR: *eshop_sublayer_base
     EshopCommunication: *eshop_sublayer_base

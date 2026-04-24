@@ -2,42 +2,11 @@
 
 namespace Modules\Eshop360\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-
-use Modules\Eshop360\Database\Traits\BelongsToChannel;
-
-class PurchaseItem extends Model
-{
-    use HasFactory, BelongsToChannel;
-
-    protected $table = 'eshop_purchase_items';
-
-    protected $fillable = [
-        'channel_id',
-        'purchase_order_id',
-        'product_id',
-        'quantity',
-        'received_qty',
-        'unit_cost',
-        'total',
-    ];
-
-    protected $casts = [
-        'quantity' => 'integer',
-        'received_qty' => 'integer',
-        'unit_cost' => 'decimal:2',
-        'total' => 'decimal:2',
-    ];
-
-    public function purchaseOrder(): BelongsTo
-    {
-        return $this->belongsTo(PurchaseOrder::class);
-    }
-
-    public function product(): BelongsTo
-    {
-        return $this->belongsTo(Product::class);
-    }
-}
+/**
+ * Backward-compatibility alias.
+ *
+ * Canonical location: Modules\Eshop360\Domain\Purchasing\Models\PurchaseItem
+ *
+ * R-101 S7 : extraction du sous-domaine Purchasing.
+ */
+class PurchaseItem extends \Modules\Eshop360\Domain\Purchasing\Models\PurchaseItem {}

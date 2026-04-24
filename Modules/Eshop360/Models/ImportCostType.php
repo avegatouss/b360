@@ -2,28 +2,11 @@
 
 namespace Modules\Eshop360\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Modules\Core\Database\Traits\BelongsToInstance;
-
-use Modules\Eshop360\Database\Traits\BelongsToChannel;
-
-class ImportCostType extends Model
-{
-    use BelongsToInstance, BelongsToChannel;
-
-    protected $table = 'eshop_import_cost_types';
-
-    protected $fillable = ['instance_id', 'channel_id', 'code', 'label', 'is_active', 'sort_order'];
-
-    protected $casts = ['is_active' => 'boolean', 'sort_order' => 'integer'];
-
-    public static function getForInstance(int $instanceId): \Illuminate\Support\Collection
-    {
-        return static::withoutGlobalScopes()
-            ->where('instance_id', $instanceId)
-            ->where('is_active', true)
-            ->orderBy('sort_order')
-            ->orderBy('label')
-            ->get();
-    }
-}
+/**
+ * Backward-compatibility alias.
+ *
+ * Canonical location: Modules\Eshop360\Domain\Purchasing\Models\ImportCostType
+ *
+ * R-101 S7 : extraction du sous-domaine Purchasing.
+ */
+class ImportCostType extends \Modules\Eshop360\Domain\Purchasing\Models\ImportCostType {}

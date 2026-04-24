@@ -2,11 +2,10 @@
 
 namespace Modules\Eshop360\Services;
 
+use Illuminate\Support\Facades\DB;
+use Modules\Eshop360\Domain\Purchasing\Models\ImportCost;
 use Modules\Eshop360\Models\ImportOrder;
 use Modules\Eshop360\Models\ImportOrderItem;
-use Modules\Eshop360\Models\ImportCost;
-use Modules\Eshop360\Models\Product;
-use Illuminate\Support\Facades\DB;
 
 class ImportService
 {
@@ -22,6 +21,7 @@ class ImportService
                 $item['total_factory'] = $item['quantity'] * $item['unit_price_factory'];
                 ImportOrderItem::create($item);
             }
+
             return $order->load('items', 'supplier');
         });
     }
@@ -160,6 +160,7 @@ class ImportService
         $count = ImportOrder::where('instance_id', $instanceId)
             ->whereYear('created_at', $year)
             ->count() + 1;
+
         return sprintf('IMP-%s-%03d', $year, $count);
     }
 }
