@@ -4627,6 +4627,312 @@ parameters:
 			path: ../../Modules/Eshop360/Domain/Inventory/Models/Warehouse.php
 
 		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$channel_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/Coupon.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$instance_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/Coupon.php
+
+		-
+			message: '#^Class Modules\\Eshop360\\Domain\\Promotions\\Models\\Coupon uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/Coupon.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Promotions\\Models\\Coupon\:\:channel\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/Coupon.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Promotions\\Models\\Coupon\:\:instance\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/Coupon.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Promotions\\Models\\Coupon\:\:scopeValid\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/Coupon.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Promotions\\Models\\Coupon\:\:scopeValid\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/Coupon.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Promotions\\Models\\Coupon\:\:scopeVisibleToChannel\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/Coupon.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Promotions\\Models\\Coupon\:\:scopeVisibleToChannel\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/Coupon.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Promotions\\Models\\Coupon\:\:withoutChannelScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/Coupon.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Promotions\\Models\\Coupon\:\:withoutInstanceScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/Coupon.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$channel_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/Discount.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$instance_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/Discount.php
+
+		-
+			message: '#^Class Modules\\Eshop360\\Domain\\Promotions\\Models\\Discount uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/Discount.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Promotions\\Models\\Discount\:\:channel\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/Discount.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Promotions\\Models\\Discount\:\:instance\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/Discount.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Promotions\\Models\\Discount\:\:withoutChannelScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/Discount.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Promotions\\Models\\Discount\:\:withoutInstanceScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/Discount.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$channel_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/DiscountPlan.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$instance_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/DiscountPlan.php
+
+		-
+			message: '#^Class Modules\\Eshop360\\Domain\\Promotions\\Models\\DiscountPlan uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/DiscountPlan.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Promotions\\Models\\DiscountPlan\:\:channel\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/DiscountPlan.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Promotions\\Models\\DiscountPlan\:\:instance\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/DiscountPlan.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Promotions\\Models\\DiscountPlan\:\:withoutChannelScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/DiscountPlan.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Promotions\\Models\\DiscountPlan\:\:withoutInstanceScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/DiscountPlan.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$channel_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/GiftCard.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$instance_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/GiftCard.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/GiftCard.php
+
+		-
+			message: '#^Access to an undefined property Modules\\Eshop360\\Domain\\Promotions\\Models\\GiftCard\:\:\$amount\.$#'
+			identifier: property.notFound
+			count: 2
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/GiftCard.php
+
+		-
+			message: '#^Access to an undefined property Modules\\Eshop360\\Domain\\Promotions\\Models\\GiftCard\:\:\$balance\.$#'
+			identifier: property.notFound
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/GiftCard.php
+
+		-
+			message: '#^Access to an undefined property Modules\\Eshop360\\Domain\\Promotions\\Models\\GiftCard\:\:\$expiry_date\.$#'
+			identifier: property.notFound
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/GiftCard.php
+
+		-
+			message: '#^Class Modules\\Eshop360\\Domain\\Promotions\\Models\\GiftCard uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/GiftCard.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Promotions\\Models\\GiftCard\:\:channel\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/GiftCard.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Promotions\\Models\\GiftCard\:\:creator\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/GiftCard.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Promotions\\Models\\GiftCard\:\:customer\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/GiftCard.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Promotions\\Models\\GiftCard\:\:generateCode\(\) has parameter \$settings with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/GiftCard.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Promotions\\Models\\GiftCard\:\:instance\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/GiftCard.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Promotions\\Models\\GiftCard\:\:scopeActive\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/GiftCard.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Promotions\\Models\\GiftCard\:\:scopeActive\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/GiftCard.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Promotions\\Models\\GiftCard\:\:scopeValid\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/GiftCard.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Promotions\\Models\\GiftCard\:\:scopeValid\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/GiftCard.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Promotions\\Models\\GiftCard\:\:topups\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/GiftCard.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Promotions\\Models\\GiftCard\:\:withoutChannelScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/GiftCard.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Promotions\\Models\\GiftCard\:\:withoutInstanceScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/GiftCard.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/GiftCard.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$channel_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/GiftCardTopup.php
+
+		-
+			message: '#^Class Modules\\Eshop360\\Domain\\Promotions\\Models\\GiftCardTopup uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/GiftCardTopup.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Promotions\\Models\\GiftCardTopup\:\:channel\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/GiftCardTopup.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Promotions\\Models\\GiftCardTopup\:\:giftCard\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/GiftCardTopup.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Promotions\\Models\\GiftCardTopup\:\:user\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/GiftCardTopup.php
+
+		-
+			message: '#^Method Modules\\Eshop360\\Domain\\Promotions\\Models\\GiftCardTopup\:\:withoutChannelScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: ../../Modules/Eshop360/Domain/Promotions/Models/GiftCardTopup.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\>\|Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
 			identifier: property.notFound
 			count: 2
@@ -10024,156 +10330,6 @@ parameters:
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$channel_id\.$#'
 			identifier: property.notFound
 			count: 1
-			path: ../../Modules/Eshop360/Models/Coupon.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$instance_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: ../../Modules/Eshop360/Models/Coupon.php
-
-		-
-			message: '#^Class Modules\\Eshop360\\Models\\Coupon uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/Coupon.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\Coupon\:\:channel\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/Coupon.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\Coupon\:\:instance\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../../Modules/Eshop360/Models/Coupon.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\Coupon\:\:scopeValid\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/Coupon.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\Coupon\:\:scopeValid\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/Coupon.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\Coupon\:\:scopeVisibleToChannel\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/Coupon.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\Coupon\:\:scopeVisibleToChannel\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/Coupon.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\Coupon\:\:withoutChannelScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/Coupon.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\Coupon\:\:withoutInstanceScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/Coupon.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$channel_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: ../../Modules/Eshop360/Models/Discount.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$instance_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: ../../Modules/Eshop360/Models/Discount.php
-
-		-
-			message: '#^Class Modules\\Eshop360\\Models\\Discount uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/Discount.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\Discount\:\:channel\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/Discount.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\Discount\:\:instance\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../../Modules/Eshop360/Models/Discount.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\Discount\:\:withoutChannelScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/Discount.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\Discount\:\:withoutInstanceScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/Discount.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$channel_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: ../../Modules/Eshop360/Models/DiscountPlan.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$instance_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: ../../Modules/Eshop360/Models/DiscountPlan.php
-
-		-
-			message: '#^Class Modules\\Eshop360\\Models\\DiscountPlan uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/DiscountPlan.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\DiscountPlan\:\:channel\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/DiscountPlan.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\DiscountPlan\:\:instance\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../../Modules/Eshop360/Models/DiscountPlan.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\DiscountPlan\:\:withoutChannelScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/DiscountPlan.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\DiscountPlan\:\:withoutInstanceScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/DiscountPlan.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$channel_id\.$#'
-			identifier: property.notFound
-			count: 1
 			path: ../../Modules/Eshop360/Models/EmailTemplate.php
 
 		-
@@ -10643,162 +10799,6 @@ parameters:
 			identifier: missingType.generics
 			count: 1
 			path: ../../Modules/Eshop360/Models/FneInvoice.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$channel_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: ../../Modules/Eshop360/Models/GiftCard.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$instance_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: ../../Modules/Eshop360/Models/GiftCard.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: ../../Modules/Eshop360/Models/GiftCard.php
-
-		-
-			message: '#^Access to an undefined property Modules\\Eshop360\\Models\\GiftCard\:\:\$amount\.$#'
-			identifier: property.notFound
-			count: 2
-			path: ../../Modules/Eshop360/Models/GiftCard.php
-
-		-
-			message: '#^Access to an undefined property Modules\\Eshop360\\Models\\GiftCard\:\:\$balance\.$#'
-			identifier: property.notFound
-			count: 1
-			path: ../../Modules/Eshop360/Models/GiftCard.php
-
-		-
-			message: '#^Access to an undefined property Modules\\Eshop360\\Models\\GiftCard\:\:\$expiry_date\.$#'
-			identifier: property.notFound
-			count: 1
-			path: ../../Modules/Eshop360/Models/GiftCard.php
-
-		-
-			message: '#^Class Modules\\Eshop360\\Models\\GiftCard uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/GiftCard.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\GiftCard\:\:channel\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/GiftCard.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\GiftCard\:\:creator\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/GiftCard.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\GiftCard\:\:customer\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/GiftCard.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\GiftCard\:\:generateCode\(\) has parameter \$settings with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: ../../Modules/Eshop360/Models/GiftCard.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\GiftCard\:\:instance\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: ../../Modules/Eshop360/Models/GiftCard.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\GiftCard\:\:scopeActive\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/GiftCard.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\GiftCard\:\:scopeActive\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/GiftCard.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\GiftCard\:\:scopeValid\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/GiftCard.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\GiftCard\:\:scopeValid\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/GiftCard.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\GiftCard\:\:topups\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/GiftCard.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\GiftCard\:\:withoutChannelScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/GiftCard.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\GiftCard\:\:withoutInstanceScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/GiftCard.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: ../../Modules/Eshop360/Models/GiftCard.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$channel_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: ../../Modules/Eshop360/Models/GiftCardTopup.php
-
-		-
-			message: '#^Class Modules\\Eshop360\\Models\\GiftCardTopup uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/GiftCardTopup.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\GiftCardTopup\:\:channel\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/GiftCardTopup.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\GiftCardTopup\:\:giftCard\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/GiftCardTopup.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\GiftCardTopup\:\:user\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/GiftCardTopup.php
-
-		-
-			message: '#^Method Modules\\Eshop360\\Models\\GiftCardTopup\:\:withoutChannelScope\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: ../../Modules/Eshop360/Models/GiftCardTopup.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$channel_id\.$#'

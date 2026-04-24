@@ -13,6 +13,47 @@
 
 ---
 
+## CHG-2026-04-24-002 — R-101 sous-lot S6 : extraction Promotions
+
+- **Date** : 2026-04-24
+- **Type** : architecture (extraction sous-domaine, pattern S1/S2/S3/S5 répété)
+- **Modules concernés** : Eshop360 (5 modèles Promotions déplacés)
+- **Impact** : nul côté runtime (rétrocompatibilité via alias).
+- **Breaking change** : non.
+
+### Actions appliquées
+
+- **5 modèles déplacés** via `git mv` vers `Modules/Eshop360/Domain/Promotions/Models/` : `Coupon`, `Discount`, `DiscountPlan`, `GiftCard`, `GiftCardTopup`.
+- **Namespace mis à jour** : `Modules\Eshop360\Models` → `Modules\Eshop360\Domain\Promotions\Models`.
+- **Imports cross-sous-domaine** : GiftCard +1 (Customer via alias). Les autres sont feuilles (0 import métier externe).
+- **5 stubs d'alias** rétrocompatibles dans `Modules/Eshop360/Models/`.
+- **Deptrac `EshopPromotions` restreint** : passé de permissive → socles + `EshopCRM` + Eshop360 transitoire. Pas de Catalog (Discount.product_ids est JSON, pas relation typée).
+- **Baseline PHPStan régénérée** : 3647 erreurs baselined (inchangé vs S5).
+- `tools/deptrac/deptrac.yaml` : synchronisé avec root.
+- ADR `docs/adr/ADR-014-eshop360-promotions-subdomain-extraction.md` : documente l'extraction + raisonnement absence Catalog.
+
+### Statut
+
+- [x] Implémenté (5 modèles déplacés, 5 alias créés, deptrac resserré)
+- [x] Documenté (ADR-014)
+- [x] Testé (659 passed, aucune régression)
+
+### IMPACT_ANALYSIS
+
+- **Périmètre** : déplacement + stubs + config. Aucune logique métier modifiée.
+- **Contrat runtime** : strictement identique.
+- **Concurrence / Multi-tenant / Permissions / Idempotence** : non applicables.
+- **Rollback** : `git revert` sans risque.
+- **Garde future** : deptrac bloque toute nouvelle dépendance `EshopPromotions → EshopX` (hors CRM et Eshop360 transitoire).
+
+### Lien
+
+- ADR : `docs/adr/ADR-014-eshop360-promotions-subdomain-extraction.md`
+- ADR parents : ADR-008 (stratégie), ADR-009..ADR-013 (S1..S5)
+- PR : (n° à renseigner)
+
+---
+
 ## CHG-2026-04-24-001 — R-101 sous-lot S5 : extraction Inventory (L1 critique)
 
 - **Date** : 2026-04-24

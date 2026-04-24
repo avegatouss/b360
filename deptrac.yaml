@@ -353,7 +353,23 @@ deptrac:
       - Eshop360
       - EshopCatalog
       - AppLayer
-    EshopPromotions: &eshop_sublayer_base
+    # R-101 S6 : EshopPromotions restreint.
+    # Dépendances réelles : socles + EshopCRM (Customer pour GiftCard) +
+    # Eshop360 transitoire (BelongsToChannel + alias Customer via Models/).
+    # Promotions ne dépend pas de Catalog directement (les product_ids dans
+    # Discount sont des colonnes JSON, pas des relations typées).
+    EshopPromotions:
+      - Core
+      - Auth
+      - Users
+      - Settings
+      - Billing
+      - Currency
+      - Lang
+      - Eshop360
+      - EshopCRM
+      - AppLayer
+    EshopPurchasing: &eshop_sublayer_base
       - Core
       - Auth
       - Users
@@ -376,7 +392,6 @@ deptrac:
       - EshopProjects
       - EshopReporting
       - AppLayer
-    EshopPurchasing: *eshop_sublayer_base
     EshopSales: *eshop_sublayer_base
     EshopFinance: *eshop_sublayer_base
     EshopHR: *eshop_sublayer_base
