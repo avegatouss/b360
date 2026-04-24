@@ -427,7 +427,21 @@ deptrac:
       - EshopCRM
       - EshopSales
       - AppLayer
-    EshopHR: &eshop_sublayer_base
+    # R-101 S10 : EshopHR restreint.
+    # Dépendances : socles + EshopSales (Order via EmployeeCommission) +
+    # Eshop360 transitoire (BelongsToChannel).
+    EshopHR:
+      - Core
+      - Auth
+      - Users
+      - Settings
+      - Billing
+      - Currency
+      - Lang
+      - Eshop360
+      - EshopSales
+      - AppLayer
+    EshopCommunication: &eshop_sublayer_base
       - Core
       - Auth
       - Users
@@ -450,7 +464,6 @@ deptrac:
       - EshopProjects
       - EshopReporting
       - AppLayer
-    EshopCommunication: *eshop_sublayer_base
     EshopProjects: *eshop_sublayer_base
     EshopReporting: *eshop_sublayer_base
 
