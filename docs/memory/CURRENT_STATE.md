@@ -25,7 +25,7 @@
 | Currency | actif | à confirmer | oui | — |
 | Dashboard | actif | stable | oui | socle plateforme |
 | Demo | actif | à confirmer | non | — |
-| Eshop360 | actif | monolithique — découpage en cours | oui | 83 modèles / 78 contrôleurs / 128 migrations — candidat extraction |
+| Eshop360 | actif | stable — découpage R-101 terminé (S0..S12 livrés 2026-05-05, ADR-020) | oui | 88 modèles canoniques sous `Domain/<Sub>/Models/` + 2 non-stubs retenus dans `Models/` (EshopModuleSetting, UserAssignment) ; morph map central dans le provider |
 | Installer | actif | à confirmer | oui | — |
 | Instances | actif | stable | oui | socle plateforme |
 | Lang | actif | à confirmer | oui | — |

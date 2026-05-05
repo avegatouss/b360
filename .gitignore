@@ -27,3 +27,6 @@ yarn-error.log
 .phpstan.cache
 .phpinsights.cache
 tools/deptrac/architecture.svg
+
+# Claude Code runtime artifacts
+.claude/scheduled_tasks.lock

@@ -13,6 +13,23 @@
 
 ---
 
+## 2026-05-05 — Clôture du découpage Eshop360 (R-101 S12, ADR-020)
+
+- **Date** : 2026-05-05
+- **Branche** : `refactor/eshop360-s12-closure` (5 commits S12.1..S12.5 + 1 commit baseline Pint)
+- **Impact** : R-101 fermée. Les 13 sous-domaines extraits depuis 2026-04-23 sont désormais consolidés en un état stable et auto-disciplinant.
+  - **Morph map central** : `Relation::morphMap([88 entries])` en première ligne de `Eshop360ServiceProvider::boot()`. Clés = legacy FQN (`'Modules\Eshop360\Models\<X>'`), valeurs = canoniques `\Modules\Eshop360\Domain\<Sub>\Models\<X>::class`. Source unique de vérité polymorphique.
+  - **Suppressions** : 88 stubs alias dans `Modules/Eshop360/Models/`, 53 `protected $morphClass` individuels sur les canoniques. Les 2 non-stubs `EshopModuleSetting` et `UserAssignment` restent (pas de sous-domaine évident).
+  - **Bascule consumers** : 263 fichiers réécrits — `use Modules\Eshop360\Models\X` → canonique. 12 sites de production passant `XYZ::class` directement à des colonnes morph fixés en `$model->getMorphClass()` (idiome Eloquent attendu, masqué par le système d'alias depuis l'origine du chantier).
+  - **Layer deptrac `EshopShared`** : capture `Database/Traits/`, `Database/Scopes/`, `Support/`. Remplace `Eshop360` dans la ruleset de chaque EshopX. Lève la dépendance transitoire promise dans OPEN_RISKS.
+  - **Tests d'invariants** : `MorphStabilityTest` (4 feature) + `R101ClosureStructuralTest` (3 unit) verrouillent (a) 88 entrées morph map, (b) aucun `$morphClass` Domain réintroduit, (c) seulement 2 fichiers dans `Modules/Eshop360/Models/`.
+  - **Baselines** : PHPStan 3650 (-54 vs S11). Deptrac `skip_violations` 13 → 198 (cross-EshopX réels exposés par la bascule canonique + traits propagés par deptrac sur tout modèle utilisant `BelongsToChannel`).
+- **Contraintes futures** (cf. ADR-020 §contraintes) : (1) ajouter une nouvelle classe Domain morphique = ajouter son entrée dans le provider ; (2) interdiction de réintroduire un stub ou un `$morphClass` ; (3) `$model->getMorphClass()` obligatoire pour stocker un type morphique ; (4) migration vers short morph keys = lot dédié futur ; (5) tightening cross-EshopX deptrac = lot dédié futur.
+- **ADR** : `docs/adr/ADR-020-eshop360-r101-closure.md`.
+- **Statut** : ✅ mergé sur `base` (à venir, branche prête).
+
+---
+
 ## CHG-2026-04-24-007 — R-101 sous-lot S11 : extraction Communication + Projects + Reporting + rattrapages
 
 - **Date** : 2026-04-24

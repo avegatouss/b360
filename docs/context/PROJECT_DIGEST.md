@@ -7,7 +7,7 @@
 
 ## En une phrase
 
-B360 est une plateforme SaaS multi-tenant Laravel 12 modulaire (nwidart/laravel-modules), avec un noyau plateforme stable (12 modules système) et un module métier monolithique Eshop360 en cours de découpage progressif.
+B360 est une plateforme SaaS multi-tenant Laravel 12 modulaire (nwidart/laravel-modules), avec un noyau plateforme stable (12 modules système) et un module métier Eshop360 décomposé en 13 sous-domaines disciplinés (R-101 fermée 2026-05-05, ADR-008/020).
 
 ## Stack
 
@@ -40,13 +40,7 @@ Couche future      : Menuiserie360 (à concevoir)
 
 ## Risques critiques actifs
 
-1. Race condition stock (R-001)
-2. Webhook paiement double (R-002)
-3. Solde négatif portefeuille (R-003)
-4. Commissions RH dupliquées (R-004)
-5. Eshop360 monolithique (R-101)
-
-Détails : `docs/memory/OPEN_RISKS.md`.
+_(aucun — R-001..R-004 fermés en avril 2026, R-101 fermée 2026-05-05. Voir section FERMÉ de `docs/memory/OPEN_RISKS.md`.)_
 
 ## Zones protégées (modification = double review)
 

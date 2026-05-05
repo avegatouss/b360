@@ -5,6 +5,20 @@
 
 ---
 
+## 2026-05-05 — R-101 fermée : clôture du découpage Eshop360 (sous-lot S12)
+
+- **Décision** : clôturer le chantier R-101 d'extraction Eshop360 (commencé 2026-04-23) en formalisant les contrats que les mesures défensives des sous-lots intermédiaires (S8 `$morphClass` pinning, alias stubs, rulesets transitoires) garantissaient implicitement.
+- **5 commits S12.1..S12.5** sur branche `refactor/eshop360-s12-closure` :
+  - **S12.1** : `Relation::morphMap([88])` central en première ligne de `Eshop360ServiceProvider::boot()`, clés = legacy FQN. Choix `morphMap` non-strict plutôt qu'`enforceMorphMap` (la version stricte cassait 328 tests sur les morphs touchant App\Models\User, modèles Billing/Auth, etc.).
+  - **S12.2** : retrait des 53 `protected $morphClass = \Modules\Eshop360\Models\<X>::class` introduits en S8/S9 — la map centrale fournit la même garantie. `MorphStabilityTest` (4 tests feature) ajouté.
+  - **S12.3** : 263 fichiers consommateurs réécrits — `use Modules\Eshop360\Models\X` → `use Modules\Eshop360\Domain\<Sub>\Models\X`. 12 sites de production passant `XYZ::class` directement à des colonnes morph remplacés par `$model->getMorphClass()` (bug masqué par le système d'alias, exposé par la bascule canonique : `Order::class` valait la legacy FQN sous l'alias, valait la canonique sous l'import canonique → divergence avec les rows existantes). 8 tests `assertDatabaseHas('X_type' => Y::class)` corrigés en string littérale legacy. Baseline PHPStan régénérée 3650 (-54 vs S11).
+  - **S12.4** : suppression des 88 stubs `Modules/Eshop360/Models/<X>.php`. 2 non-stubs retenus (`EshopModuleSetting`, `UserAssignment`) — pas de sous-domaine évident, hors scope clôture. `R101ClosureStructuralTest` (3 tests unit) verrouille (a) seulement 2 fichiers dans `Modules/Eshop360/Models/`, (b) 88 entrées morph map, (c) aucun `$morphClass` Domain.
+  - **S12.5** : layer deptrac `EshopShared` (collecte `Database/Traits` + `Database/Scopes` + `Support`) + chaque EshopX bascule de `Eshop360` à `EshopShared`. Le baseline `skip_violations` passe de 13 à 198 entrées — absorbe les cross-EshopX réels exposés par la bascule canonique (ex. Customer→Order, Product→Stock, Order→Invoice/Payment, ChannelMarginLog→Order) ainsi que les deps trait propagées par deptrac (ChannelAccessService, DistributionChannel sur tout modèle utilisant `BelongsToChannel`). Tightening cross-EshopX = lot dédié futur.
+- **Choix morph keys = legacy FQN** : aucune migration de données. Migration vers short keys (`'order'`, etc.) = lot dédié futur (UPDATE 5 tables morphiques en prod + coordination déploiement). Pérennise la legacy FQN comme contrat public — tradeoff assumé.
+- **Statut R-101** : **fermée**, 13/13 sous-domaines extraits, architecture cible atteinte. Tests séquentiels 666 passed / 2 failed (pré-existants ChannelIsolationTest + EshopSettingsServiceTest, hors scope) / 5 skipped. PHPStan OK. Deptrac 0 violations.
+- **ADR** : `docs/adr/ADR-020-eshop360-r101-closure.md` (et 008..019 pour les sous-lots intermédiaires).
+- **Source** : branche `refactor/eshop360-s12-closure` (5 commits S12.1..S12.5 + 1 commit pré-S12 baseline Pint).
+
 ## 2026-04-23 — R-103 fermé : consolidation Codifarm → DistributionChannel
 
 - **Décision** : acter la suppression du système legacy Codifarm (déjà migré+droppé par la chaîne P0 `2026_03_16_100002/100003`) et poser les verrous anti-régression. Canon unique désormais : `DistributionChannel` + `ChannelMarginLog` + `ChannelProductPrice`.
