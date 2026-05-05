@@ -224,6 +224,12 @@ class RolesPermissionsSeeder extends Seeder
             Permission::firstOrCreate(['name' => $name, 'guard_name' => 'web']);
         }
 
+        // Flush Spatie cache after bulk permission creation. Without this, the
+        // subsequent syncPermissions() calls below resolve names through a stale
+        // cache (especially in test parallel mode with array driver), and Spatie
+        // throws "There is no permission named X for guard `web`".
+        $registrar->forgetCachedPermissions();
+
         /*
         |----------------------------------------------------------------------
         | Rôle global : super-admin (instance_id = 0)

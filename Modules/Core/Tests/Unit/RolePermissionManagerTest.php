@@ -12,6 +12,7 @@ use Modules\Core\Support\TeamContext;
 use Modules\Core\Tests\TestCase;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 final class RolePermissionManagerTest extends TestCase
 {
@@ -38,6 +39,11 @@ final class RolePermissionManagerTest extends TestCase
         Permission::firstOrCreate(['name' => 'posts.view', 'guard_name' => 'web']);
         Permission::firstOrCreate(['name' => 'posts.manage', 'guard_name' => 'web']);
 
+        // Flush Spatie cache so the freshly-created permissions are reloaded
+        // by syncPermissions(); without this, parallel-mode runs can hit a
+        // stale cache from a prior test class in the same worker process.
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+
         $role = $this->manager->createRole('editor', ['posts.view', 'posts.manage']);
 
         $this->assertCount(2, $role->permissions);
@@ -49,6 +55,9 @@ final class RolePermissionManagerTest extends TestCase
     {
         Permission::firstOrCreate(['name' => 'a.view', 'guard_name' => 'web']);
         Permission::firstOrCreate(['name' => 'b.view', 'guard_name' => 'web']);
+
+        // Flush Spatie cache so syncPermissions sees fresh DB state.
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
 
         $role = $this->manager->createRole('tester', ['a.view']);
 
@@ -211,6 +220,9 @@ final class RolePermissionManagerTest extends TestCase
     {
         Permission::firstOrCreate(['name' => 'dash.view', 'guard_name' => 'web']);
         Permission::firstOrCreate(['name' => 'users.view', 'guard_name' => 'web']);
+
+        // Flush Spatie cache so syncPermissions sees fresh DB state.
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
 
         $role = $this->manager->createRole('viewer', ['dash.view', 'users.view']);
 

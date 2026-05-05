@@ -4,8 +4,8 @@ namespace Modules\Core\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Modules\Core\Support\TeamContext;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
 /**
@@ -40,9 +40,15 @@ final class CoreRbacSeeder extends Seeder
                 'admin.modules', 'admin.maintenance',
             ];
 
+            // Use Eloquent firstOrCreate (DB-authoritative) instead of Spatie's
+            // findOrCreate which can return cached entries pointing to rolled-back rows
+            // when running in parallel test mode with array cache driver.
             foreach ($permissions as $perm) {
-                Permission::findOrCreate($perm);
+                Permission::firstOrCreate(['name' => $perm, 'guard_name' => 'web']);
             }
+
+            // Force fresh cache after bulk permission creation, before role grants.
+            $registrar->forgetCachedPermissions();
 
             // S'assurer que les rôles existent (idempotent)
             Role::findOrCreate('super-admin');

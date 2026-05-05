@@ -20,9 +20,9 @@ abstract class TestCase extends BaseTestCase
         $this->app['config']->set('database.default', 'sqlite');
         $this->app['config']->set('database.connections.sqlite.database', ':memory:');
         $this->app['config']->set('database.connections.system', [
-            'driver'                  => 'sqlite',
-            'database'                => ':memory:',
-            'prefix'                  => '',
+            'driver' => 'sqlite',
+            'database' => ':memory:',
+            'prefix' => '',
             'foreign_key_constraints' => true,
         ]);
 
@@ -42,6 +42,11 @@ abstract class TestCase extends BaseTestCase
         $this->sharePdo();
 
         // Reset Spatie team/permission state so suite order cannot leak into tests.
+        // forgetCachedPermissions() clears both the in-memory registrar state
+        // and the cache backend entry. Necessary in parallel mode where the
+        // array cache driver is shared by sequential test classes within a
+        // worker process — without it, ghost cache entries from rolled-back
+        // rows produce intermittent "There is no permission named X" errors.
         TeamContext::clear();
         app(PermissionRegistrar::class)->forgetCachedPermissions();
     }
