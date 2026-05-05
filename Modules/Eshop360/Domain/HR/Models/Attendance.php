@@ -12,8 +12,6 @@ class Attendance extends Model
 {
     use BelongsToChannel, HasFactory;
 
-    protected $morphClass = \Modules\Eshop360\Models\Attendance::class;
-
     protected $table = 'eshop_attendance';
 
     protected $fillable = [

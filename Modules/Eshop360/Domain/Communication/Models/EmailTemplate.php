@@ -13,8 +13,6 @@ class EmailTemplate extends Model
 {
     use BelongsToChannel, BelongsToInstance, HasFactory;
 
-    protected $morphClass = \Modules\Eshop360\Models\EmailTemplate::class;
-
     protected $table = 'eshop_email_templates';
 
     protected $fillable = [

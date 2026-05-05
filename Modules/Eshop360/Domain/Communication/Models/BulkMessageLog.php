@@ -14,8 +14,6 @@ class BulkMessageLog extends Model
 {
     use BelongsToChannel, BelongsToInstance, HasFactory;
 
-    protected $morphClass = \Modules\Eshop360\Models\BulkMessageLog::class;
-
     protected $table = 'eshop_bulk_message_logs';
 
     protected $fillable = [

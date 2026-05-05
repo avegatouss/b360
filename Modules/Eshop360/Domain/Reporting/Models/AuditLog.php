@@ -14,8 +14,6 @@ class AuditLog extends Model
 {
     use BelongsToChannel, BelongsToInstance, HasFactory;
 
-    protected $morphClass = \Modules\Eshop360\Models\AuditLog::class;
-
     protected $table = 'eshop_audit_logs';
 
     protected $fillable = [

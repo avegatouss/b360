@@ -12,8 +12,6 @@ class Webhook extends Model
 {
     use BelongsToChannel, BelongsToInstance;
 
-    protected $morphClass = \Modules\Eshop360\Models\Webhook::class;
-
     protected $table = 'eshop_webhooks';
 
     protected $fillable = [

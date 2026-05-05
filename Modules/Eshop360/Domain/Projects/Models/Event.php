@@ -13,8 +13,6 @@ class Event extends Model
 {
     use BelongsToChannel, BelongsToInstance;
 
-    protected $morphClass = \Modules\Eshop360\Models\Event::class;
-
     protected $table = 'eshop_events';
 
     protected $fillable = [

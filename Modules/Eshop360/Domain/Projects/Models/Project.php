@@ -15,8 +15,6 @@ class Project extends Model
 {
     use BelongsToChannel, BelongsToInstance;
 
-    protected $morphClass = \Modules\Eshop360\Models\Project::class;
-
     protected $table = 'eshop_projects';
 
     protected $fillable = [

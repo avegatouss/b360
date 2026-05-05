@@ -15,8 +15,6 @@ class OrderItem extends Model
 
     protected $table = 'eshop_order_items';
 
-    protected $morphClass = \Modules\Eshop360\Models\OrderItem::class;
-
     protected $fillable = [
         'channel_id',
         'order_id',

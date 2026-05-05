@@ -11,8 +11,6 @@ class PersistentCart extends Model
 
     protected $table = 'eshop_carts';
 
-    protected $morphClass = \Modules\Eshop360\Models\PersistentCart::class;
-
     protected $fillable = [
         'instance_id',
         'channel_id',

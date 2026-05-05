@@ -13,8 +13,6 @@ class CompanyCharge extends Model
 {
     use BelongsToChannel, BelongsToInstance, HasFactory;
 
-    protected $morphClass = \Modules\Eshop360\Models\CompanyCharge::class;
-
     protected $table = 'eshop_company_charges';
 
     protected $fillable = [

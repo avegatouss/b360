@@ -36,12 +36,6 @@ class Order extends Model
 
     protected $table = 'eshop_orders';
 
-    /**
-     * Legacy FQN kept as morph class so stored `reference_type` / `payable_type`
-     * values remain `Modules\Eshop360\Models\Order` after R-101 S8 extraction.
-     */
-    protected $morphClass = \Modules\Eshop360\Models\Order::class;
-
     protected $fillable = [
         'instance_id',
         'customer_id',

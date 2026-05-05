@@ -13,8 +13,6 @@ class WebhookLog extends Model
 
     public $timestamps = false;
 
-    protected $morphClass = \Modules\Eshop360\Models\WebhookLog::class;
-
     protected $table = 'eshop_webhook_logs';
 
     protected $fillable = [

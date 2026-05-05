@@ -10,8 +10,6 @@ class ApiLog extends Model
 {
     use BelongsToChannel;
 
-    protected $morphClass = \Modules\Eshop360\Models\ApiLog::class;
-
     protected $table = 'eshop_api_logs';
 
     protected $fillable = [

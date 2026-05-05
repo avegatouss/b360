@@ -13,8 +13,6 @@ class ReceiptTemplate extends Model
 {
     use BelongsToChannel, BelongsToInstance, HasFactory;
 
-    protected $morphClass = \Modules\Eshop360\Models\ReceiptTemplate::class;
-
     protected $table = 'eshop_receipt_templates';
 
     protected $fillable = [

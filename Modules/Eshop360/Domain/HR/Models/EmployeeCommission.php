@@ -12,8 +12,6 @@ class EmployeeCommission extends Model
 {
     use BelongsToChannel, HasFactory;
 
-    protected $morphClass = \Modules\Eshop360\Models\EmployeeCommission::class;
-
     protected $table = 'eshop_employee_commissions';
 
     protected $fillable = [

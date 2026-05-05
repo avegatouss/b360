@@ -13,8 +13,6 @@ class TicketMessage extends Model
 {
     use BelongsToChannel, HasFactory;
 
-    protected $morphClass = \Modules\Eshop360\Models\TicketMessage::class;
-
     protected $table = 'eshop_ticket_messages';
 
     protected $fillable = [

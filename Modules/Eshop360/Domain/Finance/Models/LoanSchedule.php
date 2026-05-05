@@ -11,8 +11,6 @@ class LoanSchedule extends Model
 {
     use BelongsToChannel;
 
-    protected $morphClass = \Modules\Eshop360\Models\LoanSchedule::class;
-
     protected $table = 'eshop_loan_schedules';
 
     protected $fillable = [

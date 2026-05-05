@@ -14,8 +14,6 @@ class AccountTransfer extends Model
 {
     use BelongsToChannel, BelongsToInstance, HasFactory;
 
-    protected $morphClass = \Modules\Eshop360\Models\AccountTransfer::class;
-
     protected $table = 'eshop_account_transfers';
 
     protected $fillable = [

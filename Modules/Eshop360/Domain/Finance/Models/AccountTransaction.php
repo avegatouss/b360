@@ -13,8 +13,6 @@ class AccountTransaction extends Model
 {
     use BelongsToChannel, HasFactory;
 
-    protected $morphClass = \Modules\Eshop360\Models\AccountTransaction::class;
-
     protected $table = 'eshop_account_transactions';
 
     protected $fillable = [

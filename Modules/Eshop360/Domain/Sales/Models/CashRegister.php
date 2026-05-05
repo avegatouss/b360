@@ -18,8 +18,6 @@ class CashRegister extends Model
 
     protected $table = 'eshop_cash_registers';
 
-    protected $morphClass = \Modules\Eshop360\Models\CashRegister::class;
-
     protected $fillable = [
         'instance_id',
         'channel_id',

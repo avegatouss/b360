@@ -15,8 +15,6 @@ class Message extends Model
 {
     use BelongsToChannel, BelongsToInstance, HasFactory;
 
-    protected $morphClass = \Modules\Eshop360\Models\Message::class;
-
     protected $table = 'eshop_messages';
 
     protected $fillable = [

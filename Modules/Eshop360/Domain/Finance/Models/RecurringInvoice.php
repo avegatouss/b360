@@ -12,8 +12,6 @@ class RecurringInvoice extends Model
 {
     use BelongsToChannel, BelongsToInstance;
 
-    protected $morphClass = \Modules\Eshop360\Models\RecurringInvoice::class;
-
     protected $table = 'eshop_recurring_invoices';
 
     protected $fillable = [

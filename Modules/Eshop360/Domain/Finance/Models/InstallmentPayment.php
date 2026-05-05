@@ -12,8 +12,6 @@ class InstallmentPayment extends Model
 {
     use BelongsToChannel, HasFactory;
 
-    protected $morphClass = \Modules\Eshop360\Models\InstallmentPayment::class;
-
     protected $table = 'eshop_installment_payments';
 
     protected $fillable = [

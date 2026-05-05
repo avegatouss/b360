@@ -12,8 +12,6 @@ class EmployeeSalary extends Model
 {
     use BelongsToChannel, HasFactory;
 
-    protected $morphClass = \Modules\Eshop360\Models\EmployeeSalary::class;
-
     protected $table = 'eshop_employee_salaries';
 
     protected $fillable = [

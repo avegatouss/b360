@@ -15,8 +15,6 @@ class Holding extends Model
 {
     use BelongsToChannel, BelongsToInstance, HasFactory;
 
-    protected $morphClass = \Modules\Eshop360\Models\Holding::class;
-
     protected $table = 'eshop_holdings';
 
     protected $fillable = [

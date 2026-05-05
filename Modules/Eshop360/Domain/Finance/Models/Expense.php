@@ -14,8 +14,6 @@ class Expense extends Model
 {
     use BelongsToChannel, BelongsToInstance, HasFactory;
 
-    protected $morphClass = \Modules\Eshop360\Models\Expense::class;
-
     protected $table = 'eshop_expenses';
 
     protected $fillable = [

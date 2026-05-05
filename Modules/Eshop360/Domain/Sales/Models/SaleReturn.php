@@ -16,8 +16,6 @@ class SaleReturn extends Model
 
     protected $table = 'eshop_sale_returns';
 
-    protected $morphClass = \Modules\Eshop360\Models\SaleReturn::class;
-
     protected $fillable = [
         'channel_id',
         'instance_id',

@@ -12,8 +12,6 @@ class TaskComment extends Model
 {
     use BelongsToChannel;
 
-    protected $morphClass = \Modules\Eshop360\Models\TaskComment::class;
-
     protected $table = 'eshop_task_comments';
 
     protected $fillable = ['channel_id', 'task_id', 'user_id', 'content'];

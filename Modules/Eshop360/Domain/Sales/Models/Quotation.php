@@ -17,8 +17,6 @@ class Quotation extends Model
 
     protected $table = 'eshop_quotations';
 
-    protected $morphClass = \Modules\Eshop360\Models\Quotation::class;
-
     protected $fillable = [
         'channel_id',
         'instance_id',

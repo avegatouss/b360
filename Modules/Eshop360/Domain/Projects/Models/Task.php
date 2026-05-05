@@ -13,8 +13,6 @@ class Task extends Model
 {
     use BelongsToChannel, BelongsToInstance;
 
-    protected $morphClass = \Modules\Eshop360\Models\Task::class;
-
     protected $table = 'eshop_tasks';
 
     protected $fillable = [

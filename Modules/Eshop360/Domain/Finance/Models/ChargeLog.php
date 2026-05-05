@@ -12,8 +12,6 @@ class ChargeLog extends Model
 {
     use BelongsToChannel, HasFactory;
 
-    protected $morphClass = \Modules\Eshop360\Models\ChargeLog::class;
-
     protected $table = 'eshop_charge_logs';
 
     protected $fillable = [

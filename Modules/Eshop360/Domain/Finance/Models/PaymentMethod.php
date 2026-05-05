@@ -12,8 +12,6 @@ class PaymentMethod extends Model
 {
     use BelongsToChannel, BelongsToInstance, HasFactory;
 
-    protected $morphClass = \Modules\Eshop360\Models\PaymentMethod::class;
-
     protected $table = 'eshop_payment_methods';
 
     protected $fillable = [

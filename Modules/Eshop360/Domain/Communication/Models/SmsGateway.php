@@ -13,8 +13,6 @@ class SmsGateway extends Model
 {
     use BelongsToChannel, BelongsToInstance, HasFactory;
 
-    protected $morphClass = \Modules\Eshop360\Models\SmsGateway::class;
-
     protected $table = 'eshop_sms_gateways';
 
     protected $fillable = [

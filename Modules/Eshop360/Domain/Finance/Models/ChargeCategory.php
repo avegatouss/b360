@@ -11,8 +11,6 @@ class ChargeCategory extends Model
 {
     use BelongsToChannel, BelongsToInstance;
 
-    protected $morphClass = \Modules\Eshop360\Models\ChargeCategory::class;
-
     protected $table = 'eshop_charge_categories';
 
     protected $fillable = ['instance_id', 'channel_id', 'code', 'label', 'is_active', 'sort_order'];

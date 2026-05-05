@@ -12,8 +12,6 @@ class InvoiceItem extends Model
 {
     use BelongsToChannel, HasFactory;
 
-    protected $morphClass = \Modules\Eshop360\Models\InvoiceItem::class;
-
     protected $table = 'eshop_invoice_items';
 
     protected $fillable = [

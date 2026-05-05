@@ -16,8 +16,6 @@ class OnlineOrder extends Model
 
     protected $table = 'eshop_online_orders';
 
-    protected $morphClass = \Modules\Eshop360\Models\OnlineOrder::class;
-
     protected $fillable = [
         'instance_id',
         'customer_id',

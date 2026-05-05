@@ -14,8 +14,6 @@ class SupportTeam extends Model
 {
     use BelongsToChannel, BelongsToInstance;
 
-    protected $morphClass = \Modules\Eshop360\Models\SupportTeam::class;
-
     protected $table = 'eshop_support_teams';
 
     protected $fillable = [

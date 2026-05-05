@@ -18,8 +18,6 @@ class Invoice extends Model
 {
     use BelongsToChannel, BelongsToInstance, HasFactory, SoftDeletes;
 
-    protected $morphClass = \Modules\Eshop360\Models\Invoice::class;
-
     protected $table = 'eshop_invoices';
 
     protected $fillable = [

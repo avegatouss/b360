@@ -16,8 +16,6 @@ class Employee extends Model
 {
     use BelongsToChannel, BelongsToInstance, HasFactory, SoftDeletes;
 
-    protected $morphClass = \Modules\Eshop360\Models\Employee::class;
-
     protected $table = 'eshop_employees';
 
     protected $fillable = [

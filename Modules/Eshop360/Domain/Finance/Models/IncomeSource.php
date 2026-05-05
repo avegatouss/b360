@@ -13,8 +13,6 @@ class IncomeSource extends Model
 {
     use BelongsToChannel, BelongsToInstance, HasFactory;
 
-    protected $morphClass = \Modules\Eshop360\Models\IncomeSource::class;
-
     protected $table = 'eshop_income_sources';
 
     protected $fillable = [

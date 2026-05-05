@@ -14,8 +14,6 @@ class SupportTicket extends Model
 {
     use BelongsToChannel, BelongsToInstance, HasFactory;
 
-    protected $morphClass = \Modules\Eshop360\Models\SupportTicket::class;
-
     protected $table = 'eshop_support_tickets';
 
     protected $fillable = [

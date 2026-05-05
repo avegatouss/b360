@@ -13,8 +13,6 @@ class FneInvoice extends Model
 {
     use BelongsToChannel, BelongsToInstance;
 
-    protected $morphClass = \Modules\Eshop360\Models\FneInvoice::class;
-
     protected $table = 'eshop_fne_invoices';
 
     protected $fillable = [

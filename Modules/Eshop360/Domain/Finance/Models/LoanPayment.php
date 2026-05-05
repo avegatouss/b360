@@ -12,8 +12,6 @@ class LoanPayment extends Model
 {
     use BelongsToChannel, HasFactory;
 
-    protected $morphClass = \Modules\Eshop360\Models\LoanPayment::class;
-
     protected $table = 'eshop_loan_payments';
 
     protected $fillable = [
