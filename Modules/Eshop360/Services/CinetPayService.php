@@ -6,9 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\Invoice;
-use Modules\Eshop360\Models\Order;
-use Modules\Eshop360\Models\Payment;
+use Modules\Eshop360\Domain\Finance\Models\Invoice;
+use Modules\Eshop360\Domain\Finance\Models\Payment;
+use Modules\Eshop360\Domain\Sales\Models\Order;
 
 /**
  * CinetPay payment gateway integration.

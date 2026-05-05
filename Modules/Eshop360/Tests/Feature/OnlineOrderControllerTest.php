@@ -2,10 +2,10 @@
 
 namespace Modules\Eshop360\Tests\Feature;
 
-use Modules\Eshop360\Models\Customer;
-use Modules\Eshop360\Models\OnlineOrder;
-use Modules\Eshop360\Models\Order;
-use Modules\Eshop360\Models\Product;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\CRM\Models\Customer;
+use Modules\Eshop360\Domain\Sales\Models\OnlineOrder;
+use Modules\Eshop360\Domain\Sales\Models\Order;
 use Modules\Eshop360\Tests\TestCase;
 
 final class OnlineOrderControllerTest extends TestCase

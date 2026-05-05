@@ -4,9 +4,9 @@ namespace Modules\Eshop360\Tests\Feature;
 
 use Modules\Core\Support\CurrentInstance;
 use Modules\Core\Support\TeamContext;
-use Modules\Eshop360\Models\Product;
-use Modules\Eshop360\Models\Stock;
-use Modules\Eshop360\Models\Warehouse;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\Inventory\Models\Stock;
+use Modules\Eshop360\Domain\Inventory\Models\Warehouse;
 use Modules\Eshop360\Tests\TestCase;
 use Spatie\Permission\Models\Permission;
 

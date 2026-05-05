@@ -4,14 +4,14 @@ namespace Modules\Eshop360\Http\Controllers\Channel;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Modules\Eshop360\Models\DistributionChannel;
-use Modules\Eshop360\Models\ChannelMarginLog;
-use Modules\Eshop360\Models\Order;
-use Modules\Eshop360\Services\MarginService;
-use Modules\Eshop360\Services\CostCalculatorService;
-use Modules\Eshop360\Services\ChannelB2BService;
-use Modules\Eshop360\Services\EshopSettingsService;
 use Modules\Core\Support\CurrentInstance;
+use Modules\Eshop360\Domain\Channel\Models\ChannelMarginLog;
+use Modules\Eshop360\Domain\Channel\Models\DistributionChannel;
+use Modules\Eshop360\Domain\Sales\Models\Order;
+use Modules\Eshop360\Services\ChannelB2BService;
+use Modules\Eshop360\Services\CostCalculatorService;
+use Modules\Eshop360\Services\EshopSettingsService;
+use Modules\Eshop360\Services\MarginService;
 
 class ChannelController extends Controller
 {
@@ -31,6 +31,7 @@ class ChannelController extends Controller
         $channels = DistributionChannel::where('instance_id', $instance->id)
             ->withCount('orders', 'marginLogs')
             ->get();
+
         return view('eshop360::channels.index', compact('channels'));
     }
 
@@ -50,6 +51,7 @@ class ChannelController extends Controller
             ->latest()
             ->limit(20)
             ->get();
+
         return view('eshop360::channels.show', compact('channel', 'summary', 'recentLogs'));
     }
 
@@ -136,6 +138,7 @@ class ChannelController extends Controller
             ->with('order')
             ->latest()
             ->paginate(20);
+
         return view('eshop360::channels.margins', compact('channel', 'summary', 'logs', 'from', 'to'));
     }
 
@@ -149,6 +152,7 @@ class ChannelController extends Controller
             ->with('customer', 'items')
             ->latest()
             ->paginate(20);
+
         return view('eshop360::channels.orders', compact('channel', 'orders'));
     }
 
@@ -156,6 +160,7 @@ class ChannelController extends Controller
     {
         $instance = CurrentInstance::get();
         $channel->delete();
+
         return redirect()->route('eshop360.channels.index', $instance->slug)
             ->with('success', __('Canal supprimé.'));
     }

@@ -2,7 +2,7 @@
 
 namespace Modules\Eshop360\Database\Seeders;
 
-use Modules\Eshop360\Models\Employee;
+use Modules\Eshop360\Domain\HR\Models\Employee;
 
 final class DemoHRSeeder
 {

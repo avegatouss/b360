@@ -4,7 +4,7 @@ namespace Modules\Eshop360\Http\Controllers\ChannelPortal;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Modules\Eshop360\Models\Product;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
 use Modules\Eshop360\Services\CartService;
 
 class ChannelPortalCartController extends Controller

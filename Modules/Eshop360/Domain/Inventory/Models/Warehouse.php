@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Modules\Core\Database\Traits\BelongsToInstance;
 use Modules\Eshop360\Database\Traits\BelongsToChannel;
 use Modules\Eshop360\Database\Traits\ScopedByUserAssignment;
-use Modules\Eshop360\Models\Employee;
+use Modules\Eshop360\Domain\HR\Models\Employee;
 
 class Warehouse extends Model
 {

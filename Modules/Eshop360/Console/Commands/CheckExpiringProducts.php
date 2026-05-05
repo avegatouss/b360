@@ -2,21 +2,23 @@
 
 namespace Modules\Eshop360\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Instances\Instance;
-use Modules\Eshop360\Models\Stock;
+use Illuminate\Console\Command;
+use Modules\Eshop360\Domain\Inventory\Models\Stock;
 use Modules\Eshop360\Notifications\ExpiryAlertNotification;
 
 class CheckExpiringProducts extends Command
 {
     protected $signature = 'eshop:check-expiry';
+
     protected $description = 'Check products nearing expiry and notify instance admins/managers via in-app notifications';
 
     public function handle(): int
     {
         // Check if expiry alerts are enabled in settings
-        if (!setting('notifications.alert_expiry_enabled', true)) {
+        if (! setting('notifications.alert_expiry_enabled', true)) {
             $this->info('Expiry alerts are disabled in settings.');
+
             return self::SUCCESS;
         }
 

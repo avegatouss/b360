@@ -3,7 +3,7 @@
 namespace Modules\Eshop360\Support;
 
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\DistributionChannel;
+use Modules\Eshop360\Domain\Channel\Models\DistributionChannel;
 
 /**
  * Manages the "active channel" context for the current session.

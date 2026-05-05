@@ -26,7 +26,7 @@ final class SmsService
     {
         // If a specific gatewayId is provided, resolve the gateway and use its driver
         if ($gatewayId) {
-            $gateway = \Modules\Eshop360\Models\SmsGateway::find($gatewayId);
+            $gateway = \Modules\Eshop360\Domain\Communication\Models\SmsGateway::find($gatewayId);
             if (! $gateway) {
                 return false;
             }

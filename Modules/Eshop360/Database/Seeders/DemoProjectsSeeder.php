@@ -2,9 +2,9 @@
 
 namespace Modules\Eshop360\Database\Seeders;
 
-use Modules\Eshop360\Models\Event;
-use Modules\Eshop360\Models\Project;
-use Modules\Eshop360\Models\Task;
+use Modules\Eshop360\Domain\Projects\Models\Event;
+use Modules\Eshop360\Domain\Projects\Models\Project;
+use Modules\Eshop360\Domain\Projects\Models\Task;
 
 final class DemoProjectsSeeder
 {

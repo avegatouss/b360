@@ -5,10 +5,10 @@ namespace Modules\Eshop360\Http\Controllers\Finance;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Modules\Eshop360\Models\Income;
-use Modules\Eshop360\Models\IncomeSource;
-use Modules\Eshop360\Models\Account;
 use Modules\Core\Support\CurrentInstance;
+use Modules\Eshop360\Domain\Finance\Models\Account;
+use Modules\Eshop360\Domain\Finance\Models\Income;
+use Modules\Eshop360\Domain\Finance\Models\IncomeSource;
 
 class IncomeController extends Controller
 {
@@ -26,11 +26,11 @@ class IncomeController extends Controller
 
         $fq = clone $query;
         $kpi = (object) [
-            'total'       => (int) (clone $fq)->sum('amount'),
-            'count'       => (clone $fq)->count(),
+            'total' => (int) (clone $fq)->sum('amount'),
+            'count' => (clone $fq)->count(),
             'month_total' => (int) Income::where('instance_id', $instance->id)->whereMonth('date', now()->month)->whereYear('date', now()->year)->sum('amount'),
-            'avg'         => (int) (clone $fq)->avg('amount'),
-            'by_source'   => IncomeSource::where('instance_id', $instance->id)
+            'avg' => (int) (clone $fq)->avg('amount'),
+            'by_source' => IncomeSource::where('instance_id', $instance->id)
                 ->withCount('incomes')
                 ->withSum('incomes', 'amount')
                 ->having('incomes_count', '>', 0)
@@ -49,8 +49,8 @@ class IncomeController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'source_id' => 'required|exists:eshop_income_sources,id,instance_id,' . CurrentInstance::idOrFail(),
-            'account_id' => 'nullable|exists:eshop_accounts,id,instance_id,' . CurrentInstance::idOrFail(),
+            'source_id' => 'required|exists:eshop_income_sources,id,instance_id,'.CurrentInstance::idOrFail(),
+            'account_id' => 'nullable|exists:eshop_accounts,id,instance_id,'.CurrentInstance::idOrFail(),
             'amount' => 'required|numeric|min:0.01',
             'date' => 'required|date',
             'description' => 'nullable|string',
@@ -61,7 +61,7 @@ class IncomeController extends Controller
         DB::transaction(function () use ($validated) {
             Income::create($validated);
 
-            if (!empty($validated['account_id'])) {
+            if (! empty($validated['account_id'])) {
                 Account::find($validated['account_id'])?->increment('balance', $validated['amount']);
             }
         });
@@ -126,6 +126,7 @@ class IncomeController extends Controller
         $validated = $request->validate(['name' => 'required|string|max:255']);
         $validated['instance_id'] = CurrentInstance::get()->id;
         IncomeSource::create($validated);
+
         return redirect()->back()->with('success', 'Source created.');
     }
 
@@ -140,6 +141,7 @@ class IncomeController extends Controller
     public function destroySource(string $slug, IncomeSource $source)
     {
         $source->delete();
+
         return redirect()->back()->with('success', 'Source deleted.');
     }
 }

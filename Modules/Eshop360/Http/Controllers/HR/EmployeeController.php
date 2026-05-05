@@ -8,10 +8,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\Attendance;
-use Modules\Eshop360\Models\Employee;
-use Modules\Eshop360\Models\EmployeeCommission;
-use Modules\Eshop360\Models\EmployeeSalary;
+use Modules\Eshop360\Domain\HR\Models\Attendance;
+use Modules\Eshop360\Domain\HR\Models\Employee;
+use Modules\Eshop360\Domain\HR\Models\EmployeeCommission;
 use Modules\Eshop360\Services\HRService;
 
 class EmployeeController extends Controller
@@ -36,14 +35,14 @@ class EmployeeController extends Controller
         $allIds = (clone $fq)->pluck('id');
 
         $kpi = (object) [
-            'total'           => (clone $fq)->count(),
-            'active'          => (clone $fq)->where('status', 'active')->count(),
-            'inactive'        => (clone $fq)->whereIn('status', ['inactive', 'terminated'])->count(),
-            'total_salary'    => (int) (clone $fq)->where('status', 'active')->sum('salary'),
-            'avg_salary'      => (int) (clone $fq)->where('status', 'active')->avg('salary'),
-            'with_account'    => (clone $fq)->whereNotNull('user_id')->count(),
+            'total' => (clone $fq)->count(),
+            'active' => (clone $fq)->where('status', 'active')->count(),
+            'inactive' => (clone $fq)->whereIn('status', ['inactive', 'terminated'])->count(),
+            'total_salary' => (int) (clone $fq)->where('status', 'active')->sum('salary'),
+            'avg_salary' => (int) (clone $fq)->where('status', 'active')->avg('salary'),
+            'with_account' => (clone $fq)->whereNotNull('user_id')->count(),
             'commissions_month' => (int) EmployeeCommission::whereIn('employee_id', $allIds)->whereMonth('created_at', now()->month)->sum('amount'),
-            'present_today'   => Attendance::whereIn('employee_id', $allIds)->whereDate('date', today())->count(),
+            'present_today' => Attendance::whereIn('employee_id', $allIds)->whereDate('date', today())->count(),
         ];
 
         // Departments for filter
@@ -66,18 +65,19 @@ class EmployeeController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name'            => 'required|string|max:255',
-            'email'           => 'nullable|email|max:255',
-            'phone'           => 'nullable|string|max:50',
-            'position'        => 'required|string|max:255',
-            'department'      => 'nullable|string|max:255',
-            'salary'          => 'required|numeric|min:0',
+            'name' => 'required|string|max:255',
+            'email' => 'nullable|email|max:255',
+            'phone' => 'nullable|string|max:50',
+            'position' => 'required|string|max:255',
+            'department' => 'nullable|string|max:255',
+            'salary' => 'required|numeric|min:0',
             'commission_rate' => 'nullable|numeric|min:0|max:100',
-            'joined_at'       => 'nullable|date',
-            'user_id'         => 'nullable|exists:users,id',
+            'joined_at' => 'nullable|date',
+            'user_id' => 'nullable|exists:users,id',
         ]);
         $validated['instance_id'] = CurrentInstance::get()->id;
         Employee::create($validated);
+
         return redirect()->route('eshop360.hr.employees.index', $request->route('slug'))
             ->with('success', __('Employe cree avec succes.'));
     }
@@ -87,13 +87,13 @@ class EmployeeController extends Controller
         $employee->load('user', 'salaries', 'commissions.order', 'attendances');
 
         $stats = [
-            'total_salary_paid'   => (int) $employee->salaries->whereNotNull('paid_at')->sum('net_amount'),
-            'total_salary_pending'=> (int) $employee->salaries->whereNull('paid_at')->sum('net_amount'),
-            'total_commissions'   => (int) $employee->commissions->sum('amount'),
-            'unpaid_commissions'  => (int) $employee->commissions->whereNull('paid_at')->sum('amount'),
-            'days_present_month'  => $employee->attendances->where('date', '>=', now()->startOfMonth())->count(),
-            'hours_month'         => round($employee->attendances->where('date', '>=', now()->startOfMonth())->sum('hours_worked'), 1),
-            'tenure_months'       => $employee->joined_at ? $employee->joined_at->diffInMonths(now()) : null,
+            'total_salary_paid' => (int) $employee->salaries->whereNotNull('paid_at')->sum('net_amount'),
+            'total_salary_pending' => (int) $employee->salaries->whereNull('paid_at')->sum('net_amount'),
+            'total_commissions' => (int) $employee->commissions->sum('amount'),
+            'unpaid_commissions' => (int) $employee->commissions->whereNull('paid_at')->sum('amount'),
+            'days_present_month' => $employee->attendances->where('date', '>=', now()->startOfMonth())->count(),
+            'hours_month' => round($employee->attendances->where('date', '>=', now()->startOfMonth())->sum('hours_worked'), 1),
+            'tenure_months' => $employee->joined_at ? $employee->joined_at->diffInMonths(now()) : null,
         ];
 
         return view('eshop360::hr.employees.show', compact('employee', 'stats'));
@@ -107,22 +107,24 @@ class EmployeeController extends Controller
     public function update(Request $request, string $slug, Employee $employee)
     {
         $validated = $request->validate([
-            'name'            => 'required|string|max:255',
-            'email'           => 'nullable|email|max:255',
-            'phone'           => 'nullable|string|max:50',
-            'position'        => 'required|string|max:255',
-            'department'      => 'nullable|string|max:255',
-            'salary'          => 'required|numeric|min:0',
+            'name' => 'required|string|max:255',
+            'email' => 'nullable|email|max:255',
+            'phone' => 'nullable|string|max:50',
+            'position' => 'required|string|max:255',
+            'department' => 'nullable|string|max:255',
+            'salary' => 'required|numeric|min:0',
             'commission_rate' => 'nullable|numeric|min:0|max:100',
-            'status'          => 'nullable|in:active,inactive,terminated',
+            'status' => 'nullable|in:active,inactive,terminated',
         ]);
         $employee->update($validated);
+
         return redirect()->back()->with('success', __('Employe mis a jour.'));
     }
 
     public function destroy(string $slug, Employee $employee)
     {
         $employee->delete();
+
         return redirect()->route('eshop360.hr.employees.index', $slug)->with('success', __('Employe supprime.'));
     }
 
@@ -133,7 +135,7 @@ class EmployeeController extends Controller
         }
 
         $validated = $request->validate([
-            'email'    => 'required|email|unique:system.users,email',
+            'email' => 'required|email|unique:system.users,email',
             'password' => 'required|string|min:8|confirmed',
         ]);
 
@@ -141,18 +143,18 @@ class EmployeeController extends Controller
 
         $user = User::create([
             'full_name' => $employee->name,
-            'email'     => $validated['email'],
-            'password'  => Hash::make($validated['password']),
-            'phone'     => $employee->phone,
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'phone' => $employee->phone,
             'is_active' => true,
         ]);
 
         DB::connection('system')->table('instance_user')->insert([
             'instance_id' => $instance->id,
-            'user_id'     => $user->id,
-            'status'      => 'active',
-            'created_at'  => now(),
-            'updated_at'  => now(),
+            'user_id' => $user->id,
+            'status' => 'active',
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         $employee->update(['user_id' => $user->id]);

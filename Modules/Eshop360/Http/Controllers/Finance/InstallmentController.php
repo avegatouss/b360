@@ -6,9 +6,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\InstallmentPayment;
-use Modules\Eshop360\Models\InstallmentPlan;
-use Modules\Eshop360\Models\Order;
+use Modules\Eshop360\Domain\Finance\Models\InstallmentPayment;
+use Modules\Eshop360\Domain\Finance\Models\InstallmentPlan;
+use Modules\Eshop360\Domain\Sales\Models\Order;
 use Modules\Eshop360\Services\FinanceService;
 use Modules\Eshop360\Services\OrderService;
 
@@ -37,12 +37,12 @@ class InstallmentController extends Controller
         $activePlanIds = (clone $fq)->where('status', 'active')->pluck('id');
 
         $kpi = (object) [
-            'total'          => (clone $fq)->count(),
-            'active'         => (clone $fq)->where('status', 'active')->count(),
-            'completed'      => (clone $fq)->where('status', 'completed')->count(),
-            'total_amount'   => (int) (clone $fq)->sum('total'),
-            'total_paid'     => (int) InstallmentPayment::whereIn('plan_id', $allPlanIds)->where('status', 'paid')->sum('amount'),
-            'overdue_count'  => InstallmentPayment::whereIn('plan_id', $activePlanIds)->where('status', '!=', 'paid')->where('due_date', '<', now())->count(),
+            'total' => (clone $fq)->count(),
+            'active' => (clone $fq)->where('status', 'active')->count(),
+            'completed' => (clone $fq)->where('status', 'completed')->count(),
+            'total_amount' => (int) (clone $fq)->sum('total'),
+            'total_paid' => (int) InstallmentPayment::whereIn('plan_id', $allPlanIds)->where('status', 'paid')->sum('amount'),
+            'overdue_count' => InstallmentPayment::whereIn('plan_id', $activePlanIds)->where('status', '!=', 'paid')->where('due_date', '<', now())->count(),
         ];
         $kpi->total_remaining = $kpi->total_amount - $kpi->total_paid;
 
@@ -63,9 +63,9 @@ class InstallmentController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'order_id'           => 'required|exists:eshop_orders,id',
+            'order_id' => 'required|exists:eshop_orders,id',
             'installments_count' => 'required|integer|min:2|max:60',
-            'frequency'          => 'required|in:weekly,biweekly,monthly',
+            'frequency' => 'required|in:weekly,biweekly,monthly',
         ]);
 
         $order = Order::findOrFail($validated['order_id']);
@@ -82,6 +82,7 @@ class InstallmentController extends Controller
     public function show(string $slug, InstallmentPlan $plan)
     {
         $plan->load('order.customer', 'payments');
+
         return view('eshop360::finance.installments.show', compact('plan'));
     }
 
@@ -97,21 +98,21 @@ class InstallmentController extends Controller
             $plan = $payment->plan()->with('order.payments')->first();
             $order = $plan?->order;
 
-            if ($order && ! $order->payments()->where('reference', 'INST-' . $payment->id)->exists()) {
+            if ($order && ! $order->payments()->where('reference', 'INST-'.$payment->id)->exists()) {
                 $order->payments()->create([
                     'instance_id' => $order->instance_id,
-                    'amount'      => $payment->amount,
-                    'method'      => 'installment',
-                    'reference'   => 'INST-' . $payment->id,
-                    'status'      => 'completed',
-                    'notes'       => __('Echeance #:num', ['num' => $payment->id]),
+                    'amount' => $payment->amount,
+                    'method' => 'installment',
+                    'reference' => 'INST-'.$payment->id,
+                    'status' => 'completed',
+                    'notes' => __('Echeance #:num', ['num' => $payment->id]),
                     'received_by' => auth()->id(),
                 ]);
 
                 $totalPaid = (float) $order->payments()->where('status', 'completed')->sum('amount');
                 $order->update([
-                    'paid_amount'    => $totalPaid,
-                    'due_amount'     => max(0, (float) $order->total - $totalPaid),
+                    'paid_amount' => $totalPaid,
+                    'due_amount' => max(0, (float) $order->total - $totalPaid),
                     'payment_status' => $totalPaid >= (float) $order->total ? 'paid' : ($totalPaid > 0 ? 'partial' : 'unpaid'),
                 ]);
             }

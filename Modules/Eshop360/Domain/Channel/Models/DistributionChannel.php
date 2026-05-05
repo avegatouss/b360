@@ -13,13 +13,13 @@ use Modules\Core\Database\Traits\BelongsToInstance;
 // R-101 S3 — relations vers modèles hors-Channel : alias transitoires,
 // remplacés par FQN canoniques au fil des sous-lots (Warehouse/Order/
 // CashRegister → S5/S8, Coupon → S6, Holding → S9).
-use Modules\Eshop360\Models\CashRegister;
-use Modules\Eshop360\Models\Coupon;
-use Modules\Eshop360\Models\Customer;
-use Modules\Eshop360\Models\Holding;
-use Modules\Eshop360\Models\Order;
-use Modules\Eshop360\Models\Product;
-use Modules\Eshop360\Models\Warehouse;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\CRM\Models\Customer;
+use Modules\Eshop360\Domain\Inventory\Models\Warehouse;
+use Modules\Eshop360\Domain\Promotions\Models\Coupon;
+use Modules\Eshop360\Domain\Sales\Models\CashRegister;
+use Modules\Eshop360\Domain\Sales\Models\Holding;
+use Modules\Eshop360\Domain\Sales\Models\Order;
 
 class DistributionChannel extends Model
 {

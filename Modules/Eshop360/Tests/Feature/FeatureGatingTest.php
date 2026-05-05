@@ -10,7 +10,7 @@ use Modules\Core\Hooks\DTO\BillableFeature;
 use Modules\Core\Hooks\Registry\HookRegistry;
 use Modules\Core\Support\CurrentInstance;
 use Modules\Core\Support\TeamContext;
-use Modules\Eshop360\Models\Product;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
 use Modules\Eshop360\Tests\TestCase;
 use Spatie\Permission\Models\Permission;
 

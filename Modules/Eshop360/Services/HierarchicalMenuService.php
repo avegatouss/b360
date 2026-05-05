@@ -6,7 +6,7 @@ use Illuminate\Support\Collection;
 use Modules\Core\Hooks\DTO\MenuItem;
 use Modules\Core\Hooks\HookManager;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\DistributionChannel;
+use Modules\Eshop360\Domain\Channel\Models\DistributionChannel;
 
 final class HierarchicalMenuService
 {

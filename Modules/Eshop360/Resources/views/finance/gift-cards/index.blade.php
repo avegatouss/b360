@@ -206,7 +206,7 @@
                     </select></div>
                 <div class="col-12">
                     <label class="form-label">{{ __('Apercu') }}</label>
-                    <div class="bg-light rounded p-3 text-center"><code class="fs-5" id="code-preview">{{ \Modules\Eshop360\Models\GiftCard::generateCode($codeSettings) }}</code></div>
+                    <div class="bg-light rounded p-3 text-center"><code class="fs-5" id="code-preview">{{ \Modules\Eshop360\Domain\Promotions\Models\GiftCard::generateCode($codeSettings) }}</code></div>
                 </div>
             </div>
         </div>

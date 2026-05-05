@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Modules\Core\Database\Traits\BelongsToInstance;
 use Modules\Eshop360\Database\Traits\BelongsToChannel;
-use Modules\Eshop360\Models\Product;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
 
 class StockMovement extends Model
 {

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Modules\Core\Database\Traits\BelongsToInstance;
 // R-101 S3 — Order référencé via alias (FQN canon au S8).
-use Modules\Eshop360\Models\Order;
+use Modules\Eshop360\Domain\Sales\Models\Order;
 
 class ChannelMarginLog extends Model
 {

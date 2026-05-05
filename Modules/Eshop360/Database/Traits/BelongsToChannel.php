@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Modules\Eshop360\Database\Scopes\ChannelScope;
-use Modules\Eshop360\Models\DistributionChannel;
+use Modules\Eshop360\Domain\Channel\Models\DistributionChannel;
 use Modules\Eshop360\Services\ChannelAccessService;
 use Modules\Eshop360\Support\CurrentChannel;
 
@@ -20,7 +20,7 @@ trait BelongsToChannel
 {
     public static function bootBelongsToChannel(): void
     {
-        static::addGlobalScope(new ChannelScope());
+        static::addGlobalScope(new ChannelScope);
 
         static::creating(function (Model $model) {
             if (empty($model->channel_id)) {
@@ -28,8 +28,8 @@ trait BelongsToChannel
                     $model->channel_id = CurrentChannel::id();
                 } elseif (auth()->check() && ! app(ChannelAccessService::class)->isHubAdmin(auth()->user())) {
                     throw new \RuntimeException(
-                        'Impossible de créer un ' . class_basename($model) . ' sans contexte channel. '
-                        . 'Définissez channel_id explicitement ou naviguez dans un channel.'
+                        'Impossible de créer un '.class_basename($model).' sans contexte channel. '
+                        .'Définissez channel_id explicitement ou naviguez dans un channel.'
                     );
                 }
             }

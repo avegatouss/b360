@@ -2,14 +2,15 @@
 
 namespace Modules\Eshop360\Console;
 
+use App\Instances\Instance;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Mail;
-use Modules\Eshop360\Models\Stock;
-use App\Instances\Instance;
+use Modules\Eshop360\Domain\Inventory\Models\Stock;
 
 class ExpiryAlertCommand extends Command
 {
     protected $signature = 'eshop360:expiry-alerts {--days=30 : Days before expiry to alert}';
+
     protected $description = 'Send alerts for products nearing expiry date';
 
     public function handle(): int
@@ -40,11 +41,13 @@ class ExpiryAlertCommand extends Command
             }
 
             $admins = $instance->users()
-                ->whereHas('roles', fn($q) => $q->whereIn('name', ['instance-admin', 'manager']))
+                ->whereHas('roles', fn ($q) => $q->whereIn('name', ['instance-admin', 'manager']))
                 ->get();
 
             foreach ($admins as $admin) {
-                if (!$admin->email) continue;
+                if (! $admin->email) {
+                    continue;
+                }
 
                 Mail::raw(
                     $this->buildMessage($instance, $expiringStocks, $expiredStocks, $days),
@@ -64,7 +67,7 @@ class ExpiryAlertCommand extends Command
     private function buildMessage($instance, $expiring, $expired, $days): string
     {
         $msg = "Rapport Expiration - {$instance->name}\n";
-        $msg .= "Date: " . now()->format('d/m/Y H:i') . "\n\n";
+        $msg .= 'Date: '.now()->format('d/m/Y H:i')."\n\n";
 
         if ($expired->isNotEmpty()) {
             $msg .= "=== PRODUITS EXPIRÉS ({$expired->count()}) ===\n";

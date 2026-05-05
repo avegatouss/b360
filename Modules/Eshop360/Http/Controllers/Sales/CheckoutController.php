@@ -6,25 +6,25 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\Coupon;
-use Modules\Eshop360\Models\Customer;
-use Modules\Eshop360\Models\DistributionChannel;
-use Modules\Eshop360\Models\GiftCard;
+use Modules\Eshop360\Domain\Channel\Models\DistributionChannel;
+use Modules\Eshop360\Domain\CRM\Models\Customer;
+use Modules\Eshop360\Domain\Promotions\Models\Coupon;
+use Modules\Eshop360\Domain\Promotions\Models\GiftCard;
 use Modules\Eshop360\Http\Controllers\Traits\ResolvesPosContext;
 use Modules\Eshop360\Services\CashRegisterService;
+use Modules\Eshop360\Services\ChannelAccessService;
 use Modules\Eshop360\Services\EshopSettingsService;
 use Modules\Eshop360\Services\FinanceService;
-use Modules\Eshop360\Services\ChannelAccessService;
 use Modules\Eshop360\Services\OrderService;
 
 class CheckoutController extends Controller
 {
     use ResolvesPosContext;
+
     public function __construct(
         private readonly OrderService $orderService,
         private readonly FinanceService $financeService,
-    ) {
-    }
+    ) {}
 
     public function index(string $slug)
     {
@@ -86,17 +86,17 @@ class CheckoutController extends Controller
         }
 
         $validated = $request->validate([
-            'customer_id'     => 'nullable|exists:eshop_customers,id',
-            'channel_id'      => 'nullable|exists:eshop_distribution_channels,id',
-            'customer_name'   => 'required_without:customer_id|nullable|string|max:255',
-            'customer_email'  => 'nullable|email|max:255',
-            'customer_phone'  => 'nullable|string|max:30',
+            'customer_id' => 'nullable|exists:eshop_customers,id',
+            'channel_id' => 'nullable|exists:eshop_distribution_channels,id',
+            'customer_name' => 'required_without:customer_id|nullable|string|max:255',
+            'customer_email' => 'nullable|email|max:255',
+            'customer_phone' => 'nullable|string|max:30',
             'customer_address' => 'nullable|string|max:500',
-            'payment_method'  => 'required|in:cash,card,cheque,paypal,bank_transfer,points,deposit,gift_card,wallet,external',
-            'gift_card_code'  => 'nullable|string|max:20',
-            'paid_amount'     => 'required|numeric|min:0',
+            'payment_method' => 'required|in:cash,card,cheque,paypal,bank_transfer,points,deposit,gift_card,wallet,external',
+            'gift_card_code' => 'nullable|string|max:20',
+            'paid_amount' => 'required|numeric|min:0',
             'shipping_amount' => 'nullable|numeric|min:0',
-            'notes'           => 'nullable|string|max:1000',
+            'notes' => 'nullable|string|max:1000',
         ]);
 
         $cartContext = $this->getCartContext();
@@ -208,9 +208,9 @@ class CheckoutController extends Controller
 
         return [
             'subtotal' => round($subtotal, 2),
-            'tax'      => round($tax, 2),
+            'tax' => round($tax, 2),
             'discount' => round($discount, 2),
-            'total'    => round($subtotal + $tax - $discount, 2),
+            'total' => round($subtotal + $tax - $discount, 2),
         ];
     }
 
@@ -237,7 +237,7 @@ class CheckoutController extends Controller
         $customer = Customer::create([
             'instance_id' => $instance?->id,
             'channel_id' => $cartContext['channel_id'] ?? $validated['channel_id'] ?? null,
-            'code' => 'CUS-' . str_pad((string) $customerCount, 6, '0', STR_PAD_LEFT),
+            'code' => 'CUS-'.str_pad((string) $customerCount, 6, '0', STR_PAD_LEFT),
             'name' => $validated['customer_name'],
             'email' => $validated['customer_email'] ?? null,
             'phone' => $validated['customer_phone'] ?? null,
@@ -298,14 +298,14 @@ class CheckoutController extends Controller
     {
         $instanceId = CurrentInstance::idOrFail();
 
-        return 'eshop_cart_instance_' . $instanceId;
+        return 'eshop_cart_instance_'.$instanceId;
     }
 
     private function scopedCouponKey(): string
     {
         $instanceId = CurrentInstance::idOrFail();
 
-        return 'eshop_cart_coupon_instance_' . $instanceId;
+        return 'eshop_cart_coupon_instance_'.$instanceId;
     }
 
     /**
@@ -330,7 +330,7 @@ class CheckoutController extends Controller
     {
         $instanceId = CurrentInstance::idOrFail();
 
-        return 'eshop_cart_context_instance_' . $instanceId;
+        return 'eshop_cart_context_instance_'.$instanceId;
     }
 
     /**

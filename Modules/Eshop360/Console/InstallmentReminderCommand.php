@@ -2,14 +2,15 @@
 
 namespace Modules\Eshop360\Console;
 
+use App\Instances\Instance;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Mail;
-use Modules\Eshop360\Models\InstallmentPayment;
-use App\Instances\Instance;
+use Modules\Eshop360\Domain\Finance\Models\InstallmentPayment;
 
 class InstallmentReminderCommand extends Command
 {
     protected $signature = 'eshop360:installment-reminders {--days=3 : Days before due date to remind}';
+
     protected $description = 'Send reminders for upcoming installment payments';
 
     public function handle(): int
@@ -18,14 +19,14 @@ class InstallmentReminderCommand extends Command
         $instances = Instance::all();
 
         foreach ($instances as $instance) {
-            $upcomingPayments = InstallmentPayment::whereHas('installmentPlan', fn($q) => $q->where('instance_id', $instance->id))
+            $upcomingPayments = InstallmentPayment::whereHas('installmentPlan', fn ($q) => $q->where('instance_id', $instance->id))
                 ->where('status', 'pending')
                 ->where('due_date', '<=', now()->addDays($days))
                 ->where('due_date', '>=', now())
                 ->with('installmentPlan.order.customer')
                 ->get();
 
-            $overduePayments = InstallmentPayment::whereHas('installmentPlan', fn($q) => $q->where('instance_id', $instance->id))
+            $overduePayments = InstallmentPayment::whereHas('installmentPlan', fn ($q) => $q->where('instance_id', $instance->id))
                 ->where('status', 'pending')
                 ->where('due_date', '<', now())
                 ->with('installmentPlan.order.customer')
@@ -37,11 +38,13 @@ class InstallmentReminderCommand extends Command
 
             // Notify admins
             $admins = $instance->users()
-                ->whereHas('roles', fn($q) => $q->whereIn('name', ['instance-admin', 'manager']))
+                ->whereHas('roles', fn ($q) => $q->whereIn('name', ['instance-admin', 'manager']))
                 ->get();
 
             foreach ($admins as $admin) {
-                if (!$admin->email) continue;
+                if (! $admin->email) {
+                    continue;
+                }
 
                 Mail::raw(
                     $this->buildMessage($instance, $upcomingPayments, $overduePayments),
@@ -75,7 +78,7 @@ class InstallmentReminderCommand extends Command
     private function buildMessage($instance, $upcoming, $overdue): string
     {
         $msg = "Rapport Échéances - {$instance->name}\n";
-        $msg .= "Date: " . now()->format('d/m/Y') . "\n\n";
+        $msg .= 'Date: '.now()->format('d/m/Y')."\n\n";
 
         if ($overdue->isNotEmpty()) {
             $msg .= "=== EN RETARD ({$overdue->count()}) ===\n";

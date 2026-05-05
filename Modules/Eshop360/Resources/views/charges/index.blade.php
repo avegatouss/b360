@@ -7,7 +7,7 @@
     $costPerSecond = $dashboardData['cost_per_second'] ?? 0;
     $accumulated = $dashboardData['accumulated_since_month_start'] ?? 0;
     $breakdown = $dashboardData['breakdown'] ?? [];
-    $chargeCategories = \Modules\Eshop360\Models\ChargeCategory::getForInstance($instance->id ?? 0);
+    $chargeCategories = \Modules\Eshop360\Domain\Finance\Models\ChargeCategory::getForInstance($instance->id ?? 0);
     $categoryLabels = $chargeCategories->pluck('label', 'code')->toArray();
     // Fallback for old codes not in DB
     $categoryLabels = array_merge([

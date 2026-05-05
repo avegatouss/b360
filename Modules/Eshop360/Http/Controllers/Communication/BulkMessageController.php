@@ -5,12 +5,12 @@ namespace Modules\Eshop360\Http\Controllers\Communication;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\BulkMessageLog;
-use Modules\Eshop360\Models\Customer;
-use Modules\Eshop360\Models\CustomerGroup;
-use Modules\Eshop360\Models\DistributionChannel;
-use Modules\Eshop360\Models\EmailTemplate;
-use Modules\Eshop360\Models\Store;
+use Modules\Eshop360\Domain\Channel\Models\DistributionChannel;
+use Modules\Eshop360\Domain\Communication\Models\BulkMessageLog;
+use Modules\Eshop360\Domain\Communication\Models\EmailTemplate;
+use Modules\Eshop360\Domain\CRM\Models\Customer;
+use Modules\Eshop360\Domain\CRM\Models\CustomerGroup;
+use Modules\Eshop360\Domain\Inventory\Models\Store;
 use Modules\Eshop360\Jobs\SendBulkEmail;
 use Modules\Eshop360\Jobs\SendBulkSms;
 
@@ -91,7 +91,7 @@ class BulkMessageController extends Controller
 
         if ($validated['type'] === 'email') {
             $templateSlug = null;
-            if (!empty($validated['template_id'])) {
+            if (! empty($validated['template_id'])) {
                 $template = EmailTemplate::find($validated['template_id']);
                 $templateSlug = $template?->slug ?? null;
             }
@@ -156,7 +156,7 @@ class BulkMessageController extends Controller
         }
 
         if ($request->filled('date_to')) {
-            $query->where('created_at', '<=', $request->input('date_to') . ' 23:59:59');
+            $query->where('created_at', '<=', $request->input('date_to').' 23:59:59');
         }
 
         return $query;

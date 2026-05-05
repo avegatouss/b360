@@ -5,7 +5,7 @@ namespace Modules\Eshop360\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\DistributionChannel;
+use Modules\Eshop360\Domain\Channel\Models\DistributionChannel;
 use Modules\Eshop360\Support\CurrentChannel;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -19,7 +19,7 @@ final class ResolveChannel
     {
         $channelParam = $request->route('channel');
 
-        if (!$channelParam) {
+        if (! $channelParam) {
             abort(404);
         }
 
@@ -38,7 +38,7 @@ final class ResolveChannel
             ? $query->find($channelParam)
             : $query->where('slug', $channelParam)->first();
 
-        if (!$channel) {
+        if (! $channel) {
             abort(404);
         }
 

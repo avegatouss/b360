@@ -5,13 +5,13 @@ namespace Modules\Eshop360\Http\Controllers\ChannelPortal;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\Customer;
-use Modules\Eshop360\Models\Category;
-use Modules\Eshop360\Models\Brand;
+use Modules\Eshop360\Domain\Catalog\Models\Brand;
+use Modules\Eshop360\Domain\Catalog\Models\Category;
+use Modules\Eshop360\Domain\CRM\Models\Customer;
 use Modules\Eshop360\Services\CartService;
 use Modules\Eshop360\Services\CashRegisterService;
-use Modules\Eshop360\Services\HoldingService;
 use Modules\Eshop360\Services\EshopSettingsService;
+use Modules\Eshop360\Services\HoldingService;
 
 class ChannelPortalPosController extends Controller
 {
@@ -37,8 +37,8 @@ class ChannelPortalPosController extends Controller
             $search = $request->search;
             $productsQuery->where(function ($q) use ($search) {
                 $q->where('eshop_products.name', 'like', "%{$search}%")
-                  ->orWhere('eshop_products.sku', 'like', "%{$search}%")
-                  ->orWhere('eshop_products.barcode', 'like', "%{$search}%");
+                    ->orWhere('eshop_products.sku', 'like', "%{$search}%")
+                    ->orWhere('eshop_products.barcode', 'like', "%{$search}%");
             });
         }
         if ($request->filled('category_id')) {

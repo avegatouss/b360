@@ -5,9 +5,9 @@ namespace Modules\Eshop360\Http\Controllers\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Log;
-use Modules\Eshop360\Models\EshopPaymentGateway;
-use Modules\Eshop360\Models\Invoice;
-use Modules\Eshop360\Models\Payment;
+use Modules\Eshop360\Domain\Finance\Models\EshopPaymentGateway;
+use Modules\Eshop360\Domain\Finance\Models\Invoice;
+use Modules\Eshop360\Domain\Finance\Models\Payment;
 use Modules\Eshop360\Services\Payment\PaymentGatewayManager;
 
 class PublicPaymentController extends Controller
@@ -62,8 +62,8 @@ class PublicPaymentController extends Controller
         $dueAmount = (float) $invoice->due_amount > 0 ? (float) $invoice->due_amount : (float) $invoice->total;
 
         $meta = [
-            'reference' => $invoice->reference . '-' . strtoupper(substr(md5(uniqid('', true)), 0, 6)),
-            'description' => 'Facture ' . $invoice->invoice_number,
+            'reference' => $invoice->reference.'-'.strtoupper(substr(md5(uniqid('', true)), 0, 6)),
+            'description' => 'Facture '.$invoice->invoice_number,
             'customer_name' => $invoice->customer?->name ?? '',
             'customer_email' => $invoice->customer?->email ?? '',
             'customer_phone' => $invoice->customer?->phone ?? '',
@@ -78,7 +78,7 @@ class PublicPaymentController extends Controller
             $driver = $this->manager->driver($gateway->driver, $gateway->getDecryptedConfig());
             $result = $driver->initiate($dueAmount, 'XOF', $meta);
 
-            if (!$result['success']) {
+            if (! $result['success']) {
                 return redirect()->back()->with('error', $result['error'] ?? 'Erreur lors de l\'initiation du paiement.');
             }
 
@@ -102,7 +102,7 @@ class PublicPaymentController extends Controller
             ]);
 
             // Redirect to gateway if URL provided
-            if (!empty($result['redirect_url'])) {
+            if (! empty($result['redirect_url'])) {
                 return redirect()->away($result['redirect_url']);
             }
 
@@ -112,9 +112,10 @@ class PublicPaymentController extends Controller
                     ->with('success', 'Paiement effectue avec succes.');
             }
 
-            return redirect()->back()->with('info', 'Paiement initie. Transaction: ' . ($result['transaction_id'] ?? 'N/A'));
+            return redirect()->back()->with('info', 'Paiement initie. Transaction: '.($result['transaction_id'] ?? 'N/A'));
         } catch (\Throwable $e) {
             Log::error('Payment initiation error', ['error' => $e->getMessage(), 'invoice' => $invoice->id]);
+
             return redirect()->back()->with('error', 'Erreur technique. Veuillez reessayer.');
         }
     }
@@ -128,7 +129,7 @@ class PublicPaymentController extends Controller
 
         $invoice = Invoice::where('payment_token', $token)->first();
 
-        if (!$invoice) {
+        if (! $invoice) {
             return view('eshop360::payment.failed', ['message' => 'Facture introuvable.']);
         }
 
@@ -157,6 +158,7 @@ class PublicPaymentController extends Controller
 
                     if ($newStatus === 'completed') {
                         $this->syncInvoiceTotals($invoice);
+
                         return view('eshop360::payment.success', ['invoice' => $invoice, 'message' => 'Paiement confirme.']);
                     }
                 } catch (\Throwable $e) {
@@ -188,14 +190,14 @@ class PublicPaymentController extends Controller
                 $driver = $this->manager->driver($gateway, $config->getDecryptedConfig());
                 $result = $driver->handleWebhook($request);
 
-                if (!$result['valid']) {
+                if (! $result['valid']) {
                     continue;
                 }
 
                 $transactionId = $result['transaction_id'] ?? null;
                 $reference = $result['reference'] ?? null;
 
-                if (!$transactionId && !$reference) {
+                if (! $transactionId && ! $reference) {
                     continue;
                 }
 
@@ -206,7 +208,7 @@ class PublicPaymentController extends Controller
                     $reference
                 );
 
-                if (!$payment) {
+                if (! $payment) {
                     continue;
                 }
 
@@ -245,7 +247,7 @@ class PublicPaymentController extends Controller
 
         $message = 'Paiement effectue avec succes.';
 
-        if (!$invoice) {
+        if (! $invoice) {
             return view('eshop360::payment.failed', [
                 'message' => 'Facture introuvable.',
                 'token' => $token,

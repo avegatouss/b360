@@ -6,8 +6,8 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\ChannelUser;
-use Modules\Eshop360\Models\DistributionChannel;
+use Modules\Eshop360\Domain\Channel\Models\ChannelUser;
+use Modules\Eshop360\Domain\Channel\Models\DistributionChannel;
 
 final class ChannelAccessService
 {

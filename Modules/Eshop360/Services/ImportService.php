@@ -4,8 +4,8 @@ namespace Modules\Eshop360\Services;
 
 use Illuminate\Support\Facades\DB;
 use Modules\Eshop360\Domain\Purchasing\Models\ImportCost;
-use Modules\Eshop360\Models\ImportOrder;
-use Modules\Eshop360\Models\ImportOrderItem;
+use Modules\Eshop360\Domain\Purchasing\Models\ImportOrder;
+use Modules\Eshop360\Domain\Purchasing\Models\ImportOrderItem;
 
 class ImportService
 {
@@ -142,7 +142,7 @@ class ImportService
                     'in',
                     "Import #{$order->reference}",
                     $order->created_by,
-                    ImportOrder::class,
+                    $order->getMorphClass(),
                     $order->id,
                 );
             }

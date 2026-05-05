@@ -7,9 +7,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\Customer;
-use Modules\Eshop360\Models\GiftCard;
-use Modules\Eshop360\Models\GiftCardTopup;
+use Modules\Eshop360\Domain\CRM\Models\Customer;
+use Modules\Eshop360\Domain\Promotions\Models\GiftCard;
+use Modules\Eshop360\Domain\Promotions\Models\GiftCardTopup;
+
 class GiftCardController extends Controller
 {
     public function index(Request $request)
@@ -28,12 +29,12 @@ class GiftCardController extends Controller
 
         $fq = clone $query;
         $kpi = (object) [
-            'total'         => (clone $fq)->count(),
-            'active'        => (clone $fq)->where('status', 'active')->count(),
-            'total_value'   => (int) (clone $fq)->sum('amount'),
+            'total' => (clone $fq)->count(),
+            'active' => (clone $fq)->where('status', 'active')->count(),
+            'total_value' => (int) (clone $fq)->sum('amount'),
             'total_balance' => (int) (clone $fq)->sum('balance'),
-            'total_used'    => (int) ((clone $fq)->sum('amount') - (clone $fq)->sum('balance')),
-            'depleted'      => (clone $fq)->where('status', 'depleted')->count(),
+            'total_used' => (int) ((clone $fq)->sum('amount') - (clone $fq)->sum('balance')),
+            'depleted' => (clone $fq)->where('status', 'depleted')->count(),
         ];
 
         $giftCards = $query->latest()->paginate(20)->withQueryString();
@@ -48,11 +49,11 @@ class GiftCardController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'amount'      => 'required|numeric|min:1',
+            'amount' => 'required|numeric|min:1',
             'customer_id' => 'nullable|exists:eshop_customers,id',
             'expiry_date' => 'nullable|date|after:today',
-            'notes'       => 'nullable|string|max:1000',
-            'code'        => 'nullable|string|max:50|unique:eshop_gift_cards,code',
+            'notes' => 'nullable|string|max:1000',
+            'code' => 'nullable|string|max:50|unique:eshop_gift_cards,code',
         ]);
 
         $instance = CurrentInstance::get();
@@ -61,16 +62,16 @@ class GiftCardController extends Controller
         $customer = ! empty($validated['customer_id']) ? Customer::find($validated['customer_id']) : null;
 
         GiftCard::create([
-            'instance_id'   => $instance->id,
-            'code'          => $code,
-            'customer_id'   => $customer?->id,
+            'instance_id' => $instance->id,
+            'code' => $code,
+            'customer_id' => $customer?->id,
             'customer_name' => $customer?->name,
-            'amount'        => $validated['amount'],
-            'balance'       => $validated['amount'],
-            'status'        => 'active',
-            'expiry_date'   => $validated['expiry_date'] ?? null,
-            'notes'         => $validated['notes'] ?? null,
-            'created_by'    => auth()->id(),
+            'amount' => $validated['amount'],
+            'balance' => $validated['amount'],
+            'status' => 'active',
+            'expiry_date' => $validated['expiry_date'] ?? null,
+            'notes' => $validated['notes'] ?? null,
+            'created_by' => auth()->id(),
         ]);
 
         return redirect()->back()->with('success', __('Carte cadeau creee: :code', ['code' => $code]));
@@ -79,16 +80,16 @@ class GiftCardController extends Controller
     public function storeBatch(Request $request)
     {
         $validated = $request->validate([
-            'quantity'    => 'required|integer|min:1|max:100',
-            'amount'      => 'required|numeric|min:1',
+            'quantity' => 'required|integer|min:1|max:100',
+            'amount' => 'required|numeric|min:1',
             'customer_id' => 'nullable|exists:eshop_customers,id',
             'expiry_date' => 'nullable|date|after:today',
-            'notes'       => 'nullable|string|max:1000',
+            'notes' => 'nullable|string|max:1000',
         ]);
 
         $instance = CurrentInstance::get();
         $codeSettings = app(\Modules\Eshop360\Services\EshopSettingsService::class)->get('gift_card_code');
-        $batchId = 'LOT-' . now()->format('YmdHis') . '-' . strtoupper(Str::random(4));
+        $batchId = 'LOT-'.now()->format('YmdHis').'-'.strtoupper(Str::random(4));
         $customer = ! empty($validated['customer_id']) ? Customer::find($validated['customer_id']) : null;
         $created = 0;
 
@@ -99,17 +100,17 @@ class GiftCardController extends Controller
                     $code = GiftCard::generateCode($codeSettings);
                 }
                 GiftCard::create([
-                    'instance_id'   => $instance->id,
-                    'code'          => $code,
-                    'customer_id'   => $customer?->id,
+                    'instance_id' => $instance->id,
+                    'code' => $code,
+                    'customer_id' => $customer?->id,
                     'customer_name' => $customer?->name,
-                    'batch_id'      => $batchId,
-                    'amount'        => $validated['amount'],
-                    'balance'       => $validated['amount'],
-                    'status'        => 'active',
-                    'expiry_date'   => $validated['expiry_date'] ?? null,
-                    'notes'         => $validated['notes'] ?? null,
-                    'created_by'    => auth()->id(),
+                    'batch_id' => $batchId,
+                    'amount' => $validated['amount'],
+                    'balance' => $validated['amount'],
+                    'status' => 'active',
+                    'expiry_date' => $validated['expiry_date'] ?? null,
+                    'notes' => $validated['notes'] ?? null,
+                    'created_by' => auth()->id(),
                 ]);
                 $created++;
             }
@@ -121,14 +122,15 @@ class GiftCardController extends Controller
     public function saveCodeSettings(Request $request)
     {
         $validated = $request->validate([
-            'prefix'     => 'nullable|string|max:10',
-            'length'     => 'required|integer|min:4|max:20',
-            'separator'  => 'nullable|string|max:2',
+            'prefix' => 'nullable|string|max:10',
+            'length' => 'required|integer|min:4|max:20',
+            'separator' => 'nullable|string|max:2',
             'group_size' => 'nullable|integer|min:0|max:10',
-            'charset'    => 'required|in:alphanumeric,numeric,alpha',
+            'charset' => 'required|in:alphanumeric,numeric,alpha',
         ]);
 
         app(\Modules\Eshop360\Services\EshopSettingsService::class)->set('gift_card_code', $validated);
+
         return redirect()->back()->with('success', __('Format de code enregistre.'));
     }
 
@@ -151,12 +153,14 @@ class GiftCardController extends Controller
     public function disable(string $slug, GiftCard $giftCard)
     {
         $giftCard->update(['status' => 'disabled']);
+
         return redirect()->back()->with('success', __('Carte desactivee.'));
     }
 
     public function destroy(string $slug, GiftCard $giftCard)
     {
         $giftCard->delete();
+
         return redirect()->back()->with('success', __('Carte supprimee.'));
     }
 }

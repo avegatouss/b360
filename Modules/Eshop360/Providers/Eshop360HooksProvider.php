@@ -80,7 +80,7 @@ final class Eshop360HooksProvider implements RegistersHooks
 
         // ── Customer portal widgets ──
         // Visible when user has a linked Customer record (portal user)
-        $isPortalUser = fn ($user, $instance) => $user && \Modules\Eshop360\Models\Customer::withoutGlobalScopes()
+        $isPortalUser = fn ($user, $instance) => $user && \Modules\Eshop360\Domain\CRM\Models\Customer::withoutGlobalScopes()
             ->where('instance_id', $instance?->id)
             ->where(fn ($q) => $q->where('user_id', $user->id)->orWhere('email', $user->email))
             ->exists();

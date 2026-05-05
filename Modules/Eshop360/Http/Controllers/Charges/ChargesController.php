@@ -5,13 +5,11 @@ namespace Modules\Eshop360\Http\Controllers\Charges;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Modules\Eshop360\Models\CompanyCharge;
-use Modules\Eshop360\Models\Order;
-use Modules\Eshop360\Models\OrderItem;
+use Modules\Core\Support\CurrentInstance;
+use Modules\Eshop360\Domain\Finance\Models\CompanyCharge;
 use Modules\Eshop360\Services\ChannelAccessService;
 use Modules\Eshop360\Services\ChargesService;
 use Modules\Eshop360\Support\CurrentChannel;
-use Modules\Core\Support\CurrentInstance;
 
 class ChargesController extends Controller
 {
@@ -25,6 +23,7 @@ class ChargesController extends Controller
         $instance = CurrentInstance::get();
         $charges = CompanyCharge::where('instance_id', $instance->id)->get();
         $dashboardData = $this->chargesService->getDashboardData($instance->id);
+
         return view('eshop360::charges.index', compact('charges', 'dashboardData'));
     }
 
@@ -38,6 +37,7 @@ class ChargesController extends Controller
         ]);
         $validated['instance_id'] = CurrentInstance::get()->id;
         CompanyCharge::create($validated);
+
         return redirect()->back()->with('success', 'Charge added.');
     }
 
@@ -50,12 +50,14 @@ class ChargesController extends Controller
             'is_active' => 'boolean',
         ]);
         $charge->update($validated);
+
         return redirect()->back()->with('success', 'Charge updated.');
     }
 
     public function destroy(string $slug, CompanyCharge $charge)
     {
         $charge->delete();
+
         return redirect()->back()->with('success', 'Charge deleted.');
     }
 
@@ -65,6 +67,7 @@ class ChargesController extends Controller
     public function realtime()
     {
         $instance = CurrentInstance::get();
+
         return response()->json($this->chargesService->getDashboardData($instance->id));
     }
 
@@ -120,7 +123,7 @@ class ChargesController extends Controller
             ->where('o.status', '!=', 'cancelled')
             ->when($channelId, fn ($q) => $q->where('o.channel_id', $channelId))
             ->when(! $channelId && $accessibleIds !== null, fn ($q) => $q->whereIn('o.channel_id', $accessibleIds->all()))
-            ->whereBetween('o.created_at', [$dateFrom . ' 00:00:00', $dateTo . ' 23:59:59'])
+            ->whereBetween('o.created_at', [$dateFrom.' 00:00:00', $dateTo.' 23:59:59'])
             ->select(
                 'oi.product_id', 'oi.product_name',
                 DB::raw('SUM(oi.quantity) as qty_sold'),
@@ -151,6 +154,7 @@ class ChargesController extends Controller
                 $chargeAllocated = round($chargePerUnit * $row->qty_sold, 2);
             }
             $margin = round((float) $row->revenue - $chargeAllocated, 2);
+
             return (object) [
                 'product_id' => $row->product_id,
                 'name' => $row->product_name,
@@ -184,7 +188,7 @@ class ChargesController extends Controller
         $instance = \Modules\Core\Support\CurrentInstance::get();
         $code = \Illuminate\Support\Str::slug($validated['label'], '_');
 
-        $cat = \Modules\Eshop360\Models\ChargeCategory::updateOrCreate(
+        $cat = \Modules\Eshop360\Domain\Finance\Models\ChargeCategory::updateOrCreate(
             ['instance_id' => $instance->id, 'code' => $code],
             ['label' => $validated['label'], 'is_active' => true]
         );
@@ -192,6 +196,7 @@ class ChargesController extends Controller
         if ($request->wantsJson()) {
             return response()->json(['id' => $cat->id, 'code' => $cat->code, 'label' => $cat->label]);
         }
+
         return redirect()->back()->with('success', __('Categorie creee.'));
     }
 }

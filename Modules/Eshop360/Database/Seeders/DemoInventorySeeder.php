@@ -2,11 +2,11 @@
 
 namespace Modules\Eshop360\Database\Seeders;
 
-use Modules\Eshop360\Models\Product;
-use Modules\Eshop360\Models\Stock;
-use Modules\Eshop360\Models\StockMovement;
-use Modules\Eshop360\Models\Store;
-use Modules\Eshop360\Models\Warehouse;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\Inventory\Models\Stock;
+use Modules\Eshop360\Domain\Inventory\Models\StockMovement;
+use Modules\Eshop360\Domain\Inventory\Models\Store;
+use Modules\Eshop360\Domain\Inventory\Models\Warehouse;
 
 final class DemoInventorySeeder
 {
@@ -42,6 +42,7 @@ final class DemoInventorySeeder
                 array_merge($d, ['instance_id' => $instanceId, 'is_active' => true])
             );
         }
+
         return $result;
     }
 
@@ -55,7 +56,9 @@ final class DemoInventorySeeder
 
         foreach ($stores as $s) {
             $wh = $warehouses[$s['warehouse']] ?? null;
-            if (!$wh) continue;
+            if (! $wh) {
+                continue;
+            }
 
             Store::withoutGlobalScopes()->updateOrCreate(
                 ['instance_id' => $instanceId, 'code' => $s['code']],
@@ -68,7 +71,9 @@ final class DemoInventorySeeder
     {
         $mainWh = $warehouses['DEMO-WH-ABI'] ?? null;
         $secondWh = $warehouses['DEMO-WH-BKE'] ?? null;
-        if (!$mainWh) return;
+        if (! $mainWh) {
+            return;
+        }
 
         $products = Product::withoutGlobalScopes()
             ->where('instance_id', $instanceId)

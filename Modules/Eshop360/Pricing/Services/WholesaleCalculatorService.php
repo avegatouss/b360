@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Modules\Eshop360\Pricing\Services;
 
 use Illuminate\Support\Facades\DB;
-use Modules\Eshop360\Models\Product;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
 use Modules\Eshop360\Pricing\Cache\PricingCacheManager;
 use Modules\Eshop360\Pricing\Events\ProductPricingRecalculated;
 
@@ -29,7 +29,7 @@ class WholesaleCalculatorService
      */
     public function recalculate(Product $product): array
     {
-        $pght    = (float) ($product->pght ?? 0);
+        $pght = (float) ($product->pght ?? 0);
         $changes = [];
 
         if ($pght <= 0) {
@@ -42,8 +42,8 @@ class WholesaleCalculatorService
 
         $newWholesale = match ($wholesaleMode) {
             'percentage' => round($pght * (1 + $wholesaleRate / 100), 2),
-            'fixed'      => round($pght + $wholesaleRate, 2),
-            default      => null, // manual: do not change
+            'fixed' => round($pght + $wholesaleRate, 2),
+            default => null, // manual: do not change
         };
 
         if ($newWholesale !== null && (float) $product->wholesale_price !== $newWholesale) {
@@ -59,8 +59,8 @@ class WholesaleCalculatorService
 
         $newPharmacy = match ($pharmacyMode) {
             'percentage' => round($wholesaleBase * (1 + $pharmacyRate / 100), 2),
-            'fixed'      => round($wholesaleBase + $pharmacyRate, 2),
-            default      => null,
+            'fixed' => round($wholesaleBase + $pharmacyRate, 2),
+            default => null,
         };
 
         if ($newPharmacy !== null && (float) $product->pharmacy_price !== $newPharmacy) {

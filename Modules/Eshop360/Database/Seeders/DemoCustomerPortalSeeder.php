@@ -4,10 +4,10 @@ namespace Modules\Eshop360\Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
-use Modules\Eshop360\Models\Customer;
-use Modules\Eshop360\Models\OnlineOrder;
-use Modules\Eshop360\Models\OnlineOrderItem;
-use Modules\Eshop360\Models\Product;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\CRM\Models\Customer;
+use Modules\Eshop360\Domain\Sales\Models\OnlineOrder;
+use Modules\Eshop360\Domain\Sales\Models\OnlineOrderItem;
 
 /**
  * Demo seeder: 4 key customers with user accounts + online orders
@@ -138,7 +138,7 @@ final class DemoCustomerPortalSeeder
 
             // Assign 'user' role for portal access
             app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId($instanceId);
-            if (!$user->hasRole('user')) {
+            if (! $user->hasRole('user')) {
                 $user->assignRole('user');
             }
 
@@ -288,7 +288,9 @@ final class DemoCustomerPortalSeeder
 
             foreach ($o['items'] as $item) {
                 $product = $products->values()->get($item['index'] % $products->count());
-                if (!$product) continue;
+                if (! $product) {
+                    continue;
+                }
 
                 $unitPrice = (float) ($product->selling_price ?? $product->sale_price ?? $product->price ?? 0);
                 $lineTotal = $unitPrice * $item['qty'];

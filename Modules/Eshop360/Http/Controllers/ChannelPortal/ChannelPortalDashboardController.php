@@ -4,8 +4,8 @@ namespace Modules\Eshop360\Http\Controllers\ChannelPortal;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Modules\Eshop360\Models\ChannelMarginLog;
-use Modules\Eshop360\Models\Order;
+use Modules\Eshop360\Domain\Channel\Models\ChannelMarginLog;
+use Modules\Eshop360\Domain\Sales\Models\Order;
 
 class ChannelPortalDashboardController extends Controller
 {

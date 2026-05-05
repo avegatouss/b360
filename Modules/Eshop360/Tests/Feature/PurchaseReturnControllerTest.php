@@ -2,11 +2,11 @@
 
 namespace Modules\Eshop360\Tests\Feature;
 
-use Modules\Eshop360\Models\Product;
-use Modules\Eshop360\Models\PurchaseOrder;
-use Modules\Eshop360\Models\PurchaseReturn;
-use Modules\Eshop360\Models\Stock;
-use Modules\Eshop360\Models\Warehouse;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\Inventory\Models\Stock;
+use Modules\Eshop360\Domain\Inventory\Models\Warehouse;
+use Modules\Eshop360\Domain\Purchasing\Models\PurchaseOrder;
+use Modules\Eshop360\Domain\Purchasing\Models\PurchaseReturn;
 use Modules\Eshop360\Tests\TestCase;
 
 final class PurchaseReturnControllerTest extends TestCase
@@ -101,7 +101,7 @@ final class PurchaseReturnControllerTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('eshop_stock_movements', [
-            'reference_type' => PurchaseReturn::class,
+            'reference_type' => 'Modules\Eshop360\Models\PurchaseReturn',
             'reference_id' => $purchaseReturn->id,
             'type' => 'return',
             'quantity' => -2,

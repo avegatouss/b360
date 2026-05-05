@@ -5,16 +5,16 @@ namespace Modules\Eshop360\Services;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Modules\Eshop360\Models\Customer;
-use Modules\Eshop360\Models\Expense;
-use Modules\Eshop360\Models\Income;
-use Modules\Eshop360\Models\Order;
-use Modules\Eshop360\Models\Payment;
-use Modules\Eshop360\Models\Product;
-use Modules\Eshop360\Models\PurchaseOrder;
-use Modules\Eshop360\Models\Stock;
-use Modules\Eshop360\Models\StockMovement;
-use Modules\Eshop360\Models\Supplier;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\CRM\Models\Customer;
+use Modules\Eshop360\Domain\Finance\Models\Expense;
+use Modules\Eshop360\Domain\Finance\Models\Income;
+use Modules\Eshop360\Domain\Finance\Models\Payment;
+use Modules\Eshop360\Domain\Inventory\Models\Stock;
+use Modules\Eshop360\Domain\Inventory\Models\StockMovement;
+use Modules\Eshop360\Domain\Purchasing\Models\PurchaseOrder;
+use Modules\Eshop360\Domain\Purchasing\Models\Supplier;
+use Modules\Eshop360\Domain\Sales\Models\Order;
 
 class ReportService
 {

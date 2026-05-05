@@ -2,9 +2,8 @@
 
 namespace Modules\Eshop360\Database\Seeders;
 
-use Illuminate\Support\Str;
-use Modules\Eshop360\Models\Coupon;
-use Modules\Eshop360\Models\Discount;
+use Modules\Eshop360\Domain\Promotions\Models\Coupon;
+use Modules\Eshop360\Domain\Promotions\Models\Discount;
 
 final class DemoPromotionsSeeder
 {

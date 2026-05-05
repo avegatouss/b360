@@ -7,12 +7,12 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\Brand;
-use Modules\Eshop360\Models\Category;
-use Modules\Eshop360\Models\Customer;
-use Modules\Eshop360\Models\DistributionChannel;
-use Modules\Eshop360\Models\OnlineOrder;
-use Modules\Eshop360\Models\Product;
+use Modules\Eshop360\Domain\Catalog\Models\Brand;
+use Modules\Eshop360\Domain\Catalog\Models\Category;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\Channel\Models\DistributionChannel;
+use Modules\Eshop360\Domain\CRM\Models\Customer;
+use Modules\Eshop360\Domain\Sales\Models\OnlineOrder;
 use Modules\Eshop360\Services\OnlineOrderService;
 use Modules\Eshop360\Services\ProductPricingService;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -307,6 +307,7 @@ class CustomerPortalController extends Controller
                 ? route('eshop360.portal.orders.show', [$slug, $row->id])
                 : route('eshop360.portal.orders.store-show', [$slug, $row->id]);
             $row->source_type = $isOnline ? 'online' : 'store';
+
             return $row;
         });
 
@@ -319,13 +320,13 @@ class CustomerPortalController extends Controller
         $instanceId = $customer->instance_id;
 
         // Wallet transactions (deposits & debits)
-        $transactions = \Modules\Eshop360\Models\CustomerTransaction::withoutChannelScope()->where('customer_id', $customer->id)
+        $transactions = \Modules\Eshop360\Domain\CRM\Models\CustomerTransaction::withoutChannelScope()->where('customer_id', $customer->id)
             ->latest()
             ->paginate(20)
             ->withQueryString();
 
         // Customer dues (credits/debts)
-        $dues = \Modules\Eshop360\Models\CustomerDue::withoutChannelScope()->where('customer_id', $customer->id)
+        $dues = \Modules\Eshop360\Domain\CRM\Models\CustomerDue::withoutChannelScope()->where('customer_id', $customer->id)
             ->latest()
             ->get();
 
@@ -340,9 +341,9 @@ class CustomerPortalController extends Controller
             ->get();
 
         // KPIs
-        $totalDeposits = \Modules\Eshop360\Models\CustomerTransaction::withoutChannelScope()->where('customer_id', $customer->id)
+        $totalDeposits = \Modules\Eshop360\Domain\CRM\Models\CustomerTransaction::withoutChannelScope()->where('customer_id', $customer->id)
             ->where('type', 'credit')->sum('amount');
-        $totalDebits = \Modules\Eshop360\Models\CustomerTransaction::withoutChannelScope()->where('customer_id', $customer->id)
+        $totalDebits = \Modules\Eshop360\Domain\CRM\Models\CustomerTransaction::withoutChannelScope()->where('customer_id', $customer->id)
             ->where('type', 'debit')->sum('amount');
         $totalDueAmount = $dues->whereIn('status', ['pending', 'partial'])
             ->sum(fn ($d) => (float) $d->amount_due - (float) $d->paid_amount);
@@ -380,8 +381,8 @@ class CustomerPortalController extends Controller
         $customer = $this->resolveCustomer();
         $settings = app(\Modules\Eshop360\Services\EshopSettingsService::class)->get('invoice');
 
-        $transactions = \Modules\Eshop360\Models\CustomerTransaction::withoutChannelScope()->where('customer_id', $customer->id)->latest()->get();
-        $dues = \Modules\Eshop360\Models\CustomerDue::withoutChannelScope()->where('customer_id', $customer->id)->latest()->get();
+        $transactions = \Modules\Eshop360\Domain\CRM\Models\CustomerTransaction::withoutChannelScope()->where('customer_id', $customer->id)->latest()->get();
+        $dues = \Modules\Eshop360\Domain\CRM\Models\CustomerDue::withoutChannelScope()->where('customer_id', $customer->id)->latest()->get();
         $payments = \Illuminate\Support\Facades\DB::table('eshop_orders')
             ->where('instance_id', $customer->instance_id)
             ->where('customer_id', $customer->id)
@@ -394,13 +395,13 @@ class CustomerPortalController extends Controller
         }
 
         // CSV export
-        $filename = 'releve-compte-' . $customer->code . '-' . now()->format('Ymd') . '.csv';
+        $filename = 'releve-compte-'.$customer->code.'-'.now()->format('Ymd').'.csv';
         $headers = ['Content-Type' => 'text/csv', 'Content-Disposition' => "attachment; filename=\"{$filename}\""];
 
         $callback = function () use ($transactions, $dues, $payments, $customer) {
             $f = fopen('php://output', 'w');
-            fprintf($f, chr(0xEF) . chr(0xBB) . chr(0xBF)); // BOM UTF-8
-            fputcsv($f, ['Releve de compte - ' . $customer->name . ' (' . $customer->code . ')'], ';');
+            fprintf($f, chr(0xEF).chr(0xBB).chr(0xBF)); // BOM UTF-8
+            fputcsv($f, ['Releve de compte - '.$customer->name.' ('.$customer->code.')'], ';');
             fputcsv($f, [], ';');
 
             fputcsv($f, ['=== TRANSACTIONS PORTEFEUILLE ==='], ';');
@@ -429,7 +430,7 @@ class CustomerPortalController extends Controller
         return response()->stream($callback, 200, $headers);
     }
 
-    public function printStoreOrder(string $slug, \Modules\Eshop360\Models\Order $order)
+    public function printStoreOrder(string $slug, \Modules\Eshop360\Domain\Sales\Models\Order $order)
     {
         $customer = $this->resolveCustomer();
         abort_unless(
@@ -461,7 +462,7 @@ class CustomerPortalController extends Controller
         return view('eshop360::portal.print-online-order', compact('onlineOrder', 'customer', 'settings', 'instance'));
     }
 
-    public function showStoreOrder(string $slug, \Modules\Eshop360\Models\Order $order)
+    public function showStoreOrder(string $slug, \Modules\Eshop360\Domain\Sales\Models\Order $order)
     {
         $customer = $this->resolveCustomer();
 
@@ -657,12 +658,12 @@ class CustomerPortalController extends Controller
 
     private function scopedCartKey(): string
     {
-        return 'eshop_portal_cart_instance_' . (CurrentInstance::idOrFail());
+        return 'eshop_portal_cart_instance_'.(CurrentInstance::idOrFail());
     }
 
     private function scopedCartContextKey(): string
     {
-        return 'eshop_portal_cart_context_instance_' . (CurrentInstance::idOrFail());
+        return 'eshop_portal_cart_context_instance_'.(CurrentInstance::idOrFail());
     }
 
     /**

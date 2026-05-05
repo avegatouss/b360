@@ -7,7 +7,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\Coupon;
+use Modules\Eshop360\Domain\Promotions\Models\Coupon;
 
 class CouponController extends Controller
 {
@@ -30,12 +30,12 @@ class CouponController extends Controller
         // KPIs
         $fq = clone $query;
         $kpi = (object) [
-            'total'       => (clone $fq)->count(),
-            'active'      => (clone $fq)->where('is_active', true)->where(fn ($q) => $q->whereNull('valid_until')->orWhere('valid_until', '>=', now()))->count(),
-            'expired'     => (clone $fq)->whereNotNull('valid_until')->where('valid_until', '<', now())->count(),
-            'total_used'  => (int) (clone $fq)->sum('used_count'),
-            'percentage'  => (clone $fq)->where('type', 'percentage')->count(),
-            'fixed'       => (clone $fq)->where('type', 'fixed')->count(),
+            'total' => (clone $fq)->count(),
+            'active' => (clone $fq)->where('is_active', true)->where(fn ($q) => $q->whereNull('valid_until')->orWhere('valid_until', '>=', now()))->count(),
+            'expired' => (clone $fq)->whereNotNull('valid_until')->where('valid_until', '<', now())->count(),
+            'total_used' => (int) (clone $fq)->sum('used_count'),
+            'percentage' => (clone $fq)->where('type', 'percentage')->count(),
+            'fixed' => (clone $fq)->where('type', 'fixed')->count(),
         ];
 
         $coupons = $query->latest()->paginate(20)->withQueryString();
@@ -46,15 +46,15 @@ class CouponController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'code'        => 'required|string|max:50|unique:eshop_coupons,code',
-            'name'        => 'nullable|string|max:255',
+            'code' => 'required|string|max:50|unique:eshop_coupons,code',
+            'name' => 'nullable|string|max:255',
             'description' => 'nullable|string|max:500',
-            'type'        => 'required|in:percentage,fixed',
-            'value'       => 'required|numeric|min:0.01',
+            'type' => 'required|in:percentage,fixed',
+            'value' => 'required|numeric|min:0.01',
             'usage_limit' => 'nullable|integer|min:0',
-            'valid_from'  => 'nullable|date',
+            'valid_from' => 'nullable|date',
             'valid_until' => 'nullable|date|after_or_equal:valid_from',
-            'is_active'   => 'boolean',
+            'is_active' => 'boolean',
         ]);
 
         $instance = CurrentInstance::get();
@@ -71,15 +71,15 @@ class CouponController extends Controller
     public function update(Request $request, string $slug, Coupon $coupon): RedirectResponse
     {
         $validated = $request->validate([
-            'code'        => 'required|string|max:50|unique:eshop_coupons,code,' . $coupon->id,
-            'name'        => 'nullable|string|max:255',
+            'code' => 'required|string|max:50|unique:eshop_coupons,code,'.$coupon->id,
+            'name' => 'nullable|string|max:255',
             'description' => 'nullable|string|max:500',
-            'type'        => 'required|in:percentage,fixed',
-            'value'       => 'required|numeric|min:0.01',
+            'type' => 'required|in:percentage,fixed',
+            'value' => 'required|numeric|min:0.01',
             'usage_limit' => 'nullable|integer|min:0',
-            'valid_from'  => 'nullable|date',
+            'valid_from' => 'nullable|date',
             'valid_until' => 'nullable|date|after_or_equal:valid_from',
-            'is_active'   => 'boolean',
+            'is_active' => 'boolean',
         ]);
 
         $validated['code'] = strtoupper($validated['code']);
@@ -101,7 +101,7 @@ class CouponController extends Controller
     public function validateCoupon(Request $request): JsonResponse
     {
         $request->validate([
-            'code'         => 'required|string|max:50',
+            'code' => 'required|string|max:50',
             'order_amount' => 'nullable|numeric|min:0',
         ]);
 
@@ -128,15 +128,15 @@ class CouponController extends Controller
             : min($coupon->value, $orderAmount);
 
         return response()->json([
-            'valid'           => true,
-            'coupon'          => [
-                'id'   => $coupon->id,
+            'valid' => true,
+            'coupon' => [
+                'id' => $coupon->id,
                 'code' => $coupon->code,
                 'type' => $coupon->type,
                 'value' => $coupon->value,
             ],
             'discount_amount' => $discount,
-            'message'         => __('Coupon valide.'),
+            'message' => __('Coupon valide.'),
         ]);
     }
 }

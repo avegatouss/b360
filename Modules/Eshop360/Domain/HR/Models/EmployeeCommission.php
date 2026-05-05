@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Modules\Eshop360\Database\Traits\BelongsToChannel;
-use Modules\Eshop360\Models\Order;
+use Modules\Eshop360\Domain\Sales\Models\Order;
 
 class EmployeeCommission extends Model
 {

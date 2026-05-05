@@ -7,11 +7,11 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Modules\Eshop360\Models\Stock;
-use Modules\Eshop360\Models\StockMovement;
-use Modules\Eshop360\Models\StockTransfer;
-use Modules\Eshop360\Models\Warehouse;
 use Modules\Core\Support\CurrentInstance;
+use Modules\Eshop360\Domain\Inventory\Models\Stock;
+use Modules\Eshop360\Domain\Inventory\Models\StockMovement;
+use Modules\Eshop360\Domain\Inventory\Models\StockTransfer;
+use Modules\Eshop360\Domain\Inventory\Models\Warehouse;
 
 class StockTransferController extends Controller
 {
@@ -43,24 +43,24 @@ class StockTransferController extends Controller
     {
         $validated = $request->validate([
             'from_warehouse_id' => 'required|exists:eshop_warehouses,id',
-            'to_warehouse_id'   => 'required|exists:eshop_warehouses,id|different:from_warehouse_id',
-            'notes'             => 'nullable|string|max:1000',
-            'items'             => 'required|array|min:1',
+            'to_warehouse_id' => 'required|exists:eshop_warehouses,id|different:from_warehouse_id',
+            'notes' => 'nullable|string|max:1000',
+            'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:eshop_products,id',
-            'items.*.quantity'   => 'required|integer|min:1',
+            'items.*.quantity' => 'required|integer|min:1',
         ]);
 
         $instance = CurrentInstance::get();
 
         $transfer = DB::transaction(function () use ($validated, $instance) {
             $transfer = StockTransfer::create([
-                'instance_id'       => $instance?->id,
+                'instance_id' => $instance?->id,
                 'from_warehouse_id' => $validated['from_warehouse_id'],
-                'to_warehouse_id'   => $validated['to_warehouse_id'],
-                'reference_number'  => 'TRF-' . strtoupper(Str::random(8)),
-                'status'            => 'pending',
-                'notes'             => $validated['notes'] ?? null,
-                'transferred_by'    => auth()->id(),
+                'to_warehouse_id' => $validated['to_warehouse_id'],
+                'reference_number' => 'TRF-'.strtoupper(Str::random(8)),
+                'status' => 'pending',
+                'notes' => $validated['notes'] ?? null,
+                'transferred_by' => auth()->id(),
             ]);
 
             foreach ($validated['items'] as $item) {
@@ -70,7 +70,7 @@ class StockTransferController extends Controller
                     ->where('warehouse_id', $validated['from_warehouse_id'])
                     ->first();
 
-                if (!$sourceStock || $sourceStock->available_quantity < $item['quantity']) {
+                if (! $sourceStock || $sourceStock->available_quantity < $item['quantity']) {
                     throw new \RuntimeException(
                         __('Insufficient stock for product ID :id in source warehouse.', ['id' => $item['product_id']])
                     );
@@ -78,7 +78,7 @@ class StockTransferController extends Controller
 
                 $transfer->items()->create([
                     'product_id' => $item['product_id'],
-                    'quantity'   => $item['quantity'],
+                    'quantity' => $item['quantity'],
                 ]);
 
                 // Reserve stock in source warehouse
@@ -102,7 +102,7 @@ class StockTransferController extends Controller
 
     public function update(Request $request, string $slug, StockTransfer $transfer): RedirectResponse
     {
-        if (!in_array($transfer->status, ['pending'])) {
+        if (! in_array($transfer->status, ['pending'])) {
             return redirect()->route('eshop360.stock-transfers.show', [$slug, $transfer])
                 ->with('error', __('Only pending transfers can be updated.'));
         }
@@ -138,26 +138,26 @@ class StockTransferController extends Controller
                 $sourceStock->update(['reserved_quantity' => $newReserved]);
 
                 StockMovement::create([
-                    'instance_id'    => $transfer->instance_id,
-                    'product_id'     => $item->product_id,
-                    'warehouse_id'   => $transfer->from_warehouse_id,
-                    'type'           => 'transfer',
-                    'quantity'       => -$item->quantity,
-                    'reference_type' => StockTransfer::class,
-                    'reference_id'   => $transfer->id,
-                    'notes'          => "Transfer out to {$transfer->toWarehouse->name}",
-                    'performed_by'   => auth()->id(),
+                    'instance_id' => $transfer->instance_id,
+                    'product_id' => $item->product_id,
+                    'warehouse_id' => $transfer->from_warehouse_id,
+                    'type' => 'transfer',
+                    'quantity' => -$item->quantity,
+                    'reference_type' => $transfer->getMorphClass(),
+                    'reference_id' => $transfer->id,
+                    'notes' => "Transfer out to {$transfer->toWarehouse->name}",
+                    'performed_by' => auth()->id(),
                 ]);
 
                 // Add to destination warehouse
                 $destStock = Stock::firstOrCreate(
                     [
-                        'instance_id'  => $transfer->instance_id,
-                        'product_id'   => $item->product_id,
+                        'instance_id' => $transfer->instance_id,
+                        'product_id' => $item->product_id,
                         'warehouse_id' => $transfer->to_warehouse_id,
                     ],
                     [
-                        'quantity'          => 0,
+                        'quantity' => 0,
                         'reserved_quantity' => 0,
                     ]
                 );
@@ -165,20 +165,20 @@ class StockTransferController extends Controller
                 $destStock->increment('quantity', $item->quantity);
 
                 StockMovement::create([
-                    'instance_id'    => $transfer->instance_id,
-                    'product_id'     => $item->product_id,
-                    'warehouse_id'   => $transfer->to_warehouse_id,
-                    'type'           => 'transfer',
-                    'quantity'       => $item->quantity,
-                    'reference_type' => StockTransfer::class,
-                    'reference_id'   => $transfer->id,
-                    'notes'          => "Transfer in from {$transfer->fromWarehouse->name}",
-                    'performed_by'   => auth()->id(),
+                    'instance_id' => $transfer->instance_id,
+                    'product_id' => $item->product_id,
+                    'warehouse_id' => $transfer->to_warehouse_id,
+                    'type' => 'transfer',
+                    'quantity' => $item->quantity,
+                    'reference_type' => $transfer->getMorphClass(),
+                    'reference_id' => $transfer->id,
+                    'notes' => "Transfer in from {$transfer->fromWarehouse->name}",
+                    'performed_by' => auth()->id(),
                 ]);
             }
 
             $transfer->update([
-                'status'       => 'completed',
+                'status' => 'completed',
                 'completed_at' => now(),
             ]);
         });
@@ -189,7 +189,7 @@ class StockTransferController extends Controller
 
     public function cancel(string $slug, StockTransfer $transfer): RedirectResponse
     {
-        if (!in_array($transfer->status, ['pending', 'in_transit'])) {
+        if (! in_array($transfer->status, ['pending', 'in_transit'])) {
             return redirect()->route('eshop360.stock-transfers.show', [$slug, $transfer])
                 ->with('error', __('Only pending or in-transit transfers can be cancelled.'));
         }

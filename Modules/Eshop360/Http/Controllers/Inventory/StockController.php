@@ -6,11 +6,11 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\Product;
-use Modules\Eshop360\Models\Stock;
-use Modules\Eshop360\Models\StockMovement;
-use Modules\Eshop360\Models\Store;
-use Modules\Eshop360\Models\Warehouse;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\Inventory\Models\Stock;
+use Modules\Eshop360\Domain\Inventory\Models\StockMovement;
+use Modules\Eshop360\Domain\Inventory\Models\Store;
+use Modules\Eshop360\Domain\Inventory\Models\Warehouse;
 
 class StockController extends Controller
 {
@@ -58,13 +58,13 @@ class StockController extends Controller
         DB::transaction(function () use ($validated, $instanceId) {
             $stock = Stock::firstOrCreate(
                 [
-                    'instance_id'  => $instanceId,
-                    'product_id'   => $validated['product_id'],
+                    'instance_id' => $instanceId,
+                    'product_id' => $validated['product_id'],
                     'warehouse_id' => $validated['warehouse_id'],
-                    'store_id'     => $validated['store_id'] ?? null,
+                    'store_id' => $validated['store_id'] ?? null,
                 ],
                 [
-                    'quantity'          => 0,
+                    'quantity' => 0,
                     'reserved_quantity' => 0,
                 ]
             );
@@ -72,13 +72,13 @@ class StockController extends Controller
             $stock->increment('quantity', $validated['quantity']);
 
             StockMovement::create([
-                'instance_id'  => $instanceId,
-                'product_id'   => $stock->product_id,
+                'instance_id' => $instanceId,
+                'product_id' => $stock->product_id,
                 'warehouse_id' => $stock->warehouse_id,
-                'store_id'     => $stock->store_id,
-                'type'         => 'in',
-                'quantity'     => $validated['quantity'],
-                'notes'        => $validated['notes'] ?? 'Stock added',
+                'store_id' => $stock->store_id,
+                'type' => 'in',
+                'quantity' => $validated['quantity'],
+                'notes' => $validated['notes'] ?? 'Stock added',
                 'performed_by' => auth()->id(),
             ]);
         });
@@ -90,9 +90,9 @@ class StockController extends Controller
     public function update(Request $request, string $slug, Stock $stock)
     {
         $validated = $request->validate([
-            'quantity'          => 'required|integer|min:0',
+            'quantity' => 'required|integer|min:0',
             'reserved_quantity' => 'nullable|integer|min:0',
-            'reason'            => 'nullable|string|max:500',
+            'reason' => 'nullable|string|max:500',
         ]);
 
         $previousQuantity = $stock->quantity;
@@ -101,19 +101,19 @@ class StockController extends Controller
 
         DB::transaction(function () use ($stock, $validated, $difference) {
             $stock->update([
-                'quantity'          => $validated['quantity'],
+                'quantity' => $validated['quantity'],
                 'reserved_quantity' => $validated['reserved_quantity'] ?? $stock->reserved_quantity,
             ]);
 
             if ($difference !== 0) {
                 StockMovement::create([
-                    'instance_id'  => $stock->instance_id,
-                    'product_id'   => $stock->product_id,
+                    'instance_id' => $stock->instance_id,
+                    'product_id' => $stock->product_id,
                     'warehouse_id' => $stock->warehouse_id,
-                    'store_id'     => $stock->store_id,
-                    'type'         => 'adjustment',
-                    'quantity'     => $difference,
-                    'notes'        => $validated['reason'] ?? 'Manual stock update',
+                    'store_id' => $stock->store_id,
+                    'type' => 'adjustment',
+                    'quantity' => $difference,
+                    'notes' => $validated['reason'] ?? 'Manual stock update',
                     'performed_by' => auth()->id(),
                 ]);
             }
@@ -203,7 +203,7 @@ class StockController extends Controller
     {
         $products = Product::with(['stocks.warehouse'])
             ->whereHas('stocks', function ($q) {
-                $q->whereRaw('quantity <= ' . DB::raw(
+                $q->whereRaw('quantity <= '.DB::raw(
                     '(SELECT alert_quantity FROM eshop_products WHERE eshop_products.id = eshop_stocks.product_id)'
                 ));
             })

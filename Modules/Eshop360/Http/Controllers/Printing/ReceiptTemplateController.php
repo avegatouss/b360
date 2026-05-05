@@ -6,8 +6,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\ReceiptTemplate;
-use Modules\Eshop360\Models\Store;
+use Modules\Eshop360\Domain\Communication\Models\ReceiptTemplate;
+use Modules\Eshop360\Domain\Inventory\Models\Store;
 
 class ReceiptTemplateController extends Controller
 {
@@ -42,16 +42,16 @@ class ReceiptTemplateController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'name'         => 'required|string|max:255',
-            'store_id'     => 'nullable|exists:eshop_stores,id',
-            'header_text'  => 'nullable|string|max:2000',
-            'footer_text'  => 'nullable|string|max:2000',
-            'show_logo'    => 'boolean',
+            'name' => 'required|string|max:255',
+            'store_id' => 'nullable|exists:eshop_stores,id',
+            'header_text' => 'nullable|string|max:2000',
+            'footer_text' => 'nullable|string|max:2000',
+            'show_logo' => 'boolean',
             'show_address' => 'boolean',
-            'show_phone'   => 'boolean',
-            'paper_width'  => 'required|in:58mm,80mm',
-            'font_size'    => 'required|in:small,normal,large',
-            'is_default'   => 'boolean',
+            'show_phone' => 'boolean',
+            'paper_width' => 'required|in:58mm,80mm',
+            'font_size' => 'required|in:small,normal,large',
+            'is_default' => 'boolean',
         ]);
 
         $instance = CurrentInstance::get();
@@ -90,16 +90,16 @@ class ReceiptTemplateController extends Controller
         $template = ReceiptTemplate::findOrFail($id);
 
         $validated = $request->validate([
-            'name'         => 'required|string|max:255',
-            'store_id'     => 'nullable|exists:eshop_stores,id',
-            'header_text'  => 'nullable|string|max:2000',
-            'footer_text'  => 'nullable|string|max:2000',
-            'show_logo'    => 'boolean',
+            'name' => 'required|string|max:255',
+            'store_id' => 'nullable|exists:eshop_stores,id',
+            'header_text' => 'nullable|string|max:2000',
+            'footer_text' => 'nullable|string|max:2000',
+            'show_logo' => 'boolean',
             'show_address' => 'boolean',
-            'show_phone'   => 'boolean',
-            'paper_width'  => 'required|in:58mm,80mm',
-            'font_size'    => 'required|in:small,normal,large',
-            'is_default'   => 'boolean',
+            'show_phone' => 'boolean',
+            'paper_width' => 'required|in:58mm,80mm',
+            'font_size' => 'required|in:small,normal,large',
+            'is_default' => 'boolean',
         ]);
 
         $instance = CurrentInstance::get();

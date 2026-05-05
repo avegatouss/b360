@@ -4,9 +4,9 @@ namespace Modules\Eshop360\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\Account;
-use Modules\Eshop360\Models\AccountTransaction;
-use Modules\Eshop360\Models\AccountTransfer;
+use Modules\Eshop360\Domain\Finance\Models\Account;
+use Modules\Eshop360\Domain\Finance\Models\AccountTransaction;
+use Modules\Eshop360\Domain\Finance\Models\AccountTransfer;
 
 class DemoAccountTransactionsSeeder extends Seeder
 {
@@ -72,10 +72,10 @@ class DemoAccountTransactionsSeeder extends Seeder
 
                 AccountTransaction::create([
                     'account_id' => $account->id,
-                    'type'       => $type,
-                    'amount'     => $amount,
-                    'notes'      => $desc,
-                    'user_id'    => 1,
+                    'type' => $type,
+                    'amount' => $amount,
+                    'notes' => $desc,
+                    'user_id' => 1,
                     'created_at' => now()->subDays(rand(0, 60))->subHours(rand(0, 12)),
                 ]);
             }
@@ -96,31 +96,31 @@ class DemoAccountTransactionsSeeder extends Seeder
                 }
 
                 AccountTransfer::create([
-                    'instance_id'     => $instanceId,
+                    'instance_id' => $instanceId,
                     'from_account_id' => $from->id,
-                    'to_account_id'   => $to->id,
-                    'amount'          => $amount,
-                    'fee'             => $fee,
-                    'notes'           => "Transfert {$from->name} → {$to->name}",
-                    'user_id'         => 1,
-                    'created_at'      => now()->subDays(rand(0, 30)),
+                    'to_account_id' => $to->id,
+                    'amount' => $amount,
+                    'fee' => $fee,
+                    'notes' => "Transfert {$from->name} → {$to->name}",
+                    'user_id' => 1,
+                    'created_at' => now()->subDays(rand(0, 30)),
                 ]);
 
                 AccountTransaction::create([
                     'account_id' => $from->id,
-                    'type'       => 'transfer_out',
-                    'amount'     => $amount + $fee,
-                    'notes'      => "Transfert vers {$to->name}" . ($fee > 0 ? " (frais: {$fee})" : ''),
-                    'user_id'    => 1,
+                    'type' => 'transfer_out',
+                    'amount' => $amount + $fee,
+                    'notes' => "Transfert vers {$to->name}".($fee > 0 ? " (frais: {$fee})" : ''),
+                    'user_id' => 1,
                     'created_at' => now()->subDays(rand(0, 30)),
                 ]);
 
                 AccountTransaction::create([
                     'account_id' => $to->id,
-                    'type'       => 'transfer_in',
-                    'amount'     => $amount,
-                    'notes'      => "Transfert depuis {$from->name}",
-                    'user_id'    => 1,
+                    'type' => 'transfer_in',
+                    'amount' => $amount,
+                    'notes' => "Transfert depuis {$from->name}",
+                    'user_id' => 1,
                     'created_at' => now()->subDays(rand(0, 30)),
                 ]);
 

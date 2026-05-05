@@ -6,8 +6,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\Order;
-use Modules\Eshop360\Models\ReceiptTemplate;
+use Modules\Eshop360\Domain\Communication\Models\ReceiptTemplate;
+use Modules\Eshop360\Domain\Sales\Models\Order;
 use Modules\Eshop360\Services\Printing\EscposPrinter;
 
 class PrinterController extends Controller
@@ -26,7 +26,7 @@ class PrinterController extends Controller
         ]);
 
         try {
-            $printer = new EscposPrinter();
+            $printer = new EscposPrinter;
             $success = $printer->testConnection($validated);
 
             return response()->json([
@@ -36,7 +36,7 @@ class PrinterController extends Controller
         } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,
-                'message' => __('Connection failed: ') . $e->getMessage(),
+                'message' => __('Connection failed: ').$e->getMessage(),
             ], 422);
         }
     }
@@ -59,7 +59,7 @@ class PrinterController extends Controller
         }
 
         try {
-            $printer = new EscposPrinter();
+            $printer = new EscposPrinter;
             $printer->printReceipt($order, $config, $template);
 
             return response()->json([
@@ -69,7 +69,7 @@ class PrinterController extends Controller
         } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,
-                'message' => __('Print failed: ') . $e->getMessage(),
+                'message' => __('Print failed: ').$e->getMessage(),
             ], 422);
         }
     }
@@ -84,7 +84,7 @@ class PrinterController extends Controller
         $config = $this->printerConfig($request, $settings);
 
         try {
-            $printer = new EscposPrinter();
+            $printer = new EscposPrinter;
             $printer->openCashDrawer($config);
 
             return response()->json([
@@ -94,7 +94,7 @@ class PrinterController extends Controller
         } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,
-                'message' => __('Failed to open drawer: ') . $e->getMessage(),
+                'message' => __('Failed to open drawer: ').$e->getMessage(),
             ], 422);
         }
     }
@@ -116,7 +116,7 @@ class PrinterController extends Controller
             'address' => $instanceSettings['address'] ?? '',
             'phone' => $instanceSettings['phone'] ?? '',
             'currency' => $instanceSettings['currency'] ?? 'FCFA',
-            'logo_path' => ! empty($saved['logo']) ? storage_path('app/public/' . $saved['logo']) : null,
+            'logo_path' => ! empty($saved['logo']) ? storage_path('app/public/'.$saved['logo']) : null,
         ];
     }
 }

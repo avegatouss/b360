@@ -7,9 +7,9 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Modules\Core\Support\CurrentInstance;
+use Modules\Eshop360\Domain\Channel\Models\ChannelUser;
+use Modules\Eshop360\Domain\Channel\Models\DistributionChannel;
 use Modules\Eshop360\Http\Middleware\ChannelRole;
-use Modules\Eshop360\Models\ChannelUser;
-use Modules\Eshop360\Models\DistributionChannel;
 
 class ChannelMemberController extends Controller
 {
@@ -45,7 +45,7 @@ class ChannelMemberController extends Controller
     {
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
-            'role'    => 'required|in:' . implode(',', ChannelRole::all()),
+            'role' => 'required|in:'.implode(',', ChannelRole::all()),
         ]);
 
         // Check not already assigned
@@ -55,8 +55,8 @@ class ChannelMemberController extends Controller
 
         ChannelUser::create([
             'channel_id' => $channel->id,
-            'user_id'    => $validated['user_id'],
-            'role'       => $validated['role'],
+            'user_id' => $validated['user_id'],
+            'role' => $validated['role'],
         ]);
 
         return redirect()->back()->with('success', __('Membre ajoute au canal.'));
@@ -65,7 +65,7 @@ class ChannelMemberController extends Controller
     public function update(Request $request, string $slug, DistributionChannel $channel, ChannelUser $member)
     {
         $validated = $request->validate([
-            'role' => 'required|in:' . implode(',', ChannelRole::all()),
+            'role' => 'required|in:'.implode(',', ChannelRole::all()),
         ]);
 
         $member->update(['role' => $validated['role']]);
@@ -76,6 +76,7 @@ class ChannelMemberController extends Controller
     public function destroy(string $slug, DistributionChannel $channel, ChannelUser $member)
     {
         $member->delete();
+
         return redirect()->back()->with('success', __('Membre retire du canal.'));
     }
 }

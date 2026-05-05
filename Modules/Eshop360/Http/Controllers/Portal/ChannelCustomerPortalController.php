@@ -6,12 +6,12 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\Brand;
-use Modules\Eshop360\Models\Category;
-use Modules\Eshop360\Models\Customer;
-use Modules\Eshop360\Models\DistributionChannel;
-use Modules\Eshop360\Models\OnlineOrder;
-use Modules\Eshop360\Models\Product;
+use Modules\Eshop360\Domain\Catalog\Models\Brand;
+use Modules\Eshop360\Domain\Catalog\Models\Category;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\Channel\Models\DistributionChannel;
+use Modules\Eshop360\Domain\CRM\Models\Customer;
+use Modules\Eshop360\Domain\Sales\Models\OnlineOrder;
 use Modules\Eshop360\Services\OnlineOrderService;
 use Modules\Eshop360\Services\ProductPricingService;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -350,7 +350,7 @@ class ChannelCustomerPortalController extends Controller
             ->where('instance_id', $instance->id)
             ->where('channel_id', $channel->id)
             ->where('is_active', true)
-            ->where(function ($query) use ($user, $channel) {
+            ->where(function ($query) use ($user) {
                 $query->where('user_id', $user->id);
 
                 if (! empty($user->email)) {

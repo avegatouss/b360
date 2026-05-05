@@ -3,7 +3,7 @@
 namespace Modules\Eshop360\Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Modules\Eshop360\Models\EmailTemplate;
+use Modules\Eshop360\Domain\Communication\Models\EmailTemplate;
 
 class EmailTemplateSeeder extends Seeder
 {

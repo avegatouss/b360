@@ -3,9 +3,9 @@
 namespace Modules\Eshop360\Tests\Unit;
 
 use Illuminate\Support\Facades\Cache;
+use Modules\Eshop360\Domain\Inventory\Models\Stock;
 use Modules\Eshop360\Events\ReportDataChanged;
 use Modules\Eshop360\Listeners\InvalidateReportCache;
-use Modules\Eshop360\Models\Stock;
 use Modules\Eshop360\Services\ReportService;
 use Modules\Eshop360\Tests\TestCase;
 

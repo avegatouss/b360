@@ -7,11 +7,9 @@ use Illuminate\Support\Facades\Http;
 use Modules\Currency\Models\ExchangeRateHistory;
 use Modules\Currency\Models\OrderCurrencySnapshot;
 use Modules\Currency\Models\TenantCurrencySetting;
-use Modules\Currency\Models\UserCurrencyPreference;
 use Modules\Currency\Services\ExchangeRateService;
 use Modules\Currency\Services\SnapshotService;
 use Modules\Currency\Services\TenantCurrencyManager;
-use Modules\Currency\Tests\Unit\CurrencyManagerTest;
 
 /**
  * Tests for multi-currency Phase 1 & 2 features.
@@ -167,7 +165,7 @@ final class MultiCurrencyTest extends \Modules\Billing\Tests\TestCase
         $this->makeRootSuperAdmin($instance);
 
         // Create a mock order-like model
-        $order = \Modules\Eshop360\Models\Order::create([
+        $order = \Modules\Eshop360\Domain\Sales\Models\Order::create([
             'instance_id' => $instance->id,
             'order_number' => 'SNP-001',
             'total' => 5000,
@@ -192,7 +190,7 @@ final class MultiCurrencyTest extends \Modules\Billing\Tests\TestCase
         $instance = $this->makeRootInstance();
         $this->makeRootSuperAdmin($instance);
 
-        $order = \Modules\Eshop360\Models\Order::create([
+        $order = \Modules\Eshop360\Domain\Sales\Models\Order::create([
             'instance_id' => $instance->id,
             'order_number' => 'SNP-002',
             'total' => 10000,
@@ -220,7 +218,7 @@ final class MultiCurrencyTest extends \Modules\Billing\Tests\TestCase
         $instance = $this->makeRootInstance();
         $this->makeRootSuperAdmin($instance);
 
-        $order = \Modules\Eshop360\Models\Order::create([
+        $order = \Modules\Eshop360\Domain\Sales\Models\Order::create([
             'instance_id' => $instance->id,
             'order_number' => 'LEGACY-001',
             'total' => 3000,
@@ -241,7 +239,7 @@ final class MultiCurrencyTest extends \Modules\Billing\Tests\TestCase
         $instance = $this->makeRootInstance();
         $this->makeRootSuperAdmin($instance);
 
-        $order = \Modules\Eshop360\Models\Order::create([
+        $order = \Modules\Eshop360\Domain\Sales\Models\Order::create([
             'instance_id' => $instance->id,
             'order_number' => 'MA-001',
             'total' => 10000,
@@ -265,7 +263,7 @@ final class MultiCurrencyTest extends \Modules\Billing\Tests\TestCase
         $instance = $this->makeRootInstance();
         $this->makeRootSuperAdmin($instance);
 
-        $invoice = \Modules\Eshop360\Models\Invoice::create([
+        $invoice = \Modules\Eshop360\Domain\Finance\Models\Invoice::create([
             'instance_id' => $instance->id,
             'invoice_number' => 'MA-INV-001',
             'total' => 5000,
@@ -287,16 +285,16 @@ final class MultiCurrencyTest extends \Modules\Billing\Tests\TestCase
         $instance = $this->makeRootInstance();
         $this->makeRootSuperAdmin($instance);
 
-        $order = \Modules\Eshop360\Models\Order::create([
+        $order = \Modules\Eshop360\Domain\Sales\Models\Order::create([
             'instance_id' => $instance->id,
             'order_number' => 'MA-PAY-001',
             'total' => 1000,
             'status' => 'completed',
         ]);
 
-        $payment = \Modules\Eshop360\Models\Payment::create([
+        $payment = \Modules\Eshop360\Domain\Finance\Models\Payment::create([
             'instance_id' => $instance->id,
-            'payable_type' => \Modules\Eshop360\Models\Order::class,
+            'payable_type' => 'Modules\Eshop360\Models\Order',
             'payable_id' => $order->id,
             'amount' => 1000,
             'method' => 'cash',
@@ -322,7 +320,7 @@ final class MultiCurrencyTest extends \Modules\Billing\Tests\TestCase
         $instance = $this->makeRootInstance();
         $this->makeRootSuperAdmin($instance);
 
-        $order = \Modules\Eshop360\Models\Order::create([
+        $order = \Modules\Eshop360\Domain\Sales\Models\Order::create([
             'instance_id' => $instance->id,
             'order_number' => 'NOOP-001',
             'total' => 1000,
@@ -354,7 +352,7 @@ final class MultiCurrencyTest extends \Modules\Billing\Tests\TestCase
             'api_source' => 'open.er-api.com',
         ]);
 
-        $order = \Modules\Eshop360\Models\Order::create([
+        $order = \Modules\Eshop360\Domain\Sales\Models\Order::create([
             'instance_id' => $instance->id,
             'order_number' => 'SAME-001',
             'total' => 2500,
@@ -400,7 +398,7 @@ final class MultiCurrencyTest extends \Modules\Billing\Tests\TestCase
             ]),
         ]);
 
-        $order = \Modules\Eshop360\Models\Order::create([
+        $order = \Modules\Eshop360\Domain\Sales\Models\Order::create([
             'instance_id' => $instance->id,
             'order_number' => 'DIFF-001',
             'total' => 100000,

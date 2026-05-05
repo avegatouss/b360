@@ -5,7 +5,7 @@ namespace Modules\Eshop360\Http\Controllers\OnlineOrder;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\OnlineOrder;
+use Modules\Eshop360\Domain\Sales\Models\OnlineOrder;
 use Modules\Eshop360\Services\InvoiceService;
 use Modules\Eshop360\Services\OnlineOrderService;
 use Modules\Eshop360\Services\OrderService;
@@ -36,29 +36,29 @@ class OnlineOrderController extends Controller
             }));
 
         // Optional UI channel filter
-        $query->when($channelFilter, fn($q) => $q->where('channel_id', $channelFilter));
+        $query->when($channelFilter, fn ($q) => $q->where('channel_id', $channelFilter));
 
         // KPIs from filtered query
         $statsQuery = clone $query;
         $kpi = (object) [
-            'total'     => (clone $statsQuery)->count(),
-            'pending'   => (clone $statsQuery)->where('status', 'pending_validation')->count(),
+            'total' => (clone $statsQuery)->count(),
+            'pending' => (clone $statsQuery)->where('status', 'pending_validation')->count(),
             'validated' => (clone $statsQuery)->whereIn('status', ['validated', 'preparing', 'prepared'])->count(),
-            'shipping'  => (clone $statsQuery)->whereIn('status', ['shipping', 'delivered'])->count(),
+            'shipping' => (clone $statsQuery)->whereIn('status', ['shipping', 'delivered'])->count(),
             'completed' => (clone $statsQuery)->whereIn('status', ['received', 'invoiced'])->count(),
             'cancelled' => (clone $statsQuery)->where('status', 'cancelled')->count(),
-            'revenue'   => round((float) (clone $statsQuery)->whereNotIn('status', ['cancelled'])->sum('total'), 0),
-            'avg'       => round((float) (clone $statsQuery)->whereNotIn('status', ['cancelled'])->avg('total'), 0),
+            'revenue' => round((float) (clone $statsQuery)->whereNotIn('status', ['cancelled'])->sum('total'), 0),
+            'avg' => round((float) (clone $statsQuery)->whereNotIn('status', ['cancelled'])->avg('total'), 0),
         ];
 
         $orders = $query->latest()->paginate(25)->withQueryString();
 
         // Filter lookups
-        $customers = \Modules\Eshop360\Models\Customer::where('instance_id', $instance->id)
+        $customers = \Modules\Eshop360\Domain\CRM\Models\Customer::where('instance_id', $instance->id)
             ->whereHas('onlineOrders')
             ->orderBy('name')->get(['id', 'name', 'code']);
 
-        $channels = \Modules\Eshop360\Models\DistributionChannel::where('instance_id', $instance->id)
+        $channels = \Modules\Eshop360\Domain\Channel\Models\DistributionChannel::where('instance_id', $instance->id)
             ->where('is_active', true)->orderBy('name')->get();
 
         return view('eshop360::online-orders.index', compact('orders', 'kpi', 'customers', 'channels'));
@@ -67,6 +67,7 @@ class OnlineOrderController extends Controller
     public function show(string $slug, OnlineOrder $onlineOrder)
     {
         $onlineOrder->load('customer', 'channel', 'items.product');
+
         return view('eshop360::online-orders.show', compact('onlineOrder'));
     }
 
@@ -150,6 +151,7 @@ class OnlineOrderController extends Controller
             return redirect()->back()->with('error', __('Seules les commandes en attente peuvent etre supprimees.'));
         }
         $onlineOrder->delete();
+
         return redirect()->route('eshop360.online-orders.index', $slug)
             ->with('success', __('Commande supprimee.'));
     }
@@ -243,7 +245,7 @@ class OnlineOrderController extends Controller
             );
         }
 
-        $wallet = new WalletDriver();
+        $wallet = new WalletDriver;
         $result = $wallet->initiate($amount, 'XAF', [
             'customer_id' => $customer->id,
             'description' => "Commande en ligne #{$onlineOrder->reference}",
@@ -264,14 +266,14 @@ class OnlineOrderController extends Controller
         $amount = (float) $onlineOrder->total;
 
         // Find the original wallet transaction to get its ID for refund
-        $txn = \Modules\Eshop360\Models\CustomerTransaction::where('customer_id', $customer->id)
+        $txn = \Modules\Eshop360\Domain\CRM\Models\CustomerTransaction::where('customer_id', $customer->id)
             ->where('type', 'debit')
             ->where('description', 'like', "%{$onlineOrder->reference}%")
             ->first();
 
-        $wallet = new WalletDriver();
+        $wallet = new WalletDriver;
         $wallet->refund(
-            $txn?->reference ?? 'WALLET-' . $customer->id . '-MANUAL',
+            $txn?->reference ?? 'WALLET-'.$customer->id.'-MANUAL',
             $amount,
         );
     }

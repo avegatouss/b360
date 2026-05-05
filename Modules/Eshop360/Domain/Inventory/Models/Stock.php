@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Modules\Core\Database\Traits\BelongsToInstance;
 use Modules\Eshop360\Database\Traits\BelongsToChannel;
 use Modules\Eshop360\Database\Traits\ScopedByUserAssignment;
-use Modules\Eshop360\Models\Product;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
 
 /**
  * Canonical location for the Stock model (Domain/Inventory).

@@ -7,9 +7,9 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\Customer;
-use Modules\Eshop360\Models\Message;
-use Modules\Eshop360\Models\SupportTeam;
+use Modules\Eshop360\Domain\Communication\Models\Message;
+use Modules\Eshop360\Domain\Communication\Models\SupportTeam;
+use Modules\Eshop360\Domain\CRM\Models\Customer;
 
 class MessageController extends Controller
 {
@@ -32,8 +32,8 @@ class MessageController extends Controller
         $sentCount = Message::where('from_user_id', $user->id)->count();
 
         $conversations = Message::where(function ($q) use ($user) {
-                $q->where('to_user_id', $user->id)->orWhere('from_user_id', $user->id);
-            })
+            $q->where('to_user_id', $user->id)->orWhere('from_user_id', $user->id);
+        })
             ->selectRaw('
                 CASE WHEN from_user_id = ? THEN to_user_id ELSE from_user_id END as correspondent_id,
                 MAX(created_at) as last_message_at,
@@ -64,6 +64,7 @@ class MessageController extends Controller
             ->when($request->search, fn ($q, $s) => $q->where('subject', 'like', "%{$s}%"))
             ->latest()->paginate(20)->withQueryString();
         $recipients = $this->getRecipients($user, $instance);
+
         return view('eshop360::communication.sent', compact('messages', 'recipients', 'isClient'));
     }
 
@@ -103,8 +104,8 @@ class MessageController extends Controller
         $isClient = $this->isClientUser($user, $instance);
         $validated = $request->validate([
             'to_user_id' => 'nullable|exists:users,id',
-            'subject'    => 'required|string|max:255',
-            'body'       => 'required|string',
+            'subject' => 'required|string|max:255',
+            'body' => 'required|string',
         ]);
         $validated['instance_id'] = $instance->id;
         $validated['from_user_id'] = $user->id;
@@ -112,7 +113,9 @@ class MessageController extends Controller
         if ($isClient) {
             $customer = $this->getCustomer($user, $instance);
             $team = $customer?->support_team_id ? SupportTeam::find($customer->support_team_id) : null;
-            if (! $team) $team = SupportTeam::getDefault($instance->id);
+            if (! $team) {
+                $team = SupportTeam::getDefault($instance->id);
+            }
             if ($team) {
                 $validated['to_user_id'] = $team->getRecipientUserId() ?? $this->getAdminUserId($instance);
                 $validated['support_team_id'] = $team->id;
@@ -121,9 +124,12 @@ class MessageController extends Controller
             }
         }
 
-        if (empty($validated['to_user_id'])) return redirect()->back()->with('error', __('Veuillez selectionner un destinataire.'));
+        if (empty($validated['to_user_id'])) {
+            return redirect()->back()->with('error', __('Veuillez selectionner un destinataire.'));
+        }
 
         Message::create($validated);
+
         return redirect()->back()->with('success', __('Message envoye.'));
     }
 
@@ -132,6 +138,7 @@ class MessageController extends Controller
         $user = auth()->user();
         abort_unless((int) $message->from_user_id === (int) $user->id || (int) $message->to_user_id === (int) $user->id, 403);
         $message->delete();
+
         return redirect()->back()->with('success', __('Message supprime.'));
     }
 
@@ -140,15 +147,19 @@ class MessageController extends Controller
         if ($this->isClientUser($user, $instance)) {
             $customer = $this->getCustomer($user, $instance);
             $team = $customer?->support_team_id ? SupportTeam::find($customer->support_team_id) : null;
-            if (! $team) $team = SupportTeam::getDefault($instance->id);
+            if (! $team) {
+                $team = SupportTeam::getDefault($instance->id);
+            }
+
             return $team ? [['id' => 'team', 'name' => $team->name, 'is_team' => true]] : [['id' => 'admin', 'name' => __('Support'), 'is_team' => true]];
         }
         $userIds = DB::connection('system')->table('instance_user')
             ->where('instance_id', $instance->id)->where('status', 'active')
             ->where('user_id', '!=', $user->id)->pluck('user_id');
+
         return User::whereIn('id', $userIds)->where('is_active', true)->orderBy('full_name')
             ->get(['id', 'full_name', 'email'])
-            ->map(fn ($u) => ['id' => $u->id, 'name' => $u->full_name . ' (' . $u->email . ')', 'is_team' => false])
+            ->map(fn ($u) => ['id' => $u->id, 'name' => $u->full_name.' ('.$u->email.')', 'is_team' => false])
             ->toArray();
     }
 
@@ -166,6 +177,7 @@ class MessageController extends Controller
     private function getAdminUserId($instance): ?int
     {
         $ids = DB::connection('system')->table('instance_user')->where('instance_id', $instance->id)->where('status', 'active')->pluck('user_id');
+
         return User::whereIn('id', $ids)->where('is_active', true)->whereHas('roles', fn ($q) => $q->where('name', 'instance-admin'))->value('id')
             ?? User::whereIn('id', $ids)->where('is_active', true)->value('id');
     }

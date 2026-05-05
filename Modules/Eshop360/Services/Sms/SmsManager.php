@@ -4,8 +4,8 @@ namespace Modules\Eshop360\Services\Sms;
 
 use Illuminate\Support\Facades\Log;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\SmsGateway;
-use Modules\Eshop360\Models\SmsLog;
+use Modules\Eshop360\Domain\Communication\Models\SmsGateway;
+use Modules\Eshop360\Domain\Communication\Models\SmsLog;
 use Modules\Eshop360\Services\Sms\Drivers\BulkSmsDriver;
 use Modules\Eshop360\Services\Sms\Drivers\ClockworkDriver;
 use Modules\Eshop360\Services\Sms\Drivers\GenericWebhookDriver;

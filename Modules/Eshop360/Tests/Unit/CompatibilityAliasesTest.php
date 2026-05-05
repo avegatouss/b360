@@ -2,13 +2,13 @@
 
 namespace Modules\Eshop360\Tests\Unit;
 
-use Modules\Eshop360\Models\InstallmentPayment;
-use Modules\Eshop360\Models\InstallmentPlan;
-use Modules\Eshop360\Models\Invoice;
-use Modules\Eshop360\Models\InvoiceItem;
-use Modules\Eshop360\Models\Order;
-use Modules\Eshop360\Models\OrderItem;
-use Modules\Eshop360\Models\Product;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\Finance\Models\InstallmentPayment;
+use Modules\Eshop360\Domain\Finance\Models\InstallmentPlan;
+use Modules\Eshop360\Domain\Finance\Models\Invoice;
+use Modules\Eshop360\Domain\Finance\Models\InvoiceItem;
+use Modules\Eshop360\Domain\Sales\Models\Order;
+use Modules\Eshop360\Domain\Sales\Models\OrderItem;
 use Modules\Eshop360\Tests\TestCase;
 
 final class CompatibilityAliasesTest extends TestCase

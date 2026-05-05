@@ -5,14 +5,14 @@ namespace Modules\Eshop360\Http\Controllers\Report;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\Customer;
-use Modules\Eshop360\Models\Expense;
-use Modules\Eshop360\Models\Invoice;
-use Modules\Eshop360\Models\Order;
-use Modules\Eshop360\Models\Product;
-use Modules\Eshop360\Models\PurchaseOrder;
-use Modules\Eshop360\Models\Stock;
-use Modules\Eshop360\Models\Supplier;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\CRM\Models\Customer;
+use Modules\Eshop360\Domain\Finance\Models\Expense;
+use Modules\Eshop360\Domain\Finance\Models\Invoice;
+use Modules\Eshop360\Domain\Inventory\Models\Stock;
+use Modules\Eshop360\Domain\Purchasing\Models\PurchaseOrder;
+use Modules\Eshop360\Domain\Purchasing\Models\Supplier;
+use Modules\Eshop360\Domain\Sales\Models\Order;
 use Modules\Eshop360\Services\ExportService;
 
 class ExportController extends Controller

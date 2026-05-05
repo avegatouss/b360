@@ -4,13 +4,13 @@ namespace Modules\Eshop360\Http\Controllers\Report;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Modules\Eshop360\Models\InstallmentPlan;
-use Modules\Eshop360\Services\ChannelAccessService;
-use Modules\Eshop360\Services\ReportService;
-use Modules\Eshop360\Services\FinanceService;
-use Modules\Eshop360\Services\ChargesService;
-use Modules\Eshop360\Services\MarginService;
 use Modules\Core\Support\CurrentInstance;
+use Modules\Eshop360\Domain\Finance\Models\InstallmentPlan;
+use Modules\Eshop360\Services\ChannelAccessService;
+use Modules\Eshop360\Services\ChargesService;
+use Modules\Eshop360\Services\FinanceService;
+use Modules\Eshop360\Services\MarginService;
+use Modules\Eshop360\Services\ReportService;
 use Modules\Eshop360\Support\CurrentChannel;
 
 class AdvancedReportController extends Controller
@@ -46,6 +46,7 @@ class AdvancedReportController extends Controller
         $from = $request->get('from', now()->startOfMonth()->toDateString());
         $to = $request->get('to', now()->toDateString());
         $data = $this->reportService->overview($instance->id, $from, $to, $this->channelId());
+
         return view('eshop360::reports.overview', compact('data', 'from', 'to'));
     }
 
@@ -56,6 +57,7 @@ class AdvancedReportController extends Controller
         $from = $request->get('from', now()->startOfMonth()->toDateString());
         $to = $request->get('to', now()->toDateString());
         $data = $this->reportService->cashbook($instance->id, $from, $to, $this->channelId());
+
         return view('eshop360::reports.cashbook', compact('data', 'from', 'to'));
     }
 
@@ -81,6 +83,7 @@ class AdvancedReportController extends Controller
         $from = $request->get('from', now()->startOfMonth()->toDateString());
         $to = $request->get('to', now()->toDateString());
         $data = $this->reportService->salesByCategory($instance->id, $from, $to, $this->channelId());
+
         return view('eshop360::reports.sales-by-category', compact('data', 'from', 'to'));
     }
 
@@ -91,6 +94,7 @@ class AdvancedReportController extends Controller
         $from = $request->get('from', now()->startOfMonth()->toDateString());
         $to = $request->get('to', now()->toDateString());
         $data = $this->reportService->salesByProduct($instance->id, $from, $to, $this->channelId());
+
         return view('eshop360::reports.sales-by-product', compact('data', 'from', 'to'));
     }
 
@@ -101,6 +105,7 @@ class AdvancedReportController extends Controller
         $from = $request->get('from', now()->startOfMonth()->toDateString());
         $to = $request->get('to', now()->toDateString());
         $data = $this->reportService->taxReport($instance->id, $from, $to, $this->channelId());
+
         return view('eshop360::reports.tax', compact('data', 'from', 'to'));
     }
 
@@ -109,6 +114,7 @@ class AdvancedReportController extends Controller
         $this->ensureHubAccess();
         $instance = CurrentInstance::get();
         $data = $this->reportService->customerDues($instance->id, $this->channelId());
+
         return view('eshop360::reports.customer-dues', compact('data'));
     }
 
@@ -117,6 +123,7 @@ class AdvancedReportController extends Controller
         $this->ensureHubAccess();
         $instance = CurrentInstance::get();
         $data = $this->reportService->supplierDues($instance->id, $this->channelId());
+
         return view('eshop360::reports.supplier-dues', compact('data'));
     }
 
@@ -127,6 +134,7 @@ class AdvancedReportController extends Controller
         $from = $request->get('from', now()->startOfMonth()->toDateString());
         $to = $request->get('to', now()->toDateString());
         $data = $this->reportService->employeeCommissions($instance->id, $from, $to, $this->channelId());
+
         return view('eshop360::reports.commissions', compact('data', 'from', 'to'));
     }
 
@@ -137,6 +145,7 @@ class AdvancedReportController extends Controller
         $from = $request->get('from', now()->startOfMonth()->toDateString());
         $to = $request->get('to', now()->toDateString());
         $data = $this->reportService->posOverview($instance->id, $from, $to, $this->channelId());
+
         return view('eshop360::reports.pos-overview', compact('data', 'from', 'to'));
     }
 
@@ -145,6 +154,7 @@ class AdvancedReportController extends Controller
         $instance = CurrentInstance::get();
         $year = $request->get('year', now()->year);
         $data = $this->reportService->monthlyRevenue($instance->id, $year, $this->channelId());
+
         return view('eshop360::reports.monthly-revenue', compact('data', 'year'));
     }
 
@@ -153,6 +163,7 @@ class AdvancedReportController extends Controller
         $instance = CurrentInstance::get();
         $year = $request->get('year', now()->year);
         $data = $this->reportService->monthlyExpenses($instance->id, $year, $this->channelId());
+
         return view('eshop360::reports.monthly-expenses', compact('data', 'year'));
     }
 
@@ -161,6 +172,7 @@ class AdvancedReportController extends Controller
         $instance = CurrentInstance::get();
         $warehouseId = $request->get('warehouse_id');
         $data = $this->reportService->stockReport($instance->id, $warehouseId, $this->channelId());
+
         return view('eshop360::reports.stock', compact('data'));
     }
 
@@ -171,7 +183,7 @@ class AdvancedReportController extends Controller
         $from = $request->get('from', now()->startOfMonth()->toDateString());
         $to = $request->get('to', now()->toDateString());
         $marginService = app(MarginService::class);
-        $channels = \Modules\Eshop360\Models\DistributionChannel::where('instance_id', $instance->id)->get();
+        $channels = \Modules\Eshop360\Domain\Channel\Models\DistributionChannel::where('instance_id', $instance->id)->get();
         $data = [];
         foreach ($channels as $channel) {
             $data[] = [
@@ -180,6 +192,7 @@ class AdvancedReportController extends Controller
             ];
         }
         $totals = $marginService->getMarginSummary($instance->id, $from, $to);
+
         return view('eshop360::reports.channels', compact('data', 'totals', 'from', 'to'));
     }
 
@@ -189,6 +202,7 @@ class AdvancedReportController extends Controller
         $instance = CurrentInstance::get();
         $chargesService = app(ChargesService::class);
         $data = $chargesService->getDashboardData($instance->id);
+
         return view('eshop360::reports.charges', compact('data'));
     }
 
@@ -199,6 +213,7 @@ class AdvancedReportController extends Controller
         $plans = InstallmentPlan::where('instance_id', $instance->id)
             ->with('order.customer', 'payments')
             ->get();
+
         return view('eshop360::reports.installments', compact('plans'));
     }
 }

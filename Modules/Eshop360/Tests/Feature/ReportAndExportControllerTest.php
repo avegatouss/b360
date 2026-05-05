@@ -2,26 +2,26 @@
 
 namespace Modules\Eshop360\Tests\Feature;
 
-use Modules\Eshop360\Models\Account;
-use Modules\Eshop360\Models\Brand;
-use Modules\Eshop360\Models\Category;
-use Modules\Eshop360\Models\Customer;
-use Modules\Eshop360\Models\Employee;
-use Modules\Eshop360\Models\EmployeeCommission;
-use Modules\Eshop360\Models\Expense;
-use Modules\Eshop360\Models\ExpenseCategory;
-use Modules\Eshop360\Models\Income;
-use Modules\Eshop360\Models\IncomeSource;
-use Modules\Eshop360\Models\Invoice;
-use Modules\Eshop360\Models\Order;
-use Modules\Eshop360\Models\OrderItem;
-use Modules\Eshop360\Models\Payment;
-use Modules\Eshop360\Models\Product;
-use Modules\Eshop360\Models\PurchaseOrder;
-use Modules\Eshop360\Models\Stock;
-use Modules\Eshop360\Models\StockMovement;
-use Modules\Eshop360\Models\Supplier;
-use Modules\Eshop360\Models\Warehouse;
+use Modules\Eshop360\Domain\Catalog\Models\Brand;
+use Modules\Eshop360\Domain\Catalog\Models\Category;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\CRM\Models\Customer;
+use Modules\Eshop360\Domain\Finance\Models\Account;
+use Modules\Eshop360\Domain\Finance\Models\Expense;
+use Modules\Eshop360\Domain\Finance\Models\ExpenseCategory;
+use Modules\Eshop360\Domain\Finance\Models\Income;
+use Modules\Eshop360\Domain\Finance\Models\IncomeSource;
+use Modules\Eshop360\Domain\Finance\Models\Invoice;
+use Modules\Eshop360\Domain\Finance\Models\Payment;
+use Modules\Eshop360\Domain\HR\Models\Employee;
+use Modules\Eshop360\Domain\HR\Models\EmployeeCommission;
+use Modules\Eshop360\Domain\Inventory\Models\Stock;
+use Modules\Eshop360\Domain\Inventory\Models\StockMovement;
+use Modules\Eshop360\Domain\Inventory\Models\Warehouse;
+use Modules\Eshop360\Domain\Purchasing\Models\PurchaseOrder;
+use Modules\Eshop360\Domain\Purchasing\Models\Supplier;
+use Modules\Eshop360\Domain\Sales\Models\Order;
+use Modules\Eshop360\Domain\Sales\Models\OrderItem;
 use Modules\Eshop360\Tests\TestCase;
 use ZipArchive;
 
@@ -233,7 +233,7 @@ final class ReportAndExportControllerTest extends TestCase
             'warehouse_id' => $warehouse->id,
             'type' => 'in',
             'quantity' => 10,
-            'reference_type' => Product::class,
+            'reference_type' => 'Modules\Eshop360\Models\Product',
             'reference_id' => $product->id,
             'performed_by' => $user->id,
         ]);
@@ -244,7 +244,7 @@ final class ReportAndExportControllerTest extends TestCase
             'warehouse_id' => $warehouse->id,
             'type' => 'out',
             'quantity' => 3,
-            'reference_type' => Product::class,
+            'reference_type' => 'Modules\Eshop360\Models\Product',
             'reference_id' => $product->id,
             'performed_by' => $user->id,
         ]);
@@ -327,7 +327,7 @@ final class ReportAndExportControllerTest extends TestCase
 
         Payment::create([
             'instance_id' => $instance->id,
-            'payable_type' => Order::class,
+            'payable_type' => 'Modules\Eshop360\Models\Order',
             'payable_id' => $orderOne->id,
             'amount' => 60,
             'method' => 'cash',
@@ -340,7 +340,7 @@ final class ReportAndExportControllerTest extends TestCase
 
         Payment::create([
             'instance_id' => $instance->id,
-            'payable_type' => Order::class,
+            'payable_type' => 'Modules\Eshop360\Models\Order',
             'payable_id' => $orderTwo->id,
             'amount' => 50,
             'method' => 'card',

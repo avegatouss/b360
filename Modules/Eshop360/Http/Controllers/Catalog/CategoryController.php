@@ -7,10 +7,9 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Str;
-use Modules\Eshop360\Models\Category;
-use Modules\Eshop360\Models\Product;
-use Modules\Eshop360\Models\Store;
-use Modules\Eshop360\Models\Warehouse;
+use Modules\Eshop360\Domain\Catalog\Models\Category;
+use Modules\Eshop360\Domain\Inventory\Models\Store;
+use Modules\Eshop360\Domain\Inventory\Models\Warehouse;
 
 class CategoryController extends Controller
 {
@@ -19,7 +18,7 @@ class CategoryController extends Controller
         $categories = Category::with(['parent', 'children'])
             ->withCount(['products' => function ($q) use ($request) {
                 $q->when($request->store_id, fn ($sq, $s) => $sq->whereHas('stocks', fn ($ssq) => $ssq->where('store_id', $s)))
-                  ->when($request->warehouse_id, fn ($sq, $w) => $sq->whereHas('stocks', fn ($ssq) => $ssq->where('warehouse_id', $w)));
+                    ->when($request->warehouse_id, fn ($sq, $w) => $sq->whereHas('stocks', fn ($ssq) => $ssq->where('warehouse_id', $w)));
             }])
             ->when($request->search, fn ($q, $s) => $q->where('name', 'like', "%{$s}%"))
             ->when($request->boolean('roots_only'), fn ($q) => $q->roots())
@@ -58,12 +57,12 @@ class CategoryController extends Controller
     public function store(Request $request): RedirectResponse|JsonResponse
     {
         $validated = $request->validate([
-            'name'        => 'required|string|max:255',
-            'parent_id'   => 'nullable|exists:eshop_categories,id',
-            'image'       => 'nullable|image|max:2048',
+            'name' => 'required|string|max:255',
+            'parent_id' => 'nullable|exists:eshop_categories,id',
+            'image' => 'nullable|image|max:2048',
             'description' => 'nullable|string|max:2000',
-            'sort_order'  => 'nullable|integer|min:0',
-            'is_active'   => 'boolean',
+            'sort_order' => 'nullable|integer|min:0',
+            'is_active' => 'boolean',
         ]);
 
         $validated['slug'] = Str::slug($validated['name']);
@@ -86,8 +85,8 @@ class CategoryController extends Controller
     public function update(Request $request, Category $category): RedirectResponse
     {
         $validated = $request->validate([
-            'name'        => 'required|string|max:255',
-            'parent_id'   => [
+            'name' => 'required|string|max:255',
+            'parent_id' => [
                 'nullable',
                 'exists:eshop_categories,id',
                 function (string $attribute, mixed $value, \Closure $fail) use ($category) {
@@ -96,10 +95,10 @@ class CategoryController extends Controller
                     }
                 },
             ],
-            'image'       => 'nullable|image|max:2048',
+            'image' => 'nullable|image|max:2048',
             'description' => 'nullable|string|max:2000',
-            'sort_order'  => 'nullable|integer|min:0',
-            'is_active'   => 'boolean',
+            'sort_order' => 'nullable|integer|min:0',
+            'is_active' => 'boolean',
         ]);
 
         $validated['slug'] = Str::slug($validated['name']);

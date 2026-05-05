@@ -2,13 +2,13 @@
 
 namespace Modules\Eshop360\Tests\Unit;
 
-use Modules\Eshop360\Models\Customer;
-use Modules\Eshop360\Models\CustomerDue;
-use Modules\Eshop360\Models\Employee;
-use Modules\Eshop360\Models\EmployeeCommission;
-use Modules\Eshop360\Models\Order;
-use Modules\Eshop360\Models\Webhook;
-use Modules\Eshop360\Models\WebhookLog;
+use Modules\Eshop360\Domain\Communication\Models\Webhook;
+use Modules\Eshop360\Domain\Communication\Models\WebhookLog;
+use Modules\Eshop360\Domain\CRM\Models\Customer;
+use Modules\Eshop360\Domain\CRM\Models\CustomerDue;
+use Modules\Eshop360\Domain\HR\Models\Employee;
+use Modules\Eshop360\Domain\HR\Models\EmployeeCommission;
+use Modules\Eshop360\Domain\Sales\Models\Order;
 use Modules\Eshop360\Services\FinanceService;
 use Modules\Eshop360\Services\HRService;
 use Modules\Eshop360\Services\WebhookService;
@@ -179,7 +179,7 @@ final class P0SafetyGuardsTest extends TestCase
     {
         [$instance] = $this->setUpInstanceWithAdmin();
 
-        $project = \Modules\Eshop360\Models\Project::create([
+        $project = \Modules\Eshop360\Domain\Projects\Models\Project::create([
             'instance_id' => $instance->id,
             'name' => 'Test Project',
             'status' => 'active',
@@ -188,7 +188,7 @@ final class P0SafetyGuardsTest extends TestCase
 
         $this->assertEquals($instance->id, $project->instance_id);
 
-        $found = \Modules\Eshop360\Models\Project::where('id', $project->id)->first();
+        $found = \Modules\Eshop360\Domain\Projects\Models\Project::where('id', $project->id)->first();
         $this->assertNotNull($found);
     }
 
@@ -196,14 +196,14 @@ final class P0SafetyGuardsTest extends TestCase
     {
         [$instance] = $this->setUpInstanceWithAdmin();
 
-        $project = \Modules\Eshop360\Models\Project::create([
+        $project = \Modules\Eshop360\Domain\Projects\Models\Project::create([
             'instance_id' => $instance->id,
             'name' => 'Task Project',
             'status' => 'active',
             'priority' => 'medium',
         ]);
 
-        $task = \Modules\Eshop360\Models\Task::create([
+        $task = \Modules\Eshop360\Domain\Projects\Models\Task::create([
             'instance_id' => $instance->id,
             'project_id' => $project->id,
             'title' => 'Test Task',

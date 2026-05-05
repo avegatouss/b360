@@ -4,9 +4,9 @@ namespace Modules\Eshop360\Http\Controllers\Fne;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Modules\Eshop360\Models\FneInvoice;
-use Modules\Eshop360\Models\Order;
-use Modules\Eshop360\Models\Invoice;
+use Modules\Eshop360\Domain\Finance\Models\FneInvoice;
+use Modules\Eshop360\Domain\Finance\Models\Invoice;
+use Modules\Eshop360\Domain\Sales\Models\Order;
 use Modules\Eshop360\Services\FneService;
 
 class FneController extends Controller
@@ -70,6 +70,7 @@ class FneController extends Controller
     public function show(string $slug, FneInvoice $fneInvoice)
     {
         $fneInvoice->load('invoiceable', 'signer');
+
         return view('eshop360::fne.show', compact('fneInvoice'));
     }
 }

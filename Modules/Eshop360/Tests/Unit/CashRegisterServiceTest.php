@@ -4,8 +4,8 @@ namespace Modules\Eshop360\Tests\Unit;
 
 use App\Instances\Instance;
 use App\Models\User;
-use Modules\Eshop360\Models\CashRegister;
-use Modules\Eshop360\Models\DistributionChannel;
+use Modules\Eshop360\Domain\Channel\Models\DistributionChannel;
+use Modules\Eshop360\Domain\Sales\Models\CashRegister;
 use Modules\Eshop360\Services\CashRegisterService;
 use Modules\Eshop360\Tests\TestCase;
 

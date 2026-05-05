@@ -8,19 +8,19 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Cache;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Services\EshopSettingsService;
-use Modules\Eshop360\Models\CashRegister;
-use Modules\Eshop360\Models\Holding;
-use Modules\Eshop360\Models\Brand;
-use Modules\Eshop360\Models\Category;
-use Modules\Eshop360\Models\Customer;
-use Modules\Eshop360\Models\DistributionChannel;
-use Modules\Eshop360\Models\Order;
-use Modules\Eshop360\Models\Product;
-use Modules\Eshop360\Models\Store;
-use Modules\Eshop360\Models\Warehouse;
+use Modules\Eshop360\Domain\Catalog\Models\Brand;
+use Modules\Eshop360\Domain\Catalog\Models\Category;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\Channel\Models\DistributionChannel;
+use Modules\Eshop360\Domain\CRM\Models\Customer;
+use Modules\Eshop360\Domain\Inventory\Models\Store;
+use Modules\Eshop360\Domain\Inventory\Models\Warehouse;
+use Modules\Eshop360\Domain\Sales\Models\CashRegister;
+use Modules\Eshop360\Domain\Sales\Models\Holding;
+use Modules\Eshop360\Domain\Sales\Models\Order;
 use Modules\Eshop360\Services\CartService;
 use Modules\Eshop360\Services\CashRegisterService;
+use Modules\Eshop360\Services\EshopSettingsService;
 use Modules\Eshop360\Services\HoldingService;
 use Modules\Eshop360\Services\ProductPricingService;
 use Modules\Eshop360\Services\UserResourceScopeService;
@@ -32,8 +32,7 @@ class PosController extends Controller
         private readonly HoldingService $holdingService,
         private readonly EshopSettingsService $eshopSettings,
         private readonly CartService $cartService,
-    ) {
-    }
+    ) {}
 
     public function index(string $slug, Request $request)
     {
@@ -80,18 +79,18 @@ class PosController extends Controller
     public function updateSettings(Request $request, string $slug): RedirectResponse
     {
         $validated = $request->validate([
-            'default_layout'       => 'required|in:layout1,layout2,layout3,layout4,layout5',
+            'default_layout' => 'required|in:layout1,layout2,layout3,layout4,layout5',
             'default_warehouse_id' => 'nullable|exists:eshop_warehouses,id',
-            'default_customer_id'  => 'nullable|exists:eshop_customers,id',
-            'payment_methods'      => 'required|array|min:1',
-            'payment_methods.*'    => 'string|in:cash,card,cheque,paypal,bank_transfer,points,deposit,gift_card,wallet,external',
-            'tax_inclusive'         => 'boolean',
-            'sound_enabled'        => 'boolean',
-            'print_receipt'        => 'boolean',
-            'products_per_page'    => 'nullable|integer|min:10|max:100',
-            'register_required'        => 'boolean',
+            'default_customer_id' => 'nullable|exists:eshop_customers,id',
+            'payment_methods' => 'required|array|min:1',
+            'payment_methods.*' => 'string|in:cash,card,cheque,paypal,bank_transfer,points,deposit,gift_card,wallet,external',
+            'tax_inclusive' => 'boolean',
+            'sound_enabled' => 'boolean',
+            'print_receipt' => 'boolean',
+            'products_per_page' => 'nullable|integer|min:10|max:100',
+            'register_required' => 'boolean',
             'customer_account_enabled' => 'boolean',
-            'allow_walkin_customer'    => 'boolean',
+            'allow_walkin_customer' => 'boolean',
         ]);
 
         // Ensure boolean fields default to false when unchecked
@@ -237,8 +236,8 @@ class PosController extends Controller
     {
         return response()->json([
             'wallet_balance' => round((float) $customer->wallet_balance, 2),
-            'credit_limit'   => round((float) $customer->credit_limit, 2),
-            'available'      => round((float) $customer->wallet_balance + (float) $customer->credit_limit, 2),
+            'credit_limit' => round((float) $customer->credit_limit, 2),
+            'available' => round((float) $customer->wallet_balance + (float) $customer->credit_limit, 2),
         ]);
     }
 
@@ -278,17 +277,16 @@ class PosController extends Controller
         // Cache reference data (categories, brands, warehouses, stores) — 10 min TTL
         // Include user ID in cache keys to avoid returning unscoped data to restricted users
         $userId = auth()->id() ?? 0;
-        $categories = Cache::remember("pos:categories:{$instanceId}:{$userId}", 600, fn () =>
-            Category::active()->roots()->orderBy('sort_order')->orderBy('name')->get()
+        $categories = Cache::remember("pos:categories:{$instanceId}:{$userId}", 600, fn () => Category::active()->roots()->orderBy('sort_order')->orderBy('name')->get()
         );
-        $brands = Cache::remember("pos:brands:{$instanceId}:{$userId}", 600, fn () =>
-            Brand::where('is_active', true)->orderBy('name')->get()
+        $brands = Cache::remember("pos:brands:{$instanceId}:{$userId}", 600, fn () => Brand::where('is_active', true)->orderBy('name')->get()
         );
         $warehouses = Cache::remember("pos:warehouses:{$instanceId}:{$userId}", 600, function () use ($scope) {
             $query = Warehouse::where('is_active', true)->orderBy('name');
             if ($scope->hasWarehouseAssignments()) {
                 $query->whereIn('id', $scope->warehouseIds());
             }
+
             return $query->get();
         });
         $stores = Cache::remember("pos:stores:{$instanceId}:{$userId}", 600, function () use ($scope) {
@@ -296,10 +294,10 @@ class PosController extends Controller
             if ($scope->hasStoreAssignments()) {
                 $query->whereIn('id', $scope->storeIds());
             }
+
             return $query->get();
         });
-        $channels = Cache::remember("pos:channels:{$instanceId}:{$userId}", 600, fn () =>
-            DistributionChannel::where('instance_id', $instanceId)->where('is_active', true)->orderBy('name')->get()
+        $channels = Cache::remember("pos:channels:{$instanceId}:{$userId}", 600, fn () => DistributionChannel::where('instance_id', $instanceId)->where('is_active', true)->orderBy('name')->get()
         );
 
         $cart = $this->cartService->getCart();
@@ -311,7 +309,7 @@ class PosController extends Controller
 
         // Customers scoped by active channel
         $customers = Customer::where('instance_id', $instanceId)->where('is_active', true)
-            ->when($activeChannelId, fn($q) => $q->where('channel_id', $activeChannelId))
+            ->when($activeChannelId, fn ($q) => $q->where('channel_id', $activeChannelId))
             ->orderBy('name')->limit(500)->get();
 
         $products->getCollection()->transform(function (Product $product) use ($activeChannelId) {

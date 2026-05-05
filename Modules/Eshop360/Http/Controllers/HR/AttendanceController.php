@@ -3,12 +3,12 @@
 namespace Modules\Eshop360\Http\Controllers\HR;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
-use Modules\Eshop360\Models\Employee;
-use Modules\Eshop360\Models\Attendance;
-use Modules\Eshop360\Services\HRService;
+use Illuminate\Http\Request;
 use Modules\Core\Support\CurrentInstance;
+use Modules\Eshop360\Domain\HR\Models\Attendance;
+use Modules\Eshop360\Domain\HR\Models\Employee;
+use Modules\Eshop360\Services\HRService;
 
 class AttendanceController extends Controller
 {
@@ -70,6 +70,7 @@ class AttendanceController extends Controller
         $validated = $request->validate(['employee_id' => 'required|exists:eshop_employees,id']);
         $employee = Employee::where('instance_id', CurrentInstance::get()->id)->findOrFail($validated['employee_id']);
         $this->hrService->clockIn($employee);
+
         return redirect()->back()->with('success', __(':name pointe a l\'entree.', ['name' => $employee->name]));
     }
 
@@ -86,6 +87,7 @@ class AttendanceController extends Controller
         }
 
         $this->hrService->clockOut($attendance);
+
         return redirect()->back()->with('success', __('Sortie enregistree.'));
     }
 
@@ -95,6 +97,7 @@ class AttendanceController extends Controller
         $from = $request->get('from', now()->startOfMonth()->toDateString());
         $to = $request->get('to', now()->toDateString());
         $report = $this->hrService->getAttendanceReport($instance->id, $from, $to);
+
         return view('eshop360::hr.attendance.report', compact('report', 'from', 'to'));
     }
 }

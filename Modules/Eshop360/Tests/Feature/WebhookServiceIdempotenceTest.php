@@ -3,8 +3,8 @@
 namespace Modules\Eshop360\Tests\Feature;
 
 use Illuminate\Database\UniqueConstraintViolationException;
-use Modules\Eshop360\Models\Webhook;
-use Modules\Eshop360\Models\WebhookLog;
+use Modules\Eshop360\Domain\Communication\Models\Webhook;
+use Modules\Eshop360\Domain\Communication\Models\WebhookLog;
 use Modules\Eshop360\Tests\TestCase;
 
 /**

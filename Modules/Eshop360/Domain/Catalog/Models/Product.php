@@ -16,11 +16,11 @@ use Modules\Eshop360\Database\Traits\BelongsToChannel;
 // on référence les alias `Modules\Eshop360\Models\*` pour transition fluide.
 // Ils seront remplacés par leurs FQN canoniques au fur et à mesure des
 // sous-lots suivants (ex. Stock → Domain\Inventory\Models\Stock après S5).
-use Modules\Eshop360\Models\ChannelProductPrice;
-use Modules\Eshop360\Models\DistributionChannel;
-use Modules\Eshop360\Models\OrderItem;
-use Modules\Eshop360\Models\Stock;
-use Modules\Eshop360\Models\Supplier;
+use Modules\Eshop360\Domain\Channel\Models\ChannelProductPrice;
+use Modules\Eshop360\Domain\Channel\Models\DistributionChannel;
+use Modules\Eshop360\Domain\Inventory\Models\Stock;
+use Modules\Eshop360\Domain\Purchasing\Models\Supplier;
+use Modules\Eshop360\Domain\Sales\Models\OrderItem;
 
 class Product extends Model
 {

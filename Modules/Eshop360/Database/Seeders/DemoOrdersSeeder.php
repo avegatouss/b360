@@ -2,12 +2,12 @@
 
 namespace Modules\Eshop360\Database\Seeders;
 
-use Modules\Eshop360\Models\Customer;
-use Modules\Eshop360\Models\OnlineOrder;
-use Modules\Eshop360\Models\OnlineOrderItem;
-use Modules\Eshop360\Models\Order;
-use Modules\Eshop360\Models\OrderItem;
-use Modules\Eshop360\Models\Product;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\CRM\Models\Customer;
+use Modules\Eshop360\Domain\Sales\Models\OnlineOrder;
+use Modules\Eshop360\Domain\Sales\Models\OnlineOrderItem;
+use Modules\Eshop360\Domain\Sales\Models\Order;
+use Modules\Eshop360\Domain\Sales\Models\OrderItem;
 
 final class DemoOrdersSeeder
 {
@@ -157,7 +157,7 @@ final class DemoOrdersSeeder
 
             foreach ($items as $item) {
                 $product = $products->values()->get($item['product_index'] % $products->count());
-                if (!$product) {
+                if (! $product) {
                     continue;
                 }
 

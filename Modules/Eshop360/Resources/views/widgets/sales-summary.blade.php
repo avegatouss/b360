@@ -6,14 +6,14 @@
     $to = now()->toDateString();
     $slug = $instance->slug ?? '';
 
-    $orders = \Modules\Eshop360\Models\Order::where('instance_id', $instanceId)
+    $orders = \Modules\Eshop360\Domain\Sales\Models\Order::where('instance_id', $instanceId)
         ->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])
         ->where('status', '!=', 'cancelled');
 
     $totalSales = round((float) (clone $orders)->sum('total'), 2);
     $orderCount = (clone $orders)->count();
     $totalDue = round((float) (clone $orders)->sum('due_amount'), 2);
-    $todaySales = round((float) \Modules\Eshop360\Models\Order::where('instance_id', $instanceId)
+    $todaySales = round((float) \Modules\Eshop360\Domain\Sales\Models\Order::where('instance_id', $instanceId)
         ->whereDate('created_at', today())
         ->where('status', '!=', 'cancelled')
         ->sum('total'), 2);

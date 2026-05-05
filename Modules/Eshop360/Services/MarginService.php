@@ -3,9 +3,9 @@
 namespace Modules\Eshop360\Services;
 
 use Illuminate\Support\Facades\DB;
-use Modules\Eshop360\Models\ChannelMarginLog;
-use Modules\Eshop360\Models\DistributionChannel;
-use Modules\Eshop360\Models\Order;
+use Modules\Eshop360\Domain\Channel\Models\ChannelMarginLog;
+use Modules\Eshop360\Domain\Channel\Models\DistributionChannel;
+use Modules\Eshop360\Domain\Sales\Models\Order;
 
 class MarginService
 {

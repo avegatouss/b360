@@ -4,11 +4,11 @@ namespace Modules\Eshop360\Http\Controllers\Catalog;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Modules\Eshop360\Models\Brand;
-use Modules\Eshop360\Models\Category;
-use Modules\Eshop360\Models\Product;
-use Modules\Eshop360\Models\Store;
-use Modules\Eshop360\Models\Warehouse;
+use Modules\Eshop360\Domain\Catalog\Models\Brand;
+use Modules\Eshop360\Domain\Catalog\Models\Category;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\Inventory\Models\Store;
+use Modules\Eshop360\Domain\Inventory\Models\Warehouse;
 use Modules\Eshop360\Services\PdfService;
 
 class BarcodeController extends Controller
@@ -17,9 +17,9 @@ class BarcodeController extends Controller
     {
         return [
             'warehouses' => Warehouse::where('is_active', true)->orderBy('name')->get(['id', 'name']),
-            'stores'     => Store::where('is_active', true)->orderBy('name')->get(['id', 'name']),
+            'stores' => Store::where('is_active', true)->orderBy('name')->get(['id', 'name']),
             'categories' => Category::active()->roots()->orderBy('name')->get(['id', 'name']),
-            'brands'     => Brand::where('is_active', true)->orderBy('name')->get(['id', 'name']),
+            'brands' => Brand::where('is_active', true)->orderBy('name')->get(['id', 'name']),
         ];
     }
 
@@ -59,11 +59,11 @@ class BarcodeController extends Controller
     public function generate(Request $request)
     {
         $validated = $request->validate([
-            'product_ids'   => 'required|array|min:1',
+            'product_ids' => 'required|array|min:1',
             'product_ids.*' => 'exists:eshop_products,id',
-            'type'          => 'required|in:barcode,qrcode',
-            'quantity'      => 'nullable|integer|min:1|max:100',
-            'paper_size'    => 'nullable|in:a4,letter,label_30,label_40,label_65',
+            'type' => 'required|in:barcode,qrcode',
+            'quantity' => 'nullable|integer|min:1|max:100',
+            'paper_size' => 'nullable|in:a4,letter,label_30,label_40,label_65',
         ]);
 
         $products = Product::whereIn('id', $validated['product_ids'])
@@ -85,33 +85,33 @@ class BarcodeController extends Controller
     public function printBatch(Request $request)
     {
         $validated = $request->validate([
-            'product_ids'   => 'required|array|min:1',
+            'product_ids' => 'required|array|min:1',
             'product_ids.*' => 'exists:eshop_products,id',
-            'per_row'       => 'nullable|integer|in:2,3,4',
-            'size'          => 'nullable|in:small,medium,large',
-            'show_name'     => 'nullable|boolean',
-            'show_price'    => 'nullable|boolean',
-            'show_sku'      => 'nullable|boolean',
-            'format'        => 'nullable|in:Code128,EAN13,Code39',
-            'quantity'      => 'nullable|integer|min:1|max:100',
+            'per_row' => 'nullable|integer|in:2,3,4',
+            'size' => 'nullable|in:small,medium,large',
+            'show_name' => 'nullable|boolean',
+            'show_price' => 'nullable|boolean',
+            'show_sku' => 'nullable|boolean',
+            'format' => 'nullable|in:Code128,EAN13,Code39',
+            'quantity' => 'nullable|integer|min:1|max:100',
         ]);
 
         $pdfService = app(PdfService::class);
 
         $options = [
-            'per_row'    => $validated['per_row'] ?? 3,
-            'size'       => $validated['size'] ?? 'medium',
-            'show_name'  => (bool) ($validated['show_name'] ?? true),
+            'per_row' => $validated['per_row'] ?? 3,
+            'size' => $validated['size'] ?? 'medium',
+            'show_name' => (bool) ($validated['show_name'] ?? true),
             'show_price' => (bool) ($validated['show_price'] ?? true),
-            'show_sku'   => (bool) ($validated['show_sku'] ?? false),
-            'format'     => $validated['format'] ?? 'Code128',
-            'quantity'   => $validated['quantity'] ?? 1,
+            'show_sku' => (bool) ($validated['show_sku'] ?? false),
+            'format' => $validated['format'] ?? 'Code128',
+            'quantity' => $validated['quantity'] ?? 1,
         ];
 
         $path = $pdfService->generateBarcodeSheet($validated['product_ids'], $options);
 
         $mimeType = str_ends_with($path, '.pdf') ? 'application/pdf' : 'text/html';
-        $filename = 'barcodes-' . now()->format('Ymd-His') . (str_ends_with($path, '.pdf') ? '.pdf' : '.html');
+        $filename = 'barcodes-'.now()->format('Ymd-His').(str_ends_with($path, '.pdf') ? '.pdf' : '.html');
 
         return response()->download($path, $filename, [
             'Content-Type' => $mimeType,

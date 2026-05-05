@@ -5,7 +5,7 @@ namespace Modules\Eshop360\Http\Controllers\ChannelPortal;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\Coupon;
+use Modules\Eshop360\Domain\Promotions\Models\Coupon;
 
 class ChannelPortalPromotionController extends Controller
 {
@@ -15,6 +15,7 @@ class ChannelPortalPromotionController extends Controller
         $coupons = Coupon::where('channel_id', $channel->id)
             ->latest()
             ->paginate(20);
+
         return view('eshop360::channel-portal.promotions.coupons', compact('channel', 'coupons'));
     }
 
@@ -69,6 +70,7 @@ class ChannelPortalPromotionController extends Controller
     {
         $channel = $request->resolved_channel;
         Coupon::where('channel_id', $channel->id)->findOrFail($couponId)->delete();
+
         return back()->with('success', 'Coupon supprimé.');
     }
 }

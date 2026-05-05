@@ -4,8 +4,8 @@ namespace Modules\Eshop360\Http\Controllers\ChannelPortal;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Modules\Eshop360\Models\Product;
-use Modules\Eshop360\Models\Stock;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\Inventory\Models\Stock;
 use Modules\Eshop360\Models\StockAdjustment;
 use Modules\Eshop360\Services\StockService;
 
@@ -28,7 +28,7 @@ class ChannelPortalStockController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('eshop_products.name', 'like', "%{$search}%")
-                  ->orWhere('eshop_products.sku', 'like', "%{$search}%");
+                    ->orWhere('eshop_products.sku', 'like', "%{$search}%");
             });
         }
 

@@ -2,12 +2,12 @@
 
 namespace Modules\Eshop360\Tests\Feature;
 
-use Modules\Eshop360\Models\ChannelProductPrice;
-use Modules\Eshop360\Models\Coupon;
-use Modules\Eshop360\Models\DistributionChannel;
-use Modules\Eshop360\Models\Product;
-use Modules\Eshop360\Models\Stock;
-use Modules\Eshop360\Models\Warehouse;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\Channel\Models\ChannelProductPrice;
+use Modules\Eshop360\Domain\Channel\Models\DistributionChannel;
+use Modules\Eshop360\Domain\Inventory\Models\Stock;
+use Modules\Eshop360\Domain\Inventory\Models\Warehouse;
+use Modules\Eshop360\Domain\Promotions\Models\Coupon;
 use Modules\Eshop360\Tests\TestCase;
 
 final class CartControllerTest extends TestCase

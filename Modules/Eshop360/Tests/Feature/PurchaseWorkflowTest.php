@@ -4,11 +4,11 @@ namespace Modules\Eshop360\Tests\Feature;
 
 use Modules\Core\Support\CurrentInstance;
 use Modules\Core\Support\TeamContext;
-use Modules\Eshop360\Models\Product;
-use Modules\Eshop360\Models\PurchaseOrder;
-use Modules\Eshop360\Models\Stock;
-use Modules\Eshop360\Models\Supplier;
-use Modules\Eshop360\Models\Warehouse;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\Inventory\Models\Stock;
+use Modules\Eshop360\Domain\Inventory\Models\Warehouse;
+use Modules\Eshop360\Domain\Purchasing\Models\PurchaseOrder;
+use Modules\Eshop360\Domain\Purchasing\Models\Supplier;
 use Modules\Eshop360\Tests\TestCase;
 use Spatie\Permission\Models\Permission;
 
@@ -145,7 +145,7 @@ final class PurchaseWorkflowTest extends TestCase
         $response->assertRedirect();
 
         $this->assertDatabaseHas('eshop_stock_movements', [
-            'reference_type' => PurchaseOrder::class,
+            'reference_type' => 'Modules\Eshop360\Models\PurchaseOrder',
             'reference_id' => $purchase->id,
             'type' => 'in',
         ]);
@@ -195,7 +195,7 @@ final class PurchaseWorkflowTest extends TestCase
         $purchase = PurchaseOrder::firstOrFail();
 
         $this->assertDatabaseHas('eshop_stock_movements', [
-            'reference_type' => PurchaseOrder::class,
+            'reference_type' => 'Modules\Eshop360\Models\PurchaseOrder',
             'reference_id' => $purchase->id,
             'type' => 'in',
             'quantity' => 5,

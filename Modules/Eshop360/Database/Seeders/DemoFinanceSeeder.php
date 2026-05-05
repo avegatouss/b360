@@ -2,13 +2,13 @@
 
 namespace Modules\Eshop360\Database\Seeders;
 
-use Modules\Eshop360\Models\Account;
-use Modules\Eshop360\Models\CompanyCharge;
-use Modules\Eshop360\Models\Expense;
-use Modules\Eshop360\Models\ExpenseCategory;
-use Modules\Eshop360\Models\Income;
-use Modules\Eshop360\Models\IncomeSource;
-use Modules\Eshop360\Models\PaymentMethod;
+use Modules\Eshop360\Domain\Finance\Models\Account;
+use Modules\Eshop360\Domain\Finance\Models\CompanyCharge;
+use Modules\Eshop360\Domain\Finance\Models\Expense;
+use Modules\Eshop360\Domain\Finance\Models\ExpenseCategory;
+use Modules\Eshop360\Domain\Finance\Models\Income;
+use Modules\Eshop360\Domain\Finance\Models\IncomeSource;
+use Modules\Eshop360\Domain\Finance\Models\PaymentMethod;
 
 final class DemoFinanceSeeder
 {
@@ -51,6 +51,7 @@ final class DemoFinanceSeeder
                 array_merge($d, ['instance_id' => $instanceId, 'is_active' => true])
             );
         }
+
         return $result;
     }
 
@@ -121,7 +122,9 @@ final class DemoFinanceSeeder
     {
         $categories = ExpenseCategory::withoutGlobalScopes()->where('instance_id', $instanceId)->get();
         $account = $accounts[0] ?? null;
-        if (!$account || $categories->isEmpty()) return;
+        if (! $account || $categories->isEmpty()) {
+            return;
+        }
 
         $userId = auth()->id() ?? \App\Models\User::first()?->id ?? 1;
 
@@ -135,7 +138,9 @@ final class DemoFinanceSeeder
 
         foreach ($expenses as $e) {
             $cat = $categories->firstWhere('name', $e['category']);
-            if (!$cat) continue;
+            if (! $cat) {
+                continue;
+            }
 
             Expense::withoutGlobalScopes()->create([
                 'instance_id' => $instanceId,
@@ -153,7 +158,9 @@ final class DemoFinanceSeeder
     {
         $sources = IncomeSource::withoutGlobalScopes()->where('instance_id', $instanceId)->get();
         $account = $accounts[1] ?? $accounts[0] ?? null;
-        if (!$account || $sources->isEmpty()) return;
+        if (! $account || $sources->isEmpty()) {
+            return;
+        }
 
         $userId = auth()->id() ?? \App\Models\User::first()?->id ?? 1;
 
@@ -164,7 +171,9 @@ final class DemoFinanceSeeder
 
         foreach ($incomes as $inc) {
             $src = $sources->firstWhere('name', $inc['source']);
-            if (!$src) continue;
+            if (! $src) {
+                continue;
+            }
 
             Income::withoutGlobalScopes()->create([
                 'instance_id' => $instanceId,

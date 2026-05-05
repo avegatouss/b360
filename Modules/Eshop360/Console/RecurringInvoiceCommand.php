@@ -2,21 +2,23 @@
 
 namespace Modules\Eshop360\Console;
 
+use App\Instances\Instance;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Schema;
-use Modules\Eshop360\Models\Invoice;
-use Modules\Eshop360\Models\InvoiceItem;
-use App\Instances\Instance;
+use Modules\Eshop360\Domain\Finance\Models\Invoice;
+use Modules\Eshop360\Domain\Finance\Models\InvoiceItem;
 
 class RecurringInvoiceCommand extends Command
 {
     protected $signature = 'eshop360:recurring-invoices';
+
     protected $description = 'Generate invoices from recurring invoice templates';
 
     public function handle(): int
     {
-        if (!$this->isRecurringSchemaReady()) {
+        if (! $this->isRecurringSchemaReady()) {
             $this->warn('Recurring invoices skipped: schema for recurring invoices is not implemented.');
+
             return self::SUCCESS;
         }
 
@@ -29,7 +31,7 @@ class RecurringInvoiceCommand extends Command
                 ->where('recurring_status', 'active')
                 ->where(function ($q) {
                     $q->whereNull('next_recurring_date')
-                      ->orWhere('next_recurring_date', '<=', now());
+                        ->orWhere('next_recurring_date', '<=', now());
                 })
                 ->with('items')
                 ->get();
@@ -77,6 +79,7 @@ class RecurringInvoiceCommand extends Command
         }
 
         $this->info("Total recurring invoices generated: {$generated}");
+
         return self::SUCCESS;
     }
 
@@ -84,7 +87,8 @@ class RecurringInvoiceCommand extends Command
     {
         $prefix = config('eshop360.invoice.prefix', 'INV-');
         $count = Invoice::where('instance_id', $instance->id)->count() + 1;
-        return $prefix . str_pad($count, 6, '0', STR_PAD_LEFT);
+
+        return $prefix.str_pad($count, 6, '0', STR_PAD_LEFT);
     }
 
     private function isRecurringSchemaReady(): bool

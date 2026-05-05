@@ -13,10 +13,10 @@ use Modules\Eshop360\Database\Traits\ScopedByUserAssignment;
 // R-101 S2 — relations vers modèles hors-CRM : alias transitoires,
 // remplacés par FQN canoniques aux sous-lots S8 (Order), S9 (Invoice),
 // S11 (Communication pour SupportTicket).
-use Modules\Eshop360\Models\Invoice;
-use Modules\Eshop360\Models\OnlineOrder;
-use Modules\Eshop360\Models\Order;
-use Modules\Eshop360\Models\SupportTicket;
+use Modules\Eshop360\Domain\Communication\Models\SupportTicket;
+use Modules\Eshop360\Domain\Finance\Models\Invoice;
+use Modules\Eshop360\Domain\Sales\Models\OnlineOrder;
+use Modules\Eshop360\Domain\Sales\Models\Order;
 
 class Customer extends Model
 {

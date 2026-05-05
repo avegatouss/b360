@@ -5,9 +5,9 @@ namespace Modules\Eshop360\Services;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\FneInvoice;
-use Modules\Eshop360\Models\Invoice;
-use Modules\Eshop360\Models\Order;
+use Modules\Eshop360\Domain\Finance\Models\FneInvoice;
+use Modules\Eshop360\Domain\Finance\Models\Invoice;
+use Modules\Eshop360\Domain\Sales\Models\Order;
 
 class FneService
 {
@@ -167,7 +167,7 @@ class FneService
         $instance = CurrentInstance::get();
 
         // Check if already signed
-        $existing = FneInvoice::where('invoiceable_type', Order::class)
+        $existing = FneInvoice::where('invoiceable_type', $order->getMorphClass())
             ->where('invoiceable_id', $order->id)
             ->where('status', 'signed')
             ->first();
@@ -178,7 +178,7 @@ class FneService
 
         $fneInvoice = FneInvoice::create([
             'instance_id' => $instance->id,
-            'invoiceable_type' => Order::class,
+            'invoiceable_type' => $order->getMorphClass(),
             'invoiceable_id' => $order->id,
             'template' => $payload['template'],
             'status' => 'pending',

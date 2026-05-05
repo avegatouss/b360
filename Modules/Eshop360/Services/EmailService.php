@@ -5,7 +5,7 @@ namespace Modules\Eshop360\Services;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\EmailTemplate;
+use Modules\Eshop360\Domain\Communication\Models\EmailTemplate;
 
 /**
  * Email sending service for Eshop360.

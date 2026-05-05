@@ -3,9 +3,9 @@
 namespace Modules\Eshop360\Tests\Unit;
 
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\ChannelProductPrice;
-use Modules\Eshop360\Models\DistributionChannel;
-use Modules\Eshop360\Models\Product;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\Channel\Models\ChannelProductPrice;
+use Modules\Eshop360\Domain\Channel\Models\DistributionChannel;
 use Modules\Eshop360\Services\OrderService;
 use Modules\Eshop360\Tests\TestCase;
 

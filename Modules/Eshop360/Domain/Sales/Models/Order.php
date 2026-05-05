@@ -14,16 +14,15 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Core\Database\Traits\BelongsToInstance;
 use Modules\Eshop360\Database\Scopes\OrderUserAssignmentScope;
 use Modules\Eshop360\Database\Traits\BelongsToChannel;
-use Modules\Eshop360\Models\ChannelMarginLog;
-use Modules\Eshop360\Models\Customer;
-use Modules\Eshop360\Models\EmployeeCommission;
-use Modules\Eshop360\Models\Holding;
-use Modules\Eshop360\Models\InstallmentPlan;
-use Modules\Eshop360\Models\Invoice;
-use Modules\Eshop360\Models\Payment;
-use Modules\Eshop360\Models\Project;
-use Modules\Eshop360\Models\Store;
-use Modules\Eshop360\Models\Warehouse;
+use Modules\Eshop360\Domain\Channel\Models\ChannelMarginLog;
+use Modules\Eshop360\Domain\CRM\Models\Customer;
+use Modules\Eshop360\Domain\Finance\Models\InstallmentPlan;
+use Modules\Eshop360\Domain\Finance\Models\Invoice;
+use Modules\Eshop360\Domain\Finance\Models\Payment;
+use Modules\Eshop360\Domain\HR\Models\EmployeeCommission;
+use Modules\Eshop360\Domain\Inventory\Models\Store;
+use Modules\Eshop360\Domain\Inventory\Models\Warehouse;
+use Modules\Eshop360\Domain\Projects\Models\Project;
 
 class Order extends Model
 {

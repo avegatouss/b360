@@ -6,7 +6,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\SmsGateway;
+use Modules\Eshop360\Domain\Communication\Models\SmsGateway;
 use Modules\Eshop360\Services\Sms\SmsManager;
 
 class SmsGatewayController extends Controller
@@ -51,7 +51,7 @@ class SmsGatewayController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'driver' => 'required|string|in:' . implode(',', array_keys($this->smsManager->getAvailableDrivers())),
+            'driver' => 'required|string|in:'.implode(',', array_keys($this->smsManager->getAvailableDrivers())),
             'display_name' => 'required|string|max:255',
             'config' => 'required|array',
             'is_active' => 'boolean',
@@ -61,7 +61,7 @@ class SmsGatewayController extends Controller
         $instance = CurrentInstance::get();
 
         // If setting as default, unset other defaults
-        if (!empty($validated['is_default'])) {
+        if (! empty($validated['is_default'])) {
             SmsGateway::where('instance_id', $instance->id)
                 ->where('is_default', true)
                 ->update(['is_default' => false]);
@@ -96,7 +96,7 @@ class SmsGatewayController extends Controller
     public function update(Request $request, SmsGateway $gateway): RedirectResponse
     {
         $validated = $request->validate([
-            'driver' => 'required|string|in:' . implode(',', array_keys($this->smsManager->getAvailableDrivers())),
+            'driver' => 'required|string|in:'.implode(',', array_keys($this->smsManager->getAvailableDrivers())),
             'display_name' => 'required|string|max:255',
             'config' => 'required|array',
             'is_active' => 'boolean',
@@ -106,7 +106,7 @@ class SmsGatewayController extends Controller
         $instance = CurrentInstance::get();
 
         // If setting as default, unset other defaults
-        if (!empty($validated['is_default'])) {
+        if (! empty($validated['is_default'])) {
             SmsGateway::where('instance_id', $instance->id)
                 ->where('is_default', true)
                 ->where('id', '!=', $gateway->id)

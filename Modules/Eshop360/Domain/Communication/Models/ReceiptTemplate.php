@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Modules\Core\Database\Traits\BelongsToInstance;
 use Modules\Eshop360\Database\Traits\BelongsToChannel;
-use Modules\Eshop360\Models\Store;
+use Modules\Eshop360\Domain\Inventory\Models\Store;
 
 class ReceiptTemplate extends Model
 {

@@ -5,8 +5,8 @@ namespace Modules\Eshop360\Http\Controllers\ChannelPortal;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\Customer;
-use Modules\Eshop360\Models\Order;
+use Modules\Eshop360\Domain\CRM\Models\Customer;
+use Modules\Eshop360\Domain\Sales\Models\Order;
 use Modules\Eshop360\Services\FinanceService;
 
 class ChannelPortalCustomerController extends Controller

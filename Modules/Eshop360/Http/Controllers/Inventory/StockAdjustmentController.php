@@ -7,9 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\Stock;
-use Modules\Eshop360\Models\StockMovement;
-use Modules\Eshop360\Models\Warehouse;
+use Modules\Eshop360\Domain\Inventory\Models\Stock;
+use Modules\Eshop360\Domain\Inventory\Models\StockMovement;
+use Modules\Eshop360\Domain\Inventory\Models\Warehouse;
 
 class StockAdjustmentController extends Controller
 {
@@ -42,12 +42,12 @@ class StockAdjustmentController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'product_id'   => 'required|exists:eshop_products,id',
+            'product_id' => 'required|exists:eshop_products,id',
             'warehouse_id' => 'required|exists:eshop_warehouses,id',
-            'store_id'     => 'nullable|exists:eshop_stores,id',
-            'quantity'     => 'required|integer|not_in:0',
-            'reason'       => 'required|string|in:damaged,lost,correction,recount,return,other',
-            'notes'        => 'nullable|string|max:1000',
+            'store_id' => 'nullable|exists:eshop_stores,id',
+            'quantity' => 'required|integer|not_in:0',
+            'reason' => 'required|string|in:damaged,lost,correction,recount,return,other',
+            'notes' => 'nullable|string|max:1000',
         ]);
 
         $instance = CurrentInstance::get();
@@ -55,13 +55,13 @@ class StockAdjustmentController extends Controller
         DB::transaction(function () use ($validated, $instance) {
             $stock = Stock::firstOrCreate(
                 [
-                    'instance_id'  => $instance->id,
-                    'product_id'   => $validated['product_id'],
+                    'instance_id' => $instance->id,
+                    'product_id' => $validated['product_id'],
                     'warehouse_id' => $validated['warehouse_id'],
-                    'store_id'     => $validated['store_id'] ?? null,
+                    'store_id' => $validated['store_id'] ?? null,
                 ],
                 [
-                    'quantity'          => 0,
+                    'quantity' => 0,
                     'reserved_quantity' => 0,
                 ]
             );
@@ -76,13 +76,13 @@ class StockAdjustmentController extends Controller
             $stock->increment('quantity', $validated['quantity']);
 
             StockMovement::create([
-                'instance_id'  => $instance->id,
-                'product_id'   => $validated['product_id'],
+                'instance_id' => $instance->id,
+                'product_id' => $validated['product_id'],
                 'warehouse_id' => $validated['warehouse_id'],
-                'store_id'     => $validated['store_id'] ?? null,
-                'type'         => 'adjustment',
-                'quantity'     => $validated['quantity'],
-                'notes'        => "[{$validated['reason']}] " . ($validated['notes'] ?? ''),
+                'store_id' => $validated['store_id'] ?? null,
+                'type' => 'adjustment',
+                'quantity' => $validated['quantity'],
+                'notes' => "[{$validated['reason']}] ".($validated['notes'] ?? ''),
                 'performed_by' => auth()->id(),
             ]);
         });
@@ -144,13 +144,13 @@ class StockAdjustmentController extends Controller
 
             // Log the reversal as a new movement before deleting
             StockMovement::create([
-                'instance_id'  => $movement->instance_id,
-                'product_id'   => $movement->product_id,
+                'instance_id' => $movement->instance_id,
+                'product_id' => $movement->product_id,
                 'warehouse_id' => $movement->warehouse_id,
-                'store_id'     => $movement->store_id,
-                'type'         => 'adjustment',
-                'quantity'     => -$movement->quantity,
-                'notes'        => "[annulation:{$reason}] Annulation ajustement #{$movement->id} — " . ($movement->notes ?? ''),
+                'store_id' => $movement->store_id,
+                'type' => 'adjustment',
+                'quantity' => -$movement->quantity,
+                'notes' => "[annulation:{$reason}] Annulation ajustement #{$movement->id} — ".($movement->notes ?? ''),
                 'performed_by' => auth()->id(),
             ]);
 

@@ -5,7 +5,7 @@ namespace Modules\Eshop360\Services\Payment\Drivers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Modules\Eshop360\Models\Customer;
+use Modules\Eshop360\Domain\CRM\Models\Customer;
 use Modules\Eshop360\Services\Payment\PaymentGatewayInterface;
 
 final class WalletDriver implements PaymentGatewayInterface

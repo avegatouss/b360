@@ -4,12 +4,12 @@ namespace Modules\Eshop360\Tests\Feature;
 
 use Modules\Core\Support\CurrentInstance;
 use Modules\Core\Support\TeamContext;
-use Modules\Eshop360\Models\ImportCost;
-use Modules\Eshop360\Models\ImportOrder;
-use Modules\Eshop360\Models\ImportOrderItem;
-use Modules\Eshop360\Models\Product;
-use Modules\Eshop360\Models\Supplier;
-use Modules\Eshop360\Models\Warehouse;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\Inventory\Models\Warehouse;
+use Modules\Eshop360\Domain\Purchasing\Models\ImportCost;
+use Modules\Eshop360\Domain\Purchasing\Models\ImportOrder;
+use Modules\Eshop360\Domain\Purchasing\Models\ImportOrderItem;
+use Modules\Eshop360\Domain\Purchasing\Models\Supplier;
 use Modules\Eshop360\Tests\TestCase;
 use Spatie\Permission\Models\Permission;
 
@@ -270,7 +270,7 @@ final class ImportOrderTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('eshop_stock_movements', [
-            'reference_type' => ImportOrder::class,
+            'reference_type' => 'Modules\Eshop360\Models\ImportOrder',
             'reference_id' => $import->id,
             'type' => 'in',
             'quantity' => 200,

@@ -3,7 +3,7 @@
 namespace Modules\Eshop360\Tests\Unit;
 
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\DistributionChannel;
+use Modules\Eshop360\Domain\Channel\Models\DistributionChannel;
 use Modules\Eshop360\Services\CostCalculatorService;
 use Modules\Eshop360\Tests\TestCase;
 

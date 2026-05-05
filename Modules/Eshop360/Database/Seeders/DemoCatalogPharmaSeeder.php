@@ -3,11 +3,11 @@
 namespace Modules\Eshop360\Database\Seeders;
 
 use Illuminate\Support\Str;
-use Modules\Eshop360\Models\Brand;
-use Modules\Eshop360\Models\Category;
-use Modules\Eshop360\Models\ChannelProductPrice;
-use Modules\Eshop360\Models\DistributionChannel;
-use Modules\Eshop360\Models\Product;
+use Modules\Eshop360\Domain\Catalog\Models\Brand;
+use Modules\Eshop360\Domain\Catalog\Models\Category;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\Channel\Models\ChannelProductPrice;
+use Modules\Eshop360\Domain\Channel\Models\DistributionChannel;
 
 /**
  * Seeds pharmaceutical demo data: categories, brands, and 100 products.
@@ -72,7 +72,7 @@ final class DemoCatalogPharmaSeeder
         $result = [];
 
         foreach ($tree as $parentName => $children) {
-            $parentSlug = 'pharma-' . Str::slug($parentName);
+            $parentSlug = 'pharma-'.Str::slug($parentName);
 
             $parent = Category::withoutGlobalScopes()->updateOrCreate(
                 ['instance_id' => $instanceId, 'slug' => $parentSlug],
@@ -86,7 +86,7 @@ final class DemoCatalogPharmaSeeder
             $result[$parentName] = $parent;
 
             foreach ($children as $i => $childName) {
-                $childSlug = 'pharma-' . Str::slug($childName);
+                $childSlug = 'pharma-'.Str::slug($childName);
 
                 $child = Category::withoutGlobalScopes()->updateOrCreate(
                     ['instance_id' => $instanceId, 'slug' => $childSlug],
@@ -117,7 +117,7 @@ final class DemoCatalogPharmaSeeder
         $result = [];
 
         foreach ($brandsData as $brandName) {
-            $slug = 'pharma-' . Str::slug($brandName);
+            $slug = 'pharma-'.Str::slug($brandName);
 
             $brand = Brand::withoutGlobalScopes()->updateOrCreate(
                 ['instance_id' => $instanceId, 'slug' => $slug],
@@ -162,7 +162,7 @@ final class DemoCatalogPharmaSeeder
                     'category_id' => $catModel?->id,
                     'brand_id' => $brandModel?->id,
                     'name' => $p['name'],
-                    'slug' => Str::slug($p['name']) . '-' . $sku,
+                    'slug' => Str::slug($p['name']).'-'.$sku,
                     'description' => $p['description'] ?? null,
                     'unit' => $p['unit'],
                     'price' => $salePrice,

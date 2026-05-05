@@ -4,8 +4,8 @@ namespace Modules\Eshop360\Tests\Feature;
 
 use Modules\Core\Support\CurrentInstance;
 use Modules\Core\Support\TeamContext;
-use Modules\Eshop360\Models\EshopPaymentGateway;
-use Modules\Eshop360\Models\Invoice;
+use Modules\Eshop360\Domain\Finance\Models\EshopPaymentGateway;
+use Modules\Eshop360\Domain\Finance\Models\Invoice;
 use Modules\Eshop360\Services\InvoiceService;
 use Modules\Eshop360\Tests\TestCase;
 use Spatie\Permission\Models\Permission;

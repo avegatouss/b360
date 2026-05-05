@@ -3,8 +3,8 @@
 namespace Modules\Eshop360\Services;
 
 use Carbon\Carbon;
-use Modules\Eshop360\Models\ChargeLog;
-use Modules\Eshop360\Models\CompanyCharge;
+use Modules\Eshop360\Domain\Finance\Models\ChargeLog;
+use Modules\Eshop360\Domain\Finance\Models\CompanyCharge;
 use Modules\Eshop360\Support\CurrentChannel;
 
 class ChargesService

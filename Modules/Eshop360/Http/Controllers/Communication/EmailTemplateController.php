@@ -5,8 +5,8 @@ namespace Modules\Eshop360\Http\Controllers\Communication;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\EmailTemplate;
 use Modules\Eshop360\Database\Seeders\EmailTemplateSeeder;
+use Modules\Eshop360\Domain\Communication\Models\EmailTemplate;
 
 class EmailTemplateController extends Controller
 {
@@ -81,8 +81,8 @@ class EmailTemplateController extends Controller
         $defaults = collect(EmailTemplateSeeder::defaults());
         $default = $defaults->firstWhere('name', $template->name);
 
-        if (!$default) {
-            return back()->with('error', 'Aucun template par defaut trouve pour "' . $template->name . '".');
+        if (! $default) {
+            return back()->with('error', 'Aucun template par defaut trouve pour "'.$template->name.'".');
         }
 
         $template->update([

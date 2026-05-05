@@ -2,7 +2,7 @@
 @php
     $user = auth()->user();
     $instance = \Modules\Core\Support\CurrentInstance::get();
-    $customer = \Modules\Eshop360\Models\Customer::where('instance_id', $instance?->id)
+    $customer = \Modules\Eshop360\Domain\CRM\Models\Customer::where('instance_id', $instance?->id)
         ->where(fn($q) => $q->where('user_id', $user->id)->orWhere('email', $user->email))
         ->first();
 

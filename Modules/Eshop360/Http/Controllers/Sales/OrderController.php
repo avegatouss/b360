@@ -6,7 +6,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\Order;
+use Modules\Eshop360\Domain\Sales\Models\Order;
 use Modules\Eshop360\Services\ChannelAccessService;
 use Modules\Eshop360\Services\OrderService;
 use Modules\Eshop360\Services\PdfService;
@@ -16,8 +16,7 @@ class OrderController extends Controller
     public function __construct(
         private readonly OrderService $orderService,
         private readonly ChannelAccessService $channelAccess,
-    ) {
-    }
+    ) {}
 
     public function index(Request $request)
     {
@@ -47,20 +46,20 @@ class OrderController extends Controller
         // KPIs from filtered query
         $fq = clone $query;
         $kpi = (object) [
-            'total'     => (clone $fq)->count(),
-            'revenue'   => round((float) (clone $fq)->sum('total'), 0),
-            'paid'      => round((float) (clone $fq)->sum('paid_amount'), 0),
-            'due'       => round((float) (clone $fq)->where('payment_status', '!=', 'paid')->sum('due_amount'), 0),
+            'total' => (clone $fq)->count(),
+            'revenue' => round((float) (clone $fq)->sum('total'), 0),
+            'paid' => round((float) (clone $fq)->sum('paid_amount'), 0),
+            'due' => round((float) (clone $fq)->where('payment_status', '!=', 'paid')->sum('due_amount'), 0),
             'completed' => (clone $fq)->where('status', 'completed')->count(),
-            'pending'   => (clone $fq)->where('status', 'pending')->count(),
+            'pending' => (clone $fq)->where('status', 'pending')->count(),
             'cancelled' => (clone $fq)->whereIn('status', ['cancelled', 'refunded'])->count(),
-            'avg'       => round((float) (clone $fq)->avg('total'), 0),
+            'avg' => round((float) (clone $fq)->avg('total'), 0),
         ];
 
         $orders = $query->latest()->paginate(25)->withQueryString();
 
         // Filter lookups (scoped by channel access)
-        $customers = \Modules\Eshop360\Models\Customer::where('instance_id', $instance->id)
+        $customers = \Modules\Eshop360\Domain\CRM\Models\Customer::where('instance_id', $instance->id)
             ->where('is_active', true)
             ->when($channelFilter, fn ($q) => $q->where('channel_id', $channelFilter))
             ->orderBy('name')
@@ -80,19 +79,19 @@ class OrderController extends Controller
     {
         $instance = CurrentInstance::get();
         $validated = $request->validate([
-            'customer_id'        => 'nullable|exists:eshop_customers,id',
-            'payment_method'     => 'required|string|in:cash,card,cheque,paypal,bank_transfer,points,deposit,gift_card,external',
-            'paid_amount'        => 'nullable|numeric|min:0',
-            'discount_amount'    => 'nullable|numeric|min:0',
-            'shipping_amount'    => 'nullable|numeric|min:0',
-            'notes'              => 'nullable|string|max:1000',
-            'coupon_code'        => 'nullable|string|max:50',
-            'source'             => 'required|in:pos,online,manual',
-            'items'              => 'required|array|min:1',
+            'customer_id' => 'nullable|exists:eshop_customers,id',
+            'payment_method' => 'required|string|in:cash,card,cheque,paypal,bank_transfer,points,deposit,gift_card,external',
+            'paid_amount' => 'nullable|numeric|min:0',
+            'discount_amount' => 'nullable|numeric|min:0',
+            'shipping_amount' => 'nullable|numeric|min:0',
+            'notes' => 'nullable|string|max:1000',
+            'coupon_code' => 'nullable|string|max:50',
+            'source' => 'required|in:pos,online,manual',
+            'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:eshop_products,id',
-            'items.*.quantity'   => 'required|integer|min:1',
+            'items.*.quantity' => 'required|integer|min:1',
             'items.*.unit_price' => 'required|numeric|min:0',
-            'items.*.discount'   => 'nullable|numeric|min:0',
+            'items.*.discount' => 'nullable|numeric|min:0',
         ]);
 
         $order = $this->orderService->createFromItems($validated['items'], [
@@ -140,10 +139,10 @@ class OrderController extends Controller
         $this->authorizeOrderAccess($order);
         $instance = CurrentInstance::get();
         $validated = $request->validate([
-            'status'         => 'nullable|in:pending,processing,completed,cancelled,refunded',
+            'status' => 'nullable|in:pending,processing,completed,cancelled,refunded',
             'payment_status' => 'nullable|in:unpaid,partial,paid,overdue',
-            'paid_amount'    => 'nullable|numeric|min:0',
-            'notes'          => 'nullable|string|max:1000',
+            'paid_amount' => 'nullable|numeric|min:0',
+            'notes' => 'nullable|string|max:1000',
         ]);
 
         $updateData = array_filter($validated, fn ($v) => $v !== null);

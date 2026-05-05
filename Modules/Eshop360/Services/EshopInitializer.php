@@ -5,9 +5,9 @@ namespace Modules\Eshop360\Services;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Modules\Eshop360\Models\ChannelUser;
-use Modules\Eshop360\Models\DistributionChannel;
-use Modules\Eshop360\Models\Warehouse;
+use Modules\Eshop360\Domain\Channel\Models\ChannelUser;
+use Modules\Eshop360\Domain\Channel\Models\DistributionChannel;
+use Modules\Eshop360\Domain\Inventory\Models\Warehouse;
 
 final class EshopInitializer
 {

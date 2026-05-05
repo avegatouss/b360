@@ -2,8 +2,8 @@
 
 namespace Modules\Eshop360\Database\Seeders;
 
-use Modules\Eshop360\Models\Product;
-use Modules\Eshop360\Models\ProductVariation;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\Catalog\Models\ProductVariation;
 
 final class DemoProductVariationsSeeder
 {
@@ -45,8 +45,8 @@ final class DemoProductVariationsSeeder
         $variations = [
             [
                 'name' => '[DEMO] Boite 10 comprimes',
-                'sku' => $product->sku . '-B10',
-                'barcode' => '690' . str_pad((string) $product->id, 7, '0', STR_PAD_LEFT) . '01',
+                'sku' => $product->sku.'-B10',
+                'barcode' => '690'.str_pad((string) $product->id, 7, '0', STR_PAD_LEFT).'01',
                 'price' => round($basePrice * 0.4, 2),
                 'cost_price' => round($baseCost * 0.4, 2),
                 'quantity' => rand(50, 200),
@@ -55,8 +55,8 @@ final class DemoProductVariationsSeeder
             ],
             [
                 'name' => '[DEMO] Boite 30 comprimes',
-                'sku' => $product->sku . '-B30',
-                'barcode' => '690' . str_pad((string) $product->id, 7, '0', STR_PAD_LEFT) . '02',
+                'sku' => $product->sku.'-B30',
+                'barcode' => '690'.str_pad((string) $product->id, 7, '0', STR_PAD_LEFT).'02',
                 'price' => $basePrice,
                 'cost_price' => $baseCost,
                 'quantity' => rand(20, 100),
@@ -65,8 +65,8 @@ final class DemoProductVariationsSeeder
             ],
             [
                 'name' => '[DEMO] Flacon sirop 125ml',
-                'sku' => $product->sku . '-S125',
-                'barcode' => '690' . str_pad((string) $product->id, 7, '0', STR_PAD_LEFT) . '03',
+                'sku' => $product->sku.'-S125',
+                'barcode' => '690'.str_pad((string) $product->id, 7, '0', STR_PAD_LEFT).'03',
                 'price' => round($basePrice * 1.2, 2),
                 'cost_price' => round($baseCost * 1.1, 2),
                 'quantity' => rand(10, 50),

@@ -3,15 +3,15 @@
 namespace Modules\Eshop360\Tests\Feature;
 
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\Account;
-use Modules\Eshop360\Models\Expense;
-use Modules\Eshop360\Models\ExpenseCategory;
-use Modules\Eshop360\Models\GiftCard;
-use Modules\Eshop360\Models\GiftCardTopup;
-use Modules\Eshop360\Models\Income;
-use Modules\Eshop360\Models\IncomeSource;
-use Modules\Eshop360\Models\Loan;
-use Modules\Eshop360\Models\LoanPayment;
+use Modules\Eshop360\Domain\Finance\Models\Account;
+use Modules\Eshop360\Domain\Finance\Models\Expense;
+use Modules\Eshop360\Domain\Finance\Models\ExpenseCategory;
+use Modules\Eshop360\Domain\Finance\Models\Income;
+use Modules\Eshop360\Domain\Finance\Models\IncomeSource;
+use Modules\Eshop360\Domain\Finance\Models\Loan;
+use Modules\Eshop360\Domain\Finance\Models\LoanPayment;
+use Modules\Eshop360\Domain\Promotions\Models\GiftCard;
+use Modules\Eshop360\Domain\Promotions\Models\GiftCardTopup;
 use Modules\Eshop360\Tests\TestCase;
 
 final class FinanceTransactionTest extends TestCase

@@ -4,8 +4,8 @@ namespace Modules\Eshop360\Tests\Unit;
 
 use App\Models\User;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\PersistentCart;
-use Modules\Eshop360\Models\Product;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\Sales\Models\PersistentCart;
 use Modules\Eshop360\Services\CartService;
 use Modules\Eshop360\Tests\TestCase;
 

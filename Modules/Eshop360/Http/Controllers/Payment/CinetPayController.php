@@ -4,7 +4,7 @@ namespace Modules\Eshop360\Http\Controllers\Payment;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Modules\Eshop360\Models\Order;
+use Modules\Eshop360\Domain\Sales\Models\Order;
 use Modules\Eshop360\Services\CinetPayService;
 
 class CinetPayController extends Controller
@@ -19,7 +19,7 @@ class CinetPayController extends Controller
             'return_url' => 'nullable|url',
         ]);
 
-        if (!$this->cinetPay->isConfigured()) {
+        if (! $this->cinetPay->isConfigured()) {
             return redirect()->back()->with('error', 'CinetPay n\'est pas configure.');
         }
 
@@ -29,11 +29,11 @@ class CinetPayController extends Controller
             $validated
         );
 
-        if (!$result['success']) {
+        if (! $result['success']) {
             return redirect()->back()->with('error', $result['error'] ?? 'Erreur de paiement.');
         }
 
-        if (!empty($result['payment_url'])) {
+        if (! empty($result['payment_url'])) {
             return redirect()->away($result['payment_url']);
         }
 
@@ -48,7 +48,7 @@ class CinetPayController extends Controller
     {
         $result = $this->cinetPay->verifyCallback($request->all());
 
-        if (!$result['valid']) {
+        if (! $result['valid']) {
             return response()->json(['error' => $result['error']], 400);
         }
 

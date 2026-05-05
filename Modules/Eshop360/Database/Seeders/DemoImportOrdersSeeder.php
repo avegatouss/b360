@@ -4,11 +4,11 @@ namespace Modules\Eshop360\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\ImportOrder;
-use Modules\Eshop360\Models\ImportOrderItem;
-use Modules\Eshop360\Models\Product;
-use Modules\Eshop360\Models\Supplier;
-use Modules\Eshop360\Models\Warehouse;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\Inventory\Models\Warehouse;
+use Modules\Eshop360\Domain\Purchasing\Models\ImportOrder;
+use Modules\Eshop360\Domain\Purchasing\Models\ImportOrderItem;
+use Modules\Eshop360\Domain\Purchasing\Models\Supplier;
 
 class DemoImportOrdersSeeder extends Seeder
 {
@@ -40,19 +40,19 @@ class DemoImportOrdersSeeder extends Seeder
             $eta = $shippingType === 'air' ? $shipDate->copy()->addDays(rand(3, 7)) : ($shippingType === 'sea' ? $shipDate->copy()->addDays(rand(25, 60)) : $shipDate->copy()->addDays(rand(5, 15)));
 
             $importOrder = ImportOrder::create([
-                'instance_id'           => $instanceId,
-                'supplier_id'           => $supplier->id,
-                'reference'             => 'IMP-' . now()->format('Y') . '-' . str_pad($i + 1, 4, '0', STR_PAD_LEFT),
-                'container_no'          => $containers[array_rand($containers)],
-                'shipping_type'         => $shippingType,
-                'ship_date'             => $status !== 'draft' ? $shipDate : null,
-                'eta'                   => $status !== 'draft' ? $eta : null,
-                'status'                => $status,
-                'warehouse_id'          => $warehouse->id,
+                'instance_id' => $instanceId,
+                'supplier_id' => $supplier->id,
+                'reference' => 'IMP-'.now()->format('Y').'-'.str_pad($i + 1, 4, '0', STR_PAD_LEFT),
+                'container_no' => $containers[array_rand($containers)],
+                'shipping_type' => $shippingType,
+                'ship_date' => $status !== 'draft' ? $shipDate : null,
+                'eta' => $status !== 'draft' ? $eta : null,
+                'status' => $status,
+                'warehouse_id' => $warehouse->id,
                 'cost_allocation_method' => collect(['weight', 'value', 'equal'])->random(),
-                'notes'                 => collect([null, 'Commande urgente', 'Lot saisonnier', 'Reapprovisionnement stock', 'Premiere commande fournisseur'])->random(),
-                'created_by'            => 1,
-                'created_at'            => $shipDate->copy()->subDays(rand(5, 20)),
+                'notes' => collect([null, 'Commande urgente', 'Lot saisonnier', 'Reapprovisionnement stock', 'Premiere commande fournisseur'])->random(),
+                'created_by' => 1,
+                'created_at' => $shipDate->copy()->subDays(rand(5, 20)),
             ]);
 
             $itemCount = rand(3, 8);
@@ -65,13 +65,13 @@ class DemoImportOrdersSeeder extends Seeder
                 $allocatedCost = round($totalFactory * rand(5, 20) / 100, 2);
 
                 ImportOrderItem::create([
-                    'import_order_id'    => $importOrder->id,
-                    'product_id'         => $product->id,
-                    'quantity'           => $qty,
+                    'import_order_id' => $importOrder->id,
+                    'product_id' => $product->id,
+                    'quantity' => $qty,
                     'unit_price_factory' => round($factoryPrice, 4),
-                    'total_factory'      => round($totalFactory, 2),
-                    'allocated_cost'     => $allocatedCost,
-                    'cost_price_real'    => round(($totalFactory + $allocatedCost) / $qty, 4),
+                    'total_factory' => round($totalFactory, 2),
+                    'allocated_cost' => $allocatedCost,
+                    'cost_price_real' => round(($totalFactory + $allocatedCost) / $qty, 4),
                 ]);
             }
         }

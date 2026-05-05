@@ -11,8 +11,8 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Core\Database\Traits\BelongsToInstance;
 use Modules\Eshop360\Database\Traits\BelongsToChannel;
-use Modules\Eshop360\Models\Customer;
-use Modules\Eshop360\Models\Order;
+use Modules\Eshop360\Domain\CRM\Models\Customer;
+use Modules\Eshop360\Domain\Sales\Models\Order;
 
 class Invoice extends Model
 {

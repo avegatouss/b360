@@ -6,7 +6,7 @@
     $canManage = auth()->user()?->can('eshop.imports.manage');
     $totalQty = $import->items->sum('quantity');
     $costPerUnit = $totalQty > 0 ? (float) $import->total_costs / $totalQty : 0;
-    $costTypes = \Modules\Eshop360\Models\ImportCostType::getForInstance($instance->id ?? 0);
+    $costTypes = \Modules\Eshop360\Domain\Purchasing\Models\ImportCostType::getForInstance($instance->id ?? 0);
 @endphp
 
 <x-dashboard::layouts.master

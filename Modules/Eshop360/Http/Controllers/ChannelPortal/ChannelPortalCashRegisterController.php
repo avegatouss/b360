@@ -5,7 +5,7 @@ namespace Modules\Eshop360\Http\Controllers\ChannelPortal;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\CashRegister;
+use Modules\Eshop360\Domain\Sales\Models\CashRegister;
 use Modules\Eshop360\Services\CashRegisterService;
 
 class ChannelPortalCashRegisterController extends Controller

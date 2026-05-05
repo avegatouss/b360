@@ -9,7 +9,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
-use Modules\Eshop360\Models\BulkMessageLog;
+use Modules\Eshop360\Domain\Communication\Models\BulkMessageLog;
 use Modules\Eshop360\Services\EmailService;
 
 class SendBulkEmail implements ShouldQueue
@@ -17,6 +17,7 @@ class SendBulkEmail implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 1;
+
     public int $timeout = 600;
 
     public function __construct(
@@ -39,8 +40,9 @@ class SendBulkEmail implements ShouldQueue
 
         foreach ($chunks as $chunk) {
             foreach ($chunk as $customer) {
-                if (!$customer->email) {
+                if (! $customer->email) {
                     $this->log->increment('failed_count');
+
                     continue;
                 }
 

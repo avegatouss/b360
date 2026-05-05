@@ -4,10 +4,10 @@ namespace Modules\Eshop360\Tests\Unit;
 
 use InvalidArgumentException;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\Product;
-use Modules\Eshop360\Models\Stock;
-use Modules\Eshop360\Models\StockMovement;
-use Modules\Eshop360\Models\Warehouse;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\Inventory\Models\Stock;
+use Modules\Eshop360\Domain\Inventory\Models\StockMovement;
+use Modules\Eshop360\Domain\Inventory\Models\Warehouse;
 use Modules\Eshop360\Services\StockService;
 use Modules\Eshop360\Tests\TestCase;
 

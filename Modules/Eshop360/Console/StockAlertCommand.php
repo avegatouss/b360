@@ -2,15 +2,15 @@
 
 namespace Modules\Eshop360\Console;
 
+use App\Instances\Instance;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Mail;
-use Modules\Eshop360\Models\Stock;
-use Modules\Eshop360\Models\Product;
-use App\Instances\Instance;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
 
 class StockAlertCommand extends Command
 {
     protected $signature = 'eshop360:stock-alerts';
+
     protected $description = 'Send alerts for low stock products across all instances';
 
     public function handle(): int
@@ -28,7 +28,7 @@ class StockAlertCommand extends Command
                 ->get();
 
             $outOfStock = Product::where('instance_id', $instance->id)
-                ->whereHas('stocks', fn($q) => $q->where('quantity', '<=', 0))
+                ->whereHas('stocks', fn ($q) => $q->where('quantity', '<=', 0))
                 ->get();
 
             if ($lowStockProducts->isEmpty() && $outOfStock->isEmpty()) {
@@ -37,17 +37,19 @@ class StockAlertCommand extends Command
 
             // Get instance admin emails
             $admins = $instance->users()
-                ->whereHas('roles', fn($q) => $q->whereIn('name', ['instance-admin', 'manager']))
+                ->whereHas('roles', fn ($q) => $q->whereIn('name', ['instance-admin', 'manager']))
                 ->get();
 
             foreach ($admins as $admin) {
-                if (!$admin->email) continue;
+                if (! $admin->email) {
+                    continue;
+                }
 
                 Mail::raw(
                     $this->buildAlertMessage($instance, $lowStockProducts, $outOfStock),
                     function ($message) use ($admin, $instance) {
                         $message->to($admin->email)
-                            ->subject("[{$instance->name}] Alerte Stock - " . now()->format('d/m/Y'));
+                            ->subject("[{$instance->name}] Alerte Stock - ".now()->format('d/m/Y'));
                     }
                 );
             }
@@ -61,7 +63,7 @@ class StockAlertCommand extends Command
     private function buildAlertMessage($instance, $lowStock, $outOfStock): string
     {
         $msg = "Rapport Stock - {$instance->name}\n";
-        $msg .= "Date: " . now()->format('d/m/Y H:i') . "\n\n";
+        $msg .= 'Date: '.now()->format('d/m/Y H:i')."\n\n";
 
         if ($outOfStock->isNotEmpty()) {
             $msg .= "=== RUPTURE DE STOCK ({$outOfStock->count()}) ===\n";

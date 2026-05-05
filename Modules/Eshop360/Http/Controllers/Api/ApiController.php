@@ -6,22 +6,22 @@ use App\Http\Controllers\Controller;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\DistributionChannel;
-use Modules\Eshop360\Models\Product;
-use Modules\Eshop360\Models\Customer;
-use Modules\Eshop360\Models\Order;
-use Modules\Eshop360\Models\Stock;
-use Modules\Eshop360\Models\OnlineOrder;
-use Modules\Eshop360\Models\PurchaseOrder;
-use Modules\Eshop360\Services\ReportService;
-use Modules\Eshop360\Services\ChargesService;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\Channel\Models\DistributionChannel;
+use Modules\Eshop360\Domain\CRM\Models\Customer;
+use Modules\Eshop360\Domain\Inventory\Models\Stock;
+use Modules\Eshop360\Domain\Purchasing\Models\PurchaseOrder;
+use Modules\Eshop360\Domain\Sales\Models\OnlineOrder;
+use Modules\Eshop360\Domain\Sales\Models\Order;
 use Modules\Eshop360\Services\ChannelAccessService;
+use Modules\Eshop360\Services\ChargesService;
 use Modules\Eshop360\Services\MarginService;
 use Modules\Eshop360\Services\OnlineOrderService;
 use Modules\Eshop360\Services\ProductPricingService;
+use Modules\Eshop360\Services\ReportService;
 
 class ApiController extends Controller
 {
@@ -37,15 +37,20 @@ class ApiController extends Controller
         $channelId = $this->requestedChannelId($request);
         $query = $this->scopedProductsQuery($channelId);
 
-        if ($request->has('category_id')) $query->where('category_id', $request->category_id);
-        if ($request->has('brand_id')) $query->where('brand_id', $request->brand_id);
+        if ($request->has('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+        if ($request->has('brand_id')) {
+            $query->where('brand_id', $request->brand_id);
+        }
         if ($request->has('search')) {
             $query->where(function ($q) use ($request) {
                 $q->where('name', 'like', "%{$request->search}%")
-                  ->orWhere('sku', 'like', "%{$request->search}%")
-                  ->orWhere('barcode', 'like', "%{$request->search}%");
+                    ->orWhere('sku', 'like', "%{$request->search}%")
+                    ->orWhere('barcode', 'like', "%{$request->search}%");
             });
         }
+
         return response()->json($query->with('category', 'brand')->paginate($request->get('per_page', 20)));
     }
 
@@ -84,6 +89,7 @@ class ApiController extends Controller
         $validated['is_active'] = (bool) ($validated['is_active'] ?? true);
         $validated['created_by'] = auth()->id();
         $product = Product::create($validated);
+
         return response()->json($product, 201);
     }
 
@@ -96,6 +102,7 @@ class ApiController extends Controller
             ->findOrFail($id);
 
         $product->update($request->only(['name', 'sku', 'price', 'cost_price', 'category_id', 'brand_id', 'is_active']));
+
         return response()->json($product);
     }
 
@@ -123,7 +130,7 @@ class ApiController extends Controller
         if ($warehouseId) {
             $this->assertWarehouseAccessible($warehouseId);
             $query->where('warehouse_id', $warehouseId);
-        } elseif (!$this->isHubAdmin()) {
+        } elseif (! $this->isHubAdmin()) {
             $warehouseIds = $this->accessibleWarehouseIds();
             abort_if($warehouseIds->isEmpty(), 403, 'No accessible warehouse found for this user.');
             $query->whereIn('warehouse_id', $warehouseIds->all());
@@ -144,7 +151,7 @@ class ApiController extends Controller
 
         $this->assertWarehouseAccessible($validated['warehouse_id']);
 
-        if (!$this->isHubAdmin()) {
+        if (! $this->isHubAdmin()) {
             if ($validated['type'] === 'in') {
                 abort(403, 'Channels cannot increase stock manually via the API.');
             }
@@ -169,10 +176,11 @@ class ApiController extends Controller
         if ($request->has('search')) {
             $query->where(function ($q) use ($request) {
                 $q->where('name', 'like', "%{$request->search}%")
-                  ->orWhere('email', 'like', "%{$request->search}%")
-                  ->orWhere('phone', 'like', "%{$request->search}%");
+                    ->orWhere('email', 'like', "%{$request->search}%")
+                    ->orWhere('phone', 'like', "%{$request->search}%");
             });
         }
+
         return response()->json($query->paginate($request->get('per_page', 20)));
     }
 
@@ -209,7 +217,10 @@ class ApiController extends Controller
         $query = $this->scopedOrdersQuery($this->requestedChannelId($request))
             ->with('customer', 'items');
 
-        if ($request->has('status')) $query->where('status', $request->status);
+        if ($request->has('status')) {
+            $query->where('status', $request->status);
+        }
+
         return response()->json($query->latest()->paginate($request->get('per_page', 20)));
     }
 
@@ -243,7 +254,7 @@ class ApiController extends Controller
             $product = $this->scopedProductsQuery($channelId)->findOrFail($item['product_id']);
 
             $unitPrice = $item['unit_price'];
-            if ($channelId !== null && !$this->isHubAdmin()) {
+            if ($channelId !== null && ! $this->isHubAdmin()) {
                 $pricing = $this->pricingService->resolve($product, $channelId, true);
                 $unitPrice = (float) $pricing['unit_price'];
             }
@@ -310,6 +321,7 @@ class ApiController extends Controller
         $from = $request->get('from', now()->startOfMonth()->toDateString());
         $to = $request->get('to', now()->toDateString());
         $channelId = $this->requestedChannelId($request);
+
         return response()->json($service->overview($this->instanceId(), $from, $to, $channelId));
     }
 
@@ -334,6 +346,7 @@ class ApiController extends Controller
         $request->validate(['instance_id' => 'required|integer']);
         $service = app(ReportService::class);
         $channelId = $this->requestedChannelId($request);
+
         return response()->json($service->stockReport($this->instanceId(), $request->get('warehouse_id'), $channelId));
     }
 
@@ -401,6 +414,7 @@ class ApiController extends Controller
 
         try {
             $service->advanceStatus($order, $validated['status']);
+
             return response()->json($order->fresh());
         } catch (\InvalidArgumentException $e) {
             return response()->json(['error' => $e->getMessage()], 422);
@@ -434,6 +448,7 @@ class ApiController extends Controller
         $service = app(MarginService::class);
         $from = $request->get('from', now()->startOfMonth()->toDateTimeString());
         $to = $request->get('to', now()->toDateTimeString());
+
         return response()->json($service->getMarginSummary($this->instanceId(), $from, $to, $channelId));
     }
 
@@ -444,6 +459,7 @@ class ApiController extends Controller
         $this->ensureHubAdmin();
         $request->validate(['instance_id' => 'required|integer']);
         $service = app(ChargesService::class);
+
         return response()->json($service->getDashboardData($this->instanceId()));
     }
 
@@ -464,7 +480,7 @@ class ApiController extends Controller
 
     private function requestedChannelId(Request $request): ?int
     {
-        if (!$request->filled('channel_id')) {
+        if (! $request->filled('channel_id')) {
             return null;
         }
 
@@ -477,7 +493,8 @@ class ApiController extends Controller
     private function normalizeRequestedChannelForWrite(?int $channelId, bool $requiredForChannelUsers): ?int
     {
         if ($channelId === null) {
-            abort_if($requiredForChannelUsers && !$this->isHubAdmin(), 422, 'channel_id is required for channel-scoped writes.');
+            abort_if($requiredForChannelUsers && ! $this->isHubAdmin(), 422, 'channel_id is required for channel-scoped writes.');
+
             return null;
         }
 
@@ -521,7 +538,7 @@ class ApiController extends Controller
         $customerQuery = Customer::query()
             ->where('instance_id', $this->instanceId());
 
-        if (!$this->isHubAdmin()) {
+        if (! $this->isHubAdmin()) {
             $customerQuery->whereIn('channel_id', $this->accessibleChannelIds()->all());
         } elseif ($channelId !== null) {
             $customerQuery->where(function (Builder $query) use ($channelId) {
@@ -540,7 +557,7 @@ class ApiController extends Controller
                 422,
                 'Customer must belong to the selected channel.'
             );
-        } elseif (!$this->isHubAdmin()) {
+        } elseif (! $this->isHubAdmin()) {
             abort(422, 'Channel users cannot create or use hub-level customers.');
         }
 

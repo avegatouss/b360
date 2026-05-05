@@ -4,9 +4,9 @@ namespace Modules\Eshop360\Http\Controllers\Communication;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Modules\Eshop360\Models\SupportTicket;
-use Modules\Eshop360\Models\TicketMessage;
 use Modules\Core\Support\CurrentInstance;
+use Modules\Eshop360\Domain\Communication\Models\SupportTicket;
+use Modules\Eshop360\Domain\Communication\Models\TicketMessage;
 
 class SupportTicketController extends Controller
 {
@@ -23,7 +23,7 @@ class SupportTicketController extends Controller
             ->paginate(20)
             ->withQueryString();
 
-        $customers = \Modules\Eshop360\Models\Customer::where('instance_id', $instance->id)
+        $customers = \Modules\Eshop360\Domain\CRM\Models\Customer::where('instance_id', $instance->id)
             ->where('is_active', true)
             ->orderBy('name')->get(['id', 'name']);
 
@@ -33,6 +33,7 @@ class SupportTicketController extends Controller
     public function show(string $slug, SupportTicket $ticket)
     {
         $ticket->load('customer', 'messages.user');
+
         return view('eshop360::communication.tickets.show', compact('ticket'));
     }
 
@@ -45,6 +46,7 @@ class SupportTicketController extends Controller
         ]);
         $validated['instance_id'] = CurrentInstance::get()->id;
         SupportTicket::create($validated);
+
         return redirect()->back()->with('success', 'Ticket created.');
     }
 
@@ -61,6 +63,7 @@ class SupportTicketController extends Controller
             'user_id' => auth()->id(),
             'message' => $validated['message'],
         ]);
+
         return redirect()->back()->with('success', 'Reply sent.');
     }
 
@@ -68,6 +71,7 @@ class SupportTicketController extends Controller
     {
         $validated = $request->validate(['status' => 'required|in:open,in_progress,resolved,closed']);
         $ticket->update($validated);
+
         return redirect()->back()->with('success', 'Ticket status updated.');
     }
 }

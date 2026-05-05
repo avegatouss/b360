@@ -4,11 +4,11 @@ namespace Modules\Eshop360\Services;
 
 use Illuminate\Support\Facades\DB;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\Coupon;
-use Modules\Eshop360\Models\PersistentCart;
-use Modules\Eshop360\Models\Product;
-use Modules\Eshop360\Models\ProductVariation;
-use Modules\Eshop360\Models\Stock;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\Catalog\Models\ProductVariation;
+use Modules\Eshop360\Domain\Inventory\Models\Stock;
+use Modules\Eshop360\Domain\Promotions\Models\Coupon;
+use Modules\Eshop360\Domain\Sales\Models\PersistentCart;
 
 class CartService
 {

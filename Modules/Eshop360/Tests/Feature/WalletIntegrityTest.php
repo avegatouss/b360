@@ -4,8 +4,8 @@ namespace Modules\Eshop360\Tests\Feature;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Modules\Eshop360\Models\Customer;
-use Modules\Eshop360\Models\CustomerTransaction;
+use Modules\Eshop360\Domain\CRM\Models\Customer;
+use Modules\Eshop360\Domain\CRM\Models\CustomerTransaction;
 use Modules\Eshop360\Services\FinanceService;
 use Modules\Eshop360\Services\Payment\Drivers\WalletDriver;
 use Modules\Eshop360\Tests\TestCase;

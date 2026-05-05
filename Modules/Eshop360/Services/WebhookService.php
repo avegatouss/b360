@@ -5,8 +5,8 @@ namespace Modules\Eshop360\Services;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\Webhook;
-use Modules\Eshop360\Models\WebhookLog;
+use Modules\Eshop360\Domain\Communication\Models\Webhook;
+use Modules\Eshop360\Domain\Communication\Models\WebhookLog;
 
 class WebhookService
 {

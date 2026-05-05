@@ -4,9 +4,9 @@ namespace Modules\Eshop360\Tests\Feature;
 
 use Modules\Core\Support\CurrentInstance;
 use Modules\Core\Support\TeamContext;
-use Modules\Eshop360\Models\Attendance;
-use Modules\Eshop360\Models\Employee;
-use Modules\Eshop360\Models\EmployeeSalary;
+use Modules\Eshop360\Domain\HR\Models\Attendance;
+use Modules\Eshop360\Domain\HR\Models\Employee;
+use Modules\Eshop360\Domain\HR\Models\EmployeeSalary;
 use Modules\Eshop360\Tests\TestCase;
 use Spatie\Permission\Models\Permission;
 

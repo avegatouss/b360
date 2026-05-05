@@ -3,8 +3,8 @@
 namespace Modules\Eshop360\Services;
 
 use Illuminate\Support\Facades\DB;
-use Modules\Eshop360\Models\PurchaseOrder;
-use Modules\Eshop360\Models\Supplier;
+use Modules\Eshop360\Domain\Purchasing\Models\PurchaseOrder;
+use Modules\Eshop360\Domain\Purchasing\Models\Supplier;
 
 class SupplierService
 {

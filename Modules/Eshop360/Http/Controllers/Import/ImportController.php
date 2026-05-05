@@ -4,21 +4,19 @@ namespace Modules\Eshop360\Http\Controllers\Import;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Modules\Eshop360\Models\ImportOrder;
-use Modules\Eshop360\Models\ImportCost;
-use Modules\Eshop360\Models\ImportCostType;
-use Modules\Eshop360\Models\Supplier;
-use Modules\Eshop360\Models\Warehouse;
-use Modules\Eshop360\Models\Product;
+use Modules\Core\Support\CurrentInstance;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\Inventory\Models\Warehouse;
+use Modules\Eshop360\Domain\Purchasing\Models\ImportCost;
+use Modules\Eshop360\Domain\Purchasing\Models\ImportCostType;
+use Modules\Eshop360\Domain\Purchasing\Models\ImportOrder;
+use Modules\Eshop360\Domain\Purchasing\Models\Supplier;
 use Modules\Eshop360\Services\ImportService;
 use Modules\Eshop360\Services\StockService;
-use Modules\Core\Support\CurrentInstance;
 
 class ImportController extends Controller
 {
-    public function __construct(private ImportService $importService)
-    {
-    }
+    public function __construct(private ImportService $importService) {}
 
     public function index(Request $request)
     {
@@ -60,6 +58,7 @@ class ImportController extends Controller
         $suppliers = Supplier::where('instance_id', $instance->id)->where('is_active', true)->get();
         $warehouses = Warehouse::where('instance_id', $instance->id)->where('is_active', true)->get();
         $products = Product::where('instance_id', $instance->id)->where('is_active', true)->get();
+
         return view('eshop360::imports.create', compact('suppliers', 'warehouses', 'products'));
     }
 
@@ -90,6 +89,7 @@ class ImportController extends Controller
         unset($validated['items']);
 
         $order = $this->importService->createImportOrder($validated, $items);
+
         return redirect()->route('eshop360.imports.show', [$instance->slug, $order->id])
             ->with('success', __('eshop::eshop.import_created'));
     }
@@ -97,6 +97,7 @@ class ImportController extends Controller
     public function show(string $slug, ImportOrder $import)
     {
         $import->load('supplier', 'warehouse', 'items.product', 'costs', 'creator');
+
         return view('eshop360::imports.show', compact('import'));
     }
 
@@ -110,6 +111,7 @@ class ImportController extends Controller
             'notes' => 'nullable|string',
         ]);
         $import->update($validated);
+
         return redirect()->back()->with('success', __('eshop::eshop.import_updated'));
     }
 
@@ -122,24 +124,28 @@ class ImportController extends Controller
             'notes' => 'nullable|string',
         ]);
         $this->importService->addCost($import, $validated);
+
         return redirect()->back()->with('success', __('eshop::eshop.cost_added'));
     }
 
     public function removeCost(string $slug, ImportOrder $import, ImportCost $cost)
     {
         $cost->delete();
+
         return redirect()->back()->with('success', __('eshop::eshop.cost_removed'));
     }
 
     public function allocateCosts(string $slug, ImportOrder $import)
     {
         $this->importService->allocateCosts($import);
+
         return redirect()->back()->with('success', __('eshop::eshop.costs_allocated'));
     }
 
     public function receive(string $slug, ImportOrder $import, StockService $stockService)
     {
         $this->importService->receiveImport($import, $stockService);
+
         return redirect()->back()->with('success', __('eshop::eshop.import_received'));
     }
 
@@ -158,6 +164,7 @@ class ImportController extends Controller
     public function destroy(string $slug, ImportOrder $import)
     {
         $import->delete();
+
         return redirect()->back()->with('success', __('eshop::eshop.import_deleted'));
     }
 

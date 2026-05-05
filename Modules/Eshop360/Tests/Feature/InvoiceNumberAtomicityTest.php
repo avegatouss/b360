@@ -2,7 +2,7 @@
 
 namespace Modules\Eshop360\Tests\Feature;
 
-use Modules\Eshop360\Models\Invoice;
+use Modules\Eshop360\Domain\Finance\Models\Invoice;
 use Modules\Eshop360\Services\InvoiceService;
 use Modules\Eshop360\Tests\TestCase;
 

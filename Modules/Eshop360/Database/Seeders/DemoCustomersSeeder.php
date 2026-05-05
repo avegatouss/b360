@@ -2,8 +2,8 @@
 
 namespace Modules\Eshop360\Database\Seeders;
 
-use Modules\Eshop360\Models\Customer;
-use Modules\Eshop360\Models\CustomerGroup;
+use Modules\Eshop360\Domain\CRM\Models\Customer;
+use Modules\Eshop360\Domain\CRM\Models\CustomerGroup;
 
 final class DemoCustomersSeeder
 {
@@ -38,6 +38,7 @@ final class DemoCustomersSeeder
                 array_merge($d, ['instance_id' => $instanceId])
             );
         }
+
         return $result;
     }
 

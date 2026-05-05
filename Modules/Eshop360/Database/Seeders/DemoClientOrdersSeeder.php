@@ -2,13 +2,12 @@
 
 namespace Modules\Eshop360\Database\Seeders;
 
-use Illuminate\Support\Facades\DB;
-use Modules\Eshop360\Models\Customer;
-use Modules\Eshop360\Models\Order;
-use Modules\Eshop360\Models\OrderItem;
-use Modules\Eshop360\Models\OnlineOrder;
-use Modules\Eshop360\Models\OnlineOrderItem;
-use Modules\Eshop360\Models\Product;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\CRM\Models\Customer;
+use Modules\Eshop360\Domain\Sales\Models\OnlineOrder;
+use Modules\Eshop360\Domain\Sales\Models\OnlineOrderItem;
+use Modules\Eshop360\Domain\Sales\Models\Order;
+use Modules\Eshop360\Domain\Sales\Models\OrderItem;
 
 final class DemoClientOrdersSeeder
 {
@@ -19,7 +18,9 @@ final class DemoClientOrdersSeeder
             ->whereNotNull('user_id')
             ->get();
 
-        if ($customers->isEmpty()) return;
+        if ($customers->isEmpty()) {
+            return;
+        }
 
         $products = Product::withoutGlobalScopes()
             ->where('instance_id', $instanceId)
@@ -27,7 +28,9 @@ final class DemoClientOrdersSeeder
             ->limit(30)
             ->get();
 
-        if ($products->count() < 5) return;
+        if ($products->count() < 5) {
+            return;
+        }
 
         foreach ($customers as $customer) {
             $this->seedCustomerOrders($instanceId, $customer, $products);
@@ -121,7 +124,7 @@ final class DemoClientOrdersSeeder
         $dueAmount = round($total - $paidAmount, 2);
         $paymentStatus = $dueAmount <= 0 ? 'paid' : ($paidAmount > 0 ? 'partial' : 'unpaid');
 
-        $orderNumber = 'DEMO-CLI-C' . $customer->id . '-' . $date->format('ymdHi') . '-' . $index;
+        $orderNumber = 'DEMO-CLI-C'.$customer->id.'-'.$date->format('ymdHi').'-'.$index;
 
         $order = Order::withoutGlobalScopes()->create([
             'instance_id' => $instanceId,
@@ -138,7 +141,7 @@ final class DemoClientOrdersSeeder
             'total' => $total,
             'paid_amount' => $paidAmount,
             'due_amount' => $dueAmount,
-            'notes' => '[DEMO-CLIENT] Achat ' . ($source === 'pos' ? 'au comptoir' : 'manuel'),
+            'notes' => '[DEMO-CLIENT] Achat '.($source === 'pos' ? 'au comptoir' : 'manuel'),
             'biller_id' => 1,
             'created_at' => $date,
             'updated_at' => $date,
@@ -179,7 +182,7 @@ final class DemoClientOrdersSeeder
 
         $taxAmount = round($subtotal * 0.18, 2);
         $totalAmount = round($subtotal + $taxAmount, 2);
-        $reference = 'DEMO-ONL-C' . $customer->id . '-' . $date->format('ymdHi') . '-' . $index;
+        $reference = 'DEMO-ONL-C'.$customer->id.'-'.$date->format('ymdHi').'-'.$index;
 
         $confirmedAt = in_array($status, ['validated', 'preparing', 'shipping', 'delivered', 'received', 'invoiced']) ? $date->copy()->addHours(rand(1, 48)) : null;
         $deliveredAt = in_array($status, ['delivered', 'received']) ? $date->copy()->addDays(rand(2, 7)) : null;
@@ -214,8 +217,11 @@ final class DemoClientOrdersSeeder
         $sum = 0;
         foreach ($weights as $i => $w) {
             $sum += $w;
-            if ($rand <= $sum) return $i;
+            if ($rand <= $sum) {
+                return $i;
+            }
         }
+
         return 0;
     }
 }

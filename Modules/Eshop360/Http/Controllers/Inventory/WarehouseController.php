@@ -7,9 +7,9 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\Employee;
-use Modules\Eshop360\Models\Store;
-use Modules\Eshop360\Models\Warehouse;
+use Modules\Eshop360\Domain\HR\Models\Employee;
+use Modules\Eshop360\Domain\Inventory\Models\Store;
+use Modules\Eshop360\Domain\Inventory\Models\Warehouse;
 
 class WarehouseController extends Controller
 {
@@ -39,9 +39,9 @@ class WarehouseController extends Controller
         // Global stats
         $totalWarehouses = Warehouse::count();
         $activeWarehouses = Warehouse::where('is_active', true)->count();
-        $totalStockUnits = \Modules\Eshop360\Models\Stock::sum('quantity');
-        $totalProducts = \Modules\Eshop360\Models\Stock::where('quantity', '>', 0)->distinct('product_id')->count('product_id');
-        $lowStockCount = \Modules\Eshop360\Models\Stock::where('quantity', '>', 0)
+        $totalStockUnits = \Modules\Eshop360\Domain\Inventory\Models\Stock::sum('quantity');
+        $totalProducts = \Modules\Eshop360\Domain\Inventory\Models\Stock::where('quantity', '>', 0)->distinct('product_id')->count('product_id');
+        $lowStockCount = \Modules\Eshop360\Domain\Inventory\Models\Stock::where('quantity', '>', 0)
             ->whereRaw('quantity <= (SELECT COALESCE(alert_quantity, 5) FROM eshop_products WHERE eshop_products.id = eshop_stocks.product_id)')
             ->count();
 
@@ -60,15 +60,16 @@ class WarehouseController extends Controller
         $instance = CurrentInstance::get();
 
         $validated = $request->validate([
-            'name'         => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'warehouse_id' => 'nullable|exists:eshop_warehouses,id',
         ]);
 
         // Default to first warehouse if not specified
         if (empty($validated['warehouse_id'])) {
             $defaultWarehouse = Warehouse::where('instance_id', $instance->id)->where('is_active', true)->first();
-            if (!$defaultWarehouse) {
+            if (! $defaultWarehouse) {
                 $error = __('Veuillez creer un entrepot avant de creer un magasin.');
+
                 return $request->wantsJson()
                     ? response()->json(['message' => $error], 422)
                     : redirect()->back()->with('error', $error);
@@ -78,7 +79,7 @@ class WarehouseController extends Controller
 
         $validated['instance_id'] = $instance->id;
         $validated['is_active'] = true;
-        $validated['code'] = strtoupper(substr(preg_replace('/[^a-zA-Z0-9]/', '', $validated['name']), 0, 6)) . rand(100, 999);
+        $validated['code'] = strtoupper(substr(preg_replace('/[^a-zA-Z0-9]/', '', $validated['name']), 0, 6)).rand(100, 999);
 
         $store = Store::create($validated);
 
@@ -94,21 +95,21 @@ class WarehouseController extends Controller
         $instance = CurrentInstance::get();
 
         $validated = $request->validate([
-            'name'         => 'required|string|max:255',
-            'code'         => 'required|string|max:50|unique:eshop_warehouses,code',
-            'address'      => 'nullable|string|max:500',
-            'city'         => 'nullable|string|max:100',
-            'phone'        => 'nullable|string|max:30',
-            'email'        => 'nullable|email|max:255',
+            'name' => 'required|string|max:255',
+            'code' => 'required|string|max:50|unique:eshop_warehouses,code',
+            'address' => 'nullable|string|max:500',
+            'city' => 'nullable|string|max:100',
+            'phone' => 'nullable|string|max:30',
+            'email' => 'nullable|email|max:255',
             'manager_name' => 'nullable|string|max:255',
-            'manager_id'   => 'nullable|exists:eshop_employees,id',
-            'is_active'    => 'boolean',
-            'stores'              => 'nullable|array',
-            'stores.*.name'       => 'required_with:stores|string|max:255',
-            'stores.*.code'       => 'required_with:stores|string|max:50',
-            'stores.*.address'    => 'nullable|string|max:500',
-            'stores.*.phone'      => 'nullable|string|max:30',
-            'stores.*.email'      => 'nullable|email|max:255',
+            'manager_id' => 'nullable|exists:eshop_employees,id',
+            'is_active' => 'boolean',
+            'stores' => 'nullable|array',
+            'stores.*.name' => 'required_with:stores|string|max:255',
+            'stores.*.code' => 'required_with:stores|string|max:50',
+            'stores.*.address' => 'nullable|string|max:500',
+            'stores.*.phone' => 'nullable|string|max:30',
+            'stores.*.email' => 'nullable|email|max:255',
             'stores.*.manager_name' => 'nullable|string|max:255',
         ]);
 
@@ -137,15 +138,15 @@ class WarehouseController extends Controller
     public function update(Request $request, string $slug, Warehouse $warehouse): RedirectResponse
     {
         $validated = $request->validate([
-            'name'         => 'required|string|max:255',
-            'code'         => 'required|string|max:50|unique:eshop_warehouses,code,' . $warehouse->id,
-            'address'      => 'nullable|string|max:500',
-            'city'         => 'nullable|string|max:100',
-            'phone'        => 'nullable|string|max:30',
-            'email'        => 'nullable|email|max:255',
+            'name' => 'required|string|max:255',
+            'code' => 'required|string|max:50|unique:eshop_warehouses,code,'.$warehouse->id,
+            'address' => 'nullable|string|max:500',
+            'city' => 'nullable|string|max:100',
+            'phone' => 'nullable|string|max:30',
+            'email' => 'nullable|email|max:255',
             'manager_name' => 'nullable|string|max:255',
-            'manager_id'   => 'nullable|exists:eshop_employees,id',
-            'is_active'    => 'boolean',
+            'manager_id' => 'nullable|exists:eshop_employees,id',
+            'is_active' => 'boolean',
         ]);
 
         $warehouse->update($validated);

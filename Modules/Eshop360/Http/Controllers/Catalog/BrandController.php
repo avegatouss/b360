@@ -7,18 +7,18 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Str;
-use Modules\Eshop360\Models\Brand;
-use Modules\Eshop360\Models\Store;
-use Modules\Eshop360\Models\Warehouse;
+use Modules\Eshop360\Domain\Catalog\Models\Brand;
+use Modules\Eshop360\Domain\Inventory\Models\Store;
+use Modules\Eshop360\Domain\Inventory\Models\Warehouse;
 
 class BrandController extends Controller
 {
     public function index(Request $request)
     {
         $brands = Brand::withCount(['products' => function ($q) use ($request) {
-                $q->when($request->store_id, fn ($sq, $s) => $sq->whereHas('stocks', fn ($ssq) => $ssq->where('store_id', $s)))
-                  ->when($request->warehouse_id, fn ($sq, $w) => $sq->whereHas('stocks', fn ($ssq) => $ssq->where('warehouse_id', $w)));
-            }])
+            $q->when($request->store_id, fn ($sq, $s) => $sq->whereHas('stocks', fn ($ssq) => $ssq->where('store_id', $s)))
+                ->when($request->warehouse_id, fn ($sq, $w) => $sq->whereHas('stocks', fn ($ssq) => $ssq->where('warehouse_id', $w)));
+        }])
             ->when($request->search, fn ($q, $s) => $q->where('name', 'like', "%{$s}%"))
             ->when($request->filled('is_active'), fn ($q) => $q->where('is_active', $request->boolean('is_active')))
             ->when($request->store_id, fn ($q, $s) => $q->whereHas('products.stocks', fn ($sq) => $sq->where('store_id', $s)))
@@ -36,8 +36,8 @@ class BrandController extends Controller
     public function store(Request $request): RedirectResponse|JsonResponse
     {
         $validated = $request->validate([
-            'name'      => 'required|string|max:255',
-            'logo'      => 'nullable|image|max:1024',
+            'name' => 'required|string|max:255',
+            'logo' => 'nullable|image|max:1024',
             'is_active' => 'boolean',
         ]);
 
@@ -61,8 +61,8 @@ class BrandController extends Controller
     public function update(Request $request, Brand $brand): RedirectResponse
     {
         $validated = $request->validate([
-            'name'      => 'required|string|max:255',
-            'logo'      => 'nullable|image|max:1024',
+            'name' => 'required|string|max:255',
+            'logo' => 'nullable|image|max:1024',
             'is_active' => 'boolean',
         ]);
 

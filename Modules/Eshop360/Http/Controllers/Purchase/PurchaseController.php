@@ -6,11 +6,10 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
-use Modules\Eshop360\Models\PurchaseItem;
-use Modules\Eshop360\Models\PurchaseOrder;
-use Modules\Eshop360\Models\Supplier;
-use Modules\Eshop360\Services\StockService;
 use Modules\Core\Support\CurrentInstance;
+use Modules\Eshop360\Domain\Purchasing\Models\PurchaseOrder;
+use Modules\Eshop360\Domain\Purchasing\Models\Supplier;
+use Modules\Eshop360\Services\StockService;
 
 class PurchaseController extends Controller
 {
@@ -26,7 +25,7 @@ class PurchaseController extends Controller
             ->when($request->search, function ($q, $s) {
                 $q->where(function ($qq) use ($s) {
                     $qq->where('reference', 'like', "%{$s}%")
-                       ->orWhere('supplier_name', 'like', "%{$s}%");
+                        ->orWhere('supplier_name', 'like', "%{$s}%");
                 });
             })
             ->when($request->date_from, fn ($q, $d) => $q->whereDate('created_at', '>=', $d))
@@ -55,8 +54,8 @@ class PurchaseController extends Controller
     {
         $instance = CurrentInstance::get();
         $suppliers = Supplier::where('instance_id', $instance->id)->where('is_active', true)->orderBy('name')->get();
-        $warehouses = \Modules\Eshop360\Models\Warehouse::where('instance_id', $instance->id)->where('is_active', true)->get();
-        $products = \Modules\Eshop360\Models\Product::where('instance_id', $instance->id)->where('is_active', true)->get();
+        $warehouses = \Modules\Eshop360\Domain\Inventory\Models\Warehouse::where('instance_id', $instance->id)->where('is_active', true)->get();
+        $products = \Modules\Eshop360\Domain\Catalog\Models\Product::where('instance_id', $instance->id)->where('is_active', true)->get();
 
         return view('eshop360::purchases.create', compact('suppliers', 'warehouses', 'products'));
     }
@@ -64,17 +63,17 @@ class PurchaseController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'supplier_id'         => 'nullable|exists:eshop_suppliers,id',
-            'supplier_name'       => 'nullable|string|max:255',
-            'supplier_email'      => 'nullable|email|max:255',
-            'warehouse_id'        => 'nullable|exists:eshop_warehouses,id',
-            'status'              => 'nullable|in:ordered,pending,received,cancelled',
-            'paid_amount'         => 'nullable|numeric|min:0',
-            'notes'               => 'nullable|string|max:1000',
-            'items'               => 'required|array|min:1',
-            'items.*.product_id'  => 'required|exists:eshop_products,id',
-            'items.*.quantity'    => 'required|integer|min:1',
-            'items.*.unit_cost'   => 'required|numeric|min:0',
+            'supplier_id' => 'nullable|exists:eshop_suppliers,id',
+            'supplier_name' => 'nullable|string|max:255',
+            'supplier_email' => 'nullable|email|max:255',
+            'warehouse_id' => 'nullable|exists:eshop_warehouses,id',
+            'status' => 'nullable|in:ordered,pending,received,cancelled',
+            'paid_amount' => 'nullable|numeric|min:0',
+            'notes' => 'nullable|string|max:1000',
+            'items' => 'required|array|min:1',
+            'items.*.product_id' => 'required|exists:eshop_products,id',
+            'items.*.quantity' => 'required|integer|min:1',
+            'items.*.unit_cost' => 'required|numeric|min:0',
         ]);
 
         $instance = CurrentInstance::get();
@@ -89,9 +88,9 @@ class PurchaseController extends Controller
 
                 $itemsData[] = [
                     'product_id' => $item['product_id'],
-                    'quantity'   => $item['quantity'],
-                    'unit_cost'  => $item['unit_cost'],
-                    'total'      => $itemTotal,
+                    'quantity' => $item['quantity'],
+                    'unit_cost' => $item['unit_cost'],
+                    'total' => $itemTotal,
                 ];
             }
 
@@ -113,26 +112,26 @@ class PurchaseController extends Controller
                 $supplier = Supplier::find($supplierId);
                 $supplierName = $supplier?->name ?? '';
                 $validated['supplier_email'] = $validated['supplier_email'] ?? $supplier?->email;
-            } elseif (!$supplierId && !empty($supplierName)) {
+            } elseif (! $supplierId && ! empty($supplierName)) {
                 $supplierId = Supplier::where('instance_id', $instance?->id)
                     ->where('name', $supplierName)
                     ->value('id');
             }
 
             $purchase = PurchaseOrder::create([
-                'instance_id'    => $instance?->id,
-                'supplier_id'    => $supplierId,
-                'supplier_name'  => $supplierName,
+                'instance_id' => $instance?->id,
+                'supplier_id' => $supplierId,
+                'supplier_name' => $supplierName,
                 'supplier_email' => $validated['supplier_email'] ?? null,
-                'reference'      => 'PO-' . now()->format('Ymd') . '-' . str_pad(PurchaseOrder::count() + 1, 4, '0', STR_PAD_LEFT),
-                'warehouse_id'   => $validated['warehouse_id'] ?? null,
-                'status'         => $validated['status'] ?? 'pending',
-                'total'          => $total,
-                'paid_amount'    => $paidAmount,
-                'due_amount'     => $dueAmount,
+                'reference' => 'PO-'.now()->format('Ymd').'-'.str_pad(PurchaseOrder::count() + 1, 4, '0', STR_PAD_LEFT),
+                'warehouse_id' => $validated['warehouse_id'] ?? null,
+                'status' => $validated['status'] ?? 'pending',
+                'total' => $total,
+                'paid_amount' => $paidAmount,
+                'due_amount' => $dueAmount,
                 'payment_status' => $paymentStatus,
-                'notes'          => $validated['notes'] ?? null,
-                'created_by'     => auth()->id(),
+                'notes' => $validated['notes'] ?? null,
+                'created_by' => auth()->id(),
             ]);
 
             foreach ($itemsData as $itemData) {
@@ -144,7 +143,7 @@ class PurchaseController extends Controller
                     'instance_id' => $purchase->instance_id,
                     'amount' => $paidAmount,
                     'method' => 'manual',
-                    'reference' => 'PO-INIT-' . $purchase->id,
+                    'reference' => 'PO-INIT-'.$purchase->id,
                     'status' => 'completed',
                     'received_by' => auth()->id(),
                 ]);
@@ -171,12 +170,12 @@ class PurchaseController extends Controller
     public function update(Request $request, string $slug, PurchaseOrder $purchase): RedirectResponse
     {
         $validated = $request->validate([
-            'supplier_name'  => 'required|string|max:255',
+            'supplier_name' => 'required|string|max:255',
             'supplier_email' => 'nullable|email|max:255',
-            'warehouse_id'   => 'nullable|exists:eshop_warehouses,id',
-            'status'         => 'nullable|in:ordered,pending,received,cancelled',
-            'paid_amount'    => 'nullable|numeric|min:0',
-            'notes'          => 'nullable|string|max:1000',
+            'warehouse_id' => 'nullable|exists:eshop_warehouses,id',
+            'status' => 'nullable|in:ordered,pending,received,cancelled',
+            'paid_amount' => 'nullable|numeric|min:0',
+            'notes' => 'nullable|string|max:1000',
         ]);
 
         $previousPaidAmount = (float) $purchase->paid_amount;
@@ -199,7 +198,7 @@ class PurchaseController extends Controller
                 'instance_id' => $purchase->instance_id,
                 'amount' => round($validated['paid_amount'] - $previousPaidAmount, 2),
                 'method' => 'manual',
-                'reference' => 'PO-UPD-' . $purchase->id . '-' . now()->format('YmdHis'),
+                'reference' => 'PO-UPD-'.$purchase->id.'-'.now()->format('YmdHis'),
                 'status' => 'completed',
                 'received_by' => auth()->id(),
             ]);
@@ -227,19 +226,19 @@ class PurchaseController extends Controller
         $dateTo = $request->date_to ?? now()->toDateString();
         $instanceId = CurrentInstance::idOrFail();
 
-        $purchasesByStatus = PurchaseOrder::where('instance_id', $instanceId)->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
+        $purchasesByStatus = PurchaseOrder::where('instance_id', $instanceId)->whereBetween('created_at', [$dateFrom, $dateTo.' 23:59:59'])
             ->select('status', DB::raw('COUNT(*) as count'), DB::raw('SUM(total) as total'))
             ->groupBy('status')
             ->get();
 
-        $purchasesBySupplier = PurchaseOrder::where('instance_id', $instanceId)->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
+        $purchasesBySupplier = PurchaseOrder::where('instance_id', $instanceId)->whereBetween('created_at', [$dateFrom, $dateTo.' 23:59:59'])
             ->select('supplier_name', DB::raw('COUNT(*) as count'), DB::raw('SUM(total) as total'))
             ->groupBy('supplier_name')
             ->orderByDesc('total')
             ->limit(20)
             ->get();
 
-        $monthlyPurchases = PurchaseOrder::where('instance_id', $instanceId)->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
+        $monthlyPurchases = PurchaseOrder::where('instance_id', $instanceId)->whereBetween('created_at', [$dateFrom, $dateTo.' 23:59:59'])
             ->select(
                 DB::raw('YEAR(created_at) as year'),
                 DB::raw('MONTH(created_at) as month'),
@@ -251,9 +250,9 @@ class PurchaseController extends Controller
             ->orderBy('month')
             ->get();
 
-        $totalPurchased = PurchaseOrder::where('instance_id', $instanceId)->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])->sum('total');
-        $totalPaid = PurchaseOrder::where('instance_id', $instanceId)->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])->sum('paid_amount');
-        $totalDue = PurchaseOrder::where('instance_id', $instanceId)->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])->sum('due_amount');
+        $totalPurchased = PurchaseOrder::where('instance_id', $instanceId)->whereBetween('created_at', [$dateFrom, $dateTo.' 23:59:59'])->sum('total');
+        $totalPaid = PurchaseOrder::where('instance_id', $instanceId)->whereBetween('created_at', [$dateFrom, $dateTo.' 23:59:59'])->sum('paid_amount');
+        $totalDue = PurchaseOrder::where('instance_id', $instanceId)->whereBetween('created_at', [$dateFrom, $dateTo.' 23:59:59'])->sum('due_amount');
 
         return view('eshop360::purchases.report', compact(
             'purchasesByStatus', 'purchasesBySupplier', 'monthlyPurchases',
@@ -287,7 +286,7 @@ class PurchaseController extends Controller
     public function receiveForm(string $slug, PurchaseOrder $purchase)
     {
         $purchase->load(['items.product', 'warehouse']);
-        $warehouses = \Modules\Eshop360\Models\Warehouse::where('is_active', true)->orderBy('name')->get();
+        $warehouses = \Modules\Eshop360\Domain\Inventory\Models\Warehouse::where('is_active', true)->orderBy('name')->get();
 
         return view('eshop360::purchases.receive', compact('purchase', 'warehouses'));
     }
@@ -300,10 +299,10 @@ class PurchaseController extends Controller
         abort_if($purchase->received_at !== null, 422, 'This purchase order has already been fully received.');
 
         $validated = $request->validate([
-            'warehouse_id'                   => 'required|exists:eshop_warehouses,id',
-            'items'                          => 'required|array',
-            'items.*.purchase_item_id'       => 'required|exists:eshop_purchase_items,id',
-            'items.*.received_qty'           => 'required|integer|min:0',
+            'warehouse_id' => 'required|exists:eshop_warehouses,id',
+            'items' => 'required|array',
+            'items.*.purchase_item_id' => 'required|exists:eshop_purchase_items,id',
+            'items.*.received_qty' => 'required|integer|min:0',
         ]);
 
         $stockService = app(StockService::class);
@@ -336,7 +335,7 @@ class PurchaseController extends Controller
                     'in',
                     "Purchase #{$purchase->reference}",
                     auth()->id(),
-                    PurchaseOrder::class,
+                    $purchase->getMorphClass(),
                     $purchase->id,
                 );
             }
@@ -375,7 +374,7 @@ class PurchaseController extends Controller
                     'in',
                     "Purchase #{$purchase->reference}",
                     auth()->id(),
-                    PurchaseOrder::class,
+                    $purchase->getMorphClass(),
                     $purchase->id,
                 );
 

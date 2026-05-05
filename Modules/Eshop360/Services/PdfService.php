@@ -4,11 +4,11 @@ namespace Modules\Eshop360\Services;
 
 use Illuminate\Support\Facades\View;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\Invoice;
-use Modules\Eshop360\Models\Order;
-use Modules\Eshop360\Models\Product;
-use Modules\Eshop360\Models\Quotation;
-use Modules\Eshop360\Models\SaleReturn;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\Finance\Models\Invoice;
+use Modules\Eshop360\Domain\Sales\Models\Order;
+use Modules\Eshop360\Domain\Sales\Models\Quotation;
+use Modules\Eshop360\Domain\Sales\Models\SaleReturn;
 
 /**
  * PDF generation service using native PHP (no external dependency).

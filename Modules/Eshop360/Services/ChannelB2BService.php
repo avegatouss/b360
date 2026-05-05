@@ -3,10 +3,10 @@
 namespace Modules\Eshop360\Services;
 
 use Illuminate\Support\Facades\DB;
-use Modules\Eshop360\Models\Customer;
-use Modules\Eshop360\Models\DistributionChannel;
-use Modules\Eshop360\Models\Order;
-use Modules\Eshop360\Models\StockMovement;
+use Modules\Eshop360\Domain\Channel\Models\DistributionChannel;
+use Modules\Eshop360\Domain\CRM\Models\Customer;
+use Modules\Eshop360\Domain\Inventory\Models\StockMovement;
+use Modules\Eshop360\Domain\Sales\Models\Order;
 
 final class ChannelB2BService
 {
@@ -83,7 +83,7 @@ final class ChannelB2BService
                     'in',
                     "Approvisionnement canal: Commande #{$order->order_number}",
                     $performedBy,
-                    Order::class,
+                    $order->getMorphClass(),
                     $order->id,
                 );
             }
@@ -106,7 +106,7 @@ final class ChannelB2BService
     private function hasAlreadyBeenReceived(Order $order, DistributionChannel $channel): bool
     {
         return StockMovement::query()
-            ->where('reference_type', Order::class)
+            ->where('reference_type', $order->getMorphClass())
             ->where('reference_id', $order->id)
             ->where('warehouse_id', $channel->warehouse_id)
             ->where('type', 'in')

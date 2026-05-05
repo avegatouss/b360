@@ -5,9 +5,9 @@ namespace Modules\Eshop360\Tests\Feature;
 use App\Instances\Instance;
 use App\Models\User;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\Product;
-use Modules\Eshop360\Models\Stock;
-use Modules\Eshop360\Models\Warehouse;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\Inventory\Models\Stock;
+use Modules\Eshop360\Domain\Inventory\Models\Warehouse;
 use Modules\Eshop360\Tests\TestCase;
 
 final class ApiEndpointsTest extends TestCase

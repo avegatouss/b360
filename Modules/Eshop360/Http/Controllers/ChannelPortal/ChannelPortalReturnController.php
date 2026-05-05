@@ -5,8 +5,7 @@ namespace Modules\Eshop360\Http\Controllers\ChannelPortal;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\Order;
-use Modules\Eshop360\Models\OrderItem;
+use Modules\Eshop360\Domain\Sales\Models\Order;
 use Modules\Eshop360\Services\StockService;
 
 class ChannelPortalReturnController extends Controller
@@ -21,6 +20,7 @@ class ChannelPortalReturnController extends Controller
             ->with('customer', 'items')
             ->latest()
             ->paginate(20);
+
         return view('eshop360::channel-portal.returns.index', compact('channel', 'returns'));
     }
 
@@ -51,9 +51,9 @@ class ChannelPortalReturnController extends Controller
                         $channel->warehouse_id,
                         $item->quantity,
                         'return',
-                        "Retour canal: Commande #{$order->order_number}" . ($validated['reason'] ? " - {$validated['reason']}" : ''),
+                        "Retour canal: Commande #{$order->order_number}".($validated['reason'] ? " - {$validated['reason']}" : ''),
                         auth()->id(),
-                        Order::class,
+                        $order->getMorphClass(),
                         $order->id,
                     );
                 }

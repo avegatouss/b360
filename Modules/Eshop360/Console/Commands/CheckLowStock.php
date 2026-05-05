@@ -2,21 +2,23 @@
 
 namespace Modules\Eshop360\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Instances\Instance;
-use Modules\Eshop360\Models\Product;
+use Illuminate\Console\Command;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
 use Modules\Eshop360\Notifications\LowStockNotification;
 
 class CheckLowStock extends Command
 {
     protected $signature = 'eshop:check-low-stock';
+
     protected $description = 'Check products with low stock and notify instance admins/managers via in-app notifications';
 
     public function handle(): int
     {
         // Check if low-stock alerts are enabled in settings
-        if (!setting('notifications.alert_low_stock_enabled', true)) {
+        if (! setting('notifications.alert_low_stock_enabled', true)) {
             $this->info('Low stock alerts are disabled in settings.');
+
             return self::SUCCESS;
         }
 

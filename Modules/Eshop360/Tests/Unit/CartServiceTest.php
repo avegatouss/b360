@@ -3,8 +3,8 @@
 namespace Modules\Eshop360\Tests\Unit;
 
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\Coupon;
-use Modules\Eshop360\Models\Product;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\Promotions\Models\Coupon;
 use Modules\Eshop360\Services\CartService;
 use Modules\Eshop360\Tests\TestCase;
 

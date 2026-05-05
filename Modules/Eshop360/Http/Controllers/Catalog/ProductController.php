@@ -5,22 +5,21 @@ namespace Modules\Eshop360\Http\Controllers\Catalog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\Brand;
-use Modules\Eshop360\Models\Category;
-use Modules\Eshop360\Models\Product;
-use Modules\Eshop360\Models\Store;
-use Modules\Eshop360\Models\Stock;
-use Modules\Eshop360\Models\Tax;
-use Modules\Eshop360\Models\Warehouse;
-use Modules\Eshop360\Models\StockMovement;
-use Modules\Eshop360\Models\OrderItem;
-use Modules\Eshop360\Services\ChargesService;
+use Modules\Eshop360\Domain\Catalog\Models\Brand;
+use Modules\Eshop360\Domain\Catalog\Models\Category;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\Catalog\Models\Tax;
+use Modules\Eshop360\Domain\Inventory\Models\Stock;
+use Modules\Eshop360\Domain\Inventory\Models\StockMovement;
+use Modules\Eshop360\Domain\Inventory\Models\Store;
+use Modules\Eshop360\Domain\Inventory\Models\Warehouse;
 use Modules\Eshop360\Services\ChannelAccessService;
+use Modules\Eshop360\Services\ChargesService;
 use Modules\Eshop360\Services\UserResourceScopeService;
 use Modules\Eshop360\Support\CurrentChannel;
-use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
@@ -76,40 +75,40 @@ class ProductController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'name'              => 'required|string|max:255',
-            'sku'               => 'required|string|max:100|unique:eshop_products,sku',
-            'category_id'       => 'nullable|exists:eshop_categories,id',
-            'brand_id'          => 'nullable|exists:eshop_brands,id',
-            'description'       => 'nullable|string|max:50000',
-            'price'             => 'required|numeric|min:0',
-            'cost_price'        => 'nullable|numeric|min:0',
-            'tax_rate'          => 'nullable|numeric|min:0|max:100',
-            'tax_inclusive'     => 'boolean',
-            'discount_type'     => 'nullable|in:none,percentage,fixed',
-            'discount_value'    => 'nullable|numeric|min:0',
-            'unit'              => 'nullable|string|max:20',
-            'min_quantity'      => 'nullable|integer|min:0',
-            'alert_quantity'    => 'nullable|integer|min:0',
-            'barcode'           => 'nullable|string|max:255',
-            'image'             => 'nullable|image|max:2048',
-            'images'            => 'nullable|array|max:10',
-            'images.*'          => 'image|max:2048',
-            'expiry_date'                => 'nullable|date',
-            'manufactured_date'          => 'nullable|date|before_or_equal:today',
-            'is_active'                  => 'boolean',
-            'purchase_price_factory'     => 'nullable|numeric|min:0',
+            'name' => 'required|string|max:255',
+            'sku' => 'required|string|max:100|unique:eshop_products,sku',
+            'category_id' => 'nullable|exists:eshop_categories,id',
+            'brand_id' => 'nullable|exists:eshop_brands,id',
+            'description' => 'nullable|string|max:50000',
+            'price' => 'required|numeric|min:0',
+            'cost_price' => 'nullable|numeric|min:0',
+            'tax_rate' => 'nullable|numeric|min:0|max:100',
+            'tax_inclusive' => 'boolean',
+            'discount_type' => 'nullable|in:none,percentage,fixed',
+            'discount_value' => 'nullable|numeric|min:0',
+            'unit' => 'nullable|string|max:20',
+            'min_quantity' => 'nullable|integer|min:0',
+            'alert_quantity' => 'nullable|integer|min:0',
+            'barcode' => 'nullable|string|max:255',
+            'image' => 'nullable|image|max:2048',
+            'images' => 'nullable|array|max:10',
+            'images.*' => 'image|max:2048',
+            'expiry_date' => 'nullable|date',
+            'manufactured_date' => 'nullable|date|before_or_equal:today',
+            'is_active' => 'boolean',
+            'purchase_price_factory' => 'nullable|numeric|min:0',
             'purchase_price_provisional' => 'nullable|numeric|min:0',
-            'pght'                       => 'nullable|numeric|min:0',
-            'cost_price_real'            => 'nullable|numeric|min:0',
-            'selling_type'               => 'nullable|in:pos,online,both',
-            'taxes'                      => 'nullable|array',
-            'taxes.*'                    => 'exists:eshop_taxes,id',
-            'stocks'                     => 'nullable|array',
-            'stocks.*.store_id'          => 'nullable|exists:eshop_stores,id',
-            'stocks.*.warehouse_id'      => 'nullable|exists:eshop_warehouses,id',
-            'stocks.*.quantity'          => 'nullable|integer|min:0',
-            'stocks.*.alert_quantity'    => 'nullable|integer|min:0',
-            'stocks.*.min_quantity'      => 'nullable|integer|min:0',
+            'pght' => 'nullable|numeric|min:0',
+            'cost_price_real' => 'nullable|numeric|min:0',
+            'selling_type' => 'nullable|in:pos,online,both',
+            'taxes' => 'nullable|array',
+            'taxes.*' => 'exists:eshop_taxes,id',
+            'stocks' => 'nullable|array',
+            'stocks.*.store_id' => 'nullable|exists:eshop_stores,id',
+            'stocks.*.warehouse_id' => 'nullable|exists:eshop_warehouses,id',
+            'stocks.*.quantity' => 'nullable|integer|min:0',
+            'stocks.*.alert_quantity' => 'nullable|integer|min:0',
+            'stocks.*.min_quantity' => 'nullable|integer|min:0',
         ]);
 
         $validated['slug'] = Str::slug($validated['name']);
@@ -147,28 +146,28 @@ class ProductController extends Controller
                 continue;
             }
             Stock::create([
-                'instance_id'  => $instanceId,
-                'product_id'   => $product->id,
-                'store_id'     => $stockRow['store_id'] ?: null,
+                'instance_id' => $instanceId,
+                'product_id' => $product->id,
+                'store_id' => $stockRow['store_id'] ?: null,
                 'warehouse_id' => $stockRow['warehouse_id'] ?: null,
-                'quantity'     => (int) ($stockRow['quantity'] ?? 0),
+                'quantity' => (int) ($stockRow['quantity'] ?? 0),
             ]);
         }
         // Save alert/min from first stock row to product
         if (! empty($stocks[0])) {
             $product->update([
                 'alert_quantity' => $stocks[0]['alert_quantity'] ?? $product->alert_quantity,
-                'min_quantity'   => $stocks[0]['min_quantity'] ?? $product->min_quantity,
+                'min_quantity' => $stocks[0]['min_quantity'] ?? $product->min_quantity,
             ]);
         }
 
-        if (!empty($taxes)) {
+        if (! empty($taxes)) {
             $taxData = [];
             foreach ($taxes as $taxId) {
                 $taxData[$taxId] = ['type' => $validated['tax_inclusive'] ? 'inclusive' : 'exclusive'];
             }
             foreach ($taxData as $taxId => $pivot) {
-                \Modules\Eshop360\Models\ProductTax::create([
+                \Modules\Eshop360\Domain\Catalog\Models\ProductTax::create([
                     'product_id' => $product->id,
                     'tax_id' => $taxId,
                     'type' => $pivot['type'],
@@ -286,45 +285,45 @@ class ProductController extends Controller
             : 0;
 
         $chargesCoverage = [
-            'total_monthly_charges'     => round($totalMonthlyCharges, 2),
-            'total_stock_value'         => round($totalStockValue, 2),
-            'cost_stock_value'          => round($costStockValue, 2),
-            'margin_per_unit'           => round($marginPerUnit, 2),
-            'monthly_revenue_avg'       => round($monthlyRevenueAvg, 2),
-            'charge_coverage_pct'       => $chargeCoveragePercentage,
-            'projected_revenue_all'     => round($projectedRevenueAllStock, 2),
+            'total_monthly_charges' => round($totalMonthlyCharges, 2),
+            'total_stock_value' => round($totalStockValue, 2),
+            'cost_stock_value' => round($costStockValue, 2),
+            'margin_per_unit' => round($marginPerUnit, 2),
+            'monthly_revenue_avg' => round($monthlyRevenueAvg, 2),
+            'charge_coverage_pct' => $chargeCoveragePercentage,
+            'projected_revenue_all' => round($projectedRevenueAllStock, 2),
             'projected_charge_coverage' => $projectedChargeCoverage,
         ];
 
         // 6. Stock by store/warehouse breakdown
         $stockByLocation = $product->stocks->map(fn ($stock) => [
-            'id'             => $stock->id,
-            'store'          => $stock->store?->name,
-            'store_id'       => $stock->store_id,
-            'warehouse'      => $stock->warehouse?->name,
-            'warehouse_id'   => $stock->warehouse_id,
-            'quantity'       => $stock->quantity,
-            'reserved'       => $stock->reserved_quantity ?? 0,
+            'id' => $stock->id,
+            'store' => $stock->store?->name,
+            'store_id' => $stock->store_id,
+            'warehouse' => $stock->warehouse?->name,
+            'warehouse_id' => $stock->warehouse_id,
+            'quantity' => $stock->quantity,
+            'reserved' => $stock->reserved_quantity ?? 0,
         ]);
 
         // JSON response for AJAX
         if (request()->ajax() || request()->wantsJson()) {
             return response()->json([
-                'product'           => $product,
-                'total_stock'       => $totalStock,
-                'reserved_stock'    => $reservedStock,
-                'stock_movements'   => $stockMovements,
-                'sales_stats'       => [
+                'product' => $product,
+                'total_stock' => $totalStock,
+                'reserved_stock' => $reservedStock,
+                'stock_movements' => $stockMovements,
+                'sales_stats' => [
                     'total_qty_sold' => $totalQuantitySold,
                 ],
-                'sales_statistics'  => [
-                    'total_quantity_sold'  => $totalQuantitySold,
-                    'total_revenue'        => $totalRevenue,
+                'sales_statistics' => [
+                    'total_quantity_sold' => $totalQuantitySold,
+                    'total_revenue' => $totalRevenue,
                     'average_selling_price' => $averageSellingPrice,
-                    'order_count'          => $orderCount,
-                    'monthly_sales'        => $monthlySales,
+                    'order_count' => $orderCount,
+                    'monthly_sales' => $monthlySales,
                 ],
-                'charges_coverage'  => $chargesCoverage,
+                'charges_coverage' => $chargesCoverage,
                 'stock_by_location' => $stockByLocation,
             ]);
         }
@@ -359,33 +358,33 @@ class ProductController extends Controller
     public function update(Request $request, string $slug, Product $product): RedirectResponse
     {
         $validated = $request->validate([
-            'name'              => 'required|string|max:255',
-            'sku'               => 'required|string|max:100|unique:eshop_products,sku,' . $product->id,
-            'category_id'       => 'nullable|exists:eshop_categories,id',
-            'brand_id'          => 'nullable|exists:eshop_brands,id',
-            'description'       => 'nullable|string|max:50000',
-            'price'             => 'required|numeric|min:0',
-            'cost_price'        => 'nullable|numeric|min:0',
-            'tax_rate'          => 'nullable|numeric|min:0|max:100',
-            'tax_inclusive'     => 'boolean',
-            'discount_type'     => 'nullable|in:none,percentage,fixed',
-            'discount_value'    => 'nullable|numeric|min:0',
-            'unit'              => 'nullable|string|max:20',
-            'min_quantity'      => 'nullable|integer|min:0',
-            'alert_quantity'    => 'nullable|integer|min:0',
-            'barcode'           => 'nullable|string|max:255',
-            'image'             => 'nullable|image|max:2048',
-            'images'            => 'nullable|array|max:10',
-            'images.*'          => 'image|max:2048',
-            'expiry_date'                => 'nullable|date',
-            'manufactured_date'          => 'nullable|date|before_or_equal:today',
-            'is_active'                  => 'boolean',
-            'purchase_price_factory'     => 'nullable|numeric|min:0',
+            'name' => 'required|string|max:255',
+            'sku' => 'required|string|max:100|unique:eshop_products,sku,'.$product->id,
+            'category_id' => 'nullable|exists:eshop_categories,id',
+            'brand_id' => 'nullable|exists:eshop_brands,id',
+            'description' => 'nullable|string|max:50000',
+            'price' => 'required|numeric|min:0',
+            'cost_price' => 'nullable|numeric|min:0',
+            'tax_rate' => 'nullable|numeric|min:0|max:100',
+            'tax_inclusive' => 'boolean',
+            'discount_type' => 'nullable|in:none,percentage,fixed',
+            'discount_value' => 'nullable|numeric|min:0',
+            'unit' => 'nullable|string|max:20',
+            'min_quantity' => 'nullable|integer|min:0',
+            'alert_quantity' => 'nullable|integer|min:0',
+            'barcode' => 'nullable|string|max:255',
+            'image' => 'nullable|image|max:2048',
+            'images' => 'nullable|array|max:10',
+            'images.*' => 'image|max:2048',
+            'expiry_date' => 'nullable|date',
+            'manufactured_date' => 'nullable|date|before_or_equal:today',
+            'is_active' => 'boolean',
+            'purchase_price_factory' => 'nullable|numeric|min:0',
             'purchase_price_provisional' => 'nullable|numeric|min:0',
-            'pght'                       => 'nullable|numeric|min:0',
-            'cost_price_real'            => 'nullable|numeric|min:0',
-            'taxes'                      => 'nullable|array',
-            'taxes.*'                    => 'exists:eshop_taxes,id',
+            'pght' => 'nullable|numeric|min:0',
+            'cost_price_real' => 'nullable|numeric|min:0',
+            'taxes' => 'nullable|array',
+            'taxes.*' => 'exists:eshop_taxes,id',
         ]);
 
         $validated['slug'] = Str::slug($validated['name']);
@@ -412,14 +411,14 @@ class ProductController extends Controller
         $product->update($validated);
 
         // Sync product taxes
-        \Modules\Eshop360\Models\ProductTax::where('product_id', $product->id)->delete();
-        if (!empty($taxes)) {
+        \Modules\Eshop360\Domain\Catalog\Models\ProductTax::where('product_id', $product->id)->delete();
+        if (! empty($taxes)) {
             $taxData = [];
             foreach ($taxes as $taxId) {
                 $taxData[$taxId] = ['type' => $validated['tax_inclusive'] ? 'inclusive' : 'exclusive'];
             }
             foreach ($taxData as $taxId => $pivot) {
-                \Modules\Eshop360\Models\ProductTax::create([
+                \Modules\Eshop360\Domain\Catalog\Models\ProductTax::create([
                     'product_id' => $product->id,
                     'tax_id' => $taxId,
                     'type' => $pivot['type'],
@@ -451,19 +450,19 @@ class ProductController extends Controller
         }
 
         $product = Product::with(['stocks' => function ($q) use ($request) {
-                if ($request->warehouse_id) {
-                    $q->where('warehouse_id', $request->warehouse_id);
-                }
-            }])
+            if ($request->warehouse_id) {
+                $q->where('warehouse_id', $request->warehouse_id);
+            }
+        }])
             ->where(function ($q) use ($query) {
                 $q->where('barcode', $query)
-                  ->orWhere('sku', $query)
-                  ->orWhere('name', 'like', "%{$query}%");
+                    ->orWhere('sku', $query)
+                    ->orWhere('name', 'like', "%{$query}%");
             })
             ->where('is_active', true)
             ->first();
 
-        if (!$product) {
+        if (! $product) {
             return response()->json(['product' => null, 'message' => 'Product not found']);
         }
 
@@ -471,15 +470,15 @@ class ProductController extends Controller
 
         return response()->json([
             'product' => [
-                'id'          => $product->id,
-                'name'        => $product->name,
-                'sku'         => $product->sku,
-                'barcode'     => $product->barcode,
-                'price'       => (float) $product->price,
-                'tax_rate'    => (float) $product->tax_rate,
-                'image'       => $product->image,
-                'stock'       => $totalStock,
-                'alert_qty'   => $product->alert_quantity,
+                'id' => $product->id,
+                'name' => $product->name,
+                'sku' => $product->sku,
+                'barcode' => $product->barcode,
+                'price' => (float) $product->price,
+                'tax_rate' => (float) $product->tax_rate,
+                'image' => $product->image,
+                'stock' => $totalStock,
+                'alert_qty' => $product->alert_quantity,
             ],
         ]);
     }
@@ -496,16 +495,16 @@ class ProductController extends Controller
     public function storeVariation(Request $request, string $slug, Product $product): RedirectResponse
     {
         $validated = $request->validate([
-            'name'       => 'required|string|max:255',
-            'sku'        => 'nullable|string|max:100',
-            'barcode'    => 'nullable|string|max:100',
-            'price'      => 'nullable|numeric|min:0',
+            'name' => 'required|string|max:255',
+            'sku' => 'nullable|string|max:100',
+            'barcode' => 'nullable|string|max:100',
+            'price' => 'nullable|numeric|min:0',
             'cost_price' => 'nullable|numeric|min:0',
-            'quantity'   => 'nullable|integer|min:0',
-            'values'     => 'nullable|array',
-            'values.*'   => 'string|max:100',
-            'image'      => 'nullable|image|max:2048',
-            'is_active'  => 'boolean',
+            'quantity' => 'nullable|integer|min:0',
+            'values' => 'nullable|array',
+            'values.*' => 'string|max:100',
+            'image' => 'nullable|image|max:2048',
+            'is_active' => 'boolean',
         ]);
 
         if ($request->hasFile('image')) {
@@ -514,25 +513,25 @@ class ProductController extends Controller
 
         $validated['product_id'] = $product->id;
 
-        \Modules\Eshop360\Models\ProductVariation::create($validated);
+        \Modules\Eshop360\Domain\Catalog\Models\ProductVariation::create($validated);
 
         return redirect()->route('eshop360.products.variations', [request()->route('slug'), $product])
             ->with('success', __('Variation created.'));
     }
 
-    public function updateVariation(Request $request, string $slug, Product $product, \Modules\Eshop360\Models\ProductVariation $variation): RedirectResponse
+    public function updateVariation(Request $request, string $slug, Product $product, \Modules\Eshop360\Domain\Catalog\Models\ProductVariation $variation): RedirectResponse
     {
         $validated = $request->validate([
-            'name'       => 'required|string|max:255',
-            'sku'        => 'nullable|string|max:100',
-            'barcode'    => 'nullable|string|max:100',
-            'price'      => 'nullable|numeric|min:0',
+            'name' => 'required|string|max:255',
+            'sku' => 'nullable|string|max:100',
+            'barcode' => 'nullable|string|max:100',
+            'price' => 'nullable|numeric|min:0',
             'cost_price' => 'nullable|numeric|min:0',
-            'quantity'   => 'nullable|integer|min:0',
-            'values'     => 'nullable|array',
-            'values.*'   => 'string|max:100',
-            'image'      => 'nullable|image|max:2048',
-            'is_active'  => 'boolean',
+            'quantity' => 'nullable|integer|min:0',
+            'values' => 'nullable|array',
+            'values.*' => 'string|max:100',
+            'image' => 'nullable|image|max:2048',
+            'is_active' => 'boolean',
         ]);
 
         if ($request->hasFile('image')) {
@@ -545,7 +544,7 @@ class ProductController extends Controller
             ->with('success', __('Variation updated.'));
     }
 
-    public function destroyVariation(string $slug, Product $product, \Modules\Eshop360\Models\ProductVariation $variation): RedirectResponse
+    public function destroyVariation(string $slug, Product $product, \Modules\Eshop360\Domain\Catalog\Models\ProductVariation $variation): RedirectResponse
     {
         $variation->delete();
 
@@ -559,10 +558,10 @@ class ProductController extends Controller
     public function bulkAction(Request $request, string $slug): RedirectResponse
     {
         $validated = $request->validate([
-            'product_ids'   => 'required|array|min:1',
+            'product_ids' => 'required|array|min:1',
             'product_ids.*' => 'exists:eshop_products,id',
-            'action'        => 'required|in:activate,deactivate,delete,change_category',
-            'category_id'   => 'nullable|exists:eshop_categories,id',
+            'action' => 'required|in:activate,deactivate,delete,change_category',
+            'category_id' => 'nullable|exists:eshop_categories,id',
         ]);
 
         $ids = $validated['product_ids'];

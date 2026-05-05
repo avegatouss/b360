@@ -5,14 +5,14 @@ namespace Modules\Eshop360\Http\Controllers\Report;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
-use Modules\Eshop360\Models\Customer;
-use Modules\Eshop360\Models\Invoice;
-use Modules\Eshop360\Models\Order;
-use Modules\Eshop360\Models\OrderItem;
-use Modules\Eshop360\Models\Product;
-use Modules\Eshop360\Models\PurchaseOrder;
-use Modules\Eshop360\Models\Stock;
-use Modules\Eshop360\Models\StockMovement;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\CRM\Models\Customer;
+use Modules\Eshop360\Domain\Finance\Models\Invoice;
+use Modules\Eshop360\Domain\Inventory\Models\Stock;
+use Modules\Eshop360\Domain\Inventory\Models\StockMovement;
+use Modules\Eshop360\Domain\Purchasing\Models\PurchaseOrder;
+use Modules\Eshop360\Domain\Sales\Models\Order;
+use Modules\Eshop360\Domain\Sales\Models\OrderItem;
 use Modules\Eshop360\Services\ChannelAccessService;
 use Modules\Eshop360\Support\CurrentChannel;
 
@@ -31,7 +31,7 @@ class ReportController extends Controller
         $channels = $this->channelAccess->availableChannelsForFilter($user);
 
         $baseQuery = fn () => Order::where('status', 'completed')
-            ->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
+            ->whereBetween('created_at', [$dateFrom, $dateTo.' 23:59:59'])
             ->when($channelFilter, fn ($q) => $q->where('channel_id', $channelFilter));
 
         $salesByDay = $baseQuery()
@@ -57,12 +57,12 @@ class ReportController extends Controller
             ->get();
 
         $totals = [
-            'revenue'  => $baseQuery()->sum('total'),
-            'orders'   => $baseQuery()->count(),
-            'tax'      => $baseQuery()->sum('tax_amount'),
+            'revenue' => $baseQuery()->sum('total'),
+            'orders' => $baseQuery()->count(),
+            'tax' => $baseQuery()->sum('tax_amount'),
             'discount' => $baseQuery()->sum('discount_amount'),
-            'due'      => Order::where('payment_status', '!=', 'paid')
-                ->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
+            'due' => Order::where('payment_status', '!=', 'paid')
+                ->whereBetween('created_at', [$dateFrom, $dateTo.' 23:59:59'])
                 ->when($channelFilter, fn ($q) => $q->where('channel_id', $channelFilter))
                 ->sum('due_amount'),
         ];
@@ -86,16 +86,16 @@ class ReportController extends Controller
         $accessibleIds = $this->channelAccess->accessibleChannelIds(auth()->user());
 
         $summary = [
-            'total_products'    => Product::where('instance_id', $instanceId)->count(),
-            'active_products'   => Product::where('instance_id', $instanceId)->where('is_active', true)->count(),
+            'total_products' => Product::where('instance_id', $instanceId)->count(),
+            'active_products' => Product::where('instance_id', $instanceId)->where('is_active', true)->count(),
             'total_stock_value' => DB::table('eshop_stocks')
                 ->join('eshop_products', 'eshop_stocks.product_id', '=', 'eshop_products.id')
                 ->where('eshop_stocks.instance_id', $instanceId)
                 ->when($channelId, fn ($q) => $q->where('eshop_stocks.channel_id', $channelId))
                 ->when(! $channelId && $accessibleIds !== null, fn ($q) => $q->whereIn('eshop_stocks.channel_id', $accessibleIds->all()))
                 ->sum(DB::raw('eshop_stocks.quantity * eshop_products.cost_price')),
-            'low_stock_count'   => Product::where('instance_id', $instanceId)->lowStock()->count(),
-            'expired_count'     => Product::where('instance_id', $instanceId)->expired()->count(),
+            'low_stock_count' => Product::where('instance_id', $instanceId)->lowStock()->count(),
+            'expired_count' => Product::where('instance_id', $instanceId)->expired()->count(),
         ];
 
         return view('eshop360::reports.inventory', compact('stocks', 'summary'));
@@ -114,7 +114,7 @@ class ReportController extends Controller
             ->leftJoin('eshop_orders', function ($join) use ($dateFrom, $dateTo, $channelFilter) {
                 $join->on('eshop_order_items.order_id', '=', 'eshop_orders.id')
                     ->where('eshop_orders.status', 'completed')
-                    ->whereBetween('eshop_orders.created_at', [$dateFrom, $dateTo . ' 23:59:59']);
+                    ->whereBetween('eshop_orders.created_at', [$dateFrom, $dateTo.' 23:59:59']);
                 if ($channelFilter) {
                     $join->where('eshop_orders.channel_id', $channelFilter);
                 }
@@ -147,7 +147,7 @@ class ReportController extends Controller
             ->selectRaw('COUNT(DISTINCT order_id) as order_count')
             ->whereHas('order', function ($q) use ($dateFrom, $dateTo, $channelFilter) {
                 $q->where('status', 'completed')
-                    ->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
+                    ->whereBetween('created_at', [$dateFrom, $dateTo.' 23:59:59'])
                     ->when($channelFilter, fn ($qq) => $qq->where('channel_id', $channelFilter));
             })
             ->groupBy('product_id')
@@ -185,7 +185,7 @@ class ReportController extends Controller
 
         $orderScope = function ($q) use ($dateFrom, $dateTo, $channelFilter) {
             $q->where('status', 'completed')
-                ->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
+                ->whereBetween('created_at', [$dateFrom, $dateTo.' 23:59:59'])
                 ->when($channelFilter, fn ($qq) => $qq->where('channel_id', $channelFilter));
         };
 
@@ -219,7 +219,7 @@ class ReportController extends Controller
             ->leftJoin('eshop_orders', function ($join) use ($dateFrom, $dateTo, $channelFilter) {
                 $join->on('eshop_customers.id', '=', 'eshop_orders.customer_id')
                     ->where('eshop_orders.status', 'completed')
-                    ->whereBetween('eshop_orders.created_at', [$dateFrom, $dateTo . ' 23:59:59']);
+                    ->whereBetween('eshop_orders.created_at', [$dateFrom, $dateTo.' 23:59:59']);
                 if ($channelFilter) {
                     $join->where('eshop_orders.channel_id', $channelFilter);
                 }
@@ -239,14 +239,14 @@ class ReportController extends Controller
         $summaryBase = Customer::query()
             ->when($channelFilter, fn ($q) => $q->where('channel_id', $channelFilter));
         $summary = [
-            'total_customers'  => (clone $summaryBase)->count(),
+            'total_customers' => (clone $summaryBase)->count(),
             'active_customers' => (clone $summaryBase)->whereHas('orders', function ($q) use ($dateFrom, $dateTo, $channelFilter) {
-                $q->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59']);
+                $q->whereBetween('created_at', [$dateFrom, $dateTo.' 23:59:59']);
                 if ($channelFilter) {
                     $q->where('channel_id', $channelFilter);
                 }
             })->count(),
-            'new_customers'    => (clone $summaryBase)->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])->count(),
+            'new_customers' => (clone $summaryBase)->whereBetween('created_at', [$dateFrom, $dateTo.' 23:59:59'])->count(),
         ];
 
         return view('eshop360::customers.report', compact('customers', 'summary', 'dateFrom', 'dateTo', 'channels', 'channelFilter'));
@@ -258,7 +258,7 @@ class ReportController extends Controller
         $dateTo = $request->date_to ?? now()->toDateString();
         $instanceId = \Modules\Core\Support\CurrentInstance::idOrFail();
 
-        $purchasesBySupplier = PurchaseOrder::where('instance_id', $instanceId)->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
+        $purchasesBySupplier = PurchaseOrder::where('instance_id', $instanceId)->whereBetween('created_at', [$dateFrom, $dateTo.' 23:59:59'])
             ->select('supplier_name')
             ->selectRaw('COUNT(*) as count')
             ->selectRaw('SUM(total) as total')
@@ -268,7 +268,7 @@ class ReportController extends Controller
             ->orderByDesc('total')
             ->get();
 
-        $purchasesByMonth = PurchaseOrder::where('instance_id', $instanceId)->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
+        $purchasesByMonth = PurchaseOrder::where('instance_id', $instanceId)->whereBetween('created_at', [$dateFrom, $dateTo.' 23:59:59'])
             ->select(
                 DB::raw('YEAR(created_at) as year'),
                 DB::raw('MONTH(created_at) as month'),
@@ -280,12 +280,12 @@ class ReportController extends Controller
             ->orderBy('month')
             ->get();
 
-        $poBase = PurchaseOrder::where('instance_id', $instanceId)->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59']);
+        $poBase = PurchaseOrder::where('instance_id', $instanceId)->whereBetween('created_at', [$dateFrom, $dateTo.' 23:59:59']);
         $summary = [
             'total_purchased' => (clone $poBase)->sum('total'),
-            'total_paid'      => (clone $poBase)->sum('paid_amount'),
-            'total_due'       => (clone $poBase)->sum('due_amount'),
-            'order_count'     => (clone $poBase)->count(),
+            'total_paid' => (clone $poBase)->sum('paid_amount'),
+            'total_due' => (clone $poBase)->sum('due_amount'),
+            'order_count' => (clone $poBase)->count(),
         ];
 
         return view('eshop360::purchases.report', compact('purchasesBySupplier', 'purchasesByMonth', 'summary', 'dateFrom', 'dateTo'));
@@ -297,12 +297,12 @@ class ReportController extends Controller
         $dateTo = $request->date_to ?? now()->toDateString();
         $instanceId = \Modules\Core\Support\CurrentInstance::idOrFail();
 
-        $invoicesByStatus = Invoice::where('instance_id', $instanceId)->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
+        $invoicesByStatus = Invoice::where('instance_id', $instanceId)->whereBetween('created_at', [$dateFrom, $dateTo.' 23:59:59'])
             ->select('status', DB::raw('COUNT(*) as count'), DB::raw('SUM(total) as total'))
             ->groupBy('status')
             ->get();
 
-        $invoicesByMonth = Invoice::where('instance_id', $instanceId)->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
+        $invoicesByMonth = Invoice::where('instance_id', $instanceId)->whereBetween('created_at', [$dateFrom, $dateTo.' 23:59:59'])
             ->select(
                 DB::raw('YEAR(created_at) as year'),
                 DB::raw('MONTH(created_at) as month'),
@@ -315,12 +315,12 @@ class ReportController extends Controller
             ->orderBy('month')
             ->get();
 
-        $invBase = Invoice::where('instance_id', $instanceId)->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59']);
+        $invBase = Invoice::where('instance_id', $instanceId)->whereBetween('created_at', [$dateFrom, $dateTo.' 23:59:59']);
         $summary = [
             'total_invoiced' => (clone $invBase)->sum('total'),
-            'total_paid'     => (clone $invBase)->sum('paid_amount'),
-            'total_due'      => (clone $invBase)->sum('due_amount'),
-            'overdue_count'  => (clone $invBase)->where('status', '!=', 'paid')
+            'total_paid' => (clone $invBase)->sum('paid_amount'),
+            'total_due' => (clone $invBase)->sum('due_amount'),
+            'overdue_count' => (clone $invBase)->where('status', '!=', 'paid')
                 ->where('due_date', '<', now())
                 ->count(),
         ];

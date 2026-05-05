@@ -7,10 +7,10 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\Customer;
-use Modules\Eshop360\Models\Store;
+use Modules\Eshop360\Domain\CRM\Models\Customer;
+use Modules\Eshop360\Domain\Inventory\Models\Store;
+use Modules\Eshop360\Domain\Inventory\Models\Warehouse;
 use Modules\Eshop360\Models\UserAssignment;
-use Modules\Eshop360\Models\Warehouse;
 
 class UserAssignmentController extends Controller
 {
@@ -124,7 +124,7 @@ class UserAssignmentController extends Controller
             ];
         }
 
-        if (!empty($assignments)) {
+        if (! empty($assignments)) {
             UserAssignment::insert($assignments);
         }
 

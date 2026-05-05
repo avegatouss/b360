@@ -7,23 +7,23 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\Project;
-use Modules\Eshop360\Models\Task;
-use Modules\Eshop360\Models\TaskComment;
+use Modules\Eshop360\Domain\Projects\Models\Project;
+use Modules\Eshop360\Domain\Projects\Models\Task;
+use Modules\Eshop360\Domain\Projects\Models\TaskComment;
 
 class TaskController extends Controller
 {
     public function store(Request $request, Project $project): RedirectResponse
     {
         $validated = $request->validate([
-            'title'           => 'required|string|max:255',
-            'description'     => 'nullable|string',
-            'status'          => 'required|in:todo,in_progress,review,done,cancelled',
-            'priority'        => 'required|in:low,medium,high,urgent',
-            'assigned_to'     => 'nullable|exists:users,id',
-            'due_date'        => 'nullable|date',
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'status' => 'required|in:todo,in_progress,review,done,cancelled',
+            'priority' => 'required|in:low,medium,high,urgent',
+            'assigned_to' => 'nullable|exists:users,id',
+            'due_date' => 'nullable|date',
             'estimated_hours' => 'nullable|integer|min:0',
-            'parent_task_id'  => 'nullable|exists:eshop_tasks,id',
+            'parent_task_id' => 'nullable|exists:eshop_tasks,id',
         ]);
 
         $instance = CurrentInstance::get();
@@ -46,15 +46,15 @@ class TaskController extends Controller
     public function update(Request $request, Task $task): JsonResponse|RedirectResponse
     {
         $validated = $request->validate([
-            'title'           => 'sometimes|required|string|max:255',
-            'description'     => 'nullable|string',
-            'status'          => 'sometimes|required|in:todo,in_progress,review,done,cancelled',
-            'priority'        => 'sometimes|required|in:low,medium,high,urgent',
-            'assigned_to'     => 'nullable|exists:users,id',
-            'due_date'        => 'nullable|date',
+            'title' => 'sometimes|required|string|max:255',
+            'description' => 'nullable|string',
+            'status' => 'sometimes|required|in:todo,in_progress,review,done,cancelled',
+            'priority' => 'sometimes|required|in:low,medium,high,urgent',
+            'assigned_to' => 'nullable|exists:users,id',
+            'due_date' => 'nullable|date',
             'estimated_hours' => 'nullable|integer|min:0',
-            'actual_hours'    => 'nullable|integer|min:0',
-            'sort_order'      => 'nullable|integer',
+            'actual_hours' => 'nullable|integer|min:0',
+            'sort_order' => 'nullable|integer',
         ]);
 
         if (isset($validated['status']) && $validated['status'] === 'done' && $task->status !== 'done') {

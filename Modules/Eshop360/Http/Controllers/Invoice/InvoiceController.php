@@ -6,23 +6,20 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
-use Modules\Eshop360\Services\EshopSettingsService;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\Customer;
-use Modules\Eshop360\Models\Invoice;
-use Modules\Eshop360\Models\Order;
-use Modules\Eshop360\Models\Product;
-use Modules\Eshop360\Services\EmailService;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\CRM\Models\Customer;
+use Modules\Eshop360\Domain\Finance\Models\Invoice;
+use Modules\Eshop360\Domain\Sales\Models\Order;
+use Modules\Eshop360\Services\EshopSettingsService;
 use Modules\Eshop360\Services\InvoiceService;
-use Modules\Eshop360\Services\PdfService;
 
 class InvoiceController extends Controller
 {
     public function __construct(
         private readonly InvoiceService $invoiceService,
         private readonly EshopSettingsService $eshopSettings,
-    ) {
-    }
+    ) {}
 
     public function index(Request $request)
     {
@@ -45,15 +42,15 @@ class InvoiceController extends Controller
         // KPIs
         $fq = clone $query;
         $kpi = (object) [
-            'total'      => (clone $fq)->count(),
-            'amount'     => round((float) (clone $fq)->sum('total'), 0),
-            'paid'       => round((float) (clone $fq)->where('status', 'paid')->sum('total'), 0),
-            'due'        => round((float) (clone $fq)->whereIn('status', ['unpaid', 'partial', 'overdue'])->sum('due_amount'), 0),
-            'overdue'    => (clone $fq)->where(function ($sq) {
+            'total' => (clone $fq)->count(),
+            'amount' => round((float) (clone $fq)->sum('total'), 0),
+            'paid' => round((float) (clone $fq)->where('status', 'paid')->sum('total'), 0),
+            'due' => round((float) (clone $fq)->whereIn('status', ['unpaid', 'partial', 'overdue'])->sum('due_amount'), 0),
+            'overdue' => (clone $fq)->where(function ($sq) {
                 $sq->where('status', 'overdue')
                     ->orWhere(fn ($sq2) => $sq2->where('status', '!=', 'paid')->whereNotNull('due_date')->where('due_date', '<', now()));
             })->count(),
-            'draft'      => (clone $fq)->where('status', 'draft')->count(),
+            'draft' => (clone $fq)->where('status', 'draft')->count(),
             'paid_count' => (clone $fq)->where('status', 'paid')->count(),
         ];
 
@@ -84,21 +81,21 @@ class InvoiceController extends Controller
     {
         $instance = CurrentInstance::get();
         $validated = $request->validate([
-            'customer_id'            => 'nullable|exists:eshop_customers,id',
-            'order_id'               => 'nullable|exists:eshop_orders,id',
-            'due_date'               => 'nullable|date|after_or_equal:today',
-            'notes'                  => 'nullable|string|max:2000',
-            'terms'                  => 'nullable|string|max:2000',
-            'footer_text'            => 'nullable|string|max:1000',
-            'template'               => 'nullable|string|max:50',
-            'discount_amount'        => 'nullable|numeric|min:0',
-            'items'                  => 'required|array|min:1',
-            'items.*.product_id'     => 'nullable|exists:eshop_products,id',
-            'items.*.description'    => 'required|string|max:500',
-            'items.*.quantity'       => 'required|integer|min:1',
-            'items.*.unit_price'     => 'required|numeric|min:0',
-            'items.*.discount'       => 'nullable|numeric|min:0',
-            'items.*.tax'            => 'nullable|numeric|min:0',
+            'customer_id' => 'nullable|exists:eshop_customers,id',
+            'order_id' => 'nullable|exists:eshop_orders,id',
+            'due_date' => 'nullable|date|after_or_equal:today',
+            'notes' => 'nullable|string|max:2000',
+            'terms' => 'nullable|string|max:2000',
+            'footer_text' => 'nullable|string|max:1000',
+            'template' => 'nullable|string|max:50',
+            'discount_amount' => 'nullable|numeric|min:0',
+            'items' => 'required|array|min:1',
+            'items.*.product_id' => 'nullable|exists:eshop_products,id',
+            'items.*.description' => 'required|string|max:500',
+            'items.*.quantity' => 'required|integer|min:1',
+            'items.*.unit_price' => 'required|numeric|min:0',
+            'items.*.discount' => 'nullable|numeric|min:0',
+            'items.*.tax' => 'nullable|numeric|min:0',
         ]);
 
         $invoice = $this->invoiceService->createFromItems($validated['items'], [
@@ -133,13 +130,13 @@ class InvoiceController extends Controller
     {
         $instance = CurrentInstance::get();
         $validated = $request->validate([
-            'status'      => 'nullable|in:draft,sent,paid,unpaid,overdue,cancelled',
-            'due_date'    => 'nullable|date',
+            'status' => 'nullable|in:draft,sent,paid,unpaid,overdue,cancelled',
+            'due_date' => 'nullable|date',
             'paid_amount' => 'nullable|numeric|min:0',
-            'notes'       => 'nullable|string|max:2000',
-            'terms'       => 'nullable|string|max:2000',
+            'notes' => 'nullable|string|max:2000',
+            'terms' => 'nullable|string|max:2000',
             'footer_text' => 'nullable|string|max:1000',
-            'template'    => 'nullable|string|max:50',
+            'template' => 'nullable|string|max:50',
         ]);
 
         $updateData = array_filter($validated, fn ($v) => $v !== null);
@@ -168,9 +165,9 @@ class InvoiceController extends Controller
     public function recordPayment(Request $request, string $slug, Invoice $invoice): RedirectResponse
     {
         $validated = $request->validate([
-            'amount'  => 'required|numeric|min:1',
-            'method'  => 'required|string|in:cash,card,cheque,paypal,bank_transfer,points,deposit,gift_card,external,manual',
-            'notes'   => 'nullable|string|max:500',
+            'amount' => 'required|numeric|min:1',
+            'method' => 'required|string|in:cash,card,cheque,paypal,bank_transfer,points,deposit,gift_card,external,manual',
+            'notes' => 'nullable|string|max:500',
         ]);
 
         $amount = (float) $validated['amount'];
@@ -252,17 +249,17 @@ class InvoiceController extends Controller
     public function updateSettings(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'company_name'    => 'required|string|max:255',
+            'company_name' => 'required|string|max:255',
             'company_address' => 'nullable|string|max:500',
-            'company_phone'   => 'nullable|string|max:30',
-            'company_email'   => 'nullable|email|max:255',
-            'company_logo'    => 'nullable|image|max:1024',
-            'tax_number'      => 'nullable|string|max:100',
-            'default_terms'   => 'nullable|string|max:2000',
-            'default_footer'  => 'nullable|string|max:1000',
+            'company_phone' => 'nullable|string|max:30',
+            'company_email' => 'nullable|email|max:255',
+            'company_logo' => 'nullable|image|max:1024',
+            'tax_number' => 'nullable|string|max:100',
+            'default_terms' => 'nullable|string|max:2000',
+            'default_footer' => 'nullable|string|max:1000',
             'default_due_days' => 'nullable|integer|min:0|max:365',
             'default_template' => 'nullable|string|max:50',
-            'currency_symbol'  => 'nullable|string|max:10',
+            'currency_symbol' => 'nullable|string|max:10',
             'currency_position' => 'nullable|in:before,after',
         ]);
 
@@ -282,12 +279,12 @@ class InvoiceController extends Controller
         $dateFrom = $request->date_from ?? now()->startOfMonth()->toDateString();
         $dateTo = $request->date_to ?? now()->toDateString();
 
-        $invoicesByStatus = Invoice::whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
+        $invoicesByStatus = Invoice::whereBetween('created_at', [$dateFrom, $dateTo.' 23:59:59'])
             ->select('status', DB::raw('COUNT(*) as count'), DB::raw('SUM(total) as total'))
             ->groupBy('status')
             ->get();
 
-        $monthlyInvoices = Invoice::whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
+        $monthlyInvoices = Invoice::whereBetween('created_at', [$dateFrom, $dateTo.' 23:59:59'])
             ->select(
                 DB::raw('YEAR(created_at) as year'),
                 DB::raw('MONTH(created_at) as month'),
@@ -301,12 +298,12 @@ class InvoiceController extends Controller
             ->orderBy('month')
             ->get();
 
-        $totalInvoiced = Invoice::whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])->sum('total');
-        $totalPaid = Invoice::whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])->sum('paid_amount');
-        $totalDue = Invoice::whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])->sum('due_amount');
+        $totalInvoiced = Invoice::whereBetween('created_at', [$dateFrom, $dateTo.' 23:59:59'])->sum('total');
+        $totalPaid = Invoice::whereBetween('created_at', [$dateFrom, $dateTo.' 23:59:59'])->sum('paid_amount');
+        $totalDue = Invoice::whereBetween('created_at', [$dateFrom, $dateTo.' 23:59:59'])->sum('due_amount');
         $overdueCount = Invoice::where('status', '!=', 'paid')
             ->where('due_date', '<', now())
-            ->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])
+            ->whereBetween('created_at', [$dateFrom, $dateTo.' 23:59:59'])
             ->count();
 
         return view('eshop360::invoices.report', compact(
@@ -320,6 +317,7 @@ class InvoiceController extends Controller
     {
         $invoice->load('items.product', 'customer', 'order');
         $html = app(\Modules\Eshop360\Services\PdfService::class)->invoice($invoice);
+
         return app(\Modules\Eshop360\Services\PdfService::class)->download($html, "facture-{$invoice->invoice_number}.pdf");
     }
 
@@ -327,11 +325,10 @@ class InvoiceController extends Controller
     {
         $sent = app(\Modules\Eshop360\Services\EmailService::class)->sendInvoice($invoice);
 
-        if (!$sent) {
+        if (! $sent) {
             return redirect()->back()->with('error', 'Impossible d\'envoyer l\'email (client sans email ou erreur SMTP).');
         }
 
-        return redirect()->back()->with('success', "Facture envoyée par email.");
+        return redirect()->back()->with('success', 'Facture envoyée par email.');
     }
-
 }

@@ -2,10 +2,10 @@
 
 namespace Modules\Eshop360\Database\Seeders;
 
-use Modules\Eshop360\Models\Product;
-use Modules\Eshop360\Models\PurchaseOrder;
-use Modules\Eshop360\Models\PurchaseItem;
-use Modules\Eshop360\Models\Supplier;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\Purchasing\Models\PurchaseItem;
+use Modules\Eshop360\Domain\Purchasing\Models\PurchaseOrder;
+use Modules\Eshop360\Domain\Purchasing\Models\Supplier;
 
 final class DemoSupplierPurchasesSeeder
 {
@@ -16,7 +16,9 @@ final class DemoSupplierPurchasesSeeder
             ->where('is_active', true)
             ->get();
 
-        if ($suppliers->isEmpty()) return;
+        if ($suppliers->isEmpty()) {
+            return;
+        }
 
         $products = Product::withoutGlobalScopes()
             ->where('instance_id', $instanceId)
@@ -24,13 +26,15 @@ final class DemoSupplierPurchasesSeeder
             ->limit(30)
             ->get();
 
-        if ($products->count() < 5) return;
+        if ($products->count() < 5) {
+            return;
+        }
 
         // Link products to suppliers (distribute evenly)
         $supplierIds = $suppliers->pluck('id')->toArray();
         foreach ($products as $i => $product) {
             $supplierId = $supplierIds[$i % count($supplierIds)];
-            if (!$product->supplier_id) {
+            if (! $product->supplier_id) {
                 $product->update(['supplier_id' => $supplierId]);
             }
         }
@@ -93,7 +97,7 @@ final class DemoSupplierPurchasesSeeder
             $dueAmount = round($total - $paidAmount, 2);
             $paymentStatus = $dueAmount <= 0 ? 'paid' : ($paidAmount > 0 ? 'partial' : 'unpaid');
 
-            $ref = 'DEMO-PO-S' . $supplier->id . '-' . $date->format('ymdHi') . '-' . $i;
+            $ref = 'DEMO-PO-S'.$supplier->id.'-'.$date->format('ymdHi').'-'.$i;
 
             $order = PurchaseOrder::withoutGlobalScopes()->create([
                 'instance_id' => $instanceId,
@@ -106,7 +110,7 @@ final class DemoSupplierPurchasesSeeder
                 'total' => $total,
                 'paid_amount' => $paidAmount,
                 'due_amount' => $dueAmount,
-                'notes' => '[DEMO] Commande fournisseur ' . $supplier->name,
+                'notes' => '[DEMO] Commande fournisseur '.$supplier->name,
                 'created_by' => 1,
                 'created_at' => $date,
                 'updated_at' => $date,

@@ -2,8 +2,8 @@
 
 namespace Modules\Eshop360\Services\Printing;
 
-use Modules\Eshop360\Models\Order;
-use Modules\Eshop360\Models\ReceiptTemplate;
+use Modules\Eshop360\Domain\Communication\Models\ReceiptTemplate;
+use Modules\Eshop360\Domain\Sales\Models\Order;
 
 /**
  * ESC/POS thermal printer service.

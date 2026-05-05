@@ -2,10 +2,10 @@
 
 namespace Modules\Eshop360\Tests\Feature;
 
-use Modules\Eshop360\Models\Attendance;
-use Modules\Eshop360\Models\Employee;
-use Modules\Eshop360\Models\Order;
-use Modules\Eshop360\Models\Warehouse;
+use Modules\Eshop360\Domain\HR\Models\Attendance;
+use Modules\Eshop360\Domain\HR\Models\Employee;
+use Modules\Eshop360\Domain\Inventory\Models\Warehouse;
+use Modules\Eshop360\Domain\Sales\Models\Order;
 use Modules\Eshop360\Services\HRService;
 use Modules\Eshop360\Tests\TestCase;
 

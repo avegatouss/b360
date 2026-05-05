@@ -5,14 +5,12 @@ namespace Modules\Eshop360\Http\Controllers\Settings;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\Webhook;
+use Modules\Eshop360\Domain\Communication\Models\Webhook;
 use Modules\Eshop360\Services\WebhookService;
 
 class WebhookController extends Controller
 {
-    public function __construct(private readonly WebhookService $webhookService)
-    {
-    }
+    public function __construct(private readonly WebhookService $webhookService) {}
 
     public function index()
     {
@@ -34,7 +32,7 @@ class WebhookController extends Controller
             'url' => 'required|url|max:500',
             'secret' => 'nullable|string|max:100',
             'events' => 'required|array|min:1',
-            'events.*' => 'string|in:' . implode(',', WebhookService::EVENTS) . ',*',
+            'events.*' => 'string|in:'.implode(',', WebhookService::EVENTS).',*',
             'is_active' => 'boolean',
         ]);
 
@@ -53,7 +51,7 @@ class WebhookController extends Controller
             'url' => 'required|url|max:500',
             'secret' => 'nullable|string|max:100',
             'events' => 'required|array|min:1',
-            'events.*' => 'string|in:' . implode(',', WebhookService::EVENTS) . ',*',
+            'events.*' => 'string|in:'.implode(',', WebhookService::EVENTS).',*',
             'is_active' => 'boolean',
         ]);
 

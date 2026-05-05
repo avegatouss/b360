@@ -5,17 +5,17 @@ namespace Modules\Eshop360\Services;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Modules\Eshop360\Models\Account;
-use Modules\Eshop360\Models\AccountTransaction;
-use Modules\Eshop360\Models\AccountTransfer;
-use Modules\Eshop360\Models\Customer;
-use Modules\Eshop360\Models\CustomerDue;
-use Modules\Eshop360\Models\CustomerTransaction;
-use Modules\Eshop360\Models\GiftCard;
-use Modules\Eshop360\Models\GiftCardTopup;
-use Modules\Eshop360\Models\InstallmentPayment;
-use Modules\Eshop360\Models\InstallmentPlan;
-use Modules\Eshop360\Models\Order;
+use Modules\Eshop360\Domain\CRM\Models\Customer;
+use Modules\Eshop360\Domain\CRM\Models\CustomerDue;
+use Modules\Eshop360\Domain\CRM\Models\CustomerTransaction;
+use Modules\Eshop360\Domain\Finance\Models\Account;
+use Modules\Eshop360\Domain\Finance\Models\AccountTransaction;
+use Modules\Eshop360\Domain\Finance\Models\AccountTransfer;
+use Modules\Eshop360\Domain\Finance\Models\InstallmentPayment;
+use Modules\Eshop360\Domain\Finance\Models\InstallmentPlan;
+use Modules\Eshop360\Domain\Promotions\Models\GiftCard;
+use Modules\Eshop360\Domain\Promotions\Models\GiftCardTopup;
+use Modules\Eshop360\Domain\Sales\Models\Order;
 
 class FinanceService
 {
@@ -307,13 +307,13 @@ class FinanceService
         [$fromDateTime, $toDateTime] = $this->normalizeDateTimeRange($from, $to);
         [$fromDate, $toDate] = $this->normalizeDateRange($from, $to);
 
-        $sales = \Modules\Eshop360\Models\Order::where('instance_id', $instanceId)
+        $sales = \Modules\Eshop360\Domain\Sales\Models\Order::where('instance_id', $instanceId)
             ->whereBetween('created_at', [$fromDateTime, $toDateTime])
             ->where('status', '!=', 'cancelled')
             ->sum('total');
 
         // COGS: sum of (cost_price * quantity) for completed order items
-        $cogs = \Modules\Eshop360\Models\OrderItem::whereHas('order', function ($q) use ($instanceId, $fromDateTime, $toDateTime) {
+        $cogs = \Modules\Eshop360\Domain\Sales\Models\OrderItem::whereHas('order', function ($q) use ($instanceId, $fromDateTime, $toDateTime) {
             $q->where('instance_id', $instanceId)
                 ->where('status', 'completed')
                 ->whereBetween('created_at', [$fromDateTime, $toDateTime]);
@@ -322,17 +322,17 @@ class FinanceService
             ->selectRaw('SUM(eshop_order_items.quantity * COALESCE(p.cost_price, 0)) as total_cogs')
             ->value('total_cogs') ?? 0;
 
-        $purchases = \Modules\Eshop360\Models\PurchaseOrder::where('instance_id', $instanceId)
+        $purchases = \Modules\Eshop360\Domain\Purchasing\Models\PurchaseOrder::where('instance_id', $instanceId)
             ->whereBetween('created_at', [$fromDateTime, $toDateTime])
             ->where('status', '!=', 'cancelled')
             ->sum('total');
 
-        $expenses = \Modules\Eshop360\Models\Expense::where('instance_id', $instanceId)
+        $expenses = \Modules\Eshop360\Domain\Finance\Models\Expense::where('instance_id', $instanceId)
             ->whereDate('date', '>=', $fromDate)
             ->whereDate('date', '<=', $toDate)
             ->sum('amount');
 
-        $incomes = \Modules\Eshop360\Models\Income::where('instance_id', $instanceId)
+        $incomes = \Modules\Eshop360\Domain\Finance\Models\Income::where('instance_id', $instanceId)
             ->whereDate('date', '>=', $fromDate)
             ->whereDate('date', '<=', $toDate)
             ->sum('amount');

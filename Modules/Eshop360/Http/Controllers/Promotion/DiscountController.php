@@ -6,8 +6,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\Discount;
-use Modules\Eshop360\Models\DiscountPlan;
+use Modules\Eshop360\Domain\Promotions\Models\Discount;
+use Modules\Eshop360\Domain\Promotions\Models\DiscountPlan;
 
 class DiscountController extends Controller
 {
@@ -29,17 +29,17 @@ class DiscountController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'name'           => 'required|string|max:255',
-            'description'    => 'nullable|string|max:500',
-            'discount_type'  => 'required|in:percentage,fixed',
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:500',
+            'discount_type' => 'required|in:percentage,fixed',
             'discount_value' => 'required|numeric|min:0.01',
-            'applies_to'     => 'required|in:all,category,brand,product',
-            'target_ids'     => 'nullable|array',
-            'target_ids.*'   => 'integer',
-            'min_quantity'   => 'nullable|integer|min:1',
-            'start_date'     => 'nullable|date',
-            'end_date'       => 'nullable|date|after_or_equal:start_date',
-            'is_active'      => 'boolean',
+            'applies_to' => 'required|in:all,category,brand,product',
+            'target_ids' => 'nullable|array',
+            'target_ids.*' => 'integer',
+            'min_quantity' => 'nullable|integer|min:1',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'is_active' => 'boolean',
         ]);
 
         $validated['instance_id'] = CurrentInstance::idOrFail();
@@ -53,17 +53,17 @@ class DiscountController extends Controller
     public function update(Request $request, Discount $discount): RedirectResponse
     {
         $validated = $request->validate([
-            'name'           => 'required|string|max:255',
-            'description'    => 'nullable|string|max:500',
-            'discount_type'  => 'required|in:percentage,fixed',
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:500',
+            'discount_type' => 'required|in:percentage,fixed',
             'discount_value' => 'required|numeric|min:0.01',
-            'applies_to'     => 'required|in:all,category,brand,product',
-            'target_ids'     => 'nullable|array',
-            'target_ids.*'   => 'integer',
-            'min_quantity'   => 'nullable|integer|min:1',
-            'start_date'     => 'nullable|date',
-            'end_date'       => 'nullable|date|after_or_equal:start_date',
-            'is_active'      => 'boolean',
+            'applies_to' => 'required|in:all,category,brand,product',
+            'target_ids' => 'nullable|array',
+            'target_ids.*' => 'integer',
+            'min_quantity' => 'nullable|integer|min:1',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'is_active' => 'boolean',
         ]);
 
         $discount->update($validated);
@@ -96,13 +96,13 @@ class DiscountController extends Controller
     public function storePlan(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'name'          => 'required|string|max:255',
-            'description'   => 'nullable|string|max:500',
-            'discount_ids'  => 'required|array|min:1',
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:500',
+            'discount_ids' => 'required|array|min:1',
             'discount_ids.*' => 'exists:eshop_discounts,id',
-            'start_date'    => 'nullable|date',
-            'end_date'      => 'nullable|date|after_or_equal:start_date',
-            'is_active'     => 'boolean',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'is_active' => 'boolean',
         ]);
 
         $validated['instance_id'] = CurrentInstance::idOrFail();
@@ -119,13 +119,13 @@ class DiscountController extends Controller
     public function updatePlan(Request $request, DiscountPlan $plan): RedirectResponse
     {
         $validated = $request->validate([
-            'name'          => 'required|string|max:255',
-            'description'   => 'nullable|string|max:500',
-            'discount_ids'  => 'required|array|min:1',
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:500',
+            'discount_ids' => 'required|array|min:1',
             'discount_ids.*' => 'exists:eshop_discounts,id',
-            'start_date'    => 'nullable|date',
-            'end_date'      => 'nullable|date|after_or_equal:start_date',
-            'is_active'     => 'boolean',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'is_active' => 'boolean',
         ]);
 
         $discountIds = $validated['discount_ids'];

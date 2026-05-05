@@ -7,9 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\Customer;
-use Modules\Eshop360\Models\CustomerTransaction;
-use Modules\Eshop360\Models\Order;
+use Modules\Eshop360\Domain\CRM\Models\Customer;
+use Modules\Eshop360\Domain\CRM\Models\CustomerTransaction;
+use Modules\Eshop360\Domain\Sales\Models\Order;
 use Modules\Eshop360\Services\ChannelAccessService;
 use Modules\Eshop360\Services\FinanceService;
 
@@ -49,15 +49,15 @@ class CustomerController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $rules = [
-            'name'                => 'required|string|max:255',
-            'email'               => 'nullable|email|max:255',
-            'phone'               => 'nullable|string|max:30',
-            'address'             => 'nullable|string|max:500',
-            'city'                => 'nullable|string|max:100',
-            'country'             => 'nullable|string|max:100',
-            'company_name'        => 'nullable|string|max:255',
-            'credit_limit'        => 'nullable|numeric|min:0',
-            'is_active'           => 'boolean',
+            'name' => 'required|string|max:255',
+            'email' => 'nullable|email|max:255',
+            'phone' => 'nullable|string|max:30',
+            'address' => 'nullable|string|max:500',
+            'city' => 'nullable|string|max:100',
+            'country' => 'nullable|string|max:100',
+            'company_name' => 'nullable|string|max:255',
+            'credit_limit' => 'nullable|numeric|min:0',
+            'is_active' => 'boolean',
             'create_user_account' => 'nullable|boolean',
         ];
 
@@ -70,11 +70,11 @@ class CustomerController extends Controller
 
         $instance = CurrentInstance::get();
         $validated['instance_id'] = $instance?->id;
-        $validated['code'] = 'CUS-' . str_pad(Customer::where('instance_id', $instance?->id)->count() + 1, 6, '0', STR_PAD_LEFT);
+        $validated['code'] = 'CUS-'.str_pad(Customer::where('instance_id', $instance?->id)->count() + 1, 6, '0', STR_PAD_LEFT);
 
         // Force channel_id from session context (non-hub users must create within their channel)
         $channelId = $request->integer('channel_id') ?: null;
-        if (!$this->channelAccess->isHubAdmin(auth()->user())) {
+        if (! $this->channelAccess->isHubAdmin(auth()->user())) {
             abort_unless($channelId, 422, 'Un canal doit etre selectionne pour creer un client.');
         }
         $validated['channel_id'] = $channelId;
@@ -90,18 +90,18 @@ class CustomerController extends Controller
         if ($createAccount && $customer->email) {
             $user = \App\Models\User::create([
                 'full_name' => $customer->name,
-                'email'     => $customer->email,
-                'password'  => \Illuminate\Support\Facades\Hash::make($password),
-                'phone'     => $customer->phone,
+                'email' => $customer->email,
+                'password' => \Illuminate\Support\Facades\Hash::make($password),
+                'phone' => $customer->phone,
                 'is_active' => true,
             ]);
 
             DB::connection('system')->table('instance_user')->insert([
                 'instance_id' => $instance->id,
-                'user_id'     => $user->id,
-                'status'      => 'active',
-                'created_at'  => now(),
-                'updated_at'  => now(),
+                'user_id' => $user->id,
+                'status' => 'active',
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
 
             $customer->update(['user_id' => $user->id]);
@@ -109,7 +109,7 @@ class CustomerController extends Controller
 
         $msg = __('Client cree avec succes.');
         if ($createAccount) {
-            $msg .= ' ' . __('Compte utilisateur cree.');
+            $msg .= ' '.__('Compte utilisateur cree.');
         }
 
         return redirect()->route('eshop360.customers.index', $request->route('slug'))
@@ -120,7 +120,7 @@ class CustomerController extends Controller
     {
         // Ensure user can access this customer's channel
         $user = auth()->user();
-        if (!$this->channelAccess->isHubAdmin($user)) {
+        if (! $this->channelAccess->isHubAdmin($user)) {
             abort_unless(
                 $customer->channel_id && $this->channelAccess->canAccessChannel($user, $customer->channel_id),
                 403, 'Acces refuse a ce client.'
@@ -134,9 +134,9 @@ class CustomerController extends Controller
         $orders = $scopedOrderQuery()->with('items')->latest()->paginate(15);
 
         $stats = [
-            'total_orders'  => $scopedOrderQuery()->count(),
-            'total_spent'   => $scopedOrderQuery()->where('status', 'completed')->sum('total'),
-            'total_due'     => $scopedOrderQuery()->where('payment_status', '!=', 'paid')->sum('due_amount'),
+            'total_orders' => $scopedOrderQuery()->count(),
+            'total_spent' => $scopedOrderQuery()->where('status', 'completed')->sum('total'),
+            'total_due' => $scopedOrderQuery()->where('payment_status', '!=', 'paid')->sum('due_amount'),
             'last_order_at' => $scopedOrderQuery()->latest()->value('created_at'),
         ];
 
@@ -152,7 +152,7 @@ class CustomerController extends Controller
     {
         $validated = $request->validate([
             'amount' => 'required|numeric|min:0.01',
-            'notes'  => 'nullable|string|max:500',
+            'notes' => 'nullable|string|max:500',
         ]);
 
         $amount = (float) $validated['amount'];
@@ -171,7 +171,7 @@ class CustomerController extends Controller
     {
         // Ensure user can access this customer's channel
         $user = auth()->user();
-        if (!$this->channelAccess->isHubAdmin($user)) {
+        if (! $this->channelAccess->isHubAdmin($user)) {
             abort_unless(
                 $customer->channel_id && $this->channelAccess->canAccessChannel($user, $customer->channel_id),
                 403, 'Acces refuse a ce client.'
@@ -179,13 +179,13 @@ class CustomerController extends Controller
         }
 
         $validated = $request->validate([
-            'name'         => 'required|string|max:255',
-            'email'        => 'nullable|email|max:255',
-            'phone'        => 'nullable|string|max:30',
-            'address'      => 'nullable|string|max:500',
-            'city'         => 'nullable|string|max:100',
-            'country'      => 'nullable|string|max:100',
-            'is_active'    => 'boolean',
+            'name' => 'required|string|max:255',
+            'email' => 'nullable|email|max:255',
+            'phone' => 'nullable|string|max:30',
+            'address' => 'nullable|string|max:500',
+            'city' => 'nullable|string|max:100',
+            'country' => 'nullable|string|max:100',
+            'is_active' => 'boolean',
             'credit_limit' => 'nullable|numeric|min:0',
         ]);
 
@@ -224,6 +224,7 @@ class CustomerController extends Controller
             if ($accessibleChannelIds !== null) {
                 $query->whereIn($channelCol, $accessibleChannelIds->all());
             }
+
             return $query;
         };
 
@@ -236,13 +237,13 @@ class CustomerController extends Controller
         $activeCustomers = (clone $customerBase)->where('is_active', true)->count();
         $withAccount = (clone $customerBase)->whereNotNull('user_id')->count();
         $newCustomers = (clone $customerBase)
-            ->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])->count();
+            ->whereBetween('created_at', [$from.' 00:00:00', $to.' 23:59:59'])->count();
 
         // Financial KPIs
         $financialQuery = DB::table('eshop_orders')
             ->where('instance_id', $instanceId)
             ->where('status', 'completed')
-            ->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59']);
+            ->whereBetween('created_at', [$from.' 00:00:00', $to.' 23:59:59']);
         $applyChannelScope($financialQuery);
         $financialStats = $financialQuery->selectRaw('
                 COALESCE(SUM(total), 0) as total_revenue,
@@ -257,7 +258,7 @@ class CustomerController extends Controller
             ->join('eshop_customers', 'eshop_orders.customer_id', '=', 'eshop_customers.id')
             ->where('eshop_orders.instance_id', $instanceId)
             ->where('eshop_orders.status', 'completed')
-            ->whereBetween('eshop_orders.created_at', [$from . ' 00:00:00', $to . ' 23:59:59']);
+            ->whereBetween('eshop_orders.created_at', [$from.' 00:00:00', $to.' 23:59:59']);
         $applyChannelScope($topCustomersQuery, 'eshop_orders.channel_id');
         $topCustomers = $topCustomersQuery
             ->selectRaw('
@@ -271,7 +272,7 @@ class CustomerController extends Controller
                 MAX(eshop_orders.created_at) as last_order_at
             ')
             ->groupBy('eshop_customers.id', 'eshop_customers.name', 'eshop_customers.code',
-                       'eshop_customers.email', 'eshop_customers.wallet_balance', 'eshop_customers.credit_limit')
+                'eshop_customers.email', 'eshop_customers.wallet_balance', 'eshop_customers.credit_limit')
             ->orderByDesc('revenue')
             ->limit(30)
             ->get();
@@ -281,7 +282,7 @@ class CustomerController extends Controller
             ->leftJoin('eshop_stores', 'eshop_orders.store_id', '=', 'eshop_stores.id')
             ->where('eshop_orders.instance_id', $instanceId)
             ->where('eshop_orders.status', 'completed')
-            ->whereBetween('eshop_orders.created_at', [$from . ' 00:00:00', $to . ' 23:59:59']);
+            ->whereBetween('eshop_orders.created_at', [$from.' 00:00:00', $to.' 23:59:59']);
         $applyChannelScope($byStoreQuery, 'eshop_orders.channel_id');
         $byStore = $byStoreQuery
             ->selectRaw('COALESCE(eshop_stores.name, "N/A") as store_name, COUNT(DISTINCT customer_id) as customers, COUNT(*) as orders, SUM(eshop_orders.total) as revenue')
@@ -294,7 +295,7 @@ class CustomerController extends Controller
             ->leftJoin('eshop_distribution_channels', 'eshop_orders.channel_id', '=', 'eshop_distribution_channels.id')
             ->where('eshop_orders.instance_id', $instanceId)
             ->where('eshop_orders.status', 'completed')
-            ->whereBetween('eshop_orders.created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])
+            ->whereBetween('eshop_orders.created_at', [$from.' 00:00:00', $to.' 23:59:59'])
             ->whereNotNull('eshop_orders.customer_id');
         $applyChannelScope($byChannelQuery, 'eshop_orders.channel_id');
         $byChannel = $byChannelQuery
@@ -323,7 +324,7 @@ class CustomerController extends Controller
             ->where('eshop_orders.instance_id', $instanceId)
             ->where('eshop_orders.status', 'completed')
             ->whereNotNull('eshop_orders.customer_id')
-            ->whereBetween('eshop_orders.created_at', [$from . ' 00:00:00', $to . ' 23:59:59']);
+            ->whereBetween('eshop_orders.created_at', [$from.' 00:00:00', $to.' 23:59:59']);
         $applyChannelScope($topProductsQuery, 'eshop_orders.channel_id');
         $topProductsBought = $topProductsQuery
             ->selectRaw('
@@ -333,7 +334,7 @@ class CustomerController extends Controller
                 COUNT(DISTINCT eshop_orders.customer_id) as unique_buyers
             ')
             ->groupBy('eshop_order_items.product_id', 'eshop_products.name', 'eshop_order_items.product_name',
-                       'eshop_products.sku', 'eshop_products.cost_price', 'eshop_products.purchase_price_factory')
+                'eshop_products.sku', 'eshop_products.cost_price', 'eshop_products.purchase_price_factory')
             ->orderByDesc('revenue')
             ->limit(20)
             ->get();
@@ -359,7 +360,7 @@ class CustomerController extends Controller
         $instance = CurrentInstance::get();
 
         // Check if customer already has an account
-        if ($customer->user_id && !($settings['allow_multi_user_accounts'] ?? false)) {
+        if ($customer->user_id && ! ($settings['allow_multi_user_accounts'] ?? false)) {
             return redirect()->route('eshop360.customers.show', [$slug, $customer])
                 ->with('error', __('Ce client a deja un compte utilisateur.'));
         }
@@ -413,7 +414,7 @@ class CustomerController extends Controller
             ->where('eshop_customers.instance_id', $instance->id)
             ->join('eshop_orders', 'eshop_customers.id', '=', 'eshop_orders.customer_id')
             ->where('eshop_orders.status', 'completed')
-            ->whereBetween('eshop_orders.created_at', [$dateFrom, $dateTo . ' 23:59:59']);
+            ->whereBetween('eshop_orders.created_at', [$dateFrom, $dateTo.' 23:59:59']);
         if ($accessibleChannelIds !== null) {
             $topCustomersQuery->whereIn('eshop_orders.channel_id', $accessibleChannelIds->all());
         }
@@ -432,9 +433,9 @@ class CustomerController extends Controller
         }
         $totalCustomers = (clone $customerBase)->count();
         $activeCustomers = (clone $customerBase)->whereHas('orders', function ($q) use ($dateFrom, $dateTo) {
-            $q->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59']);
+            $q->whereBetween('created_at', [$dateFrom, $dateTo.' 23:59:59']);
         })->count();
-        $newCustomers = (clone $customerBase)->whereBetween('created_at', [$dateFrom, $dateTo . ' 23:59:59'])->count();
+        $newCustomers = (clone $customerBase)->whereBetween('created_at', [$dateFrom, $dateTo.' 23:59:59'])->count();
 
         return view('eshop360::customers.report', compact(
             'topCustomers', 'totalCustomers', 'activeCustomers', 'newCustomers', 'dateFrom', 'dateTo'

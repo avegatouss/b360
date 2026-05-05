@@ -6,11 +6,11 @@
     $month = now()->month;
     $year = now()->year;
 
-    $monthlyIncome = round((float) \Modules\Eshop360\Models\Income::where('instance_id', $instanceId)
+    $monthlyIncome = round((float) \Modules\Eshop360\Domain\Finance\Models\Income::where('instance_id', $instanceId)
         ->whereMonth('date', $month)->whereYear('date', $year)->sum('amount'), 2);
-    $monthlyExpense = round((float) \Modules\Eshop360\Models\Expense::where('instance_id', $instanceId)
+    $monthlyExpense = round((float) \Modules\Eshop360\Domain\Finance\Models\Expense::where('instance_id', $instanceId)
         ->whereMonth('date', $month)->whereYear('date', $year)->sum('amount'), 2);
-    $accountsBalance = round((float) \Modules\Eshop360\Models\Account::where('instance_id', $instanceId)
+    $accountsBalance = round((float) \Modules\Eshop360\Domain\Finance\Models\Account::where('instance_id', $instanceId)
         ->where('is_active', true)->sum('balance'), 2);
     $netMonth = round($monthlyIncome - $monthlyExpense, 2);
 @endphp

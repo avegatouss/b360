@@ -5,11 +5,11 @@ namespace Modules\Eshop360\Services;
 use Carbon\Carbon;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\Log;
-use Modules\Eshop360\Models\Attendance;
-use Modules\Eshop360\Models\Employee;
-use Modules\Eshop360\Models\EmployeeCommission;
-use Modules\Eshop360\Models\EmployeeSalary;
-use Modules\Eshop360\Models\Order;
+use Modules\Eshop360\Domain\HR\Models\Attendance;
+use Modules\Eshop360\Domain\HR\Models\Employee;
+use Modules\Eshop360\Domain\HR\Models\EmployeeCommission;
+use Modules\Eshop360\Domain\HR\Models\EmployeeSalary;
+use Modules\Eshop360\Domain\Sales\Models\Order;
 
 class HRService
 {

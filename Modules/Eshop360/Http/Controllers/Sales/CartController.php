@@ -7,8 +7,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\Coupon;
-use Modules\Eshop360\Models\Product;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\Promotions\Models\Coupon;
 use Modules\Eshop360\Services\ProductPricingService;
 
 class CartController extends Controller
@@ -19,35 +19,35 @@ class CartController extends Controller
         $totals = $this->calculateTotals($cart);
 
         return response()->json([
-            'items'    => array_values($cart),
-            'count'    => count($cart),
+            'items' => array_values($cart),
+            'count' => count($cart),
             'subtotal' => $totals['subtotal'],
-            'tax'      => $totals['tax'],
+            'tax' => $totals['tax'],
             'discount' => $totals['discount'],
-            'total'    => $totals['total'],
-            'coupon'   => $this->getCoupon(),
-            'context'  => $this->getCartContext(),
+            'total' => $totals['total'],
+            'coupon' => $this->getCoupon(),
+            'context' => $this->getCartContext(),
         ]);
     }
 
     public function add(Request $request, string $slug): JsonResponse|RedirectResponse
     {
         $validated = $request->validate([
-            'product_id'   => 'required|exists:eshop_products,id',
+            'product_id' => 'required|exists:eshop_products,id',
             'variation_id' => 'nullable|exists:eshop_product_variations,id',
-            'quantity'      => 'nullable|integer|min:1',
-            'channel_id'   => 'nullable|exists:eshop_distribution_channels,id',
+            'quantity' => 'nullable|integer|min:1',
+            'channel_id' => 'nullable|exists:eshop_distribution_channels,id',
         ]);
 
         $product = Product::findOrFail($validated['product_id']);
         $variation = null;
         if (isset($validated['variation_id'])) {
-            $variation = \Modules\Eshop360\Models\ProductVariation::query()
+            $variation = \Modules\Eshop360\Domain\Catalog\Models\ProductVariation::query()
                 ->where('product_id', $product->id)
                 ->where('is_active', true)
                 ->find($validated['variation_id']);
 
-            if (!$variation) {
+            if (! $variation) {
                 return $this->respond($request, [
                     'message' => __('Invalid variation for the selected product.'),
                 ], __('Invalid variation for the selected product.'), 422, 'error');
@@ -91,7 +91,7 @@ class CartController extends Controller
             $cart[$key] = [
                 'product_id' => $product->id,
                 'variation_id' => $variation?->id,
-                'name' => $variation ? $product->name . ' — ' . $variation->name : $product->name,
+                'name' => $variation ? $product->name.' — '.$variation->name : $product->name,
                 'variation_name' => $variation?->name,
                 'sku' => $variation?->sku ?: $product->sku,
                 'image' => $variation?->image ?? $product->image,
@@ -111,22 +111,22 @@ class CartController extends Controller
         $totals = $this->calculateTotals($cart);
 
         return $this->respond($request, [
-            'message'  => __('Product added to cart.'),
-            'items'    => array_values($cart),
-            'count'    => count($cart),
+            'message' => __('Product added to cart.'),
+            'items' => array_values($cart),
+            'count' => count($cart),
             'subtotal' => $totals['subtotal'],
-            'tax'      => $totals['tax'],
+            'tax' => $totals['tax'],
             'discount' => $totals['discount'],
-            'total'    => $totals['total'],
-            'context'  => $this->getCartContext(),
+            'total' => $totals['total'],
+            'context' => $this->getCartContext(),
         ], __('Product added to cart.'));
     }
 
     public function update(Request $request, string $slug, string $itemKey): JsonResponse|RedirectResponse
     {
         $validated = $request->validate([
-            'quantity'       => 'required|integer|min:1',
-            'line_discount'  => 'nullable|numeric|min:0|max:100',
+            'quantity' => 'required|integer|min:1',
+            'line_discount' => 'nullable|numeric|min:0|max:100',
         ]);
 
         $cart = $this->getCart();
@@ -156,14 +156,14 @@ class CartController extends Controller
         $totals = $this->calculateTotals($cart);
 
         return $this->respond($request, [
-            'message'  => __('Cart updated.'),
-            'items'    => array_values($cart),
-            'count'    => count($cart),
+            'message' => __('Cart updated.'),
+            'items' => array_values($cart),
+            'count' => count($cart),
             'subtotal' => $totals['subtotal'],
-            'tax'      => $totals['tax'],
+            'tax' => $totals['tax'],
             'discount' => $totals['discount'],
-            'total'    => $totals['total'],
-            'context'  => $this->getCartContext(),
+            'total' => $totals['total'],
+            'context' => $this->getCartContext(),
         ], __('Cart updated.'));
     }
 
@@ -178,14 +178,14 @@ class CartController extends Controller
         $totals = $this->calculateTotals($cart);
 
         return $this->respond($request, [
-            'message'  => __('Product removed from cart.'),
-            'items'    => array_values($cart),
-            'count'    => count($cart),
+            'message' => __('Product removed from cart.'),
+            'items' => array_values($cart),
+            'count' => count($cart),
             'subtotal' => $totals['subtotal'],
-            'tax'      => $totals['tax'],
+            'tax' => $totals['tax'],
             'discount' => $totals['discount'],
-            'total'    => $totals['total'],
-            'context'  => $this->getCartContext(),
+            'total' => $totals['total'],
+            'context' => $this->getCartContext(),
         ], __('Product removed from cart.'));
     }
 
@@ -194,14 +194,14 @@ class CartController extends Controller
         $this->clearCart();
 
         return $this->respond($request, [
-            'message'  => __('Cart cleared.'),
-            'items'    => [],
-            'count'    => 0,
+            'message' => __('Cart cleared.'),
+            'items' => [],
+            'count' => 0,
             'subtotal' => 0,
-            'tax'      => 0,
+            'tax' => 0,
             'discount' => 0,
-            'total'    => 0,
-            'context'  => null,
+            'total' => 0,
+            'context' => null,
         ], __('Cart cleared.'));
     }
 
@@ -220,7 +220,7 @@ class CartController extends Controller
             ->valid()
             ->first();
 
-        if (!$coupon) {
+        if (! $coupon) {
             return $this->respond(
                 $request,
                 ['message' => __('Invalid or expired coupon code.')],
@@ -242,13 +242,13 @@ class CartController extends Controller
         $totals = $this->calculateTotals($cart);
 
         return $this->respond($request, [
-            'message'  => __('Coupon applied successfully.'),
-            'coupon'   => $this->getCoupon(),
+            'message' => __('Coupon applied successfully.'),
+            'coupon' => $this->getCoupon(),
             'subtotal' => $totals['subtotal'],
-            'tax'      => $totals['tax'],
+            'tax' => $totals['tax'],
             'discount' => $totals['discount'],
-            'total'    => $totals['total'],
-            'context'  => $this->getCartContext(),
+            'total' => $totals['total'],
+            'context' => $this->getCartContext(),
         ], __('Coupon applied successfully.'));
     }
 
@@ -274,9 +274,9 @@ class CartController extends Controller
 
         return [
             'subtotal' => round($subtotal, 2),
-            'tax'      => round($tax, 2),
+            'tax' => round($tax, 2),
             'discount' => round($discount, 2),
-            'total'    => round($subtotal + $tax - $discount, 2),
+            'total' => round($subtotal + $tax - $discount, 2),
         ];
     }
 
@@ -431,21 +431,21 @@ class CartController extends Controller
     {
         $instanceId = CurrentInstance::idOrFail();
 
-        return 'eshop_cart_instance_' . $instanceId;
+        return 'eshop_cart_instance_'.$instanceId;
     }
 
     private function scopedCouponKey(): string
     {
         $instanceId = CurrentInstance::idOrFail();
 
-        return 'eshop_cart_coupon_instance_' . $instanceId;
+        return 'eshop_cart_coupon_instance_'.$instanceId;
     }
 
     private function scopedCartContextKey(): string
     {
         $instanceId = CurrentInstance::idOrFail();
 
-        return 'eshop_cart_context_instance_' . $instanceId;
+        return 'eshop_cart_context_instance_'.$instanceId;
     }
 
     /**

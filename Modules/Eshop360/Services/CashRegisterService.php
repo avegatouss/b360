@@ -3,8 +3,8 @@
 namespace Modules\Eshop360\Services;
 
 use Illuminate\Support\Facades\DB;
-use Modules\Eshop360\Models\CashRegister;
-use Modules\Eshop360\Models\Order;
+use Modules\Eshop360\Domain\Sales\Models\CashRegister;
+use Modules\Eshop360\Domain\Sales\Models\Order;
 
 class CashRegisterService
 {

@@ -6,9 +6,10 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\Customer;
-use Modules\Eshop360\Models\Invoice;
-use Modules\Eshop360\Models\RecurringInvoice;
+use Modules\Eshop360\Domain\CRM\Models\Customer;
+use Modules\Eshop360\Domain\Finance\Models\Invoice;
+use Modules\Eshop360\Domain\Finance\Models\RecurringInvoice;
+
 class RecurringInvoiceController extends Controller
 {
     public function index(string $slug)
@@ -36,8 +37,8 @@ class RecurringInvoiceController extends Controller
 
         return view('eshop360::invoices.recurring.form', [
             'recurringInvoice' => null,
-            'customers'        => $customers,
-            'invoices'         => $invoices,
+            'customers' => $customers,
+            'invoices' => $invoices,
         ]);
     }
 
@@ -46,17 +47,17 @@ class RecurringInvoiceController extends Controller
         $instance = CurrentInstance::get();
 
         $validated = $request->validate([
-            'customer_id'         => 'required|exists:eshop_customers,id',
+            'customer_id' => 'required|exists:eshop_customers,id',
             'template_invoice_id' => 'required|exists:eshop_invoices,id',
-            'frequency'           => 'required|in:weekly,biweekly,monthly,quarterly,yearly',
-            'next_due_date'       => 'required|date|after_or_equal:today',
-            'notes'               => 'nullable|string|max:2000',
+            'frequency' => 'required|in:weekly,biweekly,monthly,quarterly,yearly',
+            'next_due_date' => 'required|date|after_or_equal:today',
+            'notes' => 'nullable|string|max:2000',
         ]);
 
         RecurringInvoice::create([
             ...$validated,
             'instance_id' => $instance->id,
-            'is_active'   => true,
+            'is_active' => true,
         ]);
 
         return redirect()->route('eshop360.invoices.recurring.index', $instance->slug)
@@ -82,11 +83,11 @@ class RecurringInvoiceController extends Controller
         $instance = CurrentInstance::get();
 
         $validated = $request->validate([
-            'customer_id'         => 'required|exists:eshop_customers,id',
+            'customer_id' => 'required|exists:eshop_customers,id',
             'template_invoice_id' => 'required|exists:eshop_invoices,id',
-            'frequency'           => 'required|in:weekly,biweekly,monthly,quarterly,yearly',
-            'next_due_date'       => 'required|date',
-            'notes'               => 'nullable|string|max:2000',
+            'frequency' => 'required|in:weekly,biweekly,monthly,quarterly,yearly',
+            'next_due_date' => 'required|date',
+            'notes' => 'nullable|string|max:2000',
         ]);
 
         $recurringInvoice->update($validated);
@@ -107,7 +108,7 @@ class RecurringInvoiceController extends Controller
     public function toggle(string $slug, RecurringInvoice $recurringInvoice): RedirectResponse
     {
         $instance = CurrentInstance::get();
-        $recurringInvoice->update(['is_active' => !$recurringInvoice->is_active]);
+        $recurringInvoice->update(['is_active' => ! $recurringInvoice->is_active]);
 
         $status = $recurringInvoice->is_active ? 'activée' : 'désactivée';
 

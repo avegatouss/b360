@@ -4,13 +4,13 @@ namespace Modules\Eshop360\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\Invoice;
-use Modules\Eshop360\Models\InvoiceItem;
-use Modules\Eshop360\Models\Order;
-use Modules\Eshop360\Models\Quotation;
-use Modules\Eshop360\Models\QuotationItem;
-use Modules\Eshop360\Models\Customer;
-use Modules\Eshop360\Models\Product;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\CRM\Models\Customer;
+use Modules\Eshop360\Domain\Finance\Models\Invoice;
+use Modules\Eshop360\Domain\Finance\Models\InvoiceItem;
+use Modules\Eshop360\Domain\Sales\Models\Order;
+use Modules\Eshop360\Domain\Sales\Models\Quotation;
+use Modules\Eshop360\Domain\Sales\Models\QuotationItem;
 
 class DemoInvoicesQuotationsSeeder extends Seeder
 {
@@ -21,6 +21,7 @@ class DemoInvoicesQuotationsSeeder extends Seeder
         // Skip if already seeded
         if (Invoice::where('instance_id', $instanceId)->exists()) {
             $this->command?->info('Invoices already exist — skipping.');
+
             return;
         }
 
@@ -50,33 +51,33 @@ class DemoInvoicesQuotationsSeeder extends Seeder
             }
 
             $invoice = Invoice::create([
-                'instance_id'     => $instanceId,
-                'order_id'        => $order->id,
-                'customer_id'     => $order->customer_id,
-                'invoice_number'  => 'INV-' . now()->format('Y') . '-' . str_pad($invoiceCount + 1, 5, '0', STR_PAD_LEFT),
-                'status'          => $status,
-                'due_date'        => $isPaid ? null : now()->subDays(rand(-30, 15)),
-                'subtotal'        => $order->subtotal,
-                'tax_amount'      => $order->tax_amount ?? 0,
+                'instance_id' => $instanceId,
+                'order_id' => $order->id,
+                'customer_id' => $order->customer_id,
+                'invoice_number' => 'INV-'.now()->format('Y').'-'.str_pad($invoiceCount + 1, 5, '0', STR_PAD_LEFT),
+                'status' => $status,
+                'due_date' => $isPaid ? null : now()->subDays(rand(-30, 15)),
+                'subtotal' => $order->subtotal,
+                'tax_amount' => $order->tax_amount ?? 0,
                 'discount_amount' => $order->discount_amount ?? 0,
-                'total'           => $order->total,
-                'paid_amount'     => $paidAmount,
-                'due_amount'      => $dueAmount,
-                'notes'           => "Facture generee depuis commande #{$order->order_number}",
-                'created_by'      => 1,
-                'template'        => collect(['default', 'modern', 'classic'])->random(),
+                'total' => $order->total,
+                'paid_amount' => $paidAmount,
+                'due_amount' => $dueAmount,
+                'notes' => "Facture generee depuis commande #{$order->order_number}",
+                'created_by' => 1,
+                'template' => collect(['default', 'modern', 'classic'])->random(),
             ]);
 
             foreach ($order->items as $item) {
                 InvoiceItem::create([
-                    'invoice_id'  => $invoice->id,
-                    'product_id'  => $item->product_id,
+                    'invoice_id' => $invoice->id,
+                    'product_id' => $item->product_id,
                     'description' => $item->product_name ?? $item->product?->name ?? 'Article',
-                    'quantity'    => $item->quantity,
-                    'unit_price'  => $item->unit_price,
-                    'discount'    => $item->discount ?? 0,
-                    'tax'         => $item->tax ?? 0,
-                    'total'       => $item->total,
+                    'quantity' => $item->quantity,
+                    'unit_price' => $item->unit_price,
+                    'discount' => $item->discount ?? 0,
+                    'tax' => $item->tax ?? 0,
+                    'total' => $item->total,
                 ]);
             }
 
@@ -84,11 +85,11 @@ class DemoInvoicesQuotationsSeeder extends Seeder
             if ($paidAmount > 0) {
                 $invoice->payments()->create([
                     'instance_id' => $instanceId,
-                    'amount'      => $paidAmount,
-                    'method'      => collect(['cash', 'card', 'bank_transfer', 'cheque'])->random(),
-                    'reference'   => 'INV-PAY-' . $invoice->id . '-1',
-                    'status'      => 'completed',
-                    'notes'       => 'Paiement initial',
+                    'amount' => $paidAmount,
+                    'method' => collect(['cash', 'card', 'bank_transfer', 'cheque'])->random(),
+                    'reference' => 'INV-PAY-'.$invoice->id.'-1',
+                    'status' => 'completed',
+                    'notes' => 'Paiement initial',
                     'received_by' => 1,
                 ]);
             }
@@ -106,6 +107,7 @@ class DemoInvoicesQuotationsSeeder extends Seeder
 
         if ($customers->isEmpty() || $products->isEmpty()) {
             $this->command?->warn('No customers or products — skipping quotations.');
+
             return;
         }
 
@@ -120,14 +122,14 @@ class DemoInvoicesQuotationsSeeder extends Seeder
             $total = 0;
 
             $quotation = Quotation::create([
-                'instance_id'      => $instanceId,
-                'customer_id'      => $customer->id,
-                'quotation_number' => 'DEV-' . now()->format('Y') . '-' . str_pad($i + 1, 4, '0', STR_PAD_LEFT),
-                'status'           => $status,
-                'total'            => 0,
-                'notes'            => collect([null, 'Devis valable 30 jours', 'Livraison sous 5 jours ouvrables', 'Conditions speciales'])->random(),
-                'valid_until'      => $status === 'cancelled' ? now()->subDays(rand(1, 30)) : now()->addDays(rand(15, 60)),
-                'created_by'       => 1,
+                'instance_id' => $instanceId,
+                'customer_id' => $customer->id,
+                'quotation_number' => 'DEV-'.now()->format('Y').'-'.str_pad($i + 1, 4, '0', STR_PAD_LEFT),
+                'status' => $status,
+                'total' => 0,
+                'notes' => collect([null, 'Devis valable 30 jours', 'Livraison sous 5 jours ouvrables', 'Conditions speciales'])->random(),
+                'valid_until' => $status === 'cancelled' ? now()->subDays(rand(1, 30)) : now()->addDays(rand(15, 60)),
+                'created_by' => 1,
             ]);
 
             foreach ($selectedProducts as $product) {
@@ -138,10 +140,10 @@ class DemoInvoicesQuotationsSeeder extends Seeder
 
                 QuotationItem::create([
                     'quotation_id' => $quotation->id,
-                    'product_id'   => $product->id,
-                    'quantity'     => $qty,
-                    'unit_price'   => $price,
-                    'total'        => $lineTotal,
+                    'product_id' => $product->id,
+                    'quantity' => $qty,
+                    'unit_price' => $price,
+                    'total' => $lineTotal,
                 ]);
             }
 

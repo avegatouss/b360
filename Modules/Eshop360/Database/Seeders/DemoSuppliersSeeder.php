@@ -2,7 +2,7 @@
 
 namespace Modules\Eshop360\Database\Seeders;
 
-use Modules\Eshop360\Models\Supplier;
+use Modules\Eshop360\Domain\Purchasing\Models\Supplier;
 
 final class DemoSuppliersSeeder
 {

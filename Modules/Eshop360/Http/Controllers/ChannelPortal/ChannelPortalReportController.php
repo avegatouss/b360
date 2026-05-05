@@ -5,8 +5,8 @@ namespace Modules\Eshop360\Http\Controllers\ChannelPortal;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Modules\Eshop360\Models\Order;
-use Modules\Eshop360\Models\OrderItem;
+use Modules\Eshop360\Domain\Sales\Models\Order;
+use Modules\Eshop360\Domain\Sales\Models\OrderItem;
 
 class ChannelPortalReportController extends Controller
 {
@@ -52,11 +52,11 @@ class ChannelPortalReportController extends Controller
         $to = $request->get('to', now()->format('Y-m-d'));
 
         $topProducts = OrderItem::whereHas('order', function ($q) use ($channel, $from, $to) {
-                $q->where('channel_id', $channel->id)
-                  ->where('status', '!=', 'cancelled')
-                  ->whereDate('created_at', '>=', $from)
-                  ->whereDate('created_at', '<=', $to);
-            })
+            $q->where('channel_id', $channel->id)
+                ->where('status', '!=', 'cancelled')
+                ->whereDate('created_at', '>=', $from)
+                ->whereDate('created_at', '<=', $to);
+        })
             ->select('product_id',
                 DB::raw('SUM(quantity) as total_qty'),
                 DB::raw('SUM(total) as total_revenue'),

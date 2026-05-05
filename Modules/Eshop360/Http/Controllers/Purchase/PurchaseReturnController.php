@@ -6,10 +6,10 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
-use Modules\Eshop360\Models\PurchaseOrder;
-use Modules\Eshop360\Models\PurchaseReturn;
-use Modules\Eshop360\Services\StockService;
 use Modules\Core\Support\CurrentInstance;
+use Modules\Eshop360\Domain\Purchasing\Models\PurchaseOrder;
+use Modules\Eshop360\Domain\Purchasing\Models\PurchaseReturn;
+use Modules\Eshop360\Services\StockService;
 
 class PurchaseReturnController extends Controller
 {
@@ -46,15 +46,15 @@ class PurchaseReturnController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'purchase_order_id'   => 'required|exists:eshop_purchase_orders,id',
-            'warehouse_id'        => 'nullable|exists:eshop_warehouses,id',
-            'status'              => 'nullable|in:pending,received,cancelled',
-            'paid_amount'         => 'nullable|numeric|min:0',
-            'items'               => 'required|array|min:1',
-            'items.*.product_id'  => 'required|exists:eshop_products,id',
-            'items.*.quantity'    => 'required|integer|min:1',
-            'items.*.unit_cost'   => 'required|numeric|min:0',
-            'notes'               => 'nullable|string|max:1000',
+            'purchase_order_id' => 'required|exists:eshop_purchase_orders,id',
+            'warehouse_id' => 'nullable|exists:eshop_warehouses,id',
+            'status' => 'nullable|in:pending,received,cancelled',
+            'paid_amount' => 'nullable|numeric|min:0',
+            'items' => 'required|array|min:1',
+            'items.*.product_id' => 'required|exists:eshop_products,id',
+            'items.*.quantity' => 'required|integer|min:1',
+            'items.*.unit_cost' => 'required|numeric|min:0',
+            'notes' => 'nullable|string|max:1000',
         ]);
 
         $instance = CurrentInstance::get();
@@ -71,9 +71,9 @@ class PurchaseReturnController extends Controller
 
                 $itemsData[] = [
                     'product_id' => $item['product_id'],
-                    'quantity'   => $item['quantity'],
-                    'unit_cost'  => $item['unit_cost'],
-                    'total'      => $itemTotal,
+                    'quantity' => $item['quantity'],
+                    'unit_cost' => $item['unit_cost'],
+                    'total' => $itemTotal,
                 ];
             }
 
@@ -81,19 +81,19 @@ class PurchaseReturnController extends Controller
             $dueAmount = max(0, $total - $paidAmount);
 
             $return = PurchaseReturn::create([
-                'instance_id'    => $instance?->id,
+                'instance_id' => $instance?->id,
                 'purchase_order_id' => $originalPurchase->id,
-                'supplier_name'  => $originalPurchase->supplier_name,
-                'reference'      => 'PR-' . now()->format('Ymd') . '-' . str_pad(PurchaseReturn::count() + 1, 4, '0', STR_PAD_LEFT),
-                'warehouse_id'   => $validated['warehouse_id'] ?? $originalPurchase->warehouse_id,
-                'status'         => $validated['status'] ?? 'pending',
-                'total'          => $total,
-                'paid_amount'    => $paidAmount,
-                'due_amount'     => $dueAmount,
+                'supplier_name' => $originalPurchase->supplier_name,
+                'reference' => 'PR-'.now()->format('Ymd').'-'.str_pad(PurchaseReturn::count() + 1, 4, '0', STR_PAD_LEFT),
+                'warehouse_id' => $validated['warehouse_id'] ?? $originalPurchase->warehouse_id,
+                'status' => $validated['status'] ?? 'pending',
+                'total' => $total,
+                'paid_amount' => $paidAmount,
+                'due_amount' => $dueAmount,
                 'payment_status' => $dueAmount <= 0 ? 'paid' : 'unpaid',
-                'notes'          => ($validated['notes'] ?? '') . " [Return for {$originalPurchase->reference}]",
-                'created_by'     => auth()->id(),
-                'processed_at'   => null,
+                'notes' => ($validated['notes'] ?? '')." [Return for {$originalPurchase->reference}]",
+                'created_by' => auth()->id(),
+                'processed_at' => null,
             ]);
 
             foreach ($itemsData as $itemData) {
@@ -114,9 +114,9 @@ class PurchaseReturnController extends Controller
     public function update(Request $request, PurchaseReturn $purchaseReturn): RedirectResponse
     {
         $validated = $request->validate([
-            'notes'       => 'nullable|string|max:1000',
+            'notes' => 'nullable|string|max:1000',
             'paid_amount' => 'nullable|numeric|min:0',
-            'status'      => 'nullable|in:pending,received,cancelled',
+            'status' => 'nullable|in:pending,received,cancelled',
             'warehouse_id' => 'nullable|exists:eshop_warehouses,id',
         ]);
 
@@ -181,7 +181,7 @@ class PurchaseReturnController extends Controller
                     'return',
                     "Purchase return #{$purchaseReturn->reference}",
                     auth()->id(),
-                    PurchaseReturn::class,
+                    $purchaseReturn->getMorphClass(),
                     $purchaseReturn->id,
                 );
             }

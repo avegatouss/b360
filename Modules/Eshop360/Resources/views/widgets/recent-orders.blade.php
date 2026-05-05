@@ -4,7 +4,7 @@
     $instanceId = $instance?->id ?? 0;
     $slug = $instance->slug ?? '';
 
-    $recentOrders = \Modules\Eshop360\Models\Order::where('instance_id', $instanceId)
+    $recentOrders = \Modules\Eshop360\Domain\Sales\Models\Order::where('instance_id', $instanceId)
         ->with('customer')
         ->latest()
         ->limit(5)

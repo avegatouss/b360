@@ -2,7 +2,7 @@
 
 namespace Modules\Eshop360\Tests\Feature;
 
-use Modules\Eshop360\Models\DistributionChannel;
+use Modules\Eshop360\Domain\Channel\Models\DistributionChannel;
 use Modules\Eshop360\Tests\TestCase;
 
 final class HierarchicalMenuAdminTest extends TestCase

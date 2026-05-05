@@ -3,10 +3,10 @@
 namespace Modules\Eshop360\Database\Seeders;
 
 use App\Models\User;
-use Modules\Eshop360\Models\Customer;
-use Modules\Eshop360\Models\Message;
-use Modules\Eshop360\Models\SupportTicket;
-use Modules\Eshop360\Models\TicketMessage;
+use Modules\Eshop360\Domain\Communication\Models\Message;
+use Modules\Eshop360\Domain\Communication\Models\SupportTicket;
+use Modules\Eshop360\Domain\Communication\Models\TicketMessage;
+use Modules\Eshop360\Domain\CRM\Models\Customer;
 
 final class DemoCommunicationSeeder
 {
@@ -38,7 +38,7 @@ final class DemoCommunicationSeeder
 
     private function seedEmailTemplates(int $instanceId): void
     {
-        (new EmailTemplateSeeder())->run($instanceId);
+        (new EmailTemplateSeeder)->run($instanceId);
     }
 
     private function seedMessages(int $instanceId): void

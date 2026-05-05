@@ -4,8 +4,7 @@ namespace Modules\Eshop360\Http\Controllers\ChannelPortal;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\OnlineOrder;
+use Modules\Eshop360\Domain\Sales\Models\OnlineOrder;
 use Modules\Eshop360\Services\InvoiceService;
 use Modules\Eshop360\Services\OnlineOrderService;
 use Modules\Eshop360\Services\OrderService;
@@ -129,7 +128,7 @@ class ChannelPortalOnlineOrderController extends Controller
             );
         }
 
-        $wallet = new WalletDriver();
+        $wallet = new WalletDriver;
         $result = $wallet->initiate($amount, 'XAF', [
             'customer_id' => $customer->id,
             'description' => "Commande en ligne #{$onlineOrder->reference}",
@@ -147,14 +146,14 @@ class ChannelPortalOnlineOrderController extends Controller
             return;
         }
 
-        $txn = \Modules\Eshop360\Models\CustomerTransaction::where('customer_id', $customer->id)
+        $txn = \Modules\Eshop360\Domain\CRM\Models\CustomerTransaction::where('customer_id', $customer->id)
             ->where('type', 'debit')
             ->where('description', 'like', "%{$onlineOrder->reference}%")
             ->first();
 
-        $wallet = new WalletDriver();
+        $wallet = new WalletDriver;
         $wallet->refund(
-            $txn?->reference ?? 'WALLET-' . $customer->id . '-MANUAL',
+            $txn?->reference ?? 'WALLET-'.$customer->id.'-MANUAL',
             (float) $onlineOrder->total,
         );
     }

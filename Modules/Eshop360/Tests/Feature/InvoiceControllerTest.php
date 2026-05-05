@@ -2,9 +2,9 @@
 
 namespace Modules\Eshop360\Tests\Feature;
 
-use Modules\Eshop360\Models\Customer;
-use Modules\Eshop360\Models\Invoice;
-use Modules\Eshop360\Models\Product;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\CRM\Models\Customer;
+use Modules\Eshop360\Domain\Finance\Models\Invoice;
 use Modules\Eshop360\Tests\TestCase;
 
 final class InvoiceControllerTest extends TestCase
@@ -90,7 +90,7 @@ final class InvoiceControllerTest extends TestCase
         $this->assertSame('partial', $invoice->status);
 
         $this->assertDatabaseHas('eshop_payments', [
-            'payable_type' => Invoice::class,
+            'payable_type' => 'Modules\Eshop360\Models\Invoice',
             'payable_id' => $invoice->id,
             'amount' => 20.00,
             'method' => 'cash',

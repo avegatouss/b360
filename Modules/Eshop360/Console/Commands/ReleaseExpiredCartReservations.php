@@ -4,8 +4,8 @@ namespace Modules\Eshop360\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use Modules\Eshop360\Models\PersistentCart;
-use Modules\Eshop360\Models\Stock;
+use Modules\Eshop360\Domain\Inventory\Models\Stock;
+use Modules\Eshop360\Domain\Sales\Models\PersistentCart;
 
 /**
  * Release reserved stock from expired persistent carts.
@@ -14,6 +14,7 @@ use Modules\Eshop360\Models\Stock;
 class ReleaseExpiredCartReservations extends Command
 {
     protected $signature = 'eshop:release-expired-carts';
+
     protected $description = 'Release reserved stock from expired persistent carts';
 
     public function handle(): int
@@ -24,6 +25,7 @@ class ReleaseExpiredCartReservations extends Command
 
         if ($expired->isEmpty()) {
             $this->info('No expired carts found.');
+
             return self::SUCCESS;
         }
 
@@ -32,8 +34,9 @@ class ReleaseExpiredCartReservations extends Command
         foreach ($expired as $cart) {
             $items = is_array($cart->items) ? $cart->items : json_decode($cart->items, true);
 
-            if (!is_array($items)) {
+            if (! is_array($items)) {
                 $cart->delete();
+
                 continue;
             }
 
@@ -42,7 +45,7 @@ class ReleaseExpiredCartReservations extends Command
                     $productId = $item['product_id'] ?? null;
                     $quantity = $item['quantity'] ?? 0;
 
-                    if (!$productId || $quantity <= 0) {
+                    if (! $productId || $quantity <= 0) {
                         continue;
                     }
 

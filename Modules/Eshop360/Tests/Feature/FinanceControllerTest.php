@@ -2,12 +2,12 @@
 
 namespace Modules\Eshop360\Tests\Feature;
 
-use Modules\Eshop360\Models\Customer;
-use Modules\Eshop360\Models\GiftCard;
-use Modules\Eshop360\Models\Order;
-use Modules\Eshop360\Models\Product;
-use Modules\Eshop360\Models\Stock;
-use Modules\Eshop360\Models\Warehouse;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\CRM\Models\Customer;
+use Modules\Eshop360\Domain\Inventory\Models\Stock;
+use Modules\Eshop360\Domain\Inventory\Models\Warehouse;
+use Modules\Eshop360\Domain\Promotions\Models\GiftCard;
+use Modules\Eshop360\Domain\Sales\Models\Order;
 use Modules\Eshop360\Services\FinanceService;
 use Modules\Eshop360\Tests\TestCase;
 

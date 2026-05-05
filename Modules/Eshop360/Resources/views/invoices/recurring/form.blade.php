@@ -85,7 +85,7 @@
                         <div class="col-md-6">
                             <label class="form-label">{{ __('Fréquence') }} <span class="text-danger">*</span></label>
                             <select name="frequency" class="form-select @error('frequency') is-invalid @enderror" required>
-                                @foreach(\Modules\Eshop360\Models\RecurringInvoice::$frequencyLabels as $val => $label)
+                                @foreach(\Modules\Eshop360\Domain\Finance\Models\RecurringInvoice::$frequencyLabels as $val => $label)
                                     <option value="{{ $val }}"
                                         @selected(old('frequency', $recurringInvoice?->frequency) === $val)>
                                         {{ $label }}

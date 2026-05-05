@@ -5,7 +5,7 @@ namespace Modules\Eshop360\Http\Controllers\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\EshopPaymentGateway;
+use Modules\Eshop360\Domain\Finance\Models\EshopPaymentGateway;
 use Modules\Eshop360\Services\Payment\PaymentGatewayManager;
 
 class PaymentGatewayController extends Controller
@@ -47,7 +47,7 @@ class PaymentGatewayController extends Controller
             'sort_order' => 'integer|min:0',
         ]);
 
-        if (!$this->manager->isValidDriver($request->input('driver'))) {
+        if (! $this->manager->isValidDriver($request->input('driver'))) {
             return redirect()->back()->with('error', 'Driver inconnu.')->withInput();
         }
 
@@ -63,7 +63,7 @@ class PaymentGatewayController extends Controller
         $configFields = $this->manager->configFields($request->input('driver'));
         $config = [];
         foreach ($configFields as $field) {
-            $value = $request->input('config_' . $field['name']);
+            $value = $request->input('config_'.$field['name']);
             if ($value !== null) {
                 $config[$field['name']] = $value;
             }
@@ -110,7 +110,7 @@ class PaymentGatewayController extends Controller
         $config = $gateway->getDecryptedConfig();
 
         foreach ($configFields as $field) {
-            $value = $request->input('config_' . $field['name']);
+            $value = $request->input('config_'.$field['name']);
             if ($value !== null && $value !== '') {
                 $config[$field['name']] = $value;
             }
@@ -142,7 +142,7 @@ class PaymentGatewayController extends Controller
     {
         $instance = CurrentInstance::get();
         $gateway = EshopPaymentGateway::where('instance_id', $instance->id)->findOrFail($id);
-        $gateway->update(['is_active' => !$gateway->is_active]);
+        $gateway->update(['is_active' => ! $gateway->is_active]);
 
         $status = $gateway->is_active ? 'activee' : 'desactivee';
 

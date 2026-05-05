@@ -8,12 +8,12 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Modules\Core\Support\CurrentInstance;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\CRM\Models\Customer;
+use Modules\Eshop360\Domain\Promotions\Models\Coupon;
+use Modules\Eshop360\Domain\Sales\Models\Order;
+use Modules\Eshop360\Domain\Sales\Models\OrderItem;
 use Modules\Eshop360\Http\Controllers\Traits\ResolvesPosContext;
-use Modules\Eshop360\Models\Coupon;
-use Modules\Eshop360\Models\Customer;
-use Modules\Eshop360\Models\Order;
-use Modules\Eshop360\Models\OrderItem;
-use Modules\Eshop360\Models\Product;
 use Modules\Eshop360\Services\CartService;
 use Modules\Eshop360\Services\ChannelAccessService;
 use Modules\Eshop360\Services\FinanceService;
@@ -427,7 +427,7 @@ class SaleController extends Controller
                         'adjustment',
                         "[{$reason}] Retour vente #{$returnOrder->order_number}",
                         auth()->id(),
-                        Order::class,
+                        $returnOrder->getMorphClass(),
                         $returnOrder->id,
                     );
                 } else {
@@ -439,7 +439,7 @@ class SaleController extends Controller
                         'return',
                         "[{$reason}] Retour vente #{$returnOrder->order_number}",
                         auth()->id(),
-                        Order::class,
+                        $returnOrder->getMorphClass(),
                         $returnOrder->id,
                     );
                 }
@@ -458,7 +458,7 @@ class SaleController extends Controller
                     $customer,
                     (float) $validated['refund_amount'],
                     "Remboursement retour vente #{$orderNumber}",
-                    Order::class,
+                    $returnOrder->getMorphClass(),
                     $returnOrder->id,
                 );
             }
@@ -613,8 +613,8 @@ class SaleController extends Controller
 
         // Channels and stores for filters
         $channels = $this->channelAccess->availableChannelsForFilter($user);
-        $stores = \Modules\Eshop360\Models\Store::where('is_active', true)->orderBy('name')->get(['id', 'name']);
-        $warehouses = \Modules\Eshop360\Models\Warehouse::where('is_active', true)->orderBy('name')->get(['id', 'name']);
+        $stores = \Modules\Eshop360\Domain\Inventory\Models\Store::where('is_active', true)->orderBy('name')->get(['id', 'name']);
+        $warehouses = \Modules\Eshop360\Domain\Inventory\Models\Warehouse::where('is_active', true)->orderBy('name')->get(['id', 'name']);
 
         return view('eshop360::sales.stats', compact(
             'globalStats', 'byChannel', 'byCustomer', 'byStore', 'byWarehouse',

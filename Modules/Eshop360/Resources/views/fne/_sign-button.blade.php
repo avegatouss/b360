@@ -8,7 +8,7 @@
     $slug = $instance->slug ?? '';
 
     // Check if already signed
-    $existingFne = $fneInvoice ?? \Modules\Eshop360\Models\FneInvoice::where('invoiceable_type', get_class($order))
+    $existingFne = $fneInvoice ?? \Modules\Eshop360\Domain\Finance\Models\FneInvoice::where('invoiceable_type', get_class($order))
         ->where('invoiceable_id', $order->id)
         ->latest()
         ->first();

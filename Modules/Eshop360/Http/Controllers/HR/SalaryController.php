@@ -4,10 +4,10 @@ namespace Modules\Eshop360\Http\Controllers\HR;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Modules\Eshop360\Models\Employee;
-use Modules\Eshop360\Models\EmployeeSalary;
-use Modules\Eshop360\Services\HRService;
 use Modules\Core\Support\CurrentInstance;
+use Modules\Eshop360\Domain\HR\Models\Employee;
+use Modules\Eshop360\Domain\HR\Models\EmployeeSalary;
+use Modules\Eshop360\Services\HRService;
 
 class SalaryController extends Controller
 {
@@ -16,11 +16,12 @@ class SalaryController extends Controller
     public function index()
     {
         $instance = CurrentInstance::get();
-        $salaries = EmployeeSalary::whereHas('employee', fn($q) => $q->where('instance_id', $instance->id))
+        $salaries = EmployeeSalary::whereHas('employee', fn ($q) => $q->where('instance_id', $instance->id))
             ->with('employee')
             ->latest()
             ->paginate(20);
         $employees = Employee::where('instance_id', $instance->id)->where('status', 'active')->get();
+
         return view('eshop360::hr.salaries.index', compact('salaries', 'employees'));
     }
 
@@ -41,12 +42,14 @@ class SalaryController extends Controller
             $validated['deductions'] ?? 0,
             $validated['notes'] ?? null
         );
+
         return redirect()->back()->with('success', 'Salary processed.');
     }
 
     public function markPaid(string $slug, EmployeeSalary $salary)
     {
         $salary->update(['paid_at' => now()]);
+
         return redirect()->back()->with('success', 'Salary marked as paid.');
     }
 }

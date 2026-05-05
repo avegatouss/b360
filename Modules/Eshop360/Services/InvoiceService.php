@@ -6,10 +6,10 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\Invoice;
-use Modules\Eshop360\Models\InvoiceItem;
-use Modules\Eshop360\Models\Order;
-use Modules\Eshop360\Models\Product;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\Finance\Models\Invoice;
+use Modules\Eshop360\Domain\Finance\Models\InvoiceItem;
+use Modules\Eshop360\Domain\Sales\Models\Order;
 
 class InvoiceService
 {

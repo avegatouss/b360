@@ -6,13 +6,13 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Modules\Core\Support\CurrentInstance;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\Catalog\Models\ProductVariation;
+use Modules\Eshop360\Domain\Channel\Models\DistributionChannel;
+use Modules\Eshop360\Domain\Finance\Models\Payment;
+use Modules\Eshop360\Domain\Sales\Models\Order;
+use Modules\Eshop360\Domain\Sales\Models\OrderItem;
 use Modules\Eshop360\Events\ReportDataChanged;
-use Modules\Eshop360\Models\DistributionChannel;
-use Modules\Eshop360\Models\Order;
-use Modules\Eshop360\Models\OrderItem;
-use Modules\Eshop360\Models\Payment;
-use Modules\Eshop360\Models\Product;
-use Modules\Eshop360\Models\ProductVariation;
 
 class OrderService
 {
@@ -143,7 +143,7 @@ class OrderService
                         'out',
                         'Order #'.$order->order_number,
                         auth()->id(),
-                        Order::class,
+                        $order->getMorphClass(),
                         $order->id,
                     );
                 }

@@ -2,9 +2,9 @@
 
 namespace Modules\Eshop360\Services;
 
-use Modules\Eshop360\Models\ChannelProductPrice;
-use Modules\Eshop360\Models\DistributionChannel;
-use Modules\Eshop360\Models\Product;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\Channel\Models\ChannelProductPrice;
+use Modules\Eshop360\Domain\Channel\Models\DistributionChannel;
 
 class CostCalculatorService
 {

@@ -5,12 +5,12 @@ namespace Modules\Eshop360\Database\Seeders;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Modules\Eshop360\Models\ChannelMarginLog;
-use Modules\Eshop360\Models\ChannelProductPrice;
-use Modules\Eshop360\Models\ChannelUser;
-use Modules\Eshop360\Models\DistributionChannel;
-use Modules\Eshop360\Models\Product;
-use Modules\Eshop360\Models\Warehouse;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\Channel\Models\ChannelMarginLog;
+use Modules\Eshop360\Domain\Channel\Models\ChannelProductPrice;
+use Modules\Eshop360\Domain\Channel\Models\ChannelUser;
+use Modules\Eshop360\Domain\Channel\Models\DistributionChannel;
+use Modules\Eshop360\Domain\Inventory\Models\Warehouse;
 use Modules\Eshop360\Services\ChannelB2BService;
 use Modules\Eshop360\Services\EshopSettingsService;
 
@@ -124,7 +124,7 @@ final class DemoChannelsSeeder
         ];
 
         foreach ($channels as $slug => $channel) {
-            if (!isset($warehouseMap[$slug])) {
+            if (! isset($warehouseMap[$slug])) {
                 continue;
             }
             $wh = Warehouse::withoutGlobalScopes()->updateOrCreate(
@@ -147,7 +147,7 @@ final class DemoChannelsSeeder
 
         // Create manager + agent for each non-hub channel
         foreach (['demo-codifarm', 'demo-pharmaplus'] as $slug) {
-            if (!isset($channels[$slug])) {
+            if (! isset($channels[$slug])) {
                 continue;
             }
             $channel = $channels[$slug];

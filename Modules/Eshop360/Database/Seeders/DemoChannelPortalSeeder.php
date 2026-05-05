@@ -4,13 +4,13 @@ namespace Modules\Eshop360\Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
-use Modules\Eshop360\Models\ChannelMarginLog;
-use Modules\Eshop360\Models\ChannelUser;
-use Modules\Eshop360\Models\Customer;
-use Modules\Eshop360\Models\DistributionChannel;
-use Modules\Eshop360\Models\Order;
-use Modules\Eshop360\Models\OrderItem;
-use Modules\Eshop360\Models\Product;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\Channel\Models\ChannelMarginLog;
+use Modules\Eshop360\Domain\Channel\Models\ChannelUser;
+use Modules\Eshop360\Domain\Channel\Models\DistributionChannel;
+use Modules\Eshop360\Domain\CRM\Models\Customer;
+use Modules\Eshop360\Domain\Sales\Models\Order;
+use Modules\Eshop360\Domain\Sales\Models\OrderItem;
 
 /**
  * Demo seeder: channel portal users + channel orders with margin calculations.
@@ -141,8 +141,8 @@ final class DemoChannelPortalSeeder
         }
 
         $prefix = match ($channel->slug) {
-            'demo-codifarm'  => 'DEMO-CH-CDF',
-            default          => 'DEMO-CH-PHP',
+            'demo-codifarm' => 'DEMO-CH-CDF',
+            default => 'DEMO-CH-PHP',
         };
 
         $orders = [
@@ -230,7 +230,9 @@ final class DemoChannelPortalSeeder
 
             foreach ($o['items'] as $item) {
                 $product = $products->values()->get($item['index'] % $products->count());
-                if (!$product) continue;
+                if (! $product) {
+                    continue;
+                }
 
                 // Use channel pricing: PGHT * (1 + buy_rate)
                 $pght = (float) ($product->sale_price ?? $product->price ?? 0);
@@ -308,7 +310,9 @@ final class DemoChannelPortalSeeder
         $totalMargin = 0;
         foreach ($itemRows as $row) {
             $product = $products->firstWhere('id', $row['product_id']);
-            if (!$product) continue;
+            if (! $product) {
+                continue;
+            }
 
             $pght = (float) ($product->sale_price ?? $product->price ?? 0);
             $marginPerUnit = $row['unit_price'] - $pght;
@@ -316,7 +320,9 @@ final class DemoChannelPortalSeeder
         }
 
         $totalMargin = round($totalMargin, 2);
-        if ($totalMargin <= 0) return;
+        if ($totalMargin <= 0) {
+            return;
+        }
 
         $debtPart = round($totalMargin * (float) $channel->debt_share, 2);
         $channelPart = round($totalMargin * (float) $channel->channel_share, 2);

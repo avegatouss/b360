@@ -4,8 +4,8 @@ namespace Modules\Eshop360\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Modules\Eshop360\Models\ApiLog;
 use Modules\Core\Support\CurrentInstance;
+use Modules\Eshop360\Domain\Reporting\Models\ApiLog;
 use Symfony\Component\HttpFoundation\Response;
 
 /**

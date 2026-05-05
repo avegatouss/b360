@@ -5,11 +5,11 @@ namespace Modules\Eshop360\Http\Controllers\Supplier;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Modules\Eshop360\Models\Supplier;
+use Modules\Core\Support\CurrentInstance;
+use Modules\Eshop360\Domain\Purchasing\Models\Supplier;
 use Modules\Eshop360\Services\ChannelAccessService;
 use Modules\Eshop360\Services\SupplierService;
 use Modules\Eshop360\Support\CurrentChannel;
-use Modules\Core\Support\CurrentInstance;
 
 class SupplierController extends Controller
 {
@@ -92,6 +92,7 @@ class SupplierController extends Controller
         ]);
         $validated['instance_id'] = CurrentInstance::get()->id;
         Supplier::create($validated);
+
         return redirect()->back()->with('success', __('eshop::eshop.supplier_created'));
     }
 
@@ -112,11 +113,11 @@ class SupplierController extends Controller
 
         $stats = [
             'total_purchases' => $history['total_purchases'],
-            'total_paid'      => $history['total_paid'],
-            'balance'         => $history['total_due'],
-            'order_count'     => $history['count'],
-            'import_count'    => $supplier->importOrders()->count(),
-            'product_count'   => \Modules\Eshop360\Models\Product::where('supplier_id', $supplier->id)->count(),
+            'total_paid' => $history['total_paid'],
+            'balance' => $history['total_due'],
+            'order_count' => $history['count'],
+            'import_count' => $supplier->importOrders()->count(),
+            'product_count' => \Modules\Eshop360\Domain\Catalog\Models\Product::where('supplier_id', $supplier->id)->count(),
         ];
 
         return view('eshop360::suppliers.show', compact('supplier', 'purchases', 'importOrders', 'stats'));
@@ -141,12 +142,14 @@ class SupplierController extends Controller
             'is_active' => 'boolean',
         ]);
         $supplier->update($validated);
+
         return redirect()->back()->with('success', __('Fournisseur mis a jour.'));
     }
 
     public function destroy(string $slug, Supplier $supplier)
     {
         $supplier->delete();
+
         return redirect()->route('eshop360.suppliers.index', $slug)->with('success', __('Fournisseur supprime.'));
     }
 
@@ -156,7 +159,7 @@ class SupplierController extends Controller
         $dateTo = $request->input('date_to');
 
         // Build transactions from purchase orders + payments
-        $purchaseQuery = \Modules\Eshop360\Models\PurchaseOrder::where('supplier_id', $supplier->id)
+        $purchaseQuery = \Modules\Eshop360\Domain\Purchasing\Models\PurchaseOrder::where('supplier_id', $supplier->id)
             ->where('status', '!=', 'cancelled')
             ->when($dateFrom, fn ($q, $d) => $q->whereDate('created_at', '>=', $d))
             ->when($dateTo, fn ($q, $d) => $q->whereDate('created_at', '<=', $d));
@@ -166,7 +169,7 @@ class SupplierController extends Controller
         // Get payments on these purchase orders
         $purchaseIds = $purchases->pluck('id');
         $payments = \Illuminate\Support\Facades\DB::table('eshop_payments')
-            ->where('payable_type', \Modules\Eshop360\Models\PurchaseOrder::class)
+            ->where('payable_type', (new \Modules\Eshop360\Domain\Purchasing\Models\PurchaseOrder)->getMorphClass())
             ->whereIn('payable_id', $purchaseIds)
             ->where('status', 'completed')
             ->when($dateFrom, fn ($q, $d) => $q->whereDate('created_at', '>=', $d))
@@ -179,22 +182,22 @@ class SupplierController extends Controller
 
         foreach ($purchases as $po) {
             $transactions->push((object) [
-                'date'        => $po->created_at,
-                'reference'   => $po->reference,
-                'type'        => 'purchase',
-                'description' => __('Bon de commande') . ' — ' . ($po->items_count ?? $po->items()->count()) . ' ' . __('articles'),
-                'amount'      => (float) $po->total,
+                'date' => $po->created_at,
+                'reference' => $po->reference,
+                'type' => 'purchase',
+                'description' => __('Bon de commande').' — '.($po->items_count ?? $po->items()->count()).' '.__('articles'),
+                'amount' => (float) $po->total,
             ]);
         }
 
         foreach ($payments as $pay) {
             $po = $purchases->firstWhere('id', $pay->payable_id);
             $transactions->push((object) [
-                'date'        => \Carbon\Carbon::parse($pay->created_at),
-                'reference'   => $pay->reference ?? ($po?->reference ?? '—'),
-                'type'        => 'payment',
-                'description' => __('Paiement') . ' — ' . ucfirst(str_replace('_', ' ', $pay->method ?? 'cash')),
-                'amount'      => (float) $pay->amount,
+                'date' => \Carbon\Carbon::parse($pay->created_at),
+                'reference' => $pay->reference ?? ($po?->reference ?? '—'),
+                'type' => 'payment',
+                'description' => __('Paiement').' — '.ucfirst(str_replace('_', ' ', $pay->method ?? 'cash')),
+                'amount' => (float) $pay->amount,
             ]);
         }
 
@@ -208,11 +211,11 @@ class SupplierController extends Controller
             $impTotal = (float) ($imp->items()->sum('total_factory') ?? 0);
             if ($impTotal > 0) {
                 $transactions->push((object) [
-                    'date'        => $imp->created_at,
-                    'reference'   => $imp->reference,
-                    'type'        => 'import',
-                    'description' => __('Ordre d\'importation') . ' — ' . \Modules\Eshop360\Support\UiLabel::enum($imp->shipping_type ?? 'sea'),
-                    'amount'      => $impTotal,
+                    'date' => $imp->created_at,
+                    'reference' => $imp->reference,
+                    'type' => 'import',
+                    'description' => __('Ordre d\'importation').' — '.\Modules\Eshop360\Support\UiLabel::enum($imp->shipping_type ?? 'sea'),
+                    'amount' => $impTotal,
                 ]);
             }
         }
@@ -223,7 +226,7 @@ class SupplierController extends Controller
         // Calculate running balance
         $openingBalance = 0;
         if ($dateFrom) {
-            $openingBalance = \Modules\Eshop360\Models\PurchaseOrder::where('supplier_id', $supplier->id)
+            $openingBalance = \Modules\Eshop360\Domain\Purchasing\Models\PurchaseOrder::where('supplier_id', $supplier->id)
                 ->where('status', '!=', 'cancelled')
                 ->whereDate('created_at', '<', $dateFrom)
                 ->sum('due_amount');
@@ -243,12 +246,12 @@ class SupplierController extends Controller
         $totalCredit = $transactions->where('type', 'payment')->sum('amount');
 
         $totals = [
-            'purchases'       => $totalDebit,
-            'payments'        => $totalCredit,
-            'balance'         => $totalDebit - $totalCredit + $openingBalance,
+            'purchases' => $totalDebit,
+            'payments' => $totalCredit,
+            'balance' => $totalDebit - $totalCredit + $openingBalance,
             'opening_balance' => $openingBalance,
-            'total_debit'     => $totalDebit,
-            'total_credit'    => $totalCredit,
+            'total_debit' => $totalDebit,
+            'total_credit' => $totalCredit,
         ];
 
         return view('eshop360::suppliers.statement', compact('supplier', 'transactions', 'totals', 'dateFrom', 'dateTo'));

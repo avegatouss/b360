@@ -3,13 +3,13 @@
 namespace Modules\Eshop360\Tests\Feature;
 
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\ChannelProductPrice;
-use Modules\Eshop360\Models\Coupon;
-use Modules\Eshop360\Models\DistributionChannel;
-use Modules\Eshop360\Models\Order;
-use Modules\Eshop360\Models\Product;
-use Modules\Eshop360\Models\Stock;
-use Modules\Eshop360\Models\Warehouse;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\Channel\Models\ChannelProductPrice;
+use Modules\Eshop360\Domain\Channel\Models\DistributionChannel;
+use Modules\Eshop360\Domain\Inventory\Models\Stock;
+use Modules\Eshop360\Domain\Inventory\Models\Warehouse;
+use Modules\Eshop360\Domain\Promotions\Models\Coupon;
+use Modules\Eshop360\Domain\Sales\Models\Order;
 use Modules\Eshop360\Services\OrderService;
 use Modules\Eshop360\Tests\TestCase;
 
@@ -140,7 +140,7 @@ final class SaleControllerTest extends TestCase
         $this->assertCount(1, $order->payments);
 
         $this->assertDatabaseHas('eshop_payments', [
-            'payable_type' => Order::class,
+            'payable_type' => 'Modules\Eshop360\Models\Order',
             'payable_id' => $order->id,
             'amount' => 19.0,
             'method' => 'cash',
@@ -148,7 +148,7 @@ final class SaleControllerTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('eshop_stock_movements', [
-            'reference_type' => Order::class,
+            'reference_type' => 'Modules\Eshop360\Models\Order',
             'reference_id' => $order->id,
             'type' => 'out',
             'quantity' => -2,
@@ -353,14 +353,14 @@ final class SaleControllerTest extends TestCase
         $this->assertSame(-11.0, (float) $returnOrder->items->first()->total);
 
         $this->assertDatabaseHas('eshop_payments', [
-            'payable_type' => Order::class,
+            'payable_type' => 'Modules\Eshop360\Models\Order',
             'payable_id' => $returnOrder->id,
             'amount' => -11,
             'status' => 'refunded',
         ]);
 
         $this->assertDatabaseHas('eshop_stock_movements', [
-            'reference_type' => Order::class,
+            'reference_type' => 'Modules\Eshop360\Models\Order',
             'reference_id' => $returnOrder->id,
             'type' => 'return',
             'quantity' => 1,

@@ -4,9 +4,9 @@ namespace Modules\Eshop360\Tests\Feature;
 
 use Modules\Core\Support\CurrentInstance;
 use Modules\Core\Support\TeamContext;
-use Modules\Eshop360\Models\Account;
-use Modules\Eshop360\Models\ExpenseCategory;
-use Modules\Eshop360\Models\IncomeSource;
+use Modules\Eshop360\Domain\Finance\Models\Account;
+use Modules\Eshop360\Domain\Finance\Models\ExpenseCategory;
+use Modules\Eshop360\Domain\Finance\Models\IncomeSource;
 use Modules\Eshop360\Tests\TestCase;
 use Spatie\Permission\Models\Permission;
 

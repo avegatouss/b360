@@ -11,19 +11,19 @@
         ->where('p.is_active', true)
         ->count();
 
-    $expiredCount = \Modules\Eshop360\Models\Product::where('instance_id', $instanceId)
+    $expiredCount = \Modules\Eshop360\Domain\Catalog\Models\Product::where('instance_id', $instanceId)
         ->where('is_active', true)
         ->whereNotNull('expiry_date')
         ->where('expiry_date', '<', now())
         ->count();
 
-    $expiringSoonCount = \Modules\Eshop360\Models\Product::where('instance_id', $instanceId)
+    $expiringSoonCount = \Modules\Eshop360\Domain\Catalog\Models\Product::where('instance_id', $instanceId)
         ->where('is_active', true)
         ->whereNotNull('expiry_date')
         ->whereBetween('expiry_date', [now(), now()->addDays(30)])
         ->count();
 
-    $totalProducts = \Modules\Eshop360\Models\Product::where('instance_id', $instanceId)->where('is_active', true)->count();
+    $totalProducts = \Modules\Eshop360\Domain\Catalog\Models\Product::where('instance_id', $instanceId)->where('is_active', true)->count();
 @endphp
 <div class="card border-0 shadow-sm h-100">
     <div class="card-header bg-transparent d-flex justify-content-between align-items-center">

@@ -4,7 +4,7 @@ namespace Modules\Eshop360\Http\Controllers\ChannelPortal;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Modules\Eshop360\Models\ChannelMarginLog;
+use Modules\Eshop360\Domain\Channel\Models\ChannelMarginLog;
 
 class ChannelPortalMarginController extends Controller
 {

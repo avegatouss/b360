@@ -4,10 +4,10 @@ namespace Modules\Eshop360\Services;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
+use Modules\Eshop360\Domain\Sales\Models\OnlineOrder;
 use Modules\Eshop360\Domain\Sales\Models\OnlineOrderItem;
-use Modules\Eshop360\Models\OnlineOrder;
-use Modules\Eshop360\Models\Order;
-use Modules\Eshop360\Models\Product;
+use Modules\Eshop360\Domain\Sales\Models\Order;
 
 class OnlineOrderService
 {
@@ -109,7 +109,7 @@ class OnlineOrderService
     /**
      * Convert online order to regular order for invoicing
      */
-    public function convertToOrder(OnlineOrder $onlineOrder, OrderService $orderService): \Modules\Eshop360\Models\Order
+    public function convertToOrder(OnlineOrder $onlineOrder, OrderService $orderService): \Modules\Eshop360\Domain\Sales\Models\Order
     {
         return DB::transaction(function () use ($onlineOrder, $orderService) {
             $existingOrder = Order::where('instance_id', $onlineOrder->instance_id)

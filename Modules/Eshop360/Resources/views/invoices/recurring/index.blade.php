@@ -43,7 +43,7 @@
                 <tbody>
                     @forelse($recurringInvoices as $ri)
                     @php
-                        $freqLabels = \Modules\Eshop360\Models\RecurringInvoice::$frequencyLabels;
+                        $freqLabels = \Modules\Eshop360\Domain\Finance\Models\RecurringInvoice::$frequencyLabels;
                     @endphp
                     <tr>
                         <td>{{ $ri->customer->name ?? '-' }}</td>

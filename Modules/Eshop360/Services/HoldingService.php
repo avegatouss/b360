@@ -4,7 +4,7 @@ namespace Modules\Eshop360\Services;
 
 use Illuminate\Support\Str;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\Holding;
+use Modules\Eshop360\Domain\Sales\Models\Holding;
 
 class HoldingService
 {

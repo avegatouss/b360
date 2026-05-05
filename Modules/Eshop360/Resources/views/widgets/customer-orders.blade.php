@@ -2,7 +2,7 @@
 @php
     $user = auth()->user();
     $instance = \Modules\Core\Support\CurrentInstance::get();
-    $customer = \Modules\Eshop360\Models\Customer::where('instance_id', $instance?->id)
+    $customer = \Modules\Eshop360\Domain\CRM\Models\Customer::where('instance_id', $instance?->id)
         ->where(fn($q) => $q->where('user_id', $user->id)->orWhere('email', $user->email))
         ->first();
 
@@ -11,14 +11,14 @@
     $slug = $instance->slug ?? '';
 
     // Online orders (portal)
-    $onlineOrders = \Modules\Eshop360\Models\OnlineOrder::where('instance_id', $instance->id)
+    $onlineOrders = \Modules\Eshop360\Domain\Sales\Models\OnlineOrder::where('instance_id', $instance->id)
         ->where('customer_id', $customer->id)
         ->latest()
         ->limit(5)
         ->get();
 
     // Regular orders
-    $orders = \Modules\Eshop360\Models\Order::where('instance_id', $instance->id)
+    $orders = \Modules\Eshop360\Domain\Sales\Models\Order::where('instance_id', $instance->id)
         ->where('customer_id', $customer->id)
         ->latest()
         ->limit(5)

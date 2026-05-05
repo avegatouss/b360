@@ -3,9 +3,9 @@
 namespace Modules\Eshop360\Tests\Feature;
 
 use Illuminate\Database\UniqueConstraintViolationException;
-use Modules\Eshop360\Models\Employee;
-use Modules\Eshop360\Models\EmployeeCommission;
-use Modules\Eshop360\Models\Order;
+use Modules\Eshop360\Domain\HR\Models\Employee;
+use Modules\Eshop360\Domain\HR\Models\EmployeeCommission;
+use Modules\Eshop360\Domain\Sales\Models\Order;
 use Modules\Eshop360\Services\HRService;
 use Modules\Eshop360\Tests\TestCase;
 
