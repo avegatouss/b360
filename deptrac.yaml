@@ -164,6 +164,20 @@ deptrac:
         - type: directory
           value: Modules/Eshop360/Domain/Reporting/.*
 
+    # R-101 S12 : EshopShared = infrastructure intra-Eshop360 partagée par
+    # plusieurs sous-domaines (traits, scopes, support). Capturée comme un
+    # layer distinct pour pouvoir lever proprement la dépendance transitoire
+    # `EshopX → Eshop360` sans perdre l'autorisation d'utiliser ces traits.
+    # Voir ADR-020 pour la justification.
+    - name: EshopShared
+      collectors:
+        - type: directory
+          value: Modules/Eshop360/Database/Traits/.*
+        - type: directory
+          value: Modules/Eshop360/Database/Scopes/.*
+        - type: directory
+          value: Modules/Eshop360/Support/.*
+
     # Eshop360 = "le reste" monolithique non encore extrait.
     # Au fur et à mesure des sous-lots S1..S11, les fichiers migrent
     # vers les layers EshopX ci-dessus et ce layer se vide.
@@ -178,6 +192,12 @@ deptrac:
               value: Modules/Eshop360/Domain/.*
             - type: directory
               value: Modules/Eshop360/Pricing/.*
+            - type: directory
+              value: Modules/Eshop360/Database/Traits/.*
+            - type: directory
+              value: Modules/Eshop360/Database/Scopes/.*
+            - type: directory
+              value: Modules/Eshop360/Support/.*
 
     # ═══════════════════════════════════════════════════════════════
     # Couche app/ (User, Instance — historique)
@@ -236,7 +256,7 @@ deptrac:
       - Users
       - AppLayer
     # Eshop360 "reste" monolithique — peut dépendre des socles + de
-    # tous ses sous-domaines extraits (transition).
+    # tous ses sous-domaines extraits (transition) + EshopShared.
     Eshop360:
       - Core
       - Auth
@@ -245,6 +265,7 @@ deptrac:
       - Billing
       - Currency
       - Lang
+      - EshopShared
       - EshopCatalog
       - EshopCRM
       - EshopChannel
@@ -258,6 +279,30 @@ deptrac:
       - EshopCommunication
       - EshopProjects
       - EshopReporting
+      - AppLayer
+
+    # R-101 S12 : EshopShared regroupe l'infrastructure partagée intra-Eshop360
+    # (traits BelongsToChannel/ScopedByUserAssignment, scopes ChannelScope/
+    # OrderUserAssignmentScope/UserAssignmentScope, support CurrentChannel/
+    # UiLabel).
+    # - Eshop360 : ChannelScope/BelongsToChannel/UserAssignmentScope appellent
+    #   `app(ChannelAccessService::class)` / `app(UserResourceScopeService::class)`
+    #   au runtime (services dans le layer Eshop360 résiduel).
+    # - EshopChannel : BelongsToChannel déclare `belongsTo(DistributionChannel)`.
+    #   Crée une dépendance bidirectionnelle EshopShared ↔ EshopChannel,
+    #   tolérable car le trait n'instancie pas DistributionChannel — la classe
+    #   est seulement référencée comme type de relation.
+    EshopShared:
+      - Core
+      - Auth
+      - Users
+      - Instances
+      - Settings
+      - Billing
+      - Currency
+      - Lang
+      - Eshop360
+      - EshopChannel
       - AppLayer
 
     # ═══════════════════════════════════════════════════════════════
@@ -290,7 +335,7 @@ deptrac:
       - Billing
       - Currency
       - Lang
-      - Eshop360
+      - EshopShared
       - AppLayer
     # R-101 S2 : EshopCRM restreint (feuille, sauf Eshop360 transitoire
     # pour BelongsToChannel, ScopedByUserAssignment et alias cross-domain
@@ -303,7 +348,7 @@ deptrac:
       - Billing
       - Currency
       - Lang
-      - Eshop360
+      - EshopShared
       - AppLayer
     # R-101 S3 : EshopChannel restreint (socles + Eshop360 transitoire pour
     # BelongsToChannel/ChannelScope qui restent dans Database/Traits/ —
@@ -316,7 +361,7 @@ deptrac:
       - Billing
       - Currency
       - Lang
-      - Eshop360
+      - EshopShared
       - AppLayer
     # R-101 S4 : EshopPricing restreint.
     # Dépendances réelles observées : socles + Product (via alias Eshop360
@@ -333,7 +378,7 @@ deptrac:
       - Billing
       - Currency
       - Lang
-      - Eshop360
+      - EshopShared
       - EshopCatalog
       - AppLayer
     # R-101 S5 : EshopInventory restreint.
@@ -350,7 +395,7 @@ deptrac:
       - Billing
       - Currency
       - Lang
-      - Eshop360
+      - EshopShared
       - EshopCatalog
       - AppLayer
     # R-101 S6 : EshopPromotions restreint.
@@ -366,7 +411,7 @@ deptrac:
       - Billing
       - Currency
       - Lang
-      - Eshop360
+      - EshopShared
       - EshopCRM
       - AppLayer
     # R-101 S7 : EshopPurchasing restreint.
@@ -382,7 +427,7 @@ deptrac:
       - Billing
       - Currency
       - Lang
-      - Eshop360
+      - EshopShared
       - EshopCatalog
       - EshopInventory
       - AppLayer
@@ -401,7 +446,7 @@ deptrac:
       - Billing
       - Currency
       - Lang
-      - Eshop360
+      - EshopShared
       - EshopCatalog
       - EshopCRM
       - EshopChannel
@@ -422,7 +467,7 @@ deptrac:
       - Billing
       - Currency
       - Lang
-      - Eshop360
+      - EshopShared
       - EshopCatalog
       - EshopCRM
       - EshopSales
@@ -438,7 +483,7 @@ deptrac:
       - Billing
       - Currency
       - Lang
-      - Eshop360
+      - EshopShared
       - EshopSales
       - AppLayer
     # R-101 S11 : EshopCommunication restreint.
@@ -452,7 +497,7 @@ deptrac:
       - Billing
       - Currency
       - Lang
-      - Eshop360
+      - EshopShared
       - EshopCRM
       - EshopInventory
       - AppLayer
@@ -467,7 +512,7 @@ deptrac:
       - Billing
       - Currency
       - Lang
-      - Eshop360
+      - EshopShared
       - EshopCRM
       - EshopSales
       - EshopFinance
@@ -484,7 +529,7 @@ deptrac:
       - Billing
       - Currency
       - Lang
-      - Eshop360
+      - EshopShared
       - AppLayer
 
     AppLayer: ~
@@ -509,6 +554,298 @@ deptrac:
       - Modules\Demo\Http\Middleware\DemoGuard
     Modules\Dashboard\Http\Controllers\DashboardController:
       - Modules\Eshop360\Services\EshopSettingsService
+    # ─── R-101 S12 baseline ─────────────────────────────────────────────
+    # Real cross-subdomain typed relations exposed by S12.3 (consumers
+    # rewritten to canonical FQN). Previously hidden because imports went
+    # through the Modules\Eshop360\Models\ alias layer, which deptrac
+    # classified under Eshop360 (allowed).
+    #
+    # Two patterns dominate:
+    #
+    # 1. ChannelAccessService + DistributionChannel : reported on every
+    #    model that uses BelongsToChannel. Deptrac follows the trait body
+    #    and attributes its deps to the consuming class, not to the trait
+    #    itself. This is a deptrac analysis quirk — not a real coupling.
+    #    Should auto-resolve if the trait moves to a deeper indirection
+    #    (e.g., resolve service through container, never reference
+    #    DistributionChannel typed).
+    #
+    # 2. Genuine domain relations (Customer→Order, Product→Stock, etc.).
+    #    These should eventually be tightened by adding the cross-deps
+    #    to each EshopX ruleset OR by extracting cross-cutting types into
+    #    a shared contract layer. Out of scope for the closure lot.
+    Modules\Eshop360\Domain\CRM\Models\Customer:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Domain\Communication\Models\SupportTicket
+      - Modules\Eshop360\Domain\Finance\Models\Invoice
+      - Modules\Eshop360\Domain\Sales\Models\OnlineOrder
+      - Modules\Eshop360\Domain\Sales\Models\Order
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\CRM\Models\CustomerDue:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Domain\Finance\Models\Invoice
+      - Modules\Eshop360\Domain\Sales\Models\Order
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\CRM\Models\CustomerGroup:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\CRM\Models\CustomerTransaction:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Catalog\Models\Brand:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Catalog\Models\Category:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Catalog\Models\Product:
+      - Modules\Eshop360\Domain\Channel\Models\ChannelProductPrice
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Domain\Inventory\Models\Stock
+      - Modules\Eshop360\Domain\Purchasing\Models\Supplier
+      - Modules\Eshop360\Domain\Sales\Models\OrderItem
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Catalog\Models\ProductGroup:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Catalog\Models\ProductTax:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Catalog\Models\ProductVariation:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Catalog\Models\Tax:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Channel\Models\ChannelMarginLog:
+      - Modules\Eshop360\Domain\Sales\Models\Order
+    Modules\Eshop360\Domain\Channel\Models\ChannelProductPrice:
+      - Modules\Eshop360\Domain\Catalog\Models\Product
+    Modules\Eshop360\Domain\Channel\Models\DistributionChannel:
+      - Modules\Eshop360\Domain\CRM\Models\Customer
+      - Modules\Eshop360\Domain\Catalog\Models\Product
+      - Modules\Eshop360\Domain\Inventory\Models\Warehouse
+      - Modules\Eshop360\Domain\Promotions\Models\Coupon
+      - Modules\Eshop360\Domain\Sales\Models\CashRegister
+      - Modules\Eshop360\Domain\Sales\Models\Holding
+      - Modules\Eshop360\Domain\Sales\Models\Order
+    Modules\Eshop360\Domain\Communication\Models\BulkMessageLog:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Communication\Models\EmailTemplate:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Communication\Models\Message:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Communication\Models\ReceiptTemplate:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Communication\Models\SmsGateway:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Communication\Models\SmsLog:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Communication\Models\SupportTeam:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Communication\Models\SupportTicket:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Communication\Models\TicketMessage:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Communication\Models\Webhook:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Communication\Models\WebhookLog:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Finance\Models\Account:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Finance\Models\AccountTransaction:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Finance\Models\AccountTransfer:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Finance\Models\ChargeCategory:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Finance\Models\ChargeLog:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Finance\Models\CompanyCharge:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Finance\Models\EshopPaymentGateway:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Finance\Models\Expense:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Finance\Models\ExpenseCategory:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Finance\Models\FneInvoice:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Finance\Models\Income:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Finance\Models\IncomeSource:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Finance\Models\InstallmentPayment:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Finance\Models\InstallmentPlan:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Finance\Models\Invoice:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Finance\Models\InvoiceItem:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Finance\Models\Loan:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Finance\Models\LoanPayment:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Finance\Models\LoanSchedule:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Finance\Models\Payment:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Finance\Models\PaymentMethod:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Finance\Models\RecurringInvoice:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\HR\Models\Attendance:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\HR\Models\Employee:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\HR\Models\EmployeeCommission:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\HR\Models\EmployeeSalary:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Inventory\Models\Stock:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Inventory\Models\StockMovement:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Inventory\Models\StockTransfer:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Inventory\Models\StockTransferItem:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Inventory\Models\Store:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Inventory\Models\Warehouse:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Domain\HR\Models\Employee
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Projects\Models\Event:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Projects\Models\Project:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Projects\Models\Task:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Projects\Models\TaskComment:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Promotions\Models\Coupon:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Promotions\Models\Discount:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Promotions\Models\DiscountPlan:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Promotions\Models\GiftCard:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Promotions\Models\GiftCardTopup:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Purchasing\Models\ImportCost:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Purchasing\Models\ImportCostType:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Purchasing\Models\ImportOrder:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Purchasing\Models\ImportOrderItem:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Purchasing\Models\PurchaseItem:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Purchasing\Models\PurchaseOrder:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Domain\Finance\Models\Payment
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Purchasing\Models\PurchaseReturn:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Purchasing\Models\PurchaseReturnItem:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Purchasing\Models\Supplier:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Reporting\Models\ApiLog:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Reporting\Models\AuditLog:
+      - Modules\Eshop360\Domain\Channel\Models\DistributionChannel
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Sales\Models\CashRegister:
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Sales\Models\Holding:
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Sales\Models\OnlineOrder:
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Sales\Models\OnlineOrderItem:
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Sales\Models\Order:
+      - Modules\Eshop360\Domain\Finance\Models\InstallmentPlan
+      - Modules\Eshop360\Domain\Finance\Models\Invoice
+      - Modules\Eshop360\Domain\Finance\Models\Payment
+      - Modules\Eshop360\Domain\HR\Models\EmployeeCommission
+      - Modules\Eshop360\Domain\Projects\Models\Project
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Sales\Models\OrderItem:
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Sales\Models\PersistentCart:
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Sales\Models\Quotation:
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Sales\Models\QuotationItem:
+      - Modules\Eshop360\Services\ChannelAccessService
+    Modules\Eshop360\Domain\Sales\Models\SaleReturn:
+      - Modules\Eshop360\Services\ChannelAccessService
+    # ─── End R-101 S12 baseline ─────────────────────────────────────────
     Modules\ModuleManager\Http\Controllers\ModuleController:
       - Modules\Eshop360\Services\EshopInitializer
     currency():
@@ -538,6 +875,7 @@ deptrac:
           - Installer
         L3:
           - Eshop360
+          - EshopShared
           - EshopCatalog
           - EshopCRM
           - EshopChannel
