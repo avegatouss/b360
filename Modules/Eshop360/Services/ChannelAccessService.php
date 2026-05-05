@@ -13,7 +13,7 @@ final class ChannelAccessService
 {
     public function isHubAdmin(?User $user): bool
     {
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -27,7 +27,7 @@ final class ChannelAccessService
      */
     public function accessibleChannelIds(?User $user, ?int $instanceId = null): ?Collection
     {
-        if (!$user) {
+        if (! $user) {
             return collect();
         }
 
@@ -56,7 +56,7 @@ final class ChannelAccessService
 
     public function canAccessChannel(?User $user, int|DistributionChannel $channel, ?int $instanceId = null): bool
     {
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -72,7 +72,7 @@ final class ChannelAccessService
 
     public function roleForChannel(?User $user, DistributionChannel $channel): ?string
     {
-        if (!$user) {
+        if (! $user) {
             return null;
         }
 
@@ -99,7 +99,7 @@ final class ChannelAccessService
 
         $accessible = $this->accessibleChannelIds($user, $instanceId);
 
-        if (!$accessible || $accessible->isEmpty()) {
+        if (! $accessible || $accessible->isEmpty()) {
             return $query->whereRaw('1 = 0');
         }
 
@@ -147,9 +147,9 @@ final class ChannelAccessService
             ->when($instanceId, fn ($q) => $q->where('instance_id', $instanceId))
             ->orderBy('name');
 
-        if (!$this->isHubAdmin($user)) {
+        if (! $this->isHubAdmin($user)) {
             $accessible = $this->accessibleChannelIds($user);
-            if (!$accessible || $accessible->isEmpty()) {
+            if (! $accessible || $accessible->isEmpty()) {
                 return collect();
             }
             $query->whereIn('id', $accessible);

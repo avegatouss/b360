@@ -50,8 +50,8 @@ class SmsManager
                 ->first();
         }
 
-        if (!$gateway) {
-            throw new \RuntimeException("No active SMS gateway found" . ($name ? " for driver [{$name}]" : ' (default)'));
+        if (! $gateway) {
+            throw new \RuntimeException('No active SMS gateway found'.($name ? " for driver [{$name}]" : ' (default)'));
         }
 
         return $this->resolveDriver($gateway->driver, $gateway->config ?? []);
@@ -71,8 +71,9 @@ class SmsManager
     public function send(string $to, string $message, ?string $driverName = null): bool
     {
         $instance = CurrentInstance::get();
-        if (!$instance) {
+        if (! $instance) {
             Log::warning('SmsManager::send called without an active instance');
+
             return false;
         }
 
@@ -89,8 +90,9 @@ class SmsManager
                 ->first();
         }
 
-        if (!$gateway) {
-            Log::warning('No SMS gateway configured for instance ' . $instance->id);
+        if (! $gateway) {
+            Log::warning('No SMS gateway configured for instance '.$instance->id);
+
             return false;
         }
 
@@ -135,13 +137,14 @@ class SmsManager
      */
     public function testConnection(string $driverName, array $config): bool
     {
-        if (!isset($this->drivers[$driverName])) {
+        if (! isset($this->drivers[$driverName])) {
             return false;
         }
 
         try {
             $driver = $this->resolveDriver($driverName, $config);
             $balance = $driver->getBalance();
+
             // If getBalance returns null, it means the driver doesn't support it —
             // we consider the connection valid if no exception was thrown.
             return true;
@@ -150,6 +153,7 @@ class SmsManager
                 'driver' => $driverName,
                 'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
@@ -161,7 +165,7 @@ class SmsManager
     {
         $class = $this->drivers[$name] ?? null;
 
-        if (!$class || !class_exists($class)) {
+        if (! $class || ! class_exists($class)) {
             throw new \InvalidArgumentException("Unknown SMS driver [{$name}]");
         }
 

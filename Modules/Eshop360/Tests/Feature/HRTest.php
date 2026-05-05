@@ -33,22 +33,22 @@ final class HRTest extends TestCase
 
         $response = $this->actingAs($user)
             ->post(route('eshop360.hr.employees.store', $instance->slug), [
-                'name'       => 'Adjoua Kone',
-                'email'      => 'adjoua.kone@pharma.test',
-                'phone'      => '+22507000002',
-                'position'   => 'Magasiniere',
+                'name' => 'Adjoua Kone',
+                'email' => 'adjoua.kone@pharma.test',
+                'phone' => '+22507000002',
+                'position' => 'Magasiniere',
                 'department' => 'Stock',
-                'salary'     => 220000,
-                'joined_at'  => now()->toDateString(),
+                'salary' => 220000,
+                'joined_at' => now()->toDateString(),
             ]);
 
         $response->assertRedirect();
 
         $this->assertDatabaseHas('eshop_employees', [
             'instance_id' => $instance->id,
-            'name'        => 'Adjoua Kone',
-            'salary'      => 220000,
-            'department'  => 'Stock',
+            'name' => 'Adjoua Kone',
+            'salary' => 220000,
+            'department' => 'Stock',
         ]);
     }
 
@@ -61,22 +61,22 @@ final class HRTest extends TestCase
         $this->makePermissions();
 
         $employee = Employee::create([
-            'instance_id'     => $instance->id,
-            'name'            => 'Paul Bamba',
-            'email'           => 'paul.bamba@pharma.test',
-            'position'        => 'Comptable',
-            'salary'          => 300000,
+            'instance_id' => $instance->id,
+            'name' => 'Paul Bamba',
+            'email' => 'paul.bamba@pharma.test',
+            'position' => 'Comptable',
+            'salary' => 300000,
             'commission_rate' => 0,
-            'status'          => 'active',
+            'status' => 'active',
         ]);
 
         $response = $this->actingAs($user)
             ->post(route('eshop360.hr.salaries.process', $instance->slug), [
                 'employee_id' => $employee->id,
-                'period'      => '2026-03',
-                'bonus'       => 30000,
-                'deductions'  => 10000,
-                'notes'       => 'Salaire mars avec prime',
+                'period' => '2026-03',
+                'bonus' => 30000,
+                'deductions' => 10000,
+                'notes' => 'Salaire mars avec prime',
             ]);
 
         $response->assertRedirect();
@@ -101,21 +101,21 @@ final class HRTest extends TestCase
         $this->makePermissions();
 
         $employee = Employee::create([
-            'instance_id'     => $instance->id,
-            'name'            => 'Christelle Yao',
-            'email'           => 'christelle.yao@pharma.test',
-            'position'        => 'Caissiere',
-            'salary'          => 180000,
+            'instance_id' => $instance->id,
+            'name' => 'Christelle Yao',
+            'email' => 'christelle.yao@pharma.test',
+            'position' => 'Caissiere',
+            'salary' => 180000,
             'commission_rate' => 0,
-            'status'          => 'active',
+            'status' => 'active',
         ]);
 
         $this->actingAs($user)
             ->post(route('eshop360.hr.salaries.process', $instance->slug), [
                 'employee_id' => $employee->id,
-                'period'      => '2026-02',
-                'bonus'       => 0,
-                'deductions'  => 0,
+                'period' => '2026-02',
+                'bonus' => 0,
+                'deductions' => 0,
             ]);
 
         $salary = EmployeeSalary::where('employee_id', $employee->id)
@@ -135,13 +135,13 @@ final class HRTest extends TestCase
         $this->makePermissions();
 
         $employee = Employee::create([
-            'instance_id'     => $instance->id,
-            'name'            => 'Bob Traore',
-            'email'           => 'bob.traore@pharma.test',
-            'position'        => 'Livreur',
-            'salary'          => 150000,
+            'instance_id' => $instance->id,
+            'name' => 'Bob Traore',
+            'email' => 'bob.traore@pharma.test',
+            'position' => 'Livreur',
+            'salary' => 150000,
             'commission_rate' => 0,
-            'status'          => 'active',
+            'status' => 'active',
         ]);
 
         // Clock in via controller
@@ -175,13 +175,13 @@ final class HRTest extends TestCase
         $this->makePermissions();
 
         Employee::create([
-            'instance_id'     => $instance->id,
-            'name'            => 'Test Employe Index',
-            'email'           => 'test.index@pharma.test',
-            'position'        => 'Agent',
-            'salary'          => 100000,
+            'instance_id' => $instance->id,
+            'name' => 'Test Employe Index',
+            'email' => 'test.index@pharma.test',
+            'position' => 'Agent',
+            'salary' => 100000,
             'commission_rate' => 0,
-            'status'          => 'active',
+            'status' => 'active',
         ]);
 
         $response = $this->actingAs($user)

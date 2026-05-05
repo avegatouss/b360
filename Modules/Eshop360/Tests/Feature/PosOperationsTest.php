@@ -155,11 +155,11 @@ final class PosOperationsTest extends TestCase
                     'type' => 'fixed',
                     'value' => 10,
                 ],
-                'eshop_cart_instance_' . $instance->id => $cart,
-                'eshop_cart_context_instance_' . $instance->id => [
+                'eshop_cart_instance_'.$instance->id => $cart,
+                'eshop_cart_context_instance_'.$instance->id => [
                     'channel_id' => 12,
                 ],
-                'eshop_cart_coupon_instance_' . $instance->id => [
+                'eshop_cart_coupon_instance_'.$instance->id => [
                     'id' => $coupon->id,
                     'code' => $coupon->code,
                     'type' => 'fixed',
@@ -187,8 +187,8 @@ final class PosOperationsTest extends TestCase
         $this->assertSame('Produit attente', session('eshop_cart.42.name'));
         $this->assertSame($coupon->code, session('eshop_cart_coupon.code'));
         $this->assertSame(12, session('eshop_cart_context.channel_id'));
-        $this->assertSame('Produit attente', session('eshop_cart_instance_' . $instance->id . '.42.name'));
-        $this->assertSame($coupon->code, session('eshop_cart_coupon_instance_' . $instance->id . '.code'));
-        $this->assertSame(12, session('eshop_cart_context_instance_' . $instance->id . '.channel_id'));
+        $this->assertSame('Produit attente', session('eshop_cart_instance_'.$instance->id.'.42.name'));
+        $this->assertSame($coupon->code, session('eshop_cart_coupon_instance_'.$instance->id.'.code'));
+        $this->assertSame(12, session('eshop_cart_context_instance_'.$instance->id.'.channel_id'));
     }
 }

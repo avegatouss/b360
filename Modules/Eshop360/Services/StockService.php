@@ -3,9 +3,9 @@
 namespace Modules\Eshop360\Services;
 
 use Illuminate\Database\Eloquent\Collection;
-use InvalidArgumentException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
 use Modules\Core\Support\CurrentInstance;
 use Modules\Eshop360\Models\Product;
 use Modules\Eshop360\Models\Stock;
@@ -19,8 +19,8 @@ class StockService
     /**
      * Adjust stock for a product in a specific warehouse.
      *
-     * @param string $type Canonical values: in, out, adjustment, transfer, return
-     * Legacy aliases are normalized internally.
+     * @param  string  $type  Canonical values: in, out, adjustment, transfer, return
+     *                        Legacy aliases are normalized internally.
      */
     public function adjustStock(
         Product $product,
@@ -41,12 +41,12 @@ class StockService
             // Find or create the stock record with pessimistic locking
             $stock = Stock::lockForUpdate()->firstOrCreate(
                 [
-                    'instance_id'  => $instance?->id,
-                    'product_id'   => $product->id,
+                    'instance_id' => $instance?->id,
+                    'product_id' => $product->id,
                     'warehouse_id' => $resolvedWarehouseId,
                 ],
                 [
-                    'quantity'          => 0,
+                    'quantity' => 0,
                     'reserved_quantity' => 0,
                 ],
             );
@@ -64,14 +64,14 @@ class StockService
 
             // Record the movement
             return $this->recordMovement([
-                'instance_id'  => $instance?->id,
-                'product_id'   => $product->id,
+                'instance_id' => $instance?->id,
+                'product_id' => $product->id,
                 'warehouse_id' => $resolvedWarehouseId,
-                'type'         => $movementType,
-                'quantity'     => $delta,
+                'type' => $movementType,
+                'quantity' => $delta,
                 'reference_type' => $referenceType,
                 'reference_id' => $referenceId,
-                'notes'        => $notes,
+                'notes' => $notes,
                 'performed_by' => $userId ?? auth()->id(),
             ]);
         });
@@ -80,7 +80,7 @@ class StockService
     /**
      * Transfer stock between warehouses.
      *
-     * @param array<int, array{product_id: int, quantity: int}> $items
+     * @param  array<int, array{product_id: int, quantity: int}>  $items
      */
     public function transferStock(
         array $items,
@@ -92,19 +92,19 @@ class StockService
 
         return DB::transaction(function () use ($items, $fromWarehouseId, $toWarehouseId, $userId, $instance) {
             $transfer = StockTransfer::create([
-                'instance_id'       => $instance?->id,
+                'instance_id' => $instance?->id,
                 'from_warehouse_id' => $fromWarehouseId,
-                'to_warehouse_id'   => $toWarehouseId,
-                'reference_number'  => 'TRF-' . now()->format('Ymd') . '-' . Str::upper(Str::random(6)),
-                'status'            => 'pending',
-                'transferred_by'    => $userId ?? auth()->id(),
+                'to_warehouse_id' => $toWarehouseId,
+                'reference_number' => 'TRF-'.now()->format('Ymd').'-'.Str::upper(Str::random(6)),
+                'status' => 'pending',
+                'transferred_by' => $userId ?? auth()->id(),
             ]);
 
             foreach ($items as $itemData) {
                 StockTransferItem::create([
                     'stock_transfer_id' => $transfer->id,
-                    'product_id'        => $itemData['product_id'],
-                    'quantity'          => $itemData['quantity'],
+                    'product_id' => $itemData['product_id'],
+                    'quantity' => $itemData['quantity'],
                 ]);
             }
 

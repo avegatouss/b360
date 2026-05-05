@@ -3,10 +3,10 @@
 namespace Modules\Eshop360\Services;
 
 use Illuminate\Support\Collection;
-use Modules\Core\Hooks\HookManager;
 use Modules\Core\Hooks\DTO\MenuItem;
-use Modules\Eshop360\Models\DistributionChannel;
+use Modules\Core\Hooks\HookManager;
 use Modules\Core\Support\CurrentInstance;
+use Modules\Eshop360\Models\DistributionChannel;
 
 final class HierarchicalMenuService
 {
@@ -141,7 +141,7 @@ final class HierarchicalMenuService
     {
         $instance = CurrentInstance::get();
 
-        if (!$instance) {
+        if (! $instance) {
             return collect();
         }
 
@@ -159,7 +159,7 @@ final class HierarchicalMenuService
     public function findChannel(string $slug): ?DistributionChannel
     {
         $instance = CurrentInstance::get();
-        if (!$instance) {
+        if (! $instance) {
             return null;
         }
 
@@ -182,7 +182,7 @@ final class HierarchicalMenuService
         $groups = [];
         foreach (self::MODULE_GROUPS as $key => $def) {
             // Filter by channel features (global channel sees everything)
-            if ($channel && !$this->isHubChannel($channel) && !empty($def['features'])) {
+            if ($channel && ! $this->isHubChannel($channel) && ! empty($def['features'])) {
                 $hasFeature = false;
                 $featureDefaults = $this->settings->defaults('features');
                 foreach ($def['features'] as $feature) {
@@ -192,7 +192,7 @@ final class HierarchicalMenuService
                         break;
                     }
                 }
-                if (!$hasFeature) {
+                if (! $hasFeature) {
                     continue;
                 }
             }
@@ -233,6 +233,7 @@ final class HierarchicalMenuService
     public function getModuleChildren(string $moduleKey, ?DistributionChannel $channel = null): ?array
     {
         $groups = $this->getModuleGroups($channel);
+
         return $groups[$moduleKey] ?? null;
     }
 

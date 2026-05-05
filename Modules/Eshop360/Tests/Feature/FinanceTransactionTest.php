@@ -3,23 +3,21 @@
 namespace Modules\Eshop360\Tests\Feature;
 
 use Modules\Core\Support\CurrentInstance;
-use Modules\Core\Support\TeamContext;
 use Modules\Eshop360\Models\Account;
 use Modules\Eshop360\Models\Expense;
 use Modules\Eshop360\Models\ExpenseCategory;
-use Modules\Eshop360\Models\Income;
-use Modules\Eshop360\Models\IncomeSource;
 use Modules\Eshop360\Models\GiftCard;
 use Modules\Eshop360\Models\GiftCardTopup;
+use Modules\Eshop360\Models\Income;
+use Modules\Eshop360\Models\IncomeSource;
 use Modules\Eshop360\Models\Loan;
 use Modules\Eshop360\Models\LoanPayment;
 use Modules\Eshop360\Tests\TestCase;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
 
 final class FinanceTransactionTest extends TestCase
 {
     private $instance;
+
     private $user;
 
     protected function setUp(): void

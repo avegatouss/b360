@@ -55,7 +55,7 @@ final class PaymentGatewayManager
     {
         $class = self::DRIVERS[$name] ?? null;
 
-        if (!$class) {
+        if (! $class) {
             throw new InvalidArgumentException("Unknown payment gateway driver: {$name}");
         }
 

@@ -88,8 +88,8 @@ final class ChannelPortalTest extends TestCase
     private function makeMember(DistributionChannel $channel, string $role = 'member'): User
     {
         $user = User::create([
-            'full_name' => 'Channel ' . ucfirst($role),
-            'email' => $role . '-' . uniqid() . '@test.com',
+            'full_name' => 'Channel '.ucfirst($role),
+            'email' => $role.'-'.uniqid().'@test.com',
             'password' => 'password',
         ]);
 

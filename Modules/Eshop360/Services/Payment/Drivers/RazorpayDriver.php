@@ -16,7 +16,7 @@ final class RazorpayDriver implements PaymentGatewayInterface
     {
         try {
             $response = Http::timeout(30)->withBasicAuth($this->config['key_id'] ?? '', $this->config['key_secret'] ?? '')
-                ->post(self::BASE . '/orders', [
+                ->post(self::BASE.'/orders', [
                     'amount' => (int) ($amount * 100),
                     'currency' => $currency,
                     'receipt' => $meta['reference'] ?? uniqid('RZP-'),
@@ -40,7 +40,7 @@ final class RazorpayDriver implements PaymentGatewayInterface
     {
         try {
             $response = Http::timeout(15)->withBasicAuth($this->config['key_id'] ?? '', $this->config['key_secret'] ?? '')
-                ->get(self::BASE . "/orders/{$transactionId}");
+                ->get(self::BASE."/orders/{$transactionId}");
             $data = $response->json();
             $status = match ($data['status'] ?? '') {
                 'paid' => 'completed', 'attempted' => 'pending', default => $data['status'] ?? 'unknown',
@@ -56,7 +56,7 @@ final class RazorpayDriver implements PaymentGatewayInterface
     {
         try {
             $response = Http::timeout(15)->withBasicAuth($this->config['key_id'] ?? '', $this->config['key_secret'] ?? '')
-                ->post(self::BASE . "/payments/{$transactionId}/refund", ['amount' => (int) ($amount * 100)]);
+                ->post(self::BASE."/payments/{$transactionId}/refund", ['amount' => (int) ($amount * 100)]);
             $data = $response->json();
 
             return $response->successful() && isset($data['id'])

@@ -28,6 +28,7 @@ class TextLocalDriver implements SmsDriverInterface
                 Log::error('TextLocal SMS rejected', [
                     'errors' => $data['errors'] ?? $data,
                 ]);
+
                 return false;
             }
 
@@ -39,6 +40,7 @@ class TextLocalDriver implements SmsDriverInterface
             return false;
         } catch (\Throwable $e) {
             Log::error('TextLocal SMS exception', ['error' => $e->getMessage()]);
+
             return false;
         }
     }
@@ -52,6 +54,7 @@ class TextLocalDriver implements SmsDriverInterface
 
             if ($response->successful()) {
                 $data = $response->json();
+
                 return (float) ($data['balance']['sms'] ?? 0);
             }
         } catch (\Throwable $e) {

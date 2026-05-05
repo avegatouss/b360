@@ -69,9 +69,9 @@ final class CartControllerTest extends TestCase
             ])
             ->assertRedirect(route('eshop360.pos.index', ['slug' => $instance->slug]));
 
-        $this->assertSame(2, session('eshop_cart.' . $product->id . '.quantity'));
-        $this->assertSame(9.0, (float) session('eshop_cart.' . $product->id . '.unit_price'));
-        $this->assertSame(2, session('eshop_cart_instance_' . $instance->id . '.' . $product->id . '.quantity'));
+        $this->assertSame(2, session('eshop_cart.'.$product->id.'.quantity'));
+        $this->assertSame(9.0, (float) session('eshop_cart.'.$product->id.'.unit_price'));
+        $this->assertSame(2, session('eshop_cart_instance_'.$instance->id.'.'.$product->id.'.quantity'));
 
         $this->actingAs($user)
             ->from(route('eshop360.pos.index', ['slug' => $instance->slug]))
@@ -83,8 +83,8 @@ final class CartControllerTest extends TestCase
             ])
             ->assertRedirect(route('eshop360.pos.index', ['slug' => $instance->slug]));
 
-        $this->assertSame(3, session('eshop_cart.' . $product->id . '.quantity'));
-        $this->assertSame(27.0, (float) session('eshop_cart.' . $product->id . '.total'));
+        $this->assertSame(3, session('eshop_cart.'.$product->id.'.quantity'));
+        $this->assertSame(27.0, (float) session('eshop_cart.'.$product->id.'.total'));
 
         $this->actingAs($user)
             ->from(route('eshop360.pos.index', ['slug' => $instance->slug]))
@@ -94,7 +94,7 @@ final class CartControllerTest extends TestCase
             ->assertRedirect(route('eshop360.pos.index', ['slug' => $instance->slug]));
 
         $this->assertSame($coupon->code, session('eshop_cart_coupon.code'));
-        $this->assertSame($coupon->code, session('eshop_cart_coupon_instance_' . $instance->id . '.code'));
+        $this->assertSame($coupon->code, session('eshop_cart_coupon_instance_'.$instance->id.'.code'));
 
         $this->actingAs($user)
             ->get(route('eshop360.pos.index', ['slug' => $instance->slug]))
@@ -111,8 +111,8 @@ final class CartControllerTest extends TestCase
 
         $this->assertFalse(session()->has('eshop_cart'));
         $this->assertFalse(session()->has('eshop_cart_coupon'));
-        $this->assertFalse(session()->has('eshop_cart_instance_' . $instance->id));
-        $this->assertFalse(session()->has('eshop_cart_coupon_instance_' . $instance->id));
+        $this->assertFalse(session()->has('eshop_cart_instance_'.$instance->id));
+        $this->assertFalse(session()->has('eshop_cart_coupon_instance_'.$instance->id));
     }
 
     public function test_browser_cart_can_apply_channel_context_and_display_active_tariff(): void
@@ -187,9 +187,9 @@ final class CartControllerTest extends TestCase
                 'channel_id' => $channel->id,
             ]));
 
-        $this->assertSame(125.0, (float) session('eshop_cart.' . $product->id . '.unit_price'));
+        $this->assertSame(125.0, (float) session('eshop_cart.'.$product->id.'.unit_price'));
         $this->assertSame($channel->id, session('eshop_cart_context.channel_id'));
-        $this->assertSame($channel->id, session('eshop_cart_context_instance_' . $instance->id . '.channel_id'));
+        $this->assertSame($channel->id, session('eshop_cart_context_instance_'.$instance->id.'.channel_id'));
 
         $this->actingAs($user)
             ->get(route('eshop360.pos.index', [

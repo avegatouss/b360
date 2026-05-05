@@ -5,9 +5,7 @@ namespace Modules\Eshop360\Tests\Feature;
 use Modules\Core\Support\CurrentInstance;
 use Modules\Core\Support\TeamContext;
 use Modules\Eshop360\Models\Account;
-use Modules\Eshop360\Models\Expense;
 use Modules\Eshop360\Models\ExpenseCategory;
-use Modules\Eshop360\Models\Income;
 use Modules\Eshop360\Models\IncomeSource;
 use Modules\Eshop360\Tests\TestCase;
 use Spatie\Permission\Models\Permission;
@@ -24,13 +22,13 @@ final class FinanceAccountTest extends TestCase
     private function makeAccount($instance, float $balance = 0): Account
     {
         return Account::create([
-            'instance_id'    => $instance->id,
-            'name'           => 'Caisse Principale',
-            'type'           => 'cash',
+            'instance_id' => $instance->id,
+            'name' => 'Caisse Principale',
+            'type' => 'cash',
             'account_number' => 'CAISSE-001',
-            'balance'        => $balance,
-            'currency'       => 'XAF',
-            'is_active'      => true,
+            'balance' => $balance,
+            'currency' => 'XAF',
+            'is_active' => true,
         ]);
     }
 
@@ -47,19 +45,19 @@ final class FinanceAccountTest extends TestCase
         $response = $this->actingAs($user)
             ->post(route('eshop360.finance.accounts.deposit', [$instance->slug, $account->id]), [
                 'amount' => 50000,
-                'notes'  => 'Versement client',
+                'notes' => 'Versement client',
             ]);
 
         $response->assertRedirect();
 
         $this->assertDatabaseHas('eshop_account_transactions', [
             'account_id' => $account->id,
-            'type'       => 'deposit',
-            'amount'     => 50000,
+            'type' => 'deposit',
+            'amount' => 50000,
         ]);
 
         $this->assertDatabaseHas('eshop_accounts', [
-            'id'      => $account->id,
+            'id' => $account->id,
             'balance' => 150000,
         ]);
     }
@@ -77,19 +75,19 @@ final class FinanceAccountTest extends TestCase
         $response = $this->actingAs($user)
             ->post(route('eshop360.finance.accounts.withdraw', [$instance->slug, $account->id]), [
                 'amount' => 10000,
-                'notes'  => 'Retrait caisse',
+                'notes' => 'Retrait caisse',
             ]);
 
         $response->assertRedirect();
 
         $this->assertDatabaseHas('eshop_account_transactions', [
             'account_id' => $account->id,
-            'type'       => 'withdrawal',
-            'amount'     => 10000,
+            'type' => 'withdrawal',
+            'amount' => 10000,
         ]);
 
         $this->assertDatabaseHas('eshop_accounts', [
-            'id'      => $account->id,
+            'id' => $account->id,
             'balance' => 40000,
         ]);
     }
@@ -111,7 +109,7 @@ final class FinanceAccountTest extends TestCase
         $response = $this->actingAs($user)
             ->post(route('eshop360.finance.accounts.withdraw', [$instance->slug, $account->id]), [
                 'amount' => 20000,
-                'notes'  => 'Retrait excessif',
+                'notes' => 'Retrait excessif',
             ]);
 
         // The controller currently processes the withdrawal without checking balance.
@@ -120,8 +118,8 @@ final class FinanceAccountTest extends TestCase
 
         $this->assertDatabaseHas('eshop_account_transactions', [
             'account_id' => $account->id,
-            'type'       => 'withdrawal',
-            'amount'     => 20000,
+            'type' => 'withdrawal',
+            'amount' => 20000,
         ]);
     }
 
@@ -135,14 +133,14 @@ final class FinanceAccountTest extends TestCase
 
         $category = ExpenseCategory::create([
             'instance_id' => $instance->id,
-            'name'        => 'Loyer',
+            'name' => 'Loyer',
         ]);
 
         $response = $this->actingAs($user)
             ->post(route('eshop360.finance.expenses.store', $instance->slug), [
                 'category_id' => $category->id,
-                'amount'      => 150000,
-                'date'        => now()->toDateString(),
+                'amount' => 150000,
+                'date' => now()->toDateString(),
                 'description' => 'Loyer mensuel bureau',
             ]);
 
@@ -151,7 +149,7 @@ final class FinanceAccountTest extends TestCase
         $this->assertDatabaseHas('eshop_expenses', [
             'instance_id' => $instance->id,
             'category_id' => $category->id,
-            'amount'      => 150000,
+            'amount' => 150000,
             'description' => 'Loyer mensuel bureau',
         ]);
     }
@@ -166,14 +164,14 @@ final class FinanceAccountTest extends TestCase
 
         $source = IncomeSource::create([
             'instance_id' => $instance->id,
-            'name'        => 'Vente en gros',
+            'name' => 'Vente en gros',
         ]);
 
         $response = $this->actingAs($user)
             ->post(route('eshop360.finance.incomes.store', $instance->slug), [
-                'source_id'   => $source->id,
-                'amount'      => 500000,
-                'date'        => now()->toDateString(),
+                'source_id' => $source->id,
+                'amount' => 500000,
+                'date' => now()->toDateString(),
                 'description' => 'Vente lot janvier',
             ]);
 
@@ -181,8 +179,8 @@ final class FinanceAccountTest extends TestCase
 
         $this->assertDatabaseHas('eshop_incomes', [
             'instance_id' => $instance->id,
-            'source_id'   => $source->id,
-            'amount'      => 500000,
+            'source_id' => $source->id,
+            'amount' => 500000,
             'description' => 'Vente lot janvier',
         ]);
     }
@@ -200,12 +198,12 @@ final class FinanceAccountTest extends TestCase
         $this->actingAs($user)
             ->post(route('eshop360.finance.accounts.deposit', [$instance->slug, $account->id]), [
                 'amount' => 30000,
-                'notes'  => 'Premier depot',
+                'notes' => 'Premier depot',
             ]);
 
         $this->post(route('eshop360.finance.accounts.deposit', [$instance->slug, $account->id]), [
             'amount' => 20000,
-            'notes'  => 'Deuxieme depot',
+            'notes' => 'Deuxieme depot',
         ]);
 
         $account->refresh();

@@ -15,13 +15,14 @@ use Modules\Eshop360\Models\PurchaseOrder;
 use Modules\Eshop360\Models\Stock;
 use Modules\Eshop360\Models\StockMovement;
 use Modules\Eshop360\Models\Supplier;
-use Modules\Eshop360\Support\CurrentChannel;
 
 class ReportService
 {
-    private const TTL_SHORT  = 300;   // 5 min — overview, posOverview
+    private const TTL_SHORT = 300;   // 5 min — overview, posOverview
+
     private const TTL_MEDIUM = 900;   // 15 min — salesByCategory, salesByProduct, cashbook
-    private const TTL_LONG   = 3600;  // 1h — stockReport, taxReport, dues, commissions, monthly
+
+    private const TTL_LONG = 3600;  // 1h — stockReport, taxReport, dues, commissions, monthly
 
     public function overview(int $instanceId, string $from, string $to, ?int $channelId = null): array
     {
@@ -191,7 +192,7 @@ class ReportService
                 ->map(fn (Payment $payment): array => [
                     'sort_at' => $payment->created_at?->timestamp ?? 0,
                     'date' => $payment->created_at?->format('d/m/Y H:i') ?? '',
-                    'reference' => $payment->reference ?? $payment->gateway_reference ?? 'PAY-' . $payment->id,
+                    'reference' => $payment->reference ?? $payment->gateway_reference ?? 'PAY-'.$payment->id,
                     'description' => $this->paymentDescription($payment),
                     'method' => $payment->method ?? __('eshop::eshop.unknown'),
                     'credit' => round((float) $payment->amount, 2),
@@ -200,7 +201,7 @@ class ReportService
                 ->concat($expenses->map(fn (Expense $expense): array => [
                     'sort_at' => Carbon::parse($expense->date ?? $expense->created_at)->timestamp,
                     'date' => Carbon::parse($expense->date ?? $expense->created_at)->format('d/m/Y'),
-                    'reference' => 'EXP-' . $expense->id,
+                    'reference' => 'EXP-'.$expense->id,
                     'description' => (string) ($expense->description ?? $expense->category?->name ?? __('eshop::eshop.expense')),
                     'method' => $expense->account?->name ?? __('eshop::eshop.expense'),
                     'credit' => 0.0,
@@ -214,6 +215,7 @@ class ReportService
                 $runningBalance += ($entry['credit'] - $entry['debit']);
                 $entry['balance'] = round($runningBalance, 2);
                 unset($entry['sort_at']);
+
                 return $entry;
             })->all();
 
@@ -342,6 +344,7 @@ class ReportService
                 ->get()
                 ->map(function (Customer $customer): array {
                     $orders = $customer->orders;
+
                     return [
                         'customer' => $customer->name,
                         'name' => $customer->name,
@@ -372,6 +375,7 @@ class ReportService
                 ->get()
                 ->map(function (Supplier $supplier): array {
                     $orders = $supplier->purchaseOrders;
+
                     return [
                         'supplier' => $supplier->name,
                         'name' => $supplier->name,
@@ -451,6 +455,7 @@ class ReportService
                 ->map(function ($group, string $name): array {
                     $revenue = round((float) $group->sum('total'), 2);
                     $count = $group->count();
+
                     return [
                         'name' => $name,
                         'transactions' => $count,
@@ -560,6 +565,7 @@ class ReportService
     {
         try {
             $store = Cache::getStore();
+
             return $store instanceof \Illuminate\Cache\TaggableStore;
         } catch (\Throwable) {
             return false;
@@ -576,7 +582,7 @@ class ReportService
         $manifestKey = "report:manifest:{$instanceId}";
         $keys = Cache::get($manifestKey, []);
 
-        if (!in_array($key, $keys, true)) {
+        if (! in_array($key, $keys, true)) {
             $keys[] = $key;
             Cache::put($manifestKey, $keys, 7200);
         }
@@ -586,7 +592,7 @@ class ReportService
 
     private function movementKey(int $productId, int $warehouseId): string
     {
-        return $productId . '-' . $warehouseId;
+        return $productId.'-'.$warehouseId;
     }
 
     private function paymentDescription(Payment $payment): string
@@ -594,7 +600,7 @@ class ReportService
         $payableReference = $payment->payable?->reference;
 
         if ($payableReference) {
-            return __('eshop::eshop.payment') . ' ' . $payableReference;
+            return __('eshop::eshop.payment').' '.$payableReference;
         }
 
         return (string) ($payment->notes ?: __('eshop::eshop.payment'));

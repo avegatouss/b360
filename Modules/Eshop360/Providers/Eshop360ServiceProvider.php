@@ -8,31 +8,30 @@ use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Modules\Core\Support\CurrentInstance;
 use Modules\Eshop360\Console\BirthdayAlertCommand;
-use Modules\Eshop360\Console\ExpiryAlertCommand;
+use Modules\Eshop360\Console\Commands\CheckExpiringProducts;
+use Modules\Eshop360\Console\Commands\CheckLowStock;
 use Modules\Eshop360\Console\ExpireSubscriptionsCommand;
+use Modules\Eshop360\Console\ExpiryAlertCommand;
 use Modules\Eshop360\Console\InstallmentReminderCommand;
 use Modules\Eshop360\Console\RecurringInvoiceCommand;
 use Modules\Eshop360\Console\StockAlertCommand;
-use Modules\Eshop360\Console\Commands\CheckLowStock;
-use Modules\Eshop360\Console\Commands\CheckExpiringProducts;
 use Modules\Eshop360\Http\Middleware\EnsurePaidFeature;
 use Modules\Eshop360\Services\AuditService;
 use Modules\Eshop360\Services\CartService;
+use Modules\Eshop360\Services\CashRegisterService;
 use Modules\Eshop360\Services\ChannelAccessService;
 use Modules\Eshop360\Services\ChannelB2BService;
-use Modules\Eshop360\Services\EshopSettingsService;
-use Modules\Eshop360\Services\WebhookService;
-use Modules\Eshop360\Services\CashRegisterService;
 use Modules\Eshop360\Services\ChargesService;
+use Modules\Eshop360\Services\CinetPayService;
 use Modules\Eshop360\Services\CostCalculatorService;
 use Modules\Eshop360\Services\EmailService;
+use Modules\Eshop360\Services\EshopSettingsService;
 use Modules\Eshop360\Services\ExportService;
 use Modules\Eshop360\Services\FinanceService;
 use Modules\Eshop360\Services\HoldingService;
 use Modules\Eshop360\Services\HRService;
-use Modules\Eshop360\Services\CinetPayService;
-use Modules\Eshop360\Services\InetPayService;
 use Modules\Eshop360\Services\ImportService;
+use Modules\Eshop360\Services\InetPayService;
 use Modules\Eshop360\Services\InvoiceService;
 use Modules\Eshop360\Services\MarginService;
 use Modules\Eshop360\Services\OnlineOrderService;
@@ -43,12 +42,13 @@ use Modules\Eshop360\Services\ReportService;
 use Modules\Eshop360\Services\SmsService;
 use Modules\Eshop360\Services\StockService;
 use Modules\Eshop360\Services\SupplierService;
+use Modules\Eshop360\Services\WebhookService;
 
 final class Eshop360ServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__ . '/../Config/config.php', 'eshop360');
+        $this->mergeConfigFrom(__DIR__.'/../Config/config.php', 'eshop360');
 
         // Core services
         $this->app->singleton(\Modules\Eshop360\Services\UserResourceScopeService::class);
@@ -78,17 +78,17 @@ final class Eshop360ServiceProvider extends ServiceProvider
         $this->app->singleton(\Modules\Eshop360\Pricing\Cache\PricingCacheManager::class);
         $this->app->singleton(\Modules\Eshop360\Pricing\Engines\PricingEngine::class);
         $this->app->singleton(\Modules\Eshop360\Pricing\Registry\PricingRuleRegistry::class, function ($app) {
-            $registry = new \Modules\Eshop360\Pricing\Registry\PricingRuleRegistry();
+            $registry = new \Modules\Eshop360\Pricing\Registry\PricingRuleRegistry;
 
             // Register built-in pricing rules
-            $registry->register(new \Modules\Eshop360\Pricing\Rules\Retail\BasePriceRule());
-            $registry->register(new \Modules\Eshop360\Pricing\Rules\Retail\DiscountProductRule());
-            $registry->register(new \Modules\Eshop360\Pricing\Rules\Retail\TaxRule());
-            $registry->register(new \Modules\Eshop360\Pricing\Rules\Retail\MinimumPriceGuard());
-            $registry->register(new \Modules\Eshop360\Pricing\Rules\Channel\ChannelBasePriceRule());
-            $registry->register(new \Modules\Eshop360\Pricing\Rules\Channel\ChannelMarginRule());
-            $registry->register(new \Modules\Eshop360\Pricing\Rules\Wholesale\WholesalePriceRule());
-            $registry->register(new \Modules\Eshop360\Pricing\Rules\Wholesale\PharmacyPriceRule());
+            $registry->register(new \Modules\Eshop360\Pricing\Rules\Retail\BasePriceRule);
+            $registry->register(new \Modules\Eshop360\Pricing\Rules\Retail\DiscountProductRule);
+            $registry->register(new \Modules\Eshop360\Pricing\Rules\Retail\TaxRule);
+            $registry->register(new \Modules\Eshop360\Pricing\Rules\Retail\MinimumPriceGuard);
+            $registry->register(new \Modules\Eshop360\Pricing\Rules\Channel\ChannelBasePriceRule);
+            $registry->register(new \Modules\Eshop360\Pricing\Rules\Channel\ChannelMarginRule);
+            $registry->register(new \Modules\Eshop360\Pricing\Rules\Wholesale\WholesalePriceRule);
+            $registry->register(new \Modules\Eshop360\Pricing\Rules\Wholesale\PharmacyPriceRule);
 
             return $registry;
         });
@@ -110,14 +110,14 @@ final class Eshop360ServiceProvider extends ServiceProvider
             \Modules\Eshop360\Listeners\InvalidateReportCache::class,
         );
 
-        $this->loadRoutesFrom(__DIR__ . '/../Routes/web.php');
-        $this->loadRoutesFrom(__DIR__ . '/../Routes/api.php');
-        $this->loadViewsFrom(__DIR__ . '/../Resources/views', 'eshop360');
-        $this->loadTranslationsFrom(__DIR__ . '/../Resources/lang', 'eshop360');
-        $this->loadJsonTranslationsFrom(__DIR__ . '/../Resources/lang');
+        $this->loadRoutesFrom(__DIR__.'/../Routes/web.php');
+        $this->loadRoutesFrom(__DIR__.'/../Routes/api.php');
+        $this->loadViewsFrom(__DIR__.'/../Resources/views', 'eshop360');
+        $this->loadTranslationsFrom(__DIR__.'/../Resources/lang', 'eshop360');
+        $this->loadJsonTranslationsFrom(__DIR__.'/../Resources/lang');
         // Backward-compatibility: some views still reference the old translation namespace.
-        $this->loadTranslationsFrom(__DIR__ . '/../Resources/lang', 'eshop');
-        $this->loadMigrationsFrom(__DIR__ . '/../Database/Migrations');
+        $this->loadTranslationsFrom(__DIR__.'/../Resources/lang', 'eshop');
+        $this->loadMigrationsFrom(__DIR__.'/../Database/Migrations');
 
         // Middleware alias — 'eshop.feature' is now registered by BillingServiceProvider
         // pointing to Modules\Billing\Http\Middleware\EnsureFeature.
@@ -128,7 +128,7 @@ final class Eshop360ServiceProvider extends ServiceProvider
             ? $router->getMiddleware()
             : [];
 
-        if (!array_key_exists('eshop.feature', $middlewareAliases)) {
+        if (! array_key_exists('eshop.feature', $middlewareAliases)) {
             $router->aliasMiddleware('eshop.feature', EnsurePaidFeature::class);
         }
 
@@ -177,7 +177,7 @@ final class Eshop360ServiceProvider extends ServiceProvider
 
         // Share $instance with all eshop360 views automatically
         View::composer('eshop360::*', function ($view) {
-            if (!$view->offsetExists('instance')) {
+            if (! $view->offsetExists('instance')) {
                 $view->with('instance', CurrentInstance::get());
             }
         });
@@ -185,7 +185,7 @@ final class Eshop360ServiceProvider extends ServiceProvider
         // Share hierarchical menu flag with all layouts that contain a sidebar
         View::composer(['layout.partials.sidebar', 'dashboard::components.layouts.master'], function ($view) {
             $enabled = (bool) config('eshop360.hierarchical_menu');
-            if (!$enabled) {
+            if (! $enabled) {
                 try {
                     $enabled = (bool) app(EshopSettingsService::class)->value('general', 'hierarchical_menu', false);
                 } catch (\Throwable) {

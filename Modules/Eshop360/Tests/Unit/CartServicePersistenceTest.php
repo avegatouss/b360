@@ -19,7 +19,7 @@ final class CartServicePersistenceTest extends TestCase
 
         $this->setUpInstanceWithAdmin();
 
-        $this->cart = new CartService();
+        $this->cart = new CartService;
     }
 
     private function makeProduct(array $overrides = []): Product
@@ -27,8 +27,8 @@ final class CartServicePersistenceTest extends TestCase
         return Product::create(array_merge([
             'instance_id' => CurrentInstance::get()->id,
             'name' => 'Test Product',
-            'slug' => 'test-' . uniqid(),
-            'sku' => 'TST-' . uniqid(),
+            'slug' => 'test-'.uniqid(),
+            'sku' => 'TST-'.uniqid(),
             'price' => 100,
             'cost_price' => 60,
             'tax_rate' => 0,
@@ -175,7 +175,7 @@ final class CartServicePersistenceTest extends TestCase
         $this->actingAs($user);
         $this->cart->addItem($product, 2);
 
-        $key = 'item_' . $product->id;
+        $key = 'item_'.$product->id;
         $this->cart->updateItem($key, 5);
 
         $record = PersistentCart::where('user_id', $user->id)->first();

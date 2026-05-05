@@ -2,7 +2,6 @@
 
 namespace Modules\Eshop360\Tests\Unit;
 
-use Modules\Core\Support\CurrentInstance;
 use Modules\Eshop360\Models\Product;
 use Modules\Eshop360\Models\Stock;
 use Modules\Eshop360\Models\Warehouse;

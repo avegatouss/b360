@@ -6,8 +6,8 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Modules\Core\Support\CurrentInstance;
 use Modules\Eshop360\Models\FneInvoice;
-use Modules\Eshop360\Models\Order;
 use Modules\Eshop360\Models\Invoice;
+use Modules\Eshop360\Models\Order;
 
 class FneService
 {
@@ -19,17 +19,17 @@ class FneService
         $settings = app(EshopSettingsService::class)->get('fne');
 
         return [
-            'enabled'        => (bool) ($settings['enabled'] ?? false),
-            'api_url'        => rtrim($settings['api_url'] ?? 'http://54.247.95.108/ws', '/'),
-            'api_key'        => $settings['api_key'] ?? '',
-            'ncc'            => $settings['ncc'] ?? '',
-            'establishment'  => $settings['establishment'] ?? '',
-            'point_of_sale'  => $settings['point_of_sale'] ?? '',
+            'enabled' => (bool) ($settings['enabled'] ?? false),
+            'api_url' => rtrim($settings['api_url'] ?? 'http://54.247.95.108/ws', '/'),
+            'api_key' => $settings['api_key'] ?? '',
+            'ncc' => $settings['ncc'] ?? '',
+            'establishment' => $settings['establishment'] ?? '',
+            'point_of_sale' => $settings['point_of_sale'] ?? '',
             'default_template' => $settings['default_template'] ?? 'B2C',
-            'default_tax'    => $settings['default_tax'] ?? 'TVA',
+            'default_tax' => $settings['default_tax'] ?? 'TVA',
             'commercial_message' => $settings['commercial_message'] ?? '',
-            'footer'         => $settings['footer'] ?? '',
-            'sandbox'        => (bool) ($settings['sandbox'] ?? true),
+            'footer' => $settings['footer'] ?? '',
+            'sandbox' => (bool) ($settings['sandbox'] ?? true),
         ];
     }
 
@@ -106,49 +106,49 @@ class FneService
 
         foreach ($order->items as $item) {
             $items[] = [
-                'taxes'           => [$settings['default_tax']],
-                'customTaxes'     => [],
-                'reference'       => $item->sku ?? $item->product?->sku ?? '',
-                'description'     => $item->product_name ?? $item->product?->name ?? 'Article',
-                'quantity'        => (int) $item->quantity,
-                'amount'          => round((float) $item->unit_price, 2),
-                'discount'        => round((float) ($item->discount ?? 0), 2),
+                'taxes' => [$settings['default_tax']],
+                'customTaxes' => [],
+                'reference' => $item->sku ?? $item->product?->sku ?? '',
+                'description' => $item->product_name ?? $item->product?->name ?? 'Article',
+                'quantity' => (int) $item->quantity,
+                'amount' => round((float) $item->unit_price, 2),
+                'discount' => round((float) ($item->discount ?? 0), 2),
                 'measurementUnit' => 'pcs',
             ];
         }
 
         $paymentMethodMap = [
-            'cash'          => 'cash',
-            'card'          => 'card',
-            'cheque'        => 'check',
-            'mobile_money'  => 'mobile-money',
+            'cash' => 'cash',
+            'card' => 'card',
+            'cheque' => 'check',
+            'mobile_money' => 'mobile-money',
             'bank_transfer' => 'transfer',
-            'wallet'        => 'mobile-money',
-            'deposit'       => 'deferred',
-            'points'        => 'deferred',
-            'gift_card'     => 'deferred',
-            'external'      => 'transfer',
+            'wallet' => 'mobile-money',
+            'deposit' => 'deferred',
+            'points' => 'deferred',
+            'gift_card' => 'deferred',
+            'external' => 'transfer',
         ];
 
         $payload = [
-            'invoiceType'         => 'sale',
-            'paymentMethod'       => $paymentMethodMap[$order->payment_method] ?? 'cash',
-            'template'            => $template,
-            'isRne'               => false,
-            'rne'                 => '',
-            'clientCompanyName'   => $customer?->name ?? 'Client comptoir',
-            'clientPhone'         => $customer?->phone ?? '0000000000',
-            'clientEmail'         => $customer?->email ?? '',
-            'clientSellerName'    => '',
-            'pointOfSale'         => $settings['point_of_sale'],
-            'establishment'       => $settings['establishment'],
-            'commercialMessage'   => $settings['commercial_message'],
-            'footer'              => $settings['footer'],
-            'foreignCurrency'     => '',
+            'invoiceType' => 'sale',
+            'paymentMethod' => $paymentMethodMap[$order->payment_method] ?? 'cash',
+            'template' => $template,
+            'isRne' => false,
+            'rne' => '',
+            'clientCompanyName' => $customer?->name ?? 'Client comptoir',
+            'clientPhone' => $customer?->phone ?? '0000000000',
+            'clientEmail' => $customer?->email ?? '',
+            'clientSellerName' => '',
+            'pointOfSale' => $settings['point_of_sale'],
+            'establishment' => $settings['establishment'],
+            'commercialMessage' => $settings['commercial_message'],
+            'footer' => $settings['footer'],
+            'foreignCurrency' => '',
             'foreignCurrencyRate' => 0,
-            'items'               => $items,
-            'customTaxes'         => [],
-            'discount'            => round((float) ($order->discount_amount ?? 0), 2),
+            'items' => $items,
+            'customTaxes' => [],
+            'discount' => round((float) ($order->discount_amount ?? 0), 2),
         ];
 
         // B2B requires clientNcc
@@ -177,15 +177,15 @@ class FneService
         }
 
         $fneInvoice = FneInvoice::create([
-            'instance_id'      => $instance->id,
+            'instance_id' => $instance->id,
             'invoiceable_type' => Order::class,
-            'invoiceable_id'   => $order->id,
-            'template'         => $payload['template'],
-            'status'           => 'pending',
-            'amount'           => $order->total,
-            'vat_amount'       => $order->tax_amount ?? 0,
-            'request_payload'  => $payload,
-            'signed_by'        => auth()->id(),
+            'invoiceable_id' => $order->id,
+            'template' => $payload['template'],
+            'status' => 'pending',
+            'amount' => $order->total,
+            'vat_amount' => $order->tax_amount ?? 0,
+            'request_payload' => $payload,
+            'signed_by' => auth()->id(),
         ]);
 
         try {
@@ -206,15 +206,15 @@ class FneService
             $data = $response->json();
 
             $fneInvoice->update([
-                'status'           => 'signed',
-                'fne_reference'    => $data['reference'] ?? null,
-                'fne_id'           => $data['invoice']['id'] ?? null,
-                'fne_token'        => $data['token'] ?? null,
-                'fne_ncc'          => $data['ncc'] ?? null,
-                'amount'           => $data['invoice']['amount'] ?? $order->total,
-                'vat_amount'       => $data['invoice']['vatAmount'] ?? 0,
+                'status' => 'signed',
+                'fne_reference' => $data['reference'] ?? null,
+                'fne_id' => $data['invoice']['id'] ?? null,
+                'fne_token' => $data['token'] ?? null,
+                'fne_ncc' => $data['ncc'] ?? null,
+                'amount' => $data['invoice']['amount'] ?? $order->total,
+                'vat_amount' => $data['invoice']['vatAmount'] ?? 0,
                 'response_payload' => $data,
-                'signed_at'        => now(),
+                'signed_at' => now(),
             ]);
 
             Log::info('FNE invoice signed', [
@@ -227,7 +227,7 @@ class FneService
         } catch (\Illuminate\Http\Client\ConnectionException $e) {
             $fneInvoice->update([
                 'status' => 'failed',
-                'error_message' => 'Connection timeout: ' . $e->getMessage(),
+                'error_message' => 'Connection timeout: '.$e->getMessage(),
             ]);
             throw new \RuntimeException(__('Impossible de joindre le serveur FNE. Verifiez votre connexion.'));
         }

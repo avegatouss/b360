@@ -219,7 +219,7 @@ final class CheckoutControllerTest extends TestCase
                 'eshop_cart_context' => [
                     'channel_id' => $channel->id,
                 ],
-                'eshop_cart_instance_' . $instance->id => [
+                'eshop_cart_instance_'.$instance->id => [
                     (string) $product->id => [
                         'product_id' => $product->id,
                         'name' => $product->name,
@@ -232,7 +232,7 @@ final class CheckoutControllerTest extends TestCase
                         'channel_id' => $channel->id,
                     ],
                 ],
-                'eshop_cart_context_instance_' . $instance->id => [
+                'eshop_cart_context_instance_'.$instance->id => [
                     'channel_id' => $channel->id,
                 ],
             ])

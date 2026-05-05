@@ -2,10 +2,10 @@
 
 namespace Modules\Eshop360\Services;
 
-use Modules\Eshop360\Models\CompanyCharge;
-use Modules\Eshop360\Models\ChargeLog;
-use Modules\Eshop360\Support\CurrentChannel;
 use Carbon\Carbon;
+use Modules\Eshop360\Models\ChargeLog;
+use Modules\Eshop360\Models\CompanyCharge;
+use Modules\Eshop360\Support\CurrentChannel;
 
 class ChargesService
 {
@@ -31,6 +31,7 @@ class ChargesService
         $startOfMonth = Carbon::now()->startOfMonth();
         $secondsElapsed = Carbon::now()->diffInSeconds($startOfMonth);
         $costPerSecond = $this->getTotalCostPerSecond($instanceId);
+
         return round($costPerSecond * $secondsElapsed, 2);
     }
 

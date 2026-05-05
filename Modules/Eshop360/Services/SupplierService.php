@@ -2,9 +2,9 @@
 
 namespace Modules\Eshop360\Services;
 
-use Modules\Eshop360\Models\Supplier;
-use Modules\Eshop360\Models\PurchaseOrder;
 use Illuminate\Support\Facades\DB;
+use Modules\Eshop360\Models\PurchaseOrder;
+use Modules\Eshop360\Models\Supplier;
 
 class SupplierService
 {
@@ -26,8 +26,12 @@ class SupplierService
         $query = PurchaseOrder::where('supplier_id', $supplier->id)
             ->where('status', '!=', 'cancelled');
 
-        if ($from) $query->where('created_at', '>=', $from);
-        if ($to) $query->where('created_at', '<=', $to);
+        if ($from) {
+            $query->where('created_at', '>=', $from);
+        }
+        if ($to) {
+            $query->where('created_at', '<=', $to);
+        }
 
         $orders = $query->latest()->get();
 
@@ -60,7 +64,7 @@ class SupplierService
                 'instance_id' => $order->instance_id,
                 'amount' => $amount,
                 'method' => $method,
-                'reference' => $reference ?: 'PO-PAY-' . $order->id . '-' . now()->format('YmdHis'),
+                'reference' => $reference ?: 'PO-PAY-'.$order->id.'-'.now()->format('YmdHis'),
                 'status' => 'completed',
                 'received_by' => auth()->id(),
             ]);

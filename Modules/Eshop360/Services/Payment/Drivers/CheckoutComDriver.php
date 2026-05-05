@@ -16,7 +16,7 @@ final class CheckoutComDriver implements PaymentGatewayInterface
     {
         try {
             $response = Http::timeout(30)->withToken($this->config['secret_key'] ?? '')
-                ->post(self::BASE . '/hosted-payments', [
+                ->post(self::BASE.'/hosted-payments', [
                     'amount' => (int) ($amount * 100),
                     'currency' => $currency,
                     'reference' => $meta['reference'] ?? uniqid('CKO-'),
@@ -42,7 +42,7 @@ final class CheckoutComDriver implements PaymentGatewayInterface
     {
         try {
             $response = Http::timeout(15)->withToken($this->config['secret_key'] ?? '')
-                ->get(self::BASE . "/payments/{$transactionId}");
+                ->get(self::BASE."/payments/{$transactionId}");
             $data = $response->json();
             $status = match ($data['status'] ?? '') {
                 'Captured', 'Paid' => 'completed', 'Declined' => 'failed', default => 'pending',
@@ -58,7 +58,7 @@ final class CheckoutComDriver implements PaymentGatewayInterface
     {
         try {
             $response = Http::timeout(15)->withToken($this->config['secret_key'] ?? '')
-                ->post(self::BASE . "/payments/{$transactionId}/refunds", ['amount' => (int) ($amount * 100)]);
+                ->post(self::BASE."/payments/{$transactionId}/refunds", ['amount' => (int) ($amount * 100)]);
             $data = $response->json();
 
             return $response->successful()

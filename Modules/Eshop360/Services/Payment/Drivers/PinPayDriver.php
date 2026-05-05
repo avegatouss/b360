@@ -20,7 +20,7 @@ final class PinPayDriver implements PaymentGatewayInterface
     {
         try {
             $response = Http::timeout(30)->withBasicAuth($this->config['secret_key'] ?? '', '')
-                ->post($this->baseUrl() . '/charges', [
+                ->post($this->baseUrl().'/charges', [
                     'amount' => (int) ($amount * 100),
                     'currency' => $currency ?: 'AUD',
                     'description' => $meta['description'] ?? 'Payment',
@@ -46,7 +46,7 @@ final class PinPayDriver implements PaymentGatewayInterface
     {
         try {
             $response = Http::timeout(15)->withBasicAuth($this->config['secret_key'] ?? '', '')
-                ->get($this->baseUrl() . "/charges/{$transactionId}");
+                ->get($this->baseUrl()."/charges/{$transactionId}");
             $data = $response->json('response') ?? [];
             $status = ($data['success'] ?? false) ? 'completed' : 'failed';
 
@@ -60,7 +60,7 @@ final class PinPayDriver implements PaymentGatewayInterface
     {
         try {
             $response = Http::timeout(15)->withBasicAuth($this->config['secret_key'] ?? '', '')
-                ->post($this->baseUrl() . "/charges/{$transactionId}/refunds", ['amount' => (int) ($amount * 100)]);
+                ->post($this->baseUrl()."/charges/{$transactionId}/refunds", ['amount' => (int) ($amount * 100)]);
 
             $data = $response->json('response') ?? [];
 

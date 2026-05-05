@@ -19,6 +19,7 @@ final class CurrentChannel
     private static function sessionKey(): string
     {
         $instanceId = CurrentInstance::get()?->id ?? 0;
+
         return "eshop_current_channel_{$instanceId}";
     }
 
@@ -50,12 +51,12 @@ final class CurrentChannel
         }
 
         $channelId = session(self::sessionKey());
-        if (!$channelId) {
+        if (! $channelId) {
             return null;
         }
 
         $instance = CurrentInstance::get();
-        if (!$instance) {
+        if (! $instance) {
             return null;
         }
 
@@ -65,21 +66,24 @@ final class CurrentChannel
             ->where('is_active', true)
             ->first();
 
-        if (!$channel) {
+        if (! $channel) {
             session()->forget(self::sessionKey());
+
             return null;
         }
 
         // Verify the authenticated user can actually access this channel
         if (auth()->check()) {
             $access = app(\Modules\Eshop360\Services\ChannelAccessService::class);
-            if (!$access->canAccessChannel(auth()->user(), $channel)) {
+            if (! $access->canAccessChannel(auth()->user(), $channel)) {
                 session()->forget(self::sessionKey());
+
                 return null;
             }
         }
 
         self::$resolved = $channel;
+
         return self::$resolved;
     }
 
@@ -97,9 +101,10 @@ final class CurrentChannel
     public static function isHub(): bool
     {
         $channel = self::get();
-        if (!$channel) {
+        if (! $channel) {
             return true; // No channel selected = hub mode
         }
+
         return (bool) $channel->is_hub;
     }
 
@@ -108,7 +113,7 @@ final class CurrentChannel
      */
     public static function isScoped(): bool
     {
-        return self::get() !== null && !self::isHub();
+        return self::get() !== null && ! self::isHub();
     }
 
     /**

@@ -2,22 +2,22 @@
 
 namespace Modules\Eshop360\Tests\Feature;
 
-use Illuminate\Support\Facades\DB;
 use Modules\Core\Support\CurrentInstance;
 use Modules\Core\Support\TeamContext;
 use Modules\Eshop360\Models\Product;
 use Modules\Eshop360\Models\Stock;
-use Modules\Eshop360\Models\StockMovement;
 use Modules\Eshop360\Models\Warehouse;
 use Modules\Eshop360\Tests\TestCase;
 use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
 
 final class StockControllerTest extends TestCase
 {
     private $instance;
+
     private $user;
+
     private Warehouse $warehouse;
+
     private Product $product;
 
     protected function setUp(): void
@@ -89,7 +89,7 @@ final class StockControllerTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->user)
-            ->get(route('eshop360.stocks.index', $this->instance->slug) . '?warehouse_id=' . $this->warehouse->id);
+            ->get(route('eshop360.stocks.index', $this->instance->slug).'?warehouse_id='.$this->warehouse->id);
 
         $response->assertOk();
     }
@@ -195,7 +195,7 @@ final class StockControllerTest extends TestCase
         $this->product->update(['expiry_date' => now()->addDays(15)]);
 
         $response = $this->actingAs($this->user)
-            ->get(route('eshop360.stocks.expiry-report', $this->instance->slug) . '?days=30');
+            ->get(route('eshop360.stocks.expiry-report', $this->instance->slug).'?days=30');
 
         $response->assertOk();
     }

@@ -132,7 +132,7 @@ final class ProductCrudTest extends TestCase
         $this->makeProduct($instance->id, ['name' => 'Amoxicilline 250mg', 'slug' => 'amoxicilline', 'sku' => 'AMOX-250']);
 
         $response = $this->actingAs($user)
-            ->get(route('eshop360.products.search', $instance->slug) . '?q=Paracetamol');
+            ->get(route('eshop360.products.search', $instance->slug).'?q=Paracetamol');
 
         $response->assertOk();
     }

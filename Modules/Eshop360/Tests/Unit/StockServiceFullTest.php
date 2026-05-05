@@ -3,7 +3,6 @@
 namespace Modules\Eshop360\Tests\Unit;
 
 use InvalidArgumentException;
-use Modules\Core\Support\CurrentInstance;
 use Modules\Eshop360\Models\Product;
 use Modules\Eshop360\Models\Stock;
 use Modules\Eshop360\Models\StockMovement;
@@ -14,8 +13,11 @@ use Modules\Eshop360\Tests\TestCase;
 final class StockServiceFullTest extends TestCase
 {
     private StockService $service;
+
     private $instance;
+
     private Warehouse $warehouse;
+
     private Product $product;
 
     protected function setUp(): void

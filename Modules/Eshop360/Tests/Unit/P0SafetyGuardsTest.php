@@ -2,8 +2,6 @@
 
 namespace Modules\Eshop360\Tests\Unit;
 
-use Illuminate\Support\Facades\DB;
-use Modules\Core\Support\CurrentInstance;
 use Modules\Eshop360\Models\Customer;
 use Modules\Eshop360\Models\CustomerDue;
 use Modules\Eshop360\Models\Employee;
@@ -25,7 +23,7 @@ final class P0SafetyGuardsTest extends TestCase
     // Wallet locking
     // ──────────────────────────────────────────
 
-    public function test_creditWallet_locks_customer_row_before_increment(): void
+    public function test_credit_wallet_locks_customer_row_before_increment(): void
     {
         [$instance] = $this->setUpInstanceWithAdmin();
 
@@ -44,7 +42,7 @@ final class P0SafetyGuardsTest extends TestCase
         $this->assertEquals(5000, (float) $customer->wallet_balance);
     }
 
-    public function test_creditWallet_auto_pays_pending_dues_without_double_payment(): void
+    public function test_credit_wallet_auto_pays_pending_dues_without_double_payment(): void
     {
         [$instance] = $this->setUpInstanceWithAdmin();
 
@@ -76,7 +74,7 @@ final class P0SafetyGuardsTest extends TestCase
         $this->assertEquals(2000, (float) $customer->wallet_balance);
     }
 
-    public function test_debitWallet_locks_customer_row(): void
+    public function test_debit_wallet_locks_customer_row(): void
     {
         [$instance] = $this->setUpInstanceWithAdmin();
 

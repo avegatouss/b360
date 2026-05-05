@@ -3,7 +3,6 @@
 namespace Modules\Eshop360\Tests\Unit;
 
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Models\ChannelMarginLog;
 use Modules\Eshop360\Models\DistributionChannel;
 use Modules\Eshop360\Models\Order;
 use Modules\Eshop360\Models\OrderItem;
@@ -57,7 +56,7 @@ final class MarginServiceTest extends TestCase
     {
         $order = Order::create([
             'instance_id' => $instanceId,
-            'order_number' => 'ORD-' . uniqid(),
+            'order_number' => 'ORD-'.uniqid(),
             'status' => 'completed',
             'channel_id' => $channelId,
             'subtotal' => 0,
@@ -103,7 +102,7 @@ final class MarginServiceTest extends TestCase
             ['product_id' => $product->id, 'name' => $product->name, 'quantity' => 2, 'unit_price' => 150],
         ]);
 
-        $service = new MarginService();
+        $service = new MarginService;
         $log = $service->calculateTripartiteMargin($order, $channel);
 
         $this->assertNotNull($log);
@@ -130,7 +129,7 @@ final class MarginServiceTest extends TestCase
             ['product_id' => $product->id, 'name' => $product->name, 'quantity' => 5, 'unit_price' => 100],
         ]);
 
-        $service = new MarginService();
+        $service = new MarginService;
         $log = $service->calculateTripartiteMargin($order, $channel);
 
         $this->assertNotNull($log);
@@ -156,7 +155,7 @@ final class MarginServiceTest extends TestCase
             ['product_id' => $product->id, 'name' => $product->name, 'quantity' => 1, 'unit_price' => 200],
         ]);
 
-        $service = new MarginService();
+        $service = new MarginService;
         $service->syncOrderMargins($order);
 
         $this->assertDatabaseHas('eshop_channel_margin_logs', [
@@ -179,7 +178,7 @@ final class MarginServiceTest extends TestCase
             ['product_id' => $product->id, 'name' => $product->name, 'quantity' => 3, 'unit_price' => 150],
         ]);
 
-        $service = new MarginService();
+        $service = new MarginService;
         $service->syncOrderMargins($order);
 
         $this->assertDatabaseMissing('eshop_channel_margin_logs', [

@@ -19,13 +19,14 @@ class GenericWebhookDriver implements SmsDriverInterface
 
         if (empty($url)) {
             Log::error('GenericWebhook SMS: no URL configured');
+
             return false;
         }
 
         // Parse headers JSON
         $headers = [];
         $headersRaw = $this->config['headers'] ?? '';
-        if (!empty($headersRaw)) {
+        if (! empty($headersRaw)) {
             if (is_string($headersRaw)) {
                 $headers = json_decode($headersRaw, true) ?? [];
             } elseif (is_array($headersRaw)) {
@@ -36,7 +37,7 @@ class GenericWebhookDriver implements SmsDriverInterface
         // Parse extra params JSON
         $extraParams = [];
         $extraRaw = $this->config['extra_params'] ?? '';
-        if (!empty($extraRaw)) {
+        if (! empty($extraRaw)) {
             if (is_string($extraRaw)) {
                 $extraParams = json_decode($extraRaw, true) ?? [];
             } elseif (is_array($extraRaw)) {
@@ -69,6 +70,7 @@ class GenericWebhookDriver implements SmsDriverInterface
             return false;
         } catch (\Throwable $e) {
             Log::error('GenericWebhook SMS exception', ['error' => $e->getMessage()]);
+
             return false;
         }
     }

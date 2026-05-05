@@ -84,7 +84,7 @@ final class PaymentGatewayTest extends TestCase
 
         $this->actingAs($user);
 
-        $invoiceService = new InvoiceService();
+        $invoiceService = new InvoiceService;
         $invoice = $invoiceService->createFromItems([
             [
                 'description' => 'Service consultation',
@@ -111,7 +111,7 @@ final class PaymentGatewayTest extends TestCase
 
         $this->actingAs($user);
 
-        $invoiceService = new InvoiceService();
+        $invoiceService = new InvoiceService;
         $invoice = $invoiceService->createFromItems([
             [
                 'description' => 'Monthly subscription',

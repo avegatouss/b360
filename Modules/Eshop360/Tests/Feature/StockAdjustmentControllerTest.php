@@ -14,8 +14,11 @@ use Spatie\Permission\Models\Permission;
 final class StockAdjustmentControllerTest extends TestCase
 {
     private $instance;
+
     private $user;
+
     private Warehouse $warehouse;
+
     private Product $product;
 
     protected function setUp(): void

@@ -16,7 +16,7 @@ final class SmsService
 
     public function __construct()
     {
-        $this->manager = new SmsManager();
+        $this->manager = new SmsManager;
     }
 
     /**
@@ -27,10 +27,11 @@ final class SmsService
         // If a specific gatewayId is provided, resolve the gateway and use its driver
         if ($gatewayId) {
             $gateway = \Modules\Eshop360\Models\SmsGateway::find($gatewayId);
-            if (!$gateway) {
+            if (! $gateway) {
                 return false;
             }
             $driver = $this->manager->driverFromGateway($gateway);
+
             return $driver->send($to, $message);
         }
 
@@ -46,6 +47,7 @@ final class SmsService
         foreach ($recipients as $to) {
             $results[$to] = $this->send($to, $message, $gatewayId);
         }
+
         return $results;
     }
 }

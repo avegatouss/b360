@@ -45,33 +45,33 @@ final class EscposPrinter
 
             $storeName = $config['store_name'] ?? $order->store?->name ?? 'Store';
             $printer->setTextSize(2, 2);
-            $printer->text($storeName . "\n");
+            $printer->text($storeName."\n");
             $printer->setTextSize(1, 1);
 
             if ($template?->show_address && ! empty($config['address'])) {
-                $printer->text($config['address'] . "\n");
+                $printer->text($config['address']."\n");
             }
             if ($template?->show_phone && ! empty($config['phone'])) {
-                $printer->text("Tel: " . $config['phone'] . "\n");
+                $printer->text('Tel: '.$config['phone']."\n");
             }
 
             if ($template?->header_text) {
-                $printer->text($template->header_text . "\n");
+                $printer->text($template->header_text."\n");
             }
 
             $printer->feed();
-            $printer->text(str_repeat('-', $this->lineWidth($config)) . "\n");
+            $printer->text(str_repeat('-', $this->lineWidth($config))."\n");
 
             // --- Receipt info ---
             $printer->setJustification(\Mike42\Escpos\Printer::JUSTIFY_LEFT);
-            $printer->text("Ref: " . ($order->reference ?? '') . "\n");
-            $printer->text("Date: " . ($order->created_at?->format('d/m/Y H:i') ?? '') . "\n");
+            $printer->text('Ref: '.($order->reference ?? '')."\n");
+            $printer->text('Date: '.($order->created_at?->format('d/m/Y H:i') ?? '')."\n");
 
             if ($order->customer) {
-                $printer->text("Client: " . $order->customer->name . "\n");
+                $printer->text('Client: '.$order->customer->name."\n");
             }
 
-            $printer->text(str_repeat('-', $this->lineWidth($config)) . "\n");
+            $printer->text(str_repeat('-', $this->lineWidth($config))."\n");
 
             // --- Items ---
             $lineW = $this->lineWidth($config);
@@ -83,10 +83,10 @@ final class EscposPrinter
                 $name = mb_substr($item->product?->name ?? $item->description ?? '-', 0, $nameW);
                 $qty = str_pad((string) $item->quantity, $qtyW, ' ', STR_PAD_LEFT);
                 $total = str_pad(number_format($item->total, 0, ',', ' '), $priceW, ' ', STR_PAD_LEFT);
-                $printer->text(str_pad($name, $nameW) . $qty . $total . "\n");
+                $printer->text(str_pad($name, $nameW).$qty.$total."\n");
             }
 
-            $printer->text(str_repeat('-', $lineW) . "\n");
+            $printer->text(str_repeat('-', $lineW)."\n");
 
             // --- Totals ---
             $this->printLine($printer, 'Sous-total', number_format($order->subtotal, 0, ',', ' '), $lineW);
@@ -95,13 +95,13 @@ final class EscposPrinter
                 $this->printLine($printer, 'TVA', number_format($order->tax_amount, 0, ',', ' '), $lineW);
             }
             if (($order->discount_amount ?? 0) > 0) {
-                $this->printLine($printer, 'Remise', '-' . number_format($order->discount_amount, 0, ',', ' '), $lineW);
+                $this->printLine($printer, 'Remise', '-'.number_format($order->discount_amount, 0, ',', ' '), $lineW);
             }
 
-            $printer->text(str_repeat('=', $lineW) . "\n");
+            $printer->text(str_repeat('=', $lineW)."\n");
             $printer->setEmphasis(true);
             $currency = $config['currency'] ?? 'FCFA';
-            $this->printLine($printer, 'TOTAL', number_format($order->total, 0, ',', ' ') . ' ' . $currency, $lineW);
+            $this->printLine($printer, 'TOTAL', number_format($order->total, 0, ',', ' ').' '.$currency, $lineW);
             $printer->setEmphasis(false);
 
             if (($order->paid_amount ?? 0) > 0) {
@@ -111,19 +111,19 @@ final class EscposPrinter
                 }
             }
 
-            $printer->text("Mode: " . ucfirst($order->payment_method ?? 'Especes') . "\n");
+            $printer->text('Mode: '.ucfirst($order->payment_method ?? 'Especes')."\n");
 
             // --- Footer ---
             $printer->feed();
             $printer->setJustification(\Mike42\Escpos\Printer::JUSTIFY_CENTER);
 
             if ($template?->footer_text) {
-                $printer->text($template->footer_text . "\n");
+                $printer->text($template->footer_text."\n");
             } else {
                 $printer->text("Merci de votre visite !\n");
             }
 
-            $printer->text(now()->format('d/m/Y H:i:s') . "\n");
+            $printer->text(now()->format('d/m/Y H:i:s')."\n");
 
             $printer->feed(3);
             $printer->cut();
@@ -187,6 +187,7 @@ final class EscposPrinter
 
         try {
             $printer->pulse();
+
             return true;
         } finally {
             $printer->close();
@@ -211,6 +212,7 @@ final class EscposPrinter
             $printer->feed(2);
             $printer->cut();
             $printer->close();
+
             return true;
         } catch (\Exception) {
             return false;
@@ -254,6 +256,7 @@ final class EscposPrinter
     private function lineWidth(array $config): int
     {
         $paperWidth = $config['paper_width'] ?? '80mm';
+
         return $paperWidth === '58mm' ? 32 : 48;
     }
 
@@ -263,6 +266,6 @@ final class EscposPrinter
     private function printLine(\Mike42\Escpos\Printer $printer, string $label, string $value, int $width): void
     {
         $padding = $width - mb_strlen($label) - mb_strlen($value);
-        $printer->text($label . str_repeat(' ', max(1, $padding)) . $value . "\n");
+        $printer->text($label.str_repeat(' ', max(1, $padding)).$value."\n");
     }
 }

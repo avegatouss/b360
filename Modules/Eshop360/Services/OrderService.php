@@ -141,7 +141,7 @@ class OrderService
                         $orderData['warehouse_id'] ?? null,
                         $item['quantity'],
                         'out',
-                        'Order #' . $order->order_number,
+                        'Order #'.$order->order_number,
                         auth()->id(),
                         Order::class,
                         $order->id,
@@ -202,10 +202,10 @@ class OrderService
 
         $payment = $order->payments()->create([
             'instance_id' => $instance?->id,
-            'amount'      => $amount,
-            'method'      => $method,
-            'reference'   => Str::upper(Str::random(12)),
-            'status'      => 'completed',
+            'amount' => $amount,
+            'method' => $method,
+            'reference' => Str::upper(Str::random(12)),
+            'status' => 'completed',
             'received_by' => auth()->id(),
         ]);
 
@@ -242,7 +242,7 @@ class OrderService
             'instance_id' => $order->instance_id ?? $instance?->id,
             'amount' => $delta,
             'method' => $method ?? $order->payment_method ?? 'cash',
-            'reference' => $referencePrefix . '-' . $order->id . '-' . ($order->payments()->count() + 1),
+            'reference' => $referencePrefix.'-'.$order->id.'-'.($order->payments()->count() + 1),
             'status' => 'completed',
             'notes' => $notes ?? 'Payment adjustment',
             'received_by' => auth()->id(),
@@ -265,8 +265,8 @@ class OrderService
         $dueAmount = (float) $order->total - $paidAmount;
 
         $order->update([
-            'paid_amount'    => round($paidAmount, 2),
-            'due_amount'     => round(max(0, $dueAmount), 2),
+            'paid_amount' => round($paidAmount, 2),
+            'due_amount' => round(max(0, $dueAmount), 2),
             'payment_status' => $this->resolvePaymentStatus($paidAmount, (float) $order->total),
         ]);
     }
@@ -305,8 +305,7 @@ class OrderService
         array $item,
         ProductPricingService $pricingService,
         ?int $channelId = null,
-    ): array
-    {
+    ): array {
         $product = Product::findOrFail($item['product_id']);
         $variationId = $item['variation_id'] ?? null;
         $variation = $variationId ? ProductVariation::find($variationId) : null;
@@ -437,7 +436,7 @@ class OrderService
      */
     private function snapshotCurrencyIfEnabled(Order $order): void
     {
-        if (!app()->bound(\Modules\Currency\Services\SnapshotService::class)) {
+        if (! app()->bound(\Modules\Currency\Services\SnapshotService::class)) {
             return;
         }
 

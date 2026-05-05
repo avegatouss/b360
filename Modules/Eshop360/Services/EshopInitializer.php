@@ -60,7 +60,7 @@ final class EshopInitializer
         $warehouse = Warehouse::withoutGlobalScopes()->create([
             'instance_id' => $instanceId,
             'name' => "Entrepot {$hubData['name']}",
-            'code' => 'WH-' . strtoupper(Str::slug($hubData['code'], '-')),
+            'code' => 'WH-'.strtoupper(Str::slug($hubData['code'], '-')),
             'is_active' => true,
         ]);
         $hub->update(['warehouse_id' => $warehouse->id]);
@@ -100,12 +100,12 @@ final class EshopInitializer
             $warehouse = Warehouse::withoutGlobalScopes()->create([
                 'instance_id' => $instanceId,
                 'name' => "Depot {$channelData['name']}",
-                'code' => 'WH-' . strtoupper(Str::slug($channelData['code'] ?? $channelData['name'], '-')),
+                'code' => 'WH-'.strtoupper(Str::slug($channelData['code'] ?? $channelData['name'], '-')),
                 'is_active' => true,
             ]);
             $channel->update(['warehouse_id' => $warehouse->id]);
 
-            if (!empty($channelData['features'])) {
+            if (! empty($channelData['features'])) {
                 $this->settings->setChannelFeatures($channelData['features'], $channel->id, $instanceId);
             }
         }
@@ -117,7 +117,7 @@ final class EshopInitializer
             'company_name', 'company_address', 'company_phone', 'company_email',
             'tax_number', 'currency_symbol',
         ]));
-        if (!empty($invoiceData)) {
+        if (! empty($invoiceData)) {
             $invoiceDefaults = $this->settings->defaults('invoice');
             $this->settings->set('invoice', array_merge($invoiceDefaults, $invoiceData), $instanceId);
         }
@@ -129,7 +129,7 @@ final class EshopInitializer
         if (isset($baseSettings['payment_methods'])) {
             $posData['payment_methods'] = $baseSettings['payment_methods'];
         }
-        if (!empty($posData)) {
+        if (! empty($posData)) {
             $posDefaults = $this->settings->defaults('pos');
             $this->settings->set('pos', array_merge($posDefaults, $posData), $instanceId);
         }
@@ -138,7 +138,7 @@ final class EshopInitializer
             'company_name', 'company_address', 'company_phone', 'company_email',
             'tax_number', 'currency_symbol',
         ]));
-        if (!empty($brandingData)) {
+        if (! empty($brandingData)) {
             $this->settings->setForChannel('channel_branding', $brandingData, $hub->id, $instanceId);
         }
     }

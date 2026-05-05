@@ -17,7 +17,7 @@ final class SecurePayDriver implements PaymentGatewayInterface
         try {
             $response = Http::timeout(30)
                 ->withBasicAuth($this->config['merchant_id'] ?? '', $this->config['password'] ?? '')
-                ->post(self::BASE . '/orders', [
+                ->post(self::BASE.'/orders', [
                     'amount' => (int) ($amount * 100),
                     'currency' => $currency ?: 'AUD',
                     'merchantOrderId' => $meta['reference'] ?? uniqid('SP-'),
@@ -44,7 +44,7 @@ final class SecurePayDriver implements PaymentGatewayInterface
         try {
             $response = Http::timeout(15)
                 ->withBasicAuth($this->config['merchant_id'] ?? '', $this->config['password'] ?? '')
-                ->get(self::BASE . "/orders/{$transactionId}");
+                ->get(self::BASE."/orders/{$transactionId}");
             $data = $response->json();
             $status = match ($data['status'] ?? '') {
                 'PAID', 'CAPTURED' => 'completed', 'FAILED' => 'failed', default => 'pending',
@@ -61,7 +61,7 @@ final class SecurePayDriver implements PaymentGatewayInterface
         try {
             $response = Http::timeout(15)
                 ->withBasicAuth($this->config['merchant_id'] ?? '', $this->config['password'] ?? '')
-                ->post(self::BASE . "/orders/{$transactionId}/refunds", ['amount' => (int) ($amount * 100)]);
+                ->post(self::BASE."/orders/{$transactionId}/refunds", ['amount' => (int) ($amount * 100)]);
 
             return $response->successful()
                 ? ['success' => true, 'refund_id' => $response->json('refundId')]

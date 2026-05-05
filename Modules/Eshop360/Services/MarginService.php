@@ -64,9 +64,15 @@ class MarginService
     {
         $query = ChannelMarginLog::where('instance_id', $instanceId);
 
-        if ($channelId) $query->where('channel_id', $channelId);
-        if ($from) $query->where('created_at', '>=', $from);
-        if ($to) $query->where('created_at', '<=', $to);
+        if ($channelId) {
+            $query->where('channel_id', $channelId);
+        }
+        if ($from) {
+            $query->where('created_at', '>=', $from);
+        }
+        if ($to) {
+            $query->where('created_at', '<=', $to);
+        }
 
         return [
             'total_margin' => $query->sum('total_margin'),

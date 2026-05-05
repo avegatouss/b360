@@ -62,16 +62,18 @@ final class PdfService
         if (class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHTML($html)
                 ->setPaper('a4', 'portrait');
-            $path = storage_path('app/pdf/invoices/' . $invoice->reference . '.pdf');
+            $path = storage_path('app/pdf/invoices/'.$invoice->reference.'.pdf');
             $this->ensureDirectory(dirname($path));
             file_put_contents($path, $pdf->output());
+
             return $path;
         }
 
         // Fallback: save HTML
-        $path = storage_path('app/pdf/invoices/' . $invoice->reference . '.html');
+        $path = storage_path('app/pdf/invoices/'.$invoice->reference.'.html');
         $this->ensureDirectory(dirname($path));
         file_put_contents($path, $html);
+
         return $path;
     }
 
@@ -106,15 +108,17 @@ final class PdfService
 
         if (class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHTML($html)->setPaper('a4', 'portrait');
-            $path = storage_path('app/pdf/quotations/' . $quotation->reference . '.pdf');
+            $path = storage_path('app/pdf/quotations/'.$quotation->reference.'.pdf');
             $this->ensureDirectory(dirname($path));
             file_put_contents($path, $pdf->output());
+
             return $path;
         }
 
-        $path = storage_path('app/pdf/quotations/' . $quotation->reference . '.html');
+        $path = storage_path('app/pdf/quotations/'.$quotation->reference.'.html');
         $this->ensureDirectory(dirname($path));
         file_put_contents($path, $html);
+
         return $path;
     }
 
@@ -138,15 +142,17 @@ final class PdfService
 
         if (class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHTML($html)->setPaper('a4', 'portrait');
-            $path = storage_path('app/pdf/delivery-notes/BL-' . ($order->reference ?? $order->id) . '.pdf');
+            $path = storage_path('app/pdf/delivery-notes/BL-'.($order->reference ?? $order->id).'.pdf');
             $this->ensureDirectory(dirname($path));
             file_put_contents($path, $pdf->output());
+
             return $path;
         }
 
-        $path = storage_path('app/pdf/delivery-notes/BL-' . ($order->reference ?? $order->id) . '.html');
+        $path = storage_path('app/pdf/delivery-notes/BL-'.($order->reference ?? $order->id).'.html');
         $this->ensureDirectory(dirname($path));
         file_put_contents($path, $html);
+
         return $path;
     }
 
@@ -170,15 +176,17 @@ final class PdfService
 
         if (class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHTML($html)->setPaper('a4', 'portrait');
-            $path = storage_path('app/pdf/credit-notes/AV-' . str_pad($return->id, 6, '0', STR_PAD_LEFT) . '.pdf');
+            $path = storage_path('app/pdf/credit-notes/AV-'.str_pad($return->id, 6, '0', STR_PAD_LEFT).'.pdf');
             $this->ensureDirectory(dirname($path));
             file_put_contents($path, $pdf->output());
+
             return $path;
         }
 
-        $path = storage_path('app/pdf/credit-notes/AV-' . str_pad($return->id, 6, '0', STR_PAD_LEFT) . '.html');
+        $path = storage_path('app/pdf/credit-notes/AV-'.str_pad($return->id, 6, '0', STR_PAD_LEFT).'.html');
         $this->ensureDirectory(dirname($path));
         file_put_contents($path, $html);
+
         return $path;
     }
 
@@ -186,8 +194,8 @@ final class PdfService
      * Generate a barcode sheet PDF for batch printing.
      *
      * @param  array  $products  Array of Product models or product IDs
-     * @param  array  $options   Keys: per_row (2|3|4), size (small|medium|large),
-     *                           show_name, show_price, show_sku, format (Code128|EAN13|Code39), quantity
+     * @param  array  $options  Keys: per_row (2|3|4), size (small|medium|large),
+     *                          show_name, show_price, show_sku, format (Code128|EAN13|Code39), quantity
      */
     public function generateBarcodeSheet(array $products, array $options = []): string
     {
@@ -217,15 +225,17 @@ final class PdfService
 
         if (class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHTML($html)->setPaper('a4', 'portrait');
-            $path = storage_path('app/pdf/barcodes/batch-' . now()->format('Ymd-His') . '.pdf');
+            $path = storage_path('app/pdf/barcodes/batch-'.now()->format('Ymd-His').'.pdf');
             $this->ensureDirectory(dirname($path));
             file_put_contents($path, $pdf->output());
+
             return $path;
         }
 
-        $path = storage_path('app/pdf/barcodes/batch-' . now()->format('Ymd-His') . '.html');
+        $path = storage_path('app/pdf/barcodes/batch-'.now()->format('Ymd-His').'.html');
         $this->ensureDirectory(dirname($path));
         file_put_contents($path, $html);
+
         return $path;
     }
 
@@ -265,6 +275,7 @@ final class PdfService
     {
         if (class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHTML($html);
+
             return $pdf->download($filename);
         }
 
@@ -280,6 +291,7 @@ final class PdfService
     {
         if (class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHTML($html);
+
             return $pdf->stream($filename);
         }
 
@@ -365,7 +377,7 @@ final class PdfService
         return [
             'currency' => $s['currency'] ?? 'FCFA',
             'primary_color' => $s['primary_color'] ?? '#2563eb',
-            'logo_url' => ! empty($s['logo']) ? asset('storage/' . $s['logo']) : null,
+            'logo_url' => ! empty($s['logo']) ? asset('storage/'.$s['logo']) : null,
             'invoice_terms' => $s['invoice_terms'] ?? '',
             'quotation_terms' => $s['quotation_terms'] ?? '',
         ];

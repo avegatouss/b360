@@ -37,6 +37,7 @@ class TwilioDriver implements SmsDriverInterface
             return false;
         } catch (\Throwable $e) {
             Log::error('Twilio SMS exception', ['error' => $e->getMessage()]);
+
             return false;
         }
     }

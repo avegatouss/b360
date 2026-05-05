@@ -39,7 +39,7 @@ final class ExportService
     {
         return $this->download($products, [
             'ID', 'SKU', 'Nom', 'Categorie', 'Marque', 'Prix usine', 'PGHT', 'Prix vente', 'Stock', 'Statut',
-        ], 'produits_' . now()->format('Y-m-d'), fn ($product) => [
+        ], 'produits_'.now()->format('Y-m-d'), fn ($product) => [
             $product->id,
             $product->sku,
             $product->name,
@@ -57,7 +57,7 @@ final class ExportService
     {
         return $this->download($orders, [
             'Reference', 'Date', 'Client', 'Sous-total', 'Remise', 'TVA', 'Total', 'Statut paiement', 'Canal',
-        ], 'ventes_' . now()->format('Y-m-d'), fn ($order) => [
+        ], 'ventes_'.now()->format('Y-m-d'), fn ($order) => [
             $order->reference,
             $order->created_at?->format('d/m/Y H:i') ?? '',
             $order->customer?->name ?? 'Comptoir',
@@ -74,7 +74,7 @@ final class ExportService
     {
         return $this->download($invoices, [
             'Reference', 'Date', 'Echeance', 'Client', 'Sous-total', 'TVA', 'Total', 'Statut',
-        ], 'factures_' . now()->format('Y-m-d'), fn ($invoice) => [
+        ], 'factures_'.now()->format('Y-m-d'), fn ($invoice) => [
             $invoice->reference,
             $invoice->created_at?->format('d/m/Y') ?? '',
             $invoice->due_date?->format('d/m/Y') ?? '',
@@ -90,7 +90,7 @@ final class ExportService
     {
         return $this->download($customers, [
             'ID', 'Nom', 'Email', 'Telephone', 'Adresse', 'Solde portefeuille', 'Total achats', 'Cree le',
-        ], 'clients_' . now()->format('Y-m-d'), fn ($customer) => [
+        ], 'clients_'.now()->format('Y-m-d'), fn ($customer) => [
             $customer->id,
             $customer->name,
             $customer->email ?? '',
@@ -106,7 +106,7 @@ final class ExportService
     {
         return $this->download($stocks, [
             'Produit', 'SKU', 'Entrepot', 'Quantite', 'Reserve', 'Disponible', 'Cout unitaire', 'Valeur stock',
-        ], 'stock_' . now()->format('Y-m-d'), function ($stock) {
+        ], 'stock_'.now()->format('Y-m-d'), function ($stock) {
             $unitCost = (float) ($stock->product?->cost_price_real ?? $stock->product?->cost_price ?? 0);
 
             return [
@@ -131,7 +131,7 @@ final class ExportService
     {
         return $this->download($suppliers, [
             'ID', 'Nom', 'Email', 'Telephone', 'Adresse', 'Pays', 'Solde du', 'Total achats', 'Cree le',
-        ], 'fournisseurs_' . now()->format('Y-m-d'), fn ($supplier) => [
+        ], 'fournisseurs_'.now()->format('Y-m-d'), fn ($supplier) => [
             $supplier->id,
             $supplier->name,
             $supplier->email ?? '',
@@ -148,7 +148,7 @@ final class ExportService
     {
         return $this->download($purchases, [
             'Reference', 'Date', 'Fournisseur', 'Total', 'Paye', 'Reste du', 'Statut', 'Notes',
-        ], 'achats_' . now()->format('Y-m-d'), fn ($purchase) => [
+        ], 'achats_'.now()->format('Y-m-d'), fn ($purchase) => [
             $purchase->reference ?? "PO-{$purchase->id}",
             $purchase->created_at?->format('d/m/Y') ?? '',
             $purchase->supplier?->name ?? $purchase->supplier_name ?? '',
@@ -164,7 +164,7 @@ final class ExportService
     {
         return $this->download($expenses, [
             'Date', 'Categorie', 'Description', 'Montant', 'Compte',
-        ], 'depenses_' . now()->format('Y-m-d'), fn ($expense) => [
+        ], 'depenses_'.now()->format('Y-m-d'), fn ($expense) => [
             $expense->date?->format('d/m/Y') ?? $expense->created_at?->format('d/m/Y') ?? '',
             $expense->category?->name ?? '',
             $expense->description ?? '',
@@ -178,17 +178,17 @@ final class ExportService
         $format = strtolower($format);
 
         if ($format === 'xlsx' && class_exists(ZipArchive::class)) {
-            return $this->xlsx($data, $headers, $basename . '.xlsx', $rowMapper);
+            return $this->xlsx($data, $headers, $basename.'.xlsx', $rowMapper);
         }
 
-        return $this->csv($data, $headers, $basename . '.csv', $rowMapper);
+        return $this->csv($data, $headers, $basename.'.csv', $rowMapper);
     }
 
     private function xlsx(Collection|array $data, array $headers, string $filename, ?callable $rowMapper = null): StreamedResponse
     {
         $rows = $this->mapRows($data, $rowMapper);
         $tempFile = tempnam(sys_get_temp_dir(), 'eshop-xlsx-');
-        $zip = new ZipArchive();
+        $zip = new ZipArchive;
 
         $zip->open($tempFile, ZipArchive::OVERWRITE);
         $zip->addFromString('[Content_Types].xml', $this->contentTypesXml());
@@ -249,9 +249,9 @@ final class ExportService
         }
 
         return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
-            . '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
-            . '<sheetData>' . implode('', $xmlRows) . '</sheetData>'
-            . '</worksheet>';
+            .'<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+            .'<sheetData>'.implode('', $xmlRows).'</sheetData>'
+            .'</worksheet>';
     }
 
     private function worksheetRowXml(int $rowIndex, array $values): string
@@ -259,18 +259,19 @@ final class ExportService
         $cells = [];
 
         foreach (array_values($values) as $columnIndex => $value) {
-            $cellRef = $this->columnName($columnIndex) . $rowIndex;
+            $cellRef = $this->columnName($columnIndex).$rowIndex;
 
             if (is_int($value) || is_float($value)) {
-                $cells[] = '<c r="' . $cellRef . '"><v>' . $value . '</v></c>';
+                $cells[] = '<c r="'.$cellRef.'"><v>'.$value.'</v></c>';
+
                 continue;
             }
 
             $escaped = htmlspecialchars((string) $value, ENT_QUOTES | ENT_XML1, 'UTF-8');
-            $cells[] = '<c r="' . $cellRef . '" t="inlineStr"><is><t>' . $escaped . '</t></is></c>';
+            $cells[] = '<c r="'.$cellRef.'" t="inlineStr"><is><t>'.$escaped.'</t></is></c>';
         }
 
-        return '<row r="' . $rowIndex . '">' . implode('', $cells) . '</row>';
+        return '<row r="'.$rowIndex.'">'.implode('', $cells).'</row>';
     }
 
     private function columnName(int $index): string
@@ -280,7 +281,7 @@ final class ExportService
 
         while ($index > 0) {
             $index--;
-            $name = chr(65 + ($index % 26)) . $name;
+            $name = chr(65 + ($index % 26)).$name;
             $index = intdiv($index, 26);
         }
 
@@ -290,36 +291,36 @@ final class ExportService
     private function contentTypesXml(): string
     {
         return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
-            . '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
-            . '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
-            . '<Default Extension="xml" ContentType="application/xml"/>'
-            . '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'
-            . '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
-            . '</Types>';
+            .'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+            .'<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+            .'<Default Extension="xml" ContentType="application/xml"/>'
+            .'<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'
+            .'<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
+            .'</Types>';
     }
 
     private function rootRelationshipsXml(): string
     {
         return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
-            . '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
-            . '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>'
-            . '</Relationships>';
+            .'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+            .'<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>'
+            .'</Relationships>';
     }
 
     private function workbookXml(): string
     {
         return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
-            . '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" '
-            . 'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
-            . '<sheets><sheet name="Export" sheetId="1" r:id="rId1"/></sheets>'
-            . '</workbook>';
+            .'<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" '
+            .'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
+            .'<sheets><sheet name="Export" sheetId="1" r:id="rId1"/></sheets>'
+            .'</workbook>';
     }
 
     private function workbookRelationshipsXml(): string
     {
         return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
-            . '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
-            . '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>'
-            . '</Relationships>';
+            .'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+            .'<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>'
+            .'</Relationships>';
     }
 }

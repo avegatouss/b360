@@ -19,7 +19,7 @@ final class PayPalDriver implements PaymentGatewayInterface
     private function accessToken(): ?string
     {
         $response = Http::timeout(15)->withBasicAuth($this->config['client_id'] ?? '', $this->config['client_secret'] ?? '')
-            ->asForm()->post($this->baseUrl() . '/v1/oauth2/token', ['grant_type' => 'client_credentials']);
+            ->asForm()->post($this->baseUrl().'/v1/oauth2/token', ['grant_type' => 'client_credentials']);
 
         return $response->successful() ? $response->json('access_token') : null;
     }
@@ -28,11 +28,11 @@ final class PayPalDriver implements PaymentGatewayInterface
     {
         try {
             $token = $this->accessToken();
-            if (!$token) {
+            if (! $token) {
                 return ['success' => false, 'redirect_url' => null, 'transaction_id' => null, 'error' => 'PayPal auth failed'];
             }
 
-            $response = Http::timeout(30)->withToken($token)->post($this->baseUrl() . '/v2/checkout/orders', [
+            $response = Http::timeout(30)->withToken($token)->post($this->baseUrl().'/v2/checkout/orders', [
                 'intent' => 'CAPTURE',
                 'purchase_units' => [[
                     'reference_id' => $meta['reference'] ?? uniqid('PP-'),
@@ -61,7 +61,7 @@ final class PayPalDriver implements PaymentGatewayInterface
     {
         try {
             $token = $this->accessToken();
-            $response = Http::timeout(15)->withToken($token)->get($this->baseUrl() . "/v2/checkout/orders/{$transactionId}");
+            $response = Http::timeout(15)->withToken($token)->get($this->baseUrl()."/v2/checkout/orders/{$transactionId}");
             $data = $response->json();
             $status = match ($data['status'] ?? '') {
                 'COMPLETED', 'APPROVED' => 'completed', 'VOIDED' => 'failed', default => 'pending',
@@ -78,14 +78,14 @@ final class PayPalDriver implements PaymentGatewayInterface
         try {
             $token = $this->accessToken();
             // Capture first, then refund the capture
-            $capture = Http::timeout(15)->withToken($token)->post($this->baseUrl() . "/v2/checkout/orders/{$transactionId}/capture");
+            $capture = Http::timeout(15)->withToken($token)->post($this->baseUrl()."/v2/checkout/orders/{$transactionId}/capture");
             $captureId = $capture->json('purchase_units.0.payments.captures.0.id');
 
-            if (!$captureId) {
+            if (! $captureId) {
                 return ['success' => false, 'refund_id' => null, 'error' => 'No capture found'];
             }
 
-            $response = Http::timeout(15)->withToken($token)->post($this->baseUrl() . "/v2/payments/captures/{$captureId}/refund", [
+            $response = Http::timeout(15)->withToken($token)->post($this->baseUrl()."/v2/payments/captures/{$captureId}/refund", [
                 'amount' => ['currency_code' => 'USD', 'value' => number_format($amount, 2, '.', '')],
             ]);
 

@@ -14,9 +14,13 @@ use Spatie\Permission\Models\Permission;
 final class StockTransferControllerTest extends TestCase
 {
     private $instance;
+
     private $user;
+
     private Warehouse $warehouseA;
+
     private Warehouse $warehouseB;
+
     private Product $product;
 
     protected function setUp(): void

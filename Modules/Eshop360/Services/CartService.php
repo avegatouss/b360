@@ -19,8 +19,9 @@ class CartService
      */
     public static function forChannel(int $channelId): static
     {
-        $service = new static();
+        $service = new static;
         $service->channelId = $channelId;
+
         return $service;
     }
 
@@ -33,20 +34,23 @@ class CartService
 
     public function cartKey(): string
     {
-        $key = 'eshop_cart_instance_' . $this->instanceId();
-        return $this->channelId ? $key . '_channel_' . $this->channelId : $key;
+        $key = 'eshop_cart_instance_'.$this->instanceId();
+
+        return $this->channelId ? $key.'_channel_'.$this->channelId : $key;
     }
 
     public function couponKey(): string
     {
-        $key = 'eshop_cart_coupon_instance_' . $this->instanceId();
-        return $this->channelId ? $key . '_channel_' . $this->channelId : $key;
+        $key = 'eshop_cart_coupon_instance_'.$this->instanceId();
+
+        return $this->channelId ? $key.'_channel_'.$this->channelId : $key;
     }
 
     public function contextKey(): string
     {
-        $key = 'eshop_cart_context_instance_' . $this->instanceId();
-        return $this->channelId ? $key . '_channel_' . $this->channelId : $key;
+        $key = 'eshop_cart_context_instance_'.$this->instanceId();
+
+        return $this->channelId ? $key.'_channel_'.$this->channelId : $key;
     }
 
     private function instanceId(): int
@@ -69,7 +73,7 @@ class CartService
 
         // Migrate from legacy session key
         $legacy = session()->get('eshop_cart', []);
-        if (!empty($legacy)) {
+        if (! empty($legacy)) {
             session()->put($this->cartKey(), $legacy);
             session()->forget('eshop_cart');
         }
@@ -91,7 +95,7 @@ class CartService
                 ->active()
                 ->find($variationId);
 
-            if (!$variation) {
+            if (! $variation) {
                 throw new \InvalidArgumentException('Invalid variation for the selected product.');
             }
         }
@@ -105,21 +109,21 @@ class CartService
             $price = $variation ? (float) ($variation->price ?? $product->price) : (float) $product->price;
             $sku = $variation ? ($variation->sku ?: $product->sku) : $product->sku;
             $name = $variation
-                ? $product->name . ' — ' . $variation->name
+                ? $product->name.' — '.$variation->name
                 : $product->name;
 
             $cart[$key] = [
-                'product_id'     => $product->id,
-                'variation_id'   => $variation?->id,
-                'name'           => $name,
+                'product_id' => $product->id,
+                'variation_id' => $variation?->id,
+                'name' => $name,
                 'variation_name' => $variation?->name,
-                'sku'            => $sku,
-                'price'          => $price,
-                'quantity'       => $quantity,
-                'tax_rate'       => (float) $product->tax_rate,
-                'discount_type'  => $product->discount_type,
+                'sku' => $sku,
+                'price' => $price,
+                'quantity' => $quantity,
+                'tax_rate' => (float) $product->tax_rate,
+                'discount_type' => $product->discount_type,
                 'discount_value' => (float) $product->discount_value,
-                'image'          => $variation?->image ?? $product->image,
+                'image' => $variation?->image ?? $product->image,
             ];
         }
 
@@ -137,7 +141,7 @@ class CartService
     {
         $cart = $this->getCart();
 
-        if (!isset($cart[$key])) {
+        if (! isset($cart[$key])) {
             return;
         }
 
@@ -207,7 +211,7 @@ class CartService
             ->valid()
             ->first();
 
-        if (!$coupon) {
+        if (! $coupon) {
             return [
                 'success' => false,
                 'message' => __('eshop::eshop.coupon_invalid'),
@@ -215,9 +219,9 @@ class CartService
         }
 
         session()->put($this->couponKey(), [
-            'id'    => $coupon->id,
-            'code'  => $coupon->code,
-            'type'  => $coupon->type,
+            'id' => $coupon->id,
+            'code' => $coupon->code,
+            'type' => $coupon->type,
             'value' => (float) $coupon->value,
         ]);
 
@@ -226,7 +230,7 @@ class CartService
         return [
             'success' => true,
             'message' => __('eshop::eshop.coupon_applied'),
-            'coupon'  => $coupon,
+            'coupon' => $coupon,
         ];
     }
 
@@ -260,6 +264,7 @@ class CartService
     {
         if ($context === null) {
             session()->forget($this->contextKey());
+
             return;
         }
 
@@ -276,7 +281,7 @@ class CartService
         // Release all reserved stock before clearing the cart
         $cart = $this->getCart();
         foreach ($cart as $item) {
-            if (!empty($item['product_id']) && !empty($item['quantity'])) {
+            if (! empty($item['product_id']) && ! empty($item['quantity'])) {
                 $this->releaseStock($item['product_id'], $item['quantity']);
             }
         }
@@ -328,9 +333,9 @@ class CartService
 
         return [
             'subtotal' => round($subtotal, 2),
-            'tax'      => round($tax, 2),
+            'tax' => round($tax, 2),
             'discount' => round($discount, 2),
-            'total'    => round(max(0, $subtotal + $tax - $discount), 2),
+            'total' => round(max(0, $subtotal + $tax - $discount), 2),
         ];
     }
 
@@ -397,7 +402,7 @@ class CartService
     public function persistToDb(): void
     {
         $userId = auth()->id();
-        if (!$userId) {
+        if (! $userId) {
             return;
         }
 
@@ -427,12 +432,12 @@ class CartService
     public function restoreFromDb(): bool
     {
         $userId = auth()->id();
-        if (!$userId) {
+        if (! $userId) {
             return false;
         }
 
         // Don't overwrite an existing session cart
-        if (!empty($this->getCart())) {
+        if (! empty($this->getCart())) {
             return false;
         }
 
@@ -452,7 +457,7 @@ class CartService
 
         $saved = $query->first();
 
-        if (!$saved || empty($saved->items)) {
+        if (! $saved || empty($saved->items)) {
             return false;
         }
 
@@ -475,7 +480,7 @@ class CartService
     public function forgetDb(): void
     {
         $userId = auth()->id();
-        if (!$userId) {
+        if (! $userId) {
             return;
         }
 
@@ -506,7 +511,7 @@ class CartService
                     ->lockForUpdate()
                     ->first();
 
-                if (!$stock) {
+                if (! $stock) {
                     return;
                 }
 
@@ -534,7 +539,7 @@ class CartService
                     ->lockForUpdate()
                     ->first();
 
-                if (!$stock) {
+                if (! $stock) {
                     return;
                 }
 

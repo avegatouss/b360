@@ -4,16 +4,11 @@ namespace Modules\Eshop360\Tests\Feature;
 
 use App\Instances\Instance;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Core\Support\TeamContext;
-use Modules\Eshop360\Models\Order;
 use Modules\Eshop360\Models\Product;
 use Modules\Eshop360\Models\Stock;
 use Modules\Eshop360\Models\Warehouse;
 use Modules\Eshop360\Tests\TestCase;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
 
 final class ApiEndpointsTest extends TestCase
 {
@@ -55,7 +50,7 @@ final class ApiEndpointsTest extends TestCase
         ]);
 
         $response = $this->actingAs($user)
-            ->getJson('/api/eshop360/v1/products?' . http_build_query([
+            ->getJson('/api/eshop360/v1/products?'.http_build_query([
                 'instance_id' => $instance->id,
             ]), $this->apiHeaders($instance));
 

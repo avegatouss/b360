@@ -15,7 +15,7 @@ final class InvoiceServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->invoiceService = new InvoiceService();
+        $this->invoiceService = new InvoiceService;
     }
 
     public function test_invoice_sequential_numbering(): void

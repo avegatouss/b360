@@ -84,7 +84,7 @@ final class SaleControllerTest extends TestCase
                     'type' => 'fixed',
                     'value' => 3,
                 ],
-                'eshop_cart_instance_' . $instance->id => [
+                'eshop_cart_instance_'.$instance->id => [
                     (string) $product->id => [
                         'product_id' => $product->id,
                         'name' => $product->name,
@@ -96,7 +96,7 @@ final class SaleControllerTest extends TestCase
                         'total' => 18,
                     ],
                 ],
-                'eshop_cart_coupon_instance_' . $instance->id => [
+                'eshop_cart_coupon_instance_'.$instance->id => [
                     'id' => $coupon->id,
                     'code' => $coupon->code,
                     'type' => 'fixed',
@@ -167,8 +167,8 @@ final class SaleControllerTest extends TestCase
 
         $this->assertFalse(session()->has('eshop_cart'));
         $this->assertFalse(session()->has('eshop_cart_coupon'));
-        $this->assertFalse(session()->has('eshop_cart_instance_' . $instance->id));
-        $this->assertFalse(session()->has('eshop_cart_coupon_instance_' . $instance->id));
+        $this->assertFalse(session()->has('eshop_cart_instance_'.$instance->id));
+        $this->assertFalse(session()->has('eshop_cart_coupon_instance_'.$instance->id));
     }
 
     public function test_store_resolves_channel_price_and_creates_margin_log_when_unit_price_is_omitted(): void

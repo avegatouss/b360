@@ -3,12 +3,8 @@
 namespace Modules\Eshop360\Tests\Unit;
 
 use Illuminate\Support\Facades\Cache;
-use Modules\Core\Support\CurrentInstance;
 use Modules\Eshop360\Events\ReportDataChanged;
 use Modules\Eshop360\Listeners\InvalidateReportCache;
-use Modules\Eshop360\Models\Order;
-use Modules\Eshop360\Models\Product;
-use Modules\Eshop360\Models\Warehouse;
 use Modules\Eshop360\Models\Stock;
 use Modules\Eshop360\Services\ReportService;
 use Modules\Eshop360\Tests\TestCase;
@@ -16,6 +12,7 @@ use Modules\Eshop360\Tests\TestCase;
 final class ReportCacheTest extends TestCase
 {
     private ReportService $reports;
+
     private int $instanceId;
 
     protected function setUp(): void
@@ -25,7 +22,7 @@ final class ReportCacheTest extends TestCase
         [$instance] = $this->setUpInstanceWithAdmin();
         $this->instanceId = $instance->id;
 
-        $this->reports = new ReportService();
+        $this->reports = new ReportService;
     }
 
     public function test_overview_result_is_cached(): void
@@ -78,7 +75,7 @@ final class ReportCacheTest extends TestCase
         $this->assertTrue(Cache::has($stockKey));
 
         // Fire sales domain event
-        $listener = new InvalidateReportCache();
+        $listener = new InvalidateReportCache;
         $listener->handle(new ReportDataChanged($this->instanceId, 'sales'));
 
         // Sales-related caches should be cleared
@@ -98,7 +95,7 @@ final class ReportCacheTest extends TestCase
         $this->reports->monthlyExpenses($this->instanceId, now()->year);
 
         // Fire 'all' domain event
-        $listener = new InvalidateReportCache();
+        $listener = new InvalidateReportCache;
         $listener->handle(new ReportDataChanged($this->instanceId, 'all'));
 
         // All caches should be gone

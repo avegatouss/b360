@@ -2,8 +2,6 @@
 
 namespace Modules\Eshop360\Tests\Unit;
 
-use InvalidArgumentException;
-use Modules\Core\Support\CurrentInstance;
 use Modules\Eshop360\Models\Product;
 use Modules\Eshop360\Models\Stock;
 use Modules\Eshop360\Models\Warehouse;
@@ -27,8 +25,8 @@ final class StockServiceCoreTest extends TestCase
         return Product::create(array_merge([
             'instance_id' => $instanceId,
             'name' => 'Test Product',
-            'slug' => 'test-product-' . uniqid(),
-            'sku' => 'TST-' . uniqid(),
+            'slug' => 'test-product-'.uniqid(),
+            'sku' => 'TST-'.uniqid(),
             'price' => 100,
             'cost_price' => 60,
             'tax_rate' => 0,

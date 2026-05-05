@@ -105,7 +105,7 @@ final class ReportsTest extends TestCase
         $this->seedData($instance->id);
 
         $response = $this->actingAs($user)
-            ->get(route('eshop360.reports.profit-loss', $instance->slug) . '?' . http_build_query([
+            ->get(route('eshop360.reports.profit-loss', $instance->slug).'?'.http_build_query([
                 'from' => now()->subMonth()->toDateString(),
                 'to' => now()->toDateString(),
             ]));

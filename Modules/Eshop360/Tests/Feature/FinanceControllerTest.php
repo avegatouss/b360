@@ -21,11 +21,11 @@ final class FinanceControllerTest extends TestCase
         $this->makeRootSuperAdmin($instance);
 
         $customer = Customer::create([
-            'instance_id'   => $instance->id,
-            'code'          => 'CUS-000001',
-            'name'          => 'Test Client',
+            'instance_id' => $instance->id,
+            'code' => 'CUS-000001',
+            'name' => 'Test Client',
             'wallet_balance' => 150.00,
-            'is_active'     => true,
+            'is_active' => true,
         ]);
 
         $service = app(FinanceService::class);
@@ -41,11 +41,11 @@ final class FinanceControllerTest extends TestCase
         $this->makeRootSuperAdmin($instance);
 
         $customer = Customer::create([
-            'instance_id'   => $instance->id,
-            'code'          => 'CUS-000002',
-            'name'          => 'Low Balance Client',
+            'instance_id' => $instance->id,
+            'code' => 'CUS-000002',
+            'name' => 'Low Balance Client',
             'wallet_balance' => 30.00,
-            'is_active'     => true,
+            'is_active' => true,
         ]);
 
         $service = app(FinanceService::class);
@@ -64,10 +64,10 @@ final class FinanceControllerTest extends TestCase
 
         $card = GiftCard::create([
             'instance_id' => $instance->id,
-            'code'        => 'TESTCARD0001',
-            'amount'      => 100.00,
-            'balance'     => 100.00,
-            'status'      => 'active',
+            'code' => 'TESTCARD0001',
+            'amount' => 100.00,
+            'balance' => 100.00,
+            'status' => 'active',
         ]);
 
         $service = app(FinanceService::class);
@@ -80,7 +80,7 @@ final class FinanceControllerTest extends TestCase
         // A negative topup record should exist
         $this->assertDatabaseHas('eshop_gift_card_topups', [
             'gift_card_id' => $card->id,
-            'amount'       => -100.0,
+            'amount' => -100.0,
         ]);
     }
 
@@ -93,56 +93,56 @@ final class FinanceControllerTest extends TestCase
 
         $warehouse = Warehouse::create([
             'instance_id' => $instance->id,
-            'name'        => 'Main',
-            'code'        => 'MAIN-001',
-            'is_active'   => true,
+            'name' => 'Main',
+            'code' => 'MAIN-001',
+            'is_active' => true,
         ]);
 
         $product = Product::create([
-            'instance_id'    => $instance->id,
-            'name'           => 'Widget',
-            'slug'           => 'widget',
-            'sku'            => 'WID-001',
-            'price'          => 100.0,
-            'cost_price'     => 60.0,
-            'tax_rate'       => 0,
-            'discount_type'  => 'none',
+            'instance_id' => $instance->id,
+            'name' => 'Widget',
+            'slug' => 'widget',
+            'sku' => 'WID-001',
+            'price' => 100.0,
+            'cost_price' => 60.0,
+            'tax_rate' => 0,
+            'discount_type' => 'none',
             'discount_value' => 0,
-            'unit'           => 'pcs',
-            'min_quantity'   => 0,
+            'unit' => 'pcs',
+            'min_quantity' => 0,
             'alert_quantity' => 5,
-            'is_active'      => true,
+            'is_active' => true,
         ]);
 
         Stock::create([
-            'instance_id'  => $instance->id,
-            'product_id'   => $product->id,
+            'instance_id' => $instance->id,
+            'product_id' => $product->id,
             'warehouse_id' => $warehouse->id,
-            'quantity'     => 100,
+            'quantity' => 100,
         ]);
 
         // Create a completed order with 2 items
         $order = Order::create([
-            'instance_id'    => $instance->id,
-            'order_number'   => 'SAL-0001',
-            'status'         => 'completed',
+            'instance_id' => $instance->id,
+            'order_number' => 'SAL-0001',
+            'status' => 'completed',
             'payment_status' => 'paid',
             'payment_method' => 'cash',
-            'subtotal'       => 200.0,
-            'total'          => 200.0,
-            'paid_amount'    => 200.0,
-            'due_amount'     => 0,
-            'source'         => 'manual',
-            'biller_id'      => $user->id,
+            'subtotal' => 200.0,
+            'total' => 200.0,
+            'paid_amount' => 200.0,
+            'due_amount' => 0,
+            'source' => 'manual',
+            'biller_id' => $user->id,
         ]);
 
         $order->items()->create([
-            'product_id'   => $product->id,
+            'product_id' => $product->id,
             'product_name' => $product->name,
-            'sku'          => $product->sku,
-            'quantity'     => 2,
-            'unit_price'   => 100.0,
-            'total'        => 200.0,
+            'sku' => $product->sku,
+            'quantity' => 2,
+            'unit_price' => 100.0,
+            'total' => 200.0,
         ]);
 
         $this->actingAs($user);
@@ -171,26 +171,26 @@ final class FinanceControllerTest extends TestCase
         $user = $this->makeRootSuperAdmin($instance);
 
         $product = Product::create([
-            'instance_id'    => $instance->id,
-            'name'           => 'Product A',
-            'slug'           => 'product-a',
-            'sku'            => 'PA-001',
-            'price'          => 500.0,
-            'tax_rate'       => 0,
-            'discount_type'  => 'none',
+            'instance_id' => $instance->id,
+            'name' => 'Product A',
+            'slug' => 'product-a',
+            'sku' => 'PA-001',
+            'price' => 500.0,
+            'tax_rate' => 0,
+            'discount_type' => 'none',
             'discount_value' => 0,
-            'unit'           => 'pcs',
-            'min_quantity'   => 0,
+            'unit' => 'pcs',
+            'min_quantity' => 0,
             'alert_quantity' => 1,
-            'is_active'      => true,
+            'is_active' => true,
         ]);
 
         $customer = Customer::create([
-            'instance_id'    => $instance->id,
-            'code'           => 'CUS-WAL-001',
-            'name'           => 'Wallet Client',
+            'instance_id' => $instance->id,
+            'code' => 'CUS-WAL-001',
+            'name' => 'Wallet Client',
             'wallet_balance' => 100.00, // insufficient for 500
-            'is_active'      => true,
+            'is_active' => true,
         ]);
 
         $this->actingAs($user);
@@ -199,19 +199,19 @@ final class FinanceControllerTest extends TestCase
         session(["eshop_cart_instance_{$instanceId}" => [
             'pa-001' => [
                 'product_id' => $product->id,
-                'name'       => $product->name,
-                'sku'        => $product->sku,
-                'quantity'   => 1,
+                'name' => $product->name,
+                'sku' => $product->sku,
+                'quantity' => 1,
                 'unit_price' => 500.0,
-                'total'      => 500.0,
-                'tax_rate'   => 0,
+                'total' => 500.0,
+                'tax_rate' => 0,
             ],
         ]]);
 
         $response = $this->post(route('eshop360.checkout.process', $instance->slug), [
-            'customer_id'    => $customer->id,
+            'customer_id' => $customer->id,
             'payment_method' => 'wallet',
-            'paid_amount'    => 500.0,
+            'paid_amount' => 500.0,
         ]);
 
         $response->assertSessionHasErrors(['payment_method']);

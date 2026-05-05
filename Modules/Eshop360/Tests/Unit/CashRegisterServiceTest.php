@@ -12,15 +12,19 @@ use Modules\Eshop360\Tests\TestCase;
 final class CashRegisterServiceTest extends TestCase
 {
     private CashRegisterService $service;
+
     private Instance $instance;
+
     private User $user;
+
     private DistributionChannel $channelA;
+
     private DistributionChannel $channelB;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new CashRegisterService();
+        $this->service = new CashRegisterService;
 
         [$this->instance, $this->user] = $this->setUpInstanceWithAdmin();
 
@@ -76,7 +80,7 @@ final class CashRegisterServiceTest extends TestCase
             1,
             $openCount,
             'Only the most recently opened cash register should remain open for a given user; '
-            . 'the previous open register (any channel scope) should be auto-closed.'
+            .'the previous open register (any channel scope) should be auto-closed.'
         );
 
         // The remaining open register should be the second one

@@ -17,7 +17,7 @@ final class PayUMoneyDriver implements PaymentGatewayInterface
 
     public function initiate(float $amount, string $currency, array $meta = []): array
     {
-        $txnId = $meta['reference'] ?? 'PAYU-' . uniqid();
+        $txnId = $meta['reference'] ?? 'PAYU-'.uniqid();
         $key = $this->config['merchant_key'] ?? '';
         $salt = $this->config['merchant_salt'] ?? '';
 

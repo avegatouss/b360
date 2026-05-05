@@ -14,7 +14,7 @@ final class CostCalculatorServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->calculator = new CostCalculatorService();
+        $this->calculator = new CostCalculatorService;
     }
 
     public function test_calculate_pght(): void

@@ -16,7 +16,7 @@ final class StripeDriver implements PaymentGatewayInterface
     {
         try {
             $response = Http::timeout(30)->withBasicAuth($this->config['secret_key'], '')->asForm()
-                ->post(self::BASE . '/checkout/sessions', [
+                ->post(self::BASE.'/checkout/sessions', [
                     'payment_method_types[]' => 'card',
                     'mode' => 'payment',
                     'line_items[0][price_data][currency]' => strtolower($currency),
@@ -45,7 +45,7 @@ final class StripeDriver implements PaymentGatewayInterface
     {
         try {
             $response = Http::timeout(15)->withBasicAuth($this->config['secret_key'], '')
-                ->get(self::BASE . "/checkout/sessions/{$transactionId}");
+                ->get(self::BASE."/checkout/sessions/{$transactionId}");
             $data = $response->json();
             $status = match ($data['payment_status'] ?? '') {
                 'paid' => 'completed', 'unpaid' => 'pending', default => 'unknown',
@@ -61,15 +61,15 @@ final class StripeDriver implements PaymentGatewayInterface
     {
         try {
             $session = Http::timeout(15)->withBasicAuth($this->config['secret_key'], '')
-                ->get(self::BASE . "/checkout/sessions/{$transactionId}");
+                ->get(self::BASE."/checkout/sessions/{$transactionId}");
             $pi = $session->json('payment_intent');
 
-            if (!$pi) {
+            if (! $pi) {
                 return ['success' => false, 'refund_id' => null, 'error' => 'Payment intent not found'];
             }
 
             $response = Http::timeout(15)->withBasicAuth($this->config['secret_key'], '')->asForm()
-                ->post(self::BASE . '/refunds', ['payment_intent' => $pi, 'amount' => (int) ($amount * 100)]);
+                ->post(self::BASE.'/refunds', ['payment_intent' => $pi, 'amount' => (int) ($amount * 100)]);
             $data = $response->json();
 
             if ($response->successful() && isset($data['id'])) {

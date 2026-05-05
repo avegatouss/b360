@@ -37,7 +37,8 @@ class WebhookService
         // Deduplication: build a unique key from event + entity to prevent duplicate dispatches
         $deduplicationKey = $this->buildDeduplicationKey($event, $payload);
         if ($deduplicationKey && WebhookLog::where('deduplication_key', $deduplicationKey)->exists()) {
-            Log::debug("Webhook dispatch skipped (duplicate)", ['event' => $event, 'key' => $deduplicationKey]);
+            Log::debug('Webhook dispatch skipped (duplicate)', ['event' => $event, 'key' => $deduplicationKey]);
+
             return;
         }
 
@@ -64,6 +65,7 @@ class WebhookService
         if ($entityId === null) {
             return null;
         }
+
         return hash('sha256', "{$event}:{$entityId}");
     }
 
@@ -106,7 +108,7 @@ class WebhookService
             $success = $response->successful();
         } catch (\Throwable $e) {
             $responseBody = mb_substr($e->getMessage(), 0, 2000);
-            Log::warning("Webhook delivery failed", [
+            Log::warning('Webhook delivery failed', [
                 'webhook_id' => $webhook->id,
                 'event' => $event,
                 'error' => $e->getMessage(),
@@ -163,7 +165,7 @@ class WebhookService
             return [
                 'success' => $response->successful(),
                 'status' => $response->status(),
-                'message' => $response->successful() ? 'Webhook accessible.' : 'HTTP ' . $response->status(),
+                'message' => $response->successful() ? 'Webhook accessible.' : 'HTTP '.$response->status(),
             ];
         } catch (\Throwable $e) {
             return [

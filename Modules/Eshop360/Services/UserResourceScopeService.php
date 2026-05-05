@@ -11,9 +11,13 @@ use Modules\Eshop360\Models\UserAssignment;
 class UserResourceScopeService
 {
     private ?User $user = null;
+
     private bool $resolved = false;
+
     private ?Collection $storeAssignments = null;
+
     private ?Collection $warehouseAssignments = null;
+
     private ?Collection $customerAssignments = null;
 
     /**
@@ -33,7 +37,7 @@ class UserResourceScopeService
      */
     public function isAdmin(): bool
     {
-        if (!$this->user) {
+        if (! $this->user) {
             return true; // No auth context (console, queues) = full access
         }
 
@@ -154,7 +158,7 @@ class UserResourceScopeService
             return true;
         }
 
-        if (!$this->user) {
+        if (! $this->user) {
             return false;
         }
 
@@ -177,7 +181,7 @@ class UserResourceScopeService
         $this->warehouseAssignments = collect();
         $this->customerAssignments = collect();
 
-        if (!$this->user) {
+        if (! $this->user) {
             return;
         }
 

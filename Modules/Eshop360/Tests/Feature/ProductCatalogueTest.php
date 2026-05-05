@@ -24,21 +24,21 @@ final class ProductCatalogueTest extends TestCase
 
         $response = $this->actingAs($user)
             ->post(route('eshop360.products.store', $instance->slug), [
-                'name'                      => 'Amoxicilline 500mg',
-                'sku'                       => 'AMX-500',
-                'price'                     => 5000,
-                'cost_price'                => 3000,
-                'purchase_price_factory'    => 2500,
-                'purchase_price_provisional'=> 2600,
-                'pght'                      => 2700,
-                'cost_price_real'           => 2800,
-                'tax_rate'                  => 0,
-                'discount_type'             => 'none',
-                'discount_value'            => 0,
-                'unit'                      => 'boite',
-                'min_quantity'              => 0,
-                'alert_quantity'            => 5,
-                'is_active'                 => true,
+                'name' => 'Amoxicilline 500mg',
+                'sku' => 'AMX-500',
+                'price' => 5000,
+                'cost_price' => 3000,
+                'purchase_price_factory' => 2500,
+                'purchase_price_provisional' => 2600,
+                'pght' => 2700,
+                'cost_price_real' => 2800,
+                'tax_rate' => 0,
+                'discount_type' => 'none',
+                'discount_value' => 0,
+                'unit' => 'boite',
+                'min_quantity' => 0,
+                'alert_quantity' => 5,
+                'is_active' => true,
             ]);
 
         $response->assertRedirect();
@@ -64,38 +64,38 @@ final class ProductCatalogueTest extends TestCase
         }
 
         $product = Product::create([
-            'instance_id'            => $instance->id,
-            'name'                   => 'Paracetamol 500',
-            'slug'                   => 'paracetamol-500',
-            'sku'                    => 'PARA-500',
-            'price'                  => 1000,
-            'cost_price'             => 600,
+            'instance_id' => $instance->id,
+            'name' => 'Paracetamol 500',
+            'slug' => 'paracetamol-500',
+            'sku' => 'PARA-500',
+            'price' => 1000,
+            'cost_price' => 600,
             'purchase_price_factory' => 550,
-            'pght'                   => 580,
-            'tax_rate'               => 0,
-            'discount_type'          => 'none',
-            'discount_value'         => 0,
-            'unit'                   => 'boite',
-            'min_quantity'           => 0,
-            'alert_quantity'         => 10,
-            'is_active'              => true,
+            'pght' => 580,
+            'tax_rate' => 0,
+            'discount_type' => 'none',
+            'discount_value' => 0,
+            'unit' => 'boite',
+            'min_quantity' => 0,
+            'alert_quantity' => 10,
+            'is_active' => true,
         ]);
 
         $response = $this->actingAs($user)
             ->put(route('eshop360.products.update', [$instance->slug, $product->id]), [
-                'name'                   => 'Paracetamol 500',
-                'sku'                    => 'PARA-500',
-                'price'                  => 1200,
-                'cost_price'             => 700,
+                'name' => 'Paracetamol 500',
+                'sku' => 'PARA-500',
+                'price' => 1200,
+                'cost_price' => 700,
                 'purchase_price_factory' => 650,
-                'pght'                   => 680,
-                'tax_rate'               => 0,
-                'discount_type'          => 'none',
-                'discount_value'         => 0,
-                'unit'                   => 'boite',
-                'min_quantity'           => 0,
-                'alert_quantity'         => 10,
-                'is_active'              => true,
+                'pght' => 680,
+                'tax_rate' => 0,
+                'discount_type' => 'none',
+                'discount_value' => 0,
+                'unit' => 'boite',
+                'min_quantity' => 0,
+                'alert_quantity' => 10,
+                'is_active' => true,
             ]);
 
         $response->assertRedirect();
@@ -118,58 +118,58 @@ final class ProductCatalogueTest extends TestCase
 
         $catA = Category::create([
             'instance_id' => $instance->id,
-            'name'        => 'Antibiotiques',
-            'slug'        => 'antibiotiques',
-            'is_active'   => true,
+            'name' => 'Antibiotiques',
+            'slug' => 'antibiotiques',
+            'is_active' => true,
         ]);
 
         $catB = Category::create([
             'instance_id' => $instance->id,
-            'name'        => 'Analgesiques',
-            'slug'        => 'analgesiques',
-            'is_active'   => true,
+            'name' => 'Analgesiques',
+            'slug' => 'analgesiques',
+            'is_active' => true,
         ]);
 
         foreach (['Ampicilline', 'Azithromycine', 'Doxycycline'] as $i => $name) {
             Product::create([
-                'instance_id'   => $instance->id,
-                'category_id'   => $catA->id,
-                'name'          => $name,
-                'slug'          => strtolower($name),
-                'sku'           => 'SKU-A-' . $i,
-                'price'         => 1000,
-                'cost_price'    => 600,
-                'tax_rate'      => 0,
+                'instance_id' => $instance->id,
+                'category_id' => $catA->id,
+                'name' => $name,
+                'slug' => strtolower($name),
+                'sku' => 'SKU-A-'.$i,
+                'price' => 1000,
+                'cost_price' => 600,
+                'tax_rate' => 0,
                 'discount_type' => 'none',
-                'discount_value'=> 0,
-                'unit'          => 'boite',
-                'min_quantity'  => 0,
-                'alert_quantity'=> 5,
-                'is_active'     => true,
+                'discount_value' => 0,
+                'unit' => 'boite',
+                'min_quantity' => 0,
+                'alert_quantity' => 5,
+                'is_active' => true,
             ]);
         }
 
         foreach (['Ibuprofene', 'Doliprane'] as $i => $name) {
             Product::create([
-                'instance_id'   => $instance->id,
-                'category_id'   => $catB->id,
-                'name'          => $name,
-                'slug'          => strtolower($name),
-                'sku'           => 'SKU-B-' . $i,
-                'price'         => 800,
-                'cost_price'    => 500,
-                'tax_rate'      => 0,
+                'instance_id' => $instance->id,
+                'category_id' => $catB->id,
+                'name' => $name,
+                'slug' => strtolower($name),
+                'sku' => 'SKU-B-'.$i,
+                'price' => 800,
+                'cost_price' => 500,
+                'tax_rate' => 0,
                 'discount_type' => 'none',
-                'discount_value'=> 0,
-                'unit'          => 'boite',
-                'min_quantity'  => 0,
-                'alert_quantity'=> 5,
-                'is_active'     => true,
+                'discount_value' => 0,
+                'unit' => 'boite',
+                'min_quantity' => 0,
+                'alert_quantity' => 5,
+                'is_active' => true,
             ]);
         }
 
         $response = $this->actingAs($user)
-            ->get(route('eshop360.products.index', $instance->slug) . '?category_id=' . $catA->id);
+            ->get(route('eshop360.products.index', $instance->slug).'?category_id='.$catA->id);
 
         $response->assertOk();
         $response->assertSee('Ampicilline');
@@ -192,24 +192,24 @@ final class ProductCatalogueTest extends TestCase
         Permission::findOrCreate('eshop.products.view');
 
         Product::create([
-            'instance_id'   => $instance->id,
-            'name'          => 'Produit Barcoded',
-            'slug'          => 'produit-barcoded',
-            'sku'           => 'BAR-001',
-            'barcode'       => '1234567890123',
-            'price'         => 500,
-            'cost_price'    => 300,
-            'tax_rate'      => 0,
+            'instance_id' => $instance->id,
+            'name' => 'Produit Barcoded',
+            'slug' => 'produit-barcoded',
+            'sku' => 'BAR-001',
+            'barcode' => '1234567890123',
+            'price' => 500,
+            'cost_price' => 300,
+            'tax_rate' => 0,
             'discount_type' => 'none',
-            'discount_value'=> 0,
-            'unit'          => 'boite',
-            'min_quantity'  => 0,
-            'alert_quantity'=> 5,
-            'is_active'     => true,
+            'discount_value' => 0,
+            'unit' => 'boite',
+            'min_quantity' => 0,
+            'alert_quantity' => 5,
+            'is_active' => true,
         ]);
 
         $response = $this->actingAs($user)
-            ->get(route('eshop360.barcodes.index', $instance->slug) . '?search=1234567890123');
+            ->get(route('eshop360.barcodes.index', $instance->slug).'?search=1234567890123');
 
         $response->assertOk();
         $response->assertSee('Produit Barcoded');
@@ -227,7 +227,7 @@ final class ProductCatalogueTest extends TestCase
         Permission::findOrCreate('eshop.products.view');
 
         $response = $this->actingAs($user)
-            ->get(route('eshop360.barcodes.index', $instance->slug) . '?search=BARCODE_INCONNU_999');
+            ->get(route('eshop360.barcodes.index', $instance->slug).'?search=BARCODE_INCONNU_999');
 
         $response->assertOk();
         $this->assertDatabaseMissing('eshop_products', ['barcode' => 'BARCODE_INCONNU_999']);

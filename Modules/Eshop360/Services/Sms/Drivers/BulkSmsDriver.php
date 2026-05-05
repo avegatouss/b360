@@ -33,6 +33,7 @@ class BulkSmsDriver implements SmsDriverInterface
             return false;
         } catch (\Throwable $e) {
             Log::error('BulkSMS exception', ['error' => $e->getMessage()]);
+
             return false;
         }
     }

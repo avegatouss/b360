@@ -2,7 +2,6 @@
 
 namespace Modules\Eshop360\Tests\Feature;
 
-use Modules\Core\Support\CurrentInstance;
 use Modules\Eshop360\Models\DistributionChannel;
 use Modules\Eshop360\Tests\TestCase;
 

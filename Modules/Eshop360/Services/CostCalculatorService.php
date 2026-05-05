@@ -2,9 +2,9 @@
 
 namespace Modules\Eshop360\Services;
 
-use Modules\Eshop360\Models\Product;
-use Modules\Eshop360\Models\DistributionChannel;
 use Modules\Eshop360\Models\ChannelProductPrice;
+use Modules\Eshop360\Models\DistributionChannel;
+use Modules\Eshop360\Models\Product;
 
 class CostCalculatorService
 {
@@ -15,6 +15,7 @@ class CostCalculatorService
     public function calculatePGHT(float $purchasePriceProvisional, ?float $marginRate = null): float
     {
         $rate = $marginRate ?? 0.13;
+
         return round($purchasePriceProvisional * (1 + $rate), 4);
     }
 
@@ -33,7 +34,9 @@ class CostCalculatorService
      */
     public function updateProductPricing(Product $product, ?float $defaultMarginRate = null): void
     {
-        if (!$product->purchase_price_provisional) return;
+        if (! $product->purchase_price_provisional) {
+            return;
+        }
 
         $marginRate = $defaultMarginRate ?? 0.13;
         $pght = $this->calculatePGHT($product->purchase_price_provisional, $marginRate);
@@ -62,6 +65,7 @@ class CostCalculatorService
     {
         $margin = $salePrice - $provisionalPrice;
         $rate = $provisionalPrice > 0 ? ($margin / $provisionalPrice) * 100 : 0;
+
         return ['margin' => round($margin, 2), 'rate' => round($rate, 2)];
     }
 
@@ -73,6 +77,7 @@ class CostCalculatorService
     {
         $margin = $salePrice - $realCostPrice;
         $rate = $realCostPrice > 0 ? ($margin / $realCostPrice) * 100 : 0;
+
         return ['margin' => round($margin, 2), 'rate' => round($rate, 2)];
     }
 
@@ -81,7 +86,10 @@ class CostCalculatorService
      */
     public function calculateRealCostPrice(float $factoryPrice, float $allocatedCosts, int $quantity): float
     {
-        if ($quantity <= 0) return $factoryPrice;
+        if ($quantity <= 0) {
+            return $factoryPrice;
+        }
+
         return round($factoryPrice + ($allocatedCosts / $quantity), 4);
     }
 }

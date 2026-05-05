@@ -15,9 +15,9 @@ final class CinetPayDriver implements PaymentGatewayInterface
     public function initiate(float $amount, string $currency, array $meta = []): array
     {
         try {
-            $txnId = $meta['reference'] ?? 'CNPY-' . uniqid();
+            $txnId = $meta['reference'] ?? 'CNPY-'.uniqid();
 
-            $response = Http::timeout(30)->post(self::BASE . '/payment', [
+            $response = Http::timeout(30)->post(self::BASE.'/payment', [
                 'apikey' => $this->config['api_key'] ?? '',
                 'site_id' => $this->config['site_id'] ?? '',
                 'transaction_id' => $txnId,
@@ -51,7 +51,7 @@ final class CinetPayDriver implements PaymentGatewayInterface
     public function verify(string $transactionId): array
     {
         try {
-            $response = Http::timeout(15)->post(self::BASE . '/payment/check', [
+            $response = Http::timeout(15)->post(self::BASE.'/payment/check', [
                 'apikey' => $this->config['api_key'] ?? '',
                 'site_id' => $this->config['site_id'] ?? '',
                 'transaction_id' => $transactionId,
@@ -82,7 +82,7 @@ final class CinetPayDriver implements PaymentGatewayInterface
     {
         $transactionId = $request->input('cpm_trans_id');
 
-        if (!$transactionId) {
+        if (! $transactionId) {
             return ['valid' => false, 'transaction_id' => null, 'status' => null, 'error' => 'Missing cpm_trans_id'];
         }
 

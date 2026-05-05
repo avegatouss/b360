@@ -2,9 +2,9 @@
 
 namespace Modules\Eshop360\Services;
 
+use Illuminate\Support\Str;
 use Modules\Core\Support\CurrentInstance;
 use Modules\Eshop360\Models\Holding;
-use Illuminate\Support\Str;
 
 class HoldingService
 {
@@ -50,7 +50,7 @@ class HoldingService
             'instance_id' => $instanceId,
             'channel_id' => $channelId,
             'customer_id' => $customerId,
-            'reference' => 'HLD-' . strtoupper(Str::random(6)),
+            'reference' => 'HLD-'.strtoupper(Str::random(6)),
             'items' => [
                 'lines' => $cart,
                 'coupon' => $coupon,
@@ -136,25 +136,25 @@ class HoldingService
         $instanceId = CurrentInstance::idOrFail();
 
         session()->put('eshop_cart', $cart);
-        session()->put('eshop_cart_instance_' . $instanceId, $cart);
+        session()->put('eshop_cart_instance_'.$instanceId, $cart);
 
         if ($coupon !== null) {
             session()->put('eshop_cart_coupon', $coupon);
-            session()->put('eshop_cart_coupon_instance_' . $instanceId, $coupon);
+            session()->put('eshop_cart_coupon_instance_'.$instanceId, $coupon);
         } else {
             session()->forget([
                 'eshop_cart_coupon',
-                'eshop_cart_coupon_instance_' . $instanceId,
+                'eshop_cart_coupon_instance_'.$instanceId,
             ]);
         }
 
         if ($context !== null) {
             session()->put('eshop_cart_context', $context);
-            session()->put('eshop_cart_context_instance_' . $instanceId, $context);
+            session()->put('eshop_cart_context_instance_'.$instanceId, $context);
         } else {
             session()->forget([
                 'eshop_cart_context',
-                'eshop_cart_context_instance_' . $instanceId,
+                'eshop_cart_context_instance_'.$instanceId,
             ]);
         }
     }

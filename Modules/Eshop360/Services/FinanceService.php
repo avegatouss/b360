@@ -3,6 +3,8 @@
 namespace Modules\Eshop360\Services;
 
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Modules\Eshop360\Models\Account;
 use Modules\Eshop360\Models\AccountTransaction;
 use Modules\Eshop360\Models\AccountTransfer;
@@ -11,11 +13,9 @@ use Modules\Eshop360\Models\CustomerDue;
 use Modules\Eshop360\Models\CustomerTransaction;
 use Modules\Eshop360\Models\GiftCard;
 use Modules\Eshop360\Models\GiftCardTopup;
-use Modules\Eshop360\Models\InstallmentPlan;
 use Modules\Eshop360\Models\InstallmentPayment;
+use Modules\Eshop360\Models\InstallmentPlan;
 use Modules\Eshop360\Models\Order;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class FinanceService
 {
@@ -26,6 +26,7 @@ class FinanceService
     {
         return DB::transaction(function () use ($account, $amount, $notes, $userId, $refType, $refId) {
             $account->increment('balance', $amount);
+
             return AccountTransaction::create([
                 'account_id' => $account->id,
                 'type' => 'deposit',
@@ -45,6 +46,7 @@ class FinanceService
     {
         return DB::transaction(function () use ($account, $amount, $notes, $userId, $refType, $refId) {
             $account->decrement('balance', $amount);
+
             return AccountTransaction::create([
                 'account_id' => $account->id,
                 'type' => 'withdrawal',
@@ -68,11 +70,11 @@ class FinanceService
 
             AccountTransaction::create([
                 'account_id' => $from->id, 'type' => 'transfer_out', 'amount' => $amount + $fee,
-                'notes' => "Transfer to {$to->name}" . ($notes ? " - $notes" : ''), 'user_id' => $userId,
+                'notes' => "Transfer to {$to->name}".($notes ? " - $notes" : ''), 'user_id' => $userId,
             ]);
             AccountTransaction::create([
                 'account_id' => $to->id, 'type' => 'transfer_in', 'amount' => $amount,
-                'notes' => "Transfer from {$from->name}" . ($notes ? " - $notes" : ''), 'user_id' => $userId,
+                'notes' => "Transfer from {$from->name}".($notes ? " - $notes" : ''), 'user_id' => $userId,
             ]);
 
             return AccountTransfer::create([
@@ -119,9 +121,9 @@ class FinanceService
 
             GiftCardTopup::create([
                 'gift_card_id' => $card->id,
-                'amount'       => -$deducted,
-                'notes'        => $orderId ? "Used for order #{$orderId}" : 'Used for payment',
-                'user_id'      => auth()->id(),
+                'amount' => -$deducted,
+                'notes' => $orderId ? "Used for order #{$orderId}" : 'Used for payment',
+                'user_id' => auth()->id(),
             ]);
 
             return $deducted;
@@ -150,25 +152,25 @@ class FinanceService
 
             // Record the wallet transaction
             CustomerTransaction::create([
-                'instance_id'    => $customer->instance_id,
-                'customer_id'    => $customer->id,
-                'type'           => 'debit',
-                'amount'         => $deductedFromWallet,
+                'instance_id' => $customer->instance_id,
+                'customer_id' => $customer->id,
+                'type' => 'debit',
+                'amount' => $deductedFromWallet,
                 'reference_type' => $orderId ? Order::class : null,
-                'reference_id'   => $orderId,
-                'notes'          => $orderId ? "Paiement commande #$orderId" : 'Debit portefeuille',
-                'created_by'     => auth()->id(),
+                'reference_id' => $orderId,
+                'notes' => $orderId ? "Paiement commande #$orderId" : 'Debit portefeuille',
+                'created_by' => auth()->id(),
             ]);
 
             // If credit was used, create a CustomerDue for the debt portion
             if ($creditUsed > 0 && $orderId) {
                 CustomerDue::create([
-                    'customer_id'  => $customer->id,
-                    'order_id'     => $orderId,
-                    'amount_due'   => $creditUsed,
-                    'paid_amount'  => 0,
-                    'status'       => 'pending',
-                    'due_date'     => now()->addDays(30),
+                    'customer_id' => $customer->id,
+                    'order_id' => $orderId,
+                    'amount_due' => $creditUsed,
+                    'paid_amount' => 0,
+                    'status' => 'pending',
+                    'due_date' => now()->addDays(30),
                 ]);
             }
 
@@ -189,14 +191,14 @@ class FinanceService
             $customer->increment('wallet_balance', $amount);
 
             CustomerTransaction::create([
-                'instance_id'    => $customer->instance_id,
-                'customer_id'    => $customer->id,
-                'type'           => 'credit',
-                'amount'         => $amount,
+                'instance_id' => $customer->instance_id,
+                'customer_id' => $customer->id,
+                'type' => 'credit',
+                'amount' => $amount,
                 'reference_type' => $refType,
-                'reference_id'   => $refId,
-                'notes'          => $notes ?? 'Rechargement portefeuille',
-                'created_by'     => auth()->id(),
+                'reference_id' => $refId,
+                'notes' => $notes ?? 'Rechargement portefeuille',
+                'created_by' => auth()->id(),
             ]);
 
             // Auto-pay pending dues with the new balance (locked to prevent double-pay)
@@ -259,7 +261,7 @@ class FinanceService
             $dueDate = now();
 
             for ($i = 0; $i < $installmentsCount; $i++) {
-                $dueDate = match($frequency) {
+                $dueDate = match ($frequency) {
                     'weekly' => $dueDate->copy()->addWeek(),
                     'biweekly' => $dueDate->copy()->addWeeks(2),
                     default => $dueDate->copy()->addMonth(),
@@ -312,10 +314,10 @@ class FinanceService
 
         // COGS: sum of (cost_price * quantity) for completed order items
         $cogs = \Modules\Eshop360\Models\OrderItem::whereHas('order', function ($q) use ($instanceId, $fromDateTime, $toDateTime) {
-                $q->where('instance_id', $instanceId)
-                  ->where('status', 'completed')
-                  ->whereBetween('created_at', [$fromDateTime, $toDateTime]);
-            })
+            $q->where('instance_id', $instanceId)
+                ->where('status', 'completed')
+                ->whereBetween('created_at', [$fromDateTime, $toDateTime]);
+        })
             ->join('eshop_products as p', 'p.id', '=', 'eshop_order_items.product_id')
             ->selectRaw('SUM(eshop_order_items.quantity * COALESCE(p.cost_price, 0)) as total_cogs')
             ->value('total_cogs') ?? 0;
@@ -344,12 +346,12 @@ class FinanceService
 
         return [
             'from' => $from,
-            'to'   => $to,
+            'to' => $to,
             'revenue' => ['sales' => (float) $sales, 'other_income' => (float) $incomes, 'total' => (float) $totalRevenue],
             'expenses' => ['purchases' => (float) $purchases, 'operating_expenses' => (float) $expenses, 'total' => (float) $totalExpenses],
-            'cogs'          => (float) $cogs,
-            'gross_profit'  => (float) $grossProfit,
-            'gross_margin'  => $sales > 0 ? round($grossProfit / $sales * 100, 1) : 0,
+            'cogs' => (float) $cogs,
+            'gross_profit' => (float) $grossProfit,
+            'gross_margin' => $sales > 0 ? round($grossProfit / $sales * 100, 1) : 0,
             'total_revenue' => (float) $totalRevenue,
             'total_expenses' => (float) $totalExpenses,
             'revenue_lines' => [

@@ -31,6 +31,7 @@ class VonageDriver implements SmsDriverInterface
                     'status' => $status,
                     'error' => $data['messages'][0]['error-text'] ?? 'Unknown error',
                 ]);
+
                 return false;
             }
 
@@ -42,6 +43,7 @@ class VonageDriver implements SmsDriverInterface
             return false;
         } catch (\Throwable $e) {
             Log::error('Vonage SMS exception', ['error' => $e->getMessage()]);
+
             return false;
         }
     }

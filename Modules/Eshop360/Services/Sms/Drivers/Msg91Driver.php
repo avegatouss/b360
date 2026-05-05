@@ -30,6 +30,7 @@ class Msg91Driver implements SmsDriverInterface
                     return true;
                 }
                 Log::error('MSG91 SMS rejected', ['response' => $data]);
+
                 return false;
             }
 
@@ -41,6 +42,7 @@ class Msg91Driver implements SmsDriverInterface
             return false;
         } catch (\Throwable $e) {
             Log::error('MSG91 SMS exception', ['error' => $e->getMessage()]);
+
             return false;
         }
     }

@@ -136,7 +136,7 @@ final class ReportAndExportControllerTest extends TestCase
 
         $salesExport->assertOk();
 
-        if (!class_exists(ZipArchive::class)) {
+        if (! class_exists(ZipArchive::class)) {
             $salesExport->assertHeader('content-type', 'text/csv; charset=UTF-8');
             $this->assertStringContainsString('ORD-TEST-001', $salesExport->streamedContent());
 
@@ -151,7 +151,7 @@ final class ReportAndExportControllerTest extends TestCase
         $tempFile = tempnam(sys_get_temp_dir(), 'eshop-xlsx-test-');
         file_put_contents($tempFile, $binary);
 
-        $zip = new ZipArchive();
+        $zip = new ZipArchive;
         $zip->open($tempFile);
         $worksheet = $zip->getFromName('xl/worksheets/sheet1.xml');
         $zip->close();

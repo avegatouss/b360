@@ -19,7 +19,7 @@ final class EshopSettingsServiceTest extends TestCase
         $instance = $this->makeRootInstance();
         CurrentInstance::set($instance);
 
-        $this->settings = new EshopSettingsService();
+        $this->settings = new EshopSettingsService;
     }
 
     public function test_get_returns_defaults_when_no_db_record(): void

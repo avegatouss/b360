@@ -26,6 +26,7 @@ class ClockworkDriver implements SmsDriverInterface
                     return true;
                 }
                 Log::error('Clockwork SMS rejected', ['response' => $body]);
+
                 return false;
             }
 
@@ -37,6 +38,7 @@ class ClockworkDriver implements SmsDriverInterface
             return false;
         } catch (\Throwable $e) {
             Log::error('Clockwork SMS exception', ['error' => $e->getMessage()]);
+
             return false;
         }
     }

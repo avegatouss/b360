@@ -19,8 +19,11 @@ use Modules\Eshop360\Models\Payment;
 class CinetPayService
 {
     private string $baseUrl;
+
     private string $merchantId;
+
     private string $secretKey;
+
     private string $callbackUrl;
 
     public function __construct()
@@ -43,7 +46,7 @@ class CinetPayService
             'reference' => $reference,
             'amount' => (float) $order->total,
             'currency' => $currency,
-            'description' => 'Commande #' . ($order->order_number ?? $order->id),
+            'description' => 'Commande #'.($order->order_number ?? $order->id),
             'payment_method' => $paymentMethod,
             'customer' => [
                 'name' => $order->customer?->name ?? 'Client',
@@ -61,11 +64,11 @@ class CinetPayService
 
         try {
             $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $this->secretKey,
+                'Authorization' => 'Bearer '.$this->secretKey,
                 'Content-Type' => 'application/json',
-            ])->post(rtrim($this->baseUrl, '/') . '/payments/initiate', $payload);
+            ])->post(rtrim($this->baseUrl, '/').'/payments/initiate', $payload);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 Log::error('CinetPay initiation failed', [
                     'status' => $response->status(),
                     'body' => $response->body(),
@@ -123,21 +126,22 @@ class CinetPayService
         $transactionId = (string) ($data['transaction_id'] ?? '');
         $status = (string) ($data['status'] ?? '');
 
-        $expectedSignature = hash_hmac('sha256', $transactionId . $status, $this->secretKey);
+        $expectedSignature = hash_hmac('sha256', $transactionId.$status, $this->secretKey);
 
-        if ($signature === '' || !hash_equals($expectedSignature, $signature)) {
+        if ($signature === '' || ! hash_equals($expectedSignature, $signature)) {
             Log::warning('CinetPay invalid signature', ['data' => $data]);
+
             return ['valid' => false, 'error' => 'Invalid signature'];
         }
 
         $payment = Payment::query()
             ->where('gateway', 'cinetpay')
             ->when($transactionId !== '', fn ($query) => $query->where('gateway_reference', $transactionId))
-            ->when(!empty($data['reference']), fn ($query) => $query->where('reference', $data['reference']))
+            ->when(! empty($data['reference']), fn ($query) => $query->where('reference', $data['reference']))
             ->orderByDesc('id')
             ->first();
 
-        if (!$payment && !empty($data['reference'])) {
+        if (! $payment && ! empty($data['reference'])) {
             $payment = Payment::query()
                 ->where('gateway', 'cinetpay')
                 ->where('reference', $data['reference'])
@@ -145,7 +149,7 @@ class CinetPayService
                 ->first();
         }
 
-        if (!$payment) {
+        if (! $payment) {
             return ['valid' => false, 'error' => 'Payment not found'];
         }
 
@@ -176,8 +180,8 @@ class CinetPayService
     {
         try {
             $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $this->secretKey,
-            ])->get(rtrim($this->baseUrl, '/') . "/payments/{$transactionId}/status");
+                'Authorization' => 'Bearer '.$this->secretKey,
+            ])->get(rtrim($this->baseUrl, '/')."/payments/{$transactionId}/status");
 
             if ($response->successful()) {
                 return $response->json();
@@ -196,12 +200,12 @@ class CinetPayService
 
     private function generateReference(Order $order): string
     {
-        return 'CNPY-' . $order->id . '-' . strtoupper(substr(md5(uniqid('', true)), 0, 8));
+        return 'CNPY-'.$order->id.'-'.strtoupper(substr(md5(uniqid('', true)), 0, 8));
     }
 
     private function syncPayableTotals(?Model $payable): void
     {
-        if (!$payable || !method_exists($payable, 'payments')) {
+        if (! $payable || ! method_exists($payable, 'payments')) {
             return;
         }
 

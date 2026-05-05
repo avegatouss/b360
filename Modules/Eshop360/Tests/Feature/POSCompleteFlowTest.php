@@ -2,7 +2,6 @@
 
 namespace Modules\Eshop360\Tests\Feature;
 
-use Modules\Core\Support\CurrentInstance;
 use Modules\Eshop360\Models\Customer;
 use Modules\Eshop360\Models\Invoice;
 use Modules\Eshop360\Models\Order;
@@ -10,9 +9,7 @@ use Modules\Eshop360\Models\Payment;
 use Modules\Eshop360\Models\Product;
 use Modules\Eshop360\Models\Stock;
 use Modules\Eshop360\Models\Warehouse;
-use Modules\Eshop360\Services\InvoiceService;
 use Modules\Eshop360\Services\OrderService;
-use Modules\Eshop360\Services\StockService;
 use Modules\Eshop360\Tests\TestCase;
 
 /**

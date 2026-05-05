@@ -18,7 +18,7 @@ final class CartServiceTest extends TestCase
 
         $this->setUpInstanceWithAdmin();
 
-        $this->cart = new CartService();
+        $this->cart = new CartService;
     }
 
     private function makeProduct(array $overrides = []): Product
@@ -28,8 +28,8 @@ final class CartServiceTest extends TestCase
         return Product::create(array_merge([
             'instance_id' => $instance->id,
             'name' => 'Test Product',
-            'slug' => 'test-product-' . uniqid(),
-            'sku' => 'TST-' . uniqid(),
+            'slug' => 'test-product-'.uniqid(),
+            'sku' => 'TST-'.uniqid(),
             'price' => 100,
             'cost_price' => 60,
             'tax_rate' => 18,
@@ -49,7 +49,7 @@ final class CartServiceTest extends TestCase
         $this->cart->addItem($product, 2);
 
         $cart = $this->cart->getCart();
-        $key = 'item_' . $product->id;
+        $key = 'item_'.$product->id;
 
         $this->assertArrayHasKey($key, $cart);
         $this->assertSame($product->id, $cart[$key]['product_id']);
@@ -65,7 +65,7 @@ final class CartServiceTest extends TestCase
         $this->cart->addItem($product, 3);
 
         $cart = $this->cart->getCart();
-        $key = 'item_' . $product->id;
+        $key = 'item_'.$product->id;
 
         $this->assertSame(5, $cart[$key]['quantity']);
     }
@@ -75,7 +75,7 @@ final class CartServiceTest extends TestCase
         $product = $this->makeProduct();
         $this->cart->addItem($product, 2);
 
-        $key = 'item_' . $product->id;
+        $key = 'item_'.$product->id;
         $this->cart->updateItem($key, 7);
 
         $cart = $this->cart->getCart();
@@ -87,7 +87,7 @@ final class CartServiceTest extends TestCase
         $product = $this->makeProduct();
         $this->cart->addItem($product, 2);
 
-        $key = 'item_' . $product->id;
+        $key = 'item_'.$product->id;
         $this->cart->updateItem($key, 0);
 
         $cart = $this->cart->getCart();
@@ -99,7 +99,7 @@ final class CartServiceTest extends TestCase
         $product = $this->makeProduct();
         $this->cart->addItem($product, 5);
 
-        $key = 'item_' . $product->id;
+        $key = 'item_'.$product->id;
         $this->cart->removeItem($key);
 
         $cart = $this->cart->getCart();
