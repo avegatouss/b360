@@ -38,7 +38,7 @@ if command -v php >/dev/null 2>&1 && [ -f artisan ]; then
             ' /tmp/routes.json >> "$OUTPUT" 2>/dev/null || cat /tmp/routes.json >> "$OUTPUT"
         else
             echo "(installe \`jq\` pour le formatage propre des routes)" >> "$OUTPUT"
-            php artisan route:list --columns=method,uri,name --no-ansi >> "$OUTPUT"
+            php artisan route:list --no-ansi >> "$OUTPUT"
         fi
         rm -f /tmp/routes.json
     else
