@@ -91,7 +91,7 @@ Les quatre premiers indexes contiennent `(a regenerer)`. Les agents sont pourtan
 
 **Action**
 
-1. Lancer les commandes du pack : `make api-index`, `make db-index`, `make event-index`, `make permission-index`, puis `make memory-refresh`.
+1. Lancer les commandes du pack : `make audit-api`, `make audit-db`, `make audit-events`, `make audit-permissions`, puis `make memory-refresh`. Si `make` est indisponible, executer directement `bash scripts/memory/refresh-<nom>-index.sh`.
 2. Si une commande echoue, documenter l'echec dans `OPEN_RISKS.md` ou un ticket.
 3. Verifier que chaque index contient des donnees exploitables, pas seulement un header.
 
