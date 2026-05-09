@@ -5,28 +5,36 @@ Ce dossier contient l'audit documentaire de l'application, avec un focus priorit
 > **Status board unique** : voir [`STATUS.md`](STATUS.md) pour l'etat consolide en temps reel (tests, migrations, risques, actions).
 > **Audit comparatif documente vs fonctionnel** : voir [`audit_comparatif_final.md`](audit_comparatif_final.md).
 
-## Etat chantier
+## État chantier
 
-Le chantier de remediation Eshop est actif. Les lots 1 a 7 et les sous-lots 8a-8c (15-16/03/2026) sont traces dans [`docs/eshop/99-chantier-remediation.md`](eshop/99-chantier-remediation.md). Les Prompts P0/P5/P7 (04/04/2026) sont traces dans [`p0_correction_report.md`](p0_correction_report.md), [`tests_analysis.md`](tests_analysis.md), [`complex_tests_investigation.md`](complex_tests_investigation.md), [`performance_audit.md`](performance_audit.md).
+**Post-R-101 (2026-05-05) :**
+- R-101 — découpage Eshop360 — **fermé**, voir [ADR-020](adr/ADR-020-eshop360-r101-closure.md). 13 sous-domaines extraits sous `Modules/Eshop360/Domain/<Sub>/Models/`, morph map central posé, stubs alias supprimés. Voir aussi ADR-008..019 pour les sous-lots intermédiaires.
+- Tous les risques R-001..R-004, R-101..R-104, R-201, R-202, R-301 sont **fermés** ([OPEN_RISKS.md](memory/OPEN_RISKS.md)).
 
-### Historique des executions de la suite de tests
+**En cours (2026-05-08) :**
+- Sprint pré-Menuiserie360 — 4 lots (sécurité backups .env, rebase doc post-R-101, ADR-021 contrats inter-modules, rebase spec Menuiserie360 v1.1). Voir [plan](superpowers/plans/2026-05-08-pre-menuiserie360-sprint.md).
+
+**Sources de vérité courantes :**
+1. [`context/PROJECT_DIGEST.md`](context/PROJECT_DIGEST.md) — synthèse compressée pour IA
+2. [`memory/OPEN_RISKS.md`](memory/OPEN_RISKS.md) — risques techniques
+3. [`memory/RECENT_DECISIONS.md`](memory/RECENT_DECISIONS.md) — décisions structurantes récentes
+4. [`STATUS.md`](STATUS.md) — status board snapshot
+5. [`DOCUMENTATION_INDEX.md`](DOCUMENTATION_INDEX.md) — taxonomy de l'ensemble du dossier docs/
+
+**Archives historiques (pré-R-101)** : `audits/`, `cartographie/`, `audit_comparatif_final.md`, `bilan_etat_actuel_avant_nouvelles_fonctionnalites.md`. Marqués comme archives — ne pas confondre avec l'état courant.
+
+### Historique des exécutions de la suite de tests
 
 | Date | Tests passants | Failed | Skipped | Source |
 | --- | --- | --- | --- | --- |
 | 2026-03-16 (post lot 8c) | **396** | 0 | 3 | `eshop/99-chantier-remediation.md` |
-| 2026-04-04 (apres P5 + complex tests) | **266** | 0 | — | `complex_tests_investigation.md` |
-| 2026-04-06 10:33 (baseline post-audit) | 597 | 11 | 3 | `STATUS.md` |
-| 2026-04-06 11:30 (post-fix A-7) | 603 | 5 | 3 | `STATUS.md` |
-| **2026-04-06 12:15** (post A-7+A-8+A-9) | **608** | **0** | **3** | 🎉 [`STATUS.md`](STATUS.md) |
+| 2026-04-06 12:15 (post A-7+A-8+A-9) | **608** | 0 | 3 | `STATUS.md` (historique) |
+| 2026-04-06 13:00 (post D-1+D-3) | **617** | 0 | 3 | `STATUS.md` (historique) |
+| 2026-04-22 20:08 (CURRENT_STATE refresh) | **617** | 0 | 3 | `memory/CURRENT_STATE.md` |
+| 2026-05-05 (R-101 S12 closure) | **666 / 2 / 5** | 2 pré-existants hors scope | 5 | [ADR-020](adr/ADR-020-eshop360-r101-closure.md) §résultat |
+| 2026-05-08 (sprint pré-Menuiserie360) | ⚠️ à réexécuter | — | — | À documenter en fin de sprint |
 
-Derniere verification globale (**2026-04-06 12:15**, branche `eshop360`) :
-
-- `php artisan test` : 🎉 **`608 passed`, `0 failed`, `3 skipped`** (1559 assertions, 359 s)
-- `php artisan migrate:status` : **`182 Ran`, `0 Pending`** (toutes les 13 migrations `2026_04_04_*` du chantier P0/P5/P7 appliquees)
-- `php artisan view:cache` : `OK` (verifie au lot 8b/8c)
-- les `3 skipped` restants sont lies a des configurations de bases externes de test non renseignees (`TEST_DB_DRIVER`, `TEST_MYSQL_*`, `TEST_PGSQL_*`)
-
-> **Suite 100 % verte au 2026-04-06 12:15.** Les 11 regressions identifiees dans la matinee (Dashboard x6, Auth IpRules x2, Users RoleController x3) ont toutes ete resolues par methodologie systematic-debugging en ~2h cumulees, avec 0 regression introduite. Toutes les root causes etaient des **incompatibilites test/environnement**, pas des bugs du code applicatif. Voir [`STATUS.md`](STATUS.md) pour les details des sections A-7, A-8, A-9.
+> **Suite 100 % verte au 2026-05-05** sur le périmètre R-101. Les 2 échecs résiduels (`ChannelIsolationTest`, `EshopSettingsServiceTest`) sont **pré-existants hors scope R-101**, à traiter dans un lot dédié si l'humain le décide.
 
 ## Methodologie
 
