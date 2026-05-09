@@ -1,6 +1,6 @@
 # CURRENT_STATE — B360
 
-> Fichier auto-généré par `make memory-refresh`. Dernière mise à jour : **2026-04-22 20:08:31    **
+> Fichier auto-généré par `make memory-refresh`. Dernière régénération automatique : **2026-04-22 20:08:31**. Faits ajoutés manuellement post-R-101 jusqu'au **2026-05-05** (ADR-020).
 > Branche analysée : `chore/pack-suspense-fixes`
 > HEAD : `1bdbf0b`
 

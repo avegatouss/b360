@@ -1,7 +1,7 @@
 # PROJECT DIGEST — B360
 
 > Compression contextuelle pour les IA. Lis ce fichier en premier.
-> Mise à jour : **2026-04-22 20:08:31    **
+> Mise à jour : **2026-05-05** (post R-101 S12 — ADR-020). Champs MODULE_INDEX/EVENT_INDEX peuvent être plus anciens si non régénérés.
 
 ---
 
