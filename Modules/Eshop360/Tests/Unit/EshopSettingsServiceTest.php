@@ -16,6 +16,11 @@ final class EshopSettingsServiceTest extends TestCase
     {
         parent::setUp();
 
+        // Cache `array` persists across tests in the same parallel/sequential
+        // worker; RefreshDatabase resets auto-increment so consecutive tests
+        // share the same instanceId, polluting `eshop:settings:{group}:{instanceId}`.
+        Cache::flush();
+
         $instance = $this->makeRootInstance();
         CurrentInstance::set($instance);
 
