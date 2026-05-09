@@ -58,6 +58,7 @@ final class ChannelIsolationTest extends TestCase
             'name' => 'Saphir Plus',
             'slug' => 'saphir-plus',
             'code' => 'SAPHIR',
+            'is_hub' => true,
             'is_active' => true,
             'portal_enabled' => false,
             'margin_rate' => 0, 'buy_rate' => 0,
