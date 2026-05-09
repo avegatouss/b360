@@ -1,11 +1,11 @@
 ---
 title: Statut consolidé B360
 project: B360
-version: 1.0
-date: 2026-04-06
-auteur: Audit automatisé (Claude Code)
-branche: eshop360
-contexte: Status board unique consolidant l'état tests + migrations + corrections + risques
+version: 1.1
+date: 2026-05-08
+auteur: Sprint pré-Menuiserie360 (Claude)
+branche: chore/docs-cleanup-2026-05-06
+contexte: Status board unique consolidant l'état tests + migrations + risques. Source de vérité courante = memory/ + ce fichier ; archives historiques pré-R-101 dans audits/ et cartographie/.
 ---
 
 # B360 — Status consolidé
@@ -14,26 +14,44 @@ contexte: Status board unique consolidant l'état tests + migrations + correctio
 
 ---
 
-## 🟢 Snapshot 2026-04-06 (13:00 UTC, post-D1+D3 — CashRegister + Multi-currency MVP)
+## 🟢 Snapshot 2026-05-08 (post-R-101 / S12 cloturé 2026-05-05)
 
-| Indicateur | Valeur | Tendance |
+| Indicateur | Valeur | Source |
 |---|---|---|
-| **Tests** | **617 passed / 0 failed / 3 skipped** (1590 assertions, 369 s) | ⬆️ **+9 vs 12:15** (3 CashRegister + 6 MultiCurrency) |
-| **Migrations** | **184 Ran / 0 Pending** | ✅ +2 nouvelles migrations Eshop360 (`2026_04_06_*`) |
-| **Migrations 2026_04_04_* (chantier P0/P5/P7)** | **13/13 Ran** | ✅ Complet |
-| **Migrations 2026_04_06_* (D-3 multi-currency completion)** | **2/2 Ran** | ✅ `amount_in_base_currency` + `exchange_rate` symétrisés |
-| **Eshop360 — tests** | **100 % vert** | 🟢 Stable + nouveaux tests P0/P5/P7/D-1 |
-| **CashRegister — D-1** | **3/3 nouveaux tests verts** | 🟢 **DOUBLE CAISSE FIXÉ** |
-| **Multi-currency — D-3** | **18/18 tests Currency verts** (+8 nouveaux) | 🟢 **BUG LATENT FIXÉ** |
-| **Dashboard / Auth / Users** | **100 % vert** | 🟢 A-7/A-8/A-9 toujours OK |
+| **R-101 — découpage Eshop360** | ✅ **FERMÉE** (S12.1..S12.5 mergés 2026-05-05) | [ADR-020](adr/ADR-020-eshop360-r101-closure.md) |
+| **Sous-domaines extraits** | **13/13** sous `Modules/Eshop360/Domain/<Sub>/Models/` | ADR-009..019 |
+| **Morph map central** | ✅ posé en première instruction de `Eshop360ServiceProvider::boot()` (88 entrées, clés legacy FQN) | ADR-020 §1 |
+| **Stubs alias rétrocompatibles** | ✅ supprimés (88 stubs retirés, 2 non-stubs retenus : `EshopModuleSetting`, `UserAssignment`) | ADR-020 §3 |
+| **Risques ouverts** | **0** (CRITIQUE/MAJEUR/MOYEN/FAIBLE) | [OPEN_RISKS.md](memory/OPEN_RISKS.md) |
+| **Tests (dernier snapshot historique 2026-05-05, ADR-020)** | 666 passed / 2 failed pré-existants hors scope / 5 skipped | ADR-020 §résultat |
+| **Tests (à réexécuter avant communication externe)** | ⚠️ snapshot ci-dessus daté du 2026-05-05 — vérifier via `php artisan test` actuel | — |
+| **Migrations** | 184+ Ran / 0 Pending (snapshot 2026-04-22) | [CURRENT_STATE.md](memory/CURRENT_STATE.md) |
+| **Sprint en cours** | Pré-Menuiserie360 (4 lots — sécurité, doc, ADR-021, rebase spec) | [Plan](superpowers/plans/2026-05-08-pre-menuiserie360-sprint.md) |
 
-> 🎉 **Suite complète 100 % verte au 2026-04-06 13:00** — 617 passed / 0 failed / 3 skipped. Cette session a ajouté **+9 tests passants** sans aucune régression. Les **bugs identifiés dans le chantier des actions résiduelles ont été corrigés** : double caisse cross-channel (D-1), bug latent multi-currency `$fillable` manquant (D-3), asymétrie `exchange_rate` sur `eshop_payments` (D-3). **Décision pendante** : D-2 Option B (compléter `database-per-instance`) — plan détaillé proposé avec blockers architecturaux à valider avant codage.
+> **État courant = `memory/` + ce STATUS.md** ; les audits dans `audits/`, `cartographie/`, et le `audit_comparatif_final.md` sont **archives historiques** (cf. [DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md)).
+
+> **Pour démarrer une intervention** : lire en priorité `context/PROJECT_DIGEST.md`, `memory/OPEN_RISKS.md`, `memory/RECENT_DECISIONS.md`, puis ce STATUS.md.
 
 ---
 
-## ✅ D-1 + D-3 résolution — CashRegister + Multi-currency MVP (2026-04-06 13:00)
+## 📜 Snapshot historique 2026-04-06 13:00 UTC (pré-R-101)
 
-### D-1 — `CashRegisterService::open()` double caisse cross-channel
+> **Archive — chiffres pré-découpage Eshop360.** Conservé pour comparaison.
+
+| Indicateur | Valeur | Tendance |
+|---|---|---|
+| **Tests** | **617 passed / 0 failed / 3 skipped** (1590 assertions, 369 s) | Suite 100 % verte |
+| **Migrations** | **184 Ran / 0 Pending** | ✅ Complet |
+
+---
+
+## 📜 Détails historiques pré-R-101
+
+> ⚠️ **Archive historique pré-R-101 (mai 2026).** Les détails ci-dessous décrivaient l'état du chantier au 2026-04-06. Pour l'état courant, voir le snapshot 2026-05-08 en haut de fichier et `memory/`.
+
+### ✅ D-1 + D-3 résolution — CashRegister + Multi-currency MVP (2026-04-06 13:00)
+
+#### D-1 — `CashRegisterService::open()` double caisse cross-channel
 
 **Bug confirmé via TDD reproduction** :
 
@@ -78,7 +96,7 @@ public function open(int $instanceId, float $openingAmount, ?int $storeId = null
 - `test_open_global_closes_previously_open_channel_register`
 - `test_open_closes_previously_open_register_on_a_different_channel`
 
-### D-3 — Multi-currency MVP
+#### D-3 — Multi-currency MVP
 
 **Découverte clé** : la situation n'était pas "multi-currency non implémenté" mais **"bug latent activable à distance"**. Les colonnes existaient en DB (migration `2026_04_04_300002`), `OrderService::snapshotCurrencyIfEnabled()` existait et tentait d'écrire — **mais les modèles n'avaient pas `currency_code`/`exchange_rate`/`amount_in_base_currency` dans `$fillable`**, donc Laravel droppait silencieusement les attributs lors de `update()`.
 
@@ -100,9 +118,9 @@ public function open(int $instanceId, float $openingAmount, ?int $storeId = null
 
 ---
 
-## ✅ A-8 + A-9 résolution — Auth IpRules + Users RoleController (2026-04-06 12:15)
+### ✅ A-8 + A-9 résolution — Auth IpRules + Users RoleController (2026-04-06 12:15)
 
-### A-8 — `Modules\Auth\Tests\Feature\IpRulesTest` (2 tests, 3 causes empilées)
+#### A-8 — `Modules\Auth\Tests\Feature\IpRulesTest` (2 tests, 3 causes empilées)
 
 Cette catégorie a révélé **trois causes root cachées les unes derrière les autres** :
 
@@ -125,7 +143,7 @@ Le cache contenait la rule du test précédent (`127.0.0.1 deny`) au lieu de la 
 
 **Fichier modifié** : [Modules/Auth/Tests/Feature/IpRulesTest.php](../Modules/Auth/Tests/Feature/IpRulesTest.php)
 
-### A-9 — `Modules\Users\Tests\Feature\RoleControllerTest` (3 tests, drift d'assertions)
+#### A-9 — `Modules\Users\Tests\Feature\RoleControllerTest` (3 tests, drift d'assertions)
 
 Pure incompatibilité entre les assertions des tests et le HTML rendu par les vues Blade actuelles :
 
@@ -154,7 +172,7 @@ Le HookRegistry est correctement peuplé (22 groupes — les 2 du setUp + 20 ven
 
 ---
 
-## ✅ A-7 résolution — Dashboard 302 (2026-04-06 11:30)
+### ✅ A-7 résolution — Dashboard 302 (2026-04-06 11:30)
 
 **Root cause identifiée par méthodologie systematic-debugging :**
 
@@ -192,11 +210,11 @@ response.location = 'http://b360.test/i/acme/nav'
 
 ---
 
-## Tests — historique des échecs résolus (au 2026-04-06 12:15, suite 100 % verte)
+### Tests — historique des échecs résolus (au 2026-04-06 12:15, suite 100 % verte)
 
 > Cette section est conservée pour archive — tous les échecs listés ci-dessous sont maintenant résolus. Voir les sections A-7, A-8, A-9 ci-dessus pour les détails de résolution.
 
-### ~~Catégorie 1 — `Modules\Auth\Tests\Feature\IpRulesTest` (2 échecs)~~ ✅ RÉSOLU (A-8)
+#### ~~Catégorie 1 — `Modules\Auth\Tests\Feature\IpRulesTest` (2 échecs)~~ ✅ RÉSOLU (A-8)
 
 | # | Test | Type d'erreur | Diagnostic |
 |---|---|---|---|
@@ -209,7 +227,7 @@ response.location = 'http://b360.test/i/acme/nav'
 
 **Effort de correction :** S (< 30 min).
 
-### ~~Catégorie 2 — `Modules\Users\Tests\Feature\RoleControllerTest` (3 échecs)~~ ✅ RÉSOLU (A-9)
+#### ~~Catégorie 2 — `Modules\Users\Tests\Feature\RoleControllerTest` (3 échecs)~~ ✅ RÉSOLU (A-9)
 
 | # | Test | Type d'erreur | Diagnostic |
 |---|---|---|---|
@@ -223,7 +241,7 @@ response.location = 'http://b360.test/i/acme/nav'
 
 **Effort de correction :** S (< 1h) — relire les templates `Modules/Users/Resources/views/roles/*.blade.php` et aligner les assertions.
 
-### ~~Catégorie 3 — `Modules\Dashboard\Tests\Feature\InstanceSwitcherTest` + `DashboardStatsTest` (6 échecs)~~ ✅ RÉSOLU (A-7)
+#### ~~Catégorie 3 — `Modules\Dashboard\Tests\Feature\InstanceSwitcherTest` + `DashboardStatsTest` (6 échecs)~~ ✅ RÉSOLU (A-7)
 
 | # | Test | Type d'erreur | Diagnostic |
 |---|---|---|---|
@@ -245,7 +263,7 @@ response.location = 'http://b360.test/i/acme/nav'
 
 ---
 
-## Migrations — état détaillé
+### Migrations — état détaillé (snapshot 2026-04-06)
 
 - **182 migrations Ran**, 0 Pending
 - Toutes les **13 migrations `2026_04_04_*`** du chantier P0/P5/P7 sont appliquées :
@@ -270,7 +288,7 @@ response.location = 'http://b360.test/i/acme/nav'
 
 ---
 
-## Corrections P0/P5/P7 — état effectif
+### Corrections P0/P5/P7 — état effectif (snapshot 2026-04-06)
 
 | ID | Correction | Statut | Fichier de preuve |
 |---|---|---|---|
@@ -293,32 +311,34 @@ response.location = 'http://b360.test/i/acme/nav'
 
 ---
 
-## Risques résiduels (au 2026-04-06)
+### Risques résiduels (snapshot 2026-04-06)
 
-### 🔴 Critique
+> ⚠️ **Archive.** Pour les risques courants, voir [memory/OPEN_RISKS.md](memory/OPEN_RISKS.md).
+
+#### 🔴 Critique
 
 1. ~~**6 régressions Dashboard `/i/{slug}` retournant 302**~~ — ✅ **RÉSOLU 2026-04-06 11:30** par l'override `ESHOP_HIERARCHICAL_MENU=false` dans `phpunit.xml`. La cause root n'était pas une régression du flow team context mais une **incompatibilité environnementale** : `.env` du dev active le menu hiérarchique, ce qui faisait que le `DashboardController` redirigeait vers `eshop360.nav.home` au lieu de rendre la vue dashboard. Voir §A-7 résolution ci-dessus.
 2. **Double système de marges Codifarm vs DistributionChannel** toujours actif — incohérence métier si les deux écrivent en parallèle.
 
-### 🟠 Haut
+#### 🟠 Haut
 
 3. **Multi-currency non intégré dans Eshop360** — `eshop_orders/invoices/payments` n'ont pas encore de colonnes `currency_code`/`exchange_rate`/`amount_in_base_currency`. Les phases 1 et 2 du module Currency sont en place mais Eshop360 reste mono-devise.
 4. **`InstanceProvisioner` database-per-instance cassé** — cherche un dossier `Database/InstanceMigrations/` qui n'existe pas. À documenter comme décision (abandonner ou corriger).
 
-### 🟡 Moyen
+#### 🟡 Moyen
 
 5. **Layouts POS 2-5 non requalifiés** — seul le layout 1 est aligné post-chantier.
 6. **`FeatureGate` métier non re-appliqué** sur les routes premium Eshop360 — le singleton est supprimé mais le gating métier n'est pas encore re-activé.
 7. **Portail grossiste/public sans onboarding autonome** — portail réservé aux clients déjà liés à une fiche.
 8. **2 zones d'ombre non vérifiées** : `CashRegisterService::open()` (double caisse possible ?), `PurchaseReturnController` (modèle utilisé ?).
 
-### 🟢 Faible
+#### 🟢 Faible
 
 9. **3 tests de couverture du socle restants** : `Core: ModuleManager (unit tests isEnabled + cache)`, `Settings: SettingsManager (extractGroup/extractKey)`, `Installer: helpers internes` (cf. `tests_coverage_tasks.md`).
 
 ---
 
-## Actions recommandées (par ordre de priorité)
+### Actions recommandées (par ordre de priorité, snapshot 2026-04-06)
 
 | # | Action | Effort | Bloquant ? |
 |---|---|---|---|
@@ -333,7 +353,7 @@ response.location = 'http://b360.test/i/acme/nav'
 
 ---
 
-## Historique des exécutions de tests
+### Historique des exécutions de tests (jusqu'au 2026-04-06)
 
 | Date | Total passed | Failed | Skipped | Source |
 |---|---|---|---|---|
@@ -355,7 +375,7 @@ response.location = 'http://b360.test/i/acme/nav'
 
 ---
 
-## Comment mettre à jour ce fichier
+### Comment mettre à jour ce fichier
 
 Après chaque exécution de la suite de tests :
 
