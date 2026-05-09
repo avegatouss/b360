@@ -10,6 +10,8 @@ contraintes: Audit basé sur le contenu textuel des documents, vérifications st
 
 # Audit comparatif final B360 — Documenté vs Fonctionnel
 
+> ⚠️ **Archive historique (pré-R-101).** Certains constats ont été résolus depuis ; lire d'abord `docs/context/PROJECT_DIGEST.md`, `docs/memory/OPEN_RISKS.md`, `docs/memory/RECENT_DECISIONS.md` et les ADR pertinents. Voir aussi [`DOCUMENTATION_INDEX.md`](DOCUMENTATION_INDEX.md) pour la taxonomy.
+
 > **TL;DR (v1.4, post-D1+D3 MVP)** — Suite de tests exécutée le **2026-04-06 à 13:00** : 🎉 **617 passed / 0 failed / 3 skipped** (1590 assertions, 369 s). **Migrate:status** : **184 Ran / 0 Pending** (+2 nouvelles migrations Eshop360 `2026_04_06_*` pour symétriser le multi-currency). **Cette session** a corrigé 2 bugs concrets identifiés dans le chantier des actions résiduelles : **D-1** (CashRegister double caisse cross-channel — fixé en TDD avec 3 nouveaux tests + transaction + lockForUpdate + close ALL) et **D-3 MVP** (multi-currency `$fillable` manquant rendant le code latent non fonctionnel — fixé + 2 migrations symétrisation + `SnapshotService::snapshotIfEnabled()` centralisé + 8 nouveaux tests). **Total session** : +9 tests passants, 0 régression, 2 vrais bugs corrigés (pas juste de la doc). **Découvertes additionnelles** lors du chantier : **Codifarm vs DistributionChannel** était déjà unifié en code (doc obsolète corrigée), **PurchaseReturnController** est correct, **InstanceProvisioner** est architecturalement valide mais incomplet (Option B retenue, plan détaillé proposé avec **blocker FK cross-DB** à valider avant codage). **Le détail consolidé est dans [STATUS.md](STATUS.md).**
 
 ---

@@ -1,5 +1,7 @@
 # Module : Users
 
+> ⚠️ **Archive historique (pré-R-101).** Certains constats ont été résolus depuis ; lire d'abord `docs/context/PROJECT_DIGEST.md`, `docs/memory/OPEN_RISKS.md`, `docs/memory/RECENT_DECISIONS.md` et les ADR pertinents. Voir aussi [`DOCUMENTATION_INDEX.md`](../../DOCUMENTATION_INDEX.md) pour la taxonomy.
+
 ## 1. Description fonctionnelle
 - Objectif : administrer les utilisateurs, leurs roles par instance et leurs preferences.
 - Perimetre metier : CRUD utilisateurs, rattachement a une ou plusieurs instances, statut de membership, edition des roles, preferences utilisateur.

@@ -1,5 +1,7 @@
 # Module : Settings
 
+> ⚠️ **Archive historique (pré-R-101).** Certains constats ont été résolus depuis ; lire d'abord `docs/context/PROJECT_DIGEST.md`, `docs/memory/OPEN_RISKS.md`, `docs/memory/RECENT_DECISIONS.md` et les ADR pertinents. Voir aussi [`DOCUMENTATION_INDEX.md`](../../DOCUMENTATION_INDEX.md) pour la taxonomy.
+
 ## 1. Description fonctionnelle
 - Objectif : centraliser les parametres globaux et les groupes de configuration exposes par les modules.
 - Perimetre metier : gestion de cles/valeurs, groupes de settings, branding, securite, email, SMS, notifications, options Eshop exposees dans l'UI.

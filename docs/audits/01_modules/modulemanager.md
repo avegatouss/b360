@@ -1,5 +1,7 @@
 # Module : ModuleManager
 
+> ⚠️ **Archive historique (pré-R-101).** Certains constats ont été résolus depuis ; lire d'abord `docs/context/PROJECT_DIGEST.md`, `docs/memory/OPEN_RISKS.md`, `docs/memory/RECENT_DECISIONS.md` et les ADR pertinents. Voir aussi [`DOCUMENTATION_INDEX.md`](../../DOCUMENTATION_INDEX.md) pour la taxonomy.
+
 ## 1. Description fonctionnelle
 - Objectif : administrer le cycle de vie des modules B360 installes.
 - Perimetre metier : liste, detail, activation/desactivation, suppression et installation a partir d'un ZIP.

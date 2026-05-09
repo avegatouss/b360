@@ -1,5 +1,7 @@
 # Module : Eshop360
 
+> ⚠️ **Archive historique (pré-R-101).** Certains constats ont été résolus depuis ; lire d'abord `docs/context/PROJECT_DIGEST.md`, `docs/memory/OPEN_RISKS.md`, `docs/memory/RECENT_DECISIONS.md` et les ADR pertinents. Voir aussi [`DOCUMENTATION_INDEX.md`](../../DOCUMENTATION_INDEX.md) pour la taxonomy.
+
 ## 1. Description fonctionnelle
 - **Objectif :** Module métier e-commerce / gestion commerciale complète — couvre le cycle complet de l'activité d'un commerce (pharmacie, distribution, retail) : catalogue, POS, stocks, clients, fournisseurs, achats, importations, facturation, commandes en ligne, canaux revendeurs, finance, RH, projets, rapports et API.
 - **Périmètre métier :** Commerce de détail, distribution, pharmacie (Codifarm/SAPHIR), gestion commerciale complète.

@@ -1,5 +1,7 @@
 # Vue globale B360
 
+> ⚠️ **Archive historique (pré-R-101).** Certains constats ont été résolus depuis ; lire d'abord `docs/context/PROJECT_DIGEST.md`, `docs/memory/OPEN_RISKS.md`, `docs/memory/RECENT_DECISIONS.md` et les ADR pertinents. Voir aussi [`DOCUMENTATION_INDEX.md`](../DOCUMENTATION_INDEX.md) pour la taxonomy.
+
 Sources analysees :
 - `modules_statuses.json`, `Modules/*/module.json`, `Modules/*/Routes/*.php`, `Modules/*/Models/*.php`, `Modules/*/Services/*.php`
 - `database/migrations/*` et `Modules/*/Database/Migrations/*`

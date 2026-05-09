@@ -1,5 +1,7 @@
 # Incoherences et optimisations
 
+> ⚠️ **Archive historique (pré-R-101).** Certains constats ont été résolus depuis ; lire d'abord `docs/context/PROJECT_DIGEST.md`, `docs/memory/OPEN_RISKS.md`, `docs/memory/RECENT_DECISIONS.md` et les ADR pertinents. Voir aussi [`DOCUMENTATION_INDEX.md`](../DOCUMENTATION_INDEX.md) pour la taxonomy.
+
 Perimetre : constats tires du code et, quand utile, de l'ecart avec la documentation existante.
 
 ## 1. Duplication de fonctionnalites

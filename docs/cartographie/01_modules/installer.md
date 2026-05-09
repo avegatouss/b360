@@ -1,5 +1,7 @@
 # Module : Installer
 
+> ⚠️ **Archive historique (pré-R-101).** Certains constats ont été résolus depuis ; lire d'abord `docs/context/PROJECT_DIGEST.md`, `docs/memory/OPEN_RISKS.md`, `docs/memory/RECENT_DECISIONS.md` et les ADR pertinents. Voir aussi [`DOCUMENTATION_INDEX.md`](../../DOCUMENTATION_INDEX.md) pour la taxonomy.
+
 ## 1. Description fonctionnelle
 - **Objectif :** Orchestrer l'installation initiale de la plateforme B360 — vérification prérequis, configuration DB, écriture .env, création super-admin.
 - **Périmètre métier :** Setup one-time.

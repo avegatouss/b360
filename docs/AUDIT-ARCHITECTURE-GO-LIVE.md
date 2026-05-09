@@ -1,5 +1,7 @@
 # AUDIT ARCHITECTURE - PLAN DE DURCISSEMENT PRE-PRODUCTION
 
+> ⚠️ **Archive historique (pré-R-101).** Certains constats ont été résolus depuis ; lire d'abord `docs/context/PROJECT_DIGEST.md`, `docs/memory/OPEN_RISKS.md`, `docs/memory/RECENT_DECISIONS.md` et les ADR pertinents. Voir aussi [`DOCUMENTATION_INDEX.md`](DOCUMENTATION_INDEX.md) pour la taxonomy.
+
 > Niveau : Audit senior | Approche : pragmatique, non-destructive
 > Application : B360 - Laravel 12 multi-tenant modulaire
 > Date : 2026-03-31 | Branche : eshop360

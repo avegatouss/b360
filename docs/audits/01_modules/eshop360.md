@@ -1,5 +1,7 @@
 # Module : Eshop360
 
+> ⚠️ **Archive historique (pré-R-101).** Certains constats ont été résolus depuis ; lire d'abord `docs/context/PROJECT_DIGEST.md`, `docs/memory/OPEN_RISKS.md`, `docs/memory/RECENT_DECISIONS.md` et les ADR pertinents. Voir aussi [`DOCUMENTATION_INDEX.md`](../../DOCUMENTATION_INDEX.md) pour la taxonomy.
+
 Sources principales : `Modules/Eshop360/Routes/web.php`, `Modules/Eshop360/Providers/Eshop360ServiceProvider.php`, `Modules/Eshop360/Providers/Eshop360HooksProvider.php`, `Modules/Eshop360/Services/*`, `Modules/Eshop360/Models/*`, `Modules/Eshop360/Database/Migrations/*`, `docs/GUIDE-CALCULS-ESHOP360.md`.
 
 ## 1. Description fonctionnelle

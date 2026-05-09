@@ -1,5 +1,7 @@
 # Module : Users
 
+> ⚠️ **Archive historique (pré-R-101).** Certains constats ont été résolus depuis ; lire d'abord `docs/context/PROJECT_DIGEST.md`, `docs/memory/OPEN_RISKS.md`, `docs/memory/RECENT_DECISIONS.md` et les ADR pertinents. Voir aussi [`DOCUMENTATION_INDEX.md`](../../DOCUMENTATION_INDEX.md) pour la taxonomy.
+
 ## 1. Description fonctionnelle
 - **Objectif :** Gérer le cycle de vie des utilisateurs, les rôles/permissions (Spatie), les memberships multi-instances et les préférences utilisateur.
 - **Périmètre métier :** Administration des identités et droits d'accès.
