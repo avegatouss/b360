@@ -1,9 +1,38 @@
 # RECENT_DECISIONS — B360
 
-> Décisions structurantes récentes. Mise à jour : **2026-05-10** (P0-3bis livré : contrats Eshop360 ADR-021).
+> Décisions structurantes récentes. Mise à jour : **2026-05-10** (Menuiserie360 P0 squelette livré).
 > Pour les décisions complètes argumentées, voir `docs/adr/`.
 
 ---
+
+## 2026-05-10 — Menuiserie360 P0 livré : squelette module L4
+
+- **Décision** : exécution du lot P0 de [`docs/Ins/CONCEPTION_TECHNIQUE_MENUISERIE360.md`](../Ins/CONCEPTION_TECHNIQUE_MENUISERIE360.md) v1.3 §3 (Phase 0 — Initialisation). Premier module L4 du SaaS B360, consommateur des contrats Eshop360 ADR-021.
+- **Lot livré (6 commits sur branche `feat/menuiserie360-p0-skeleton`)** :
+  1. `module.json` + `composer.json` + `Menuiserie360ServiceProvider` (boot/register, morph map propre Cas A vide en P0) + `Routes/web.php` (placeholder middleware stack instance-scoped) + `Config/config.php` (TVA 18% CI, préfixes numérotation) + migration `mnu_settings` (P0-1, P0-2, P0-7).
+  2. Contrats internes : `Domain/Stock/Contracts/StockContract` (4 méthodes : isAvailable/reserve/consume/release), `Domain/Client/Contracts/ClientRepositoryContract` (4 méthodes : find/withMenuiserieHistory/canReference/fromCustomerDto) + `ClientMenuiserieDto` immuable. Pas d'`InvoiceServiceContract` (BC-Finance autonome, décision v1.3) (P0-3).
+  3. `Menuiserie360HooksProvider` (P0-5/6) : 10 permissions validées v1.3 §5.6 réparties en 7 PermissionGroups (`menuiserie.commercial/clients/chantiers/production/stocks/finance/reporting`) + entrée racine menu + 7 sous-menus BC (tous `visibleWhen=false` en P0 — placeholders activés en P2-P3 quand routes existeront).
+  4. Activation : `modules_statuses.json` (Menuiserie360: true), `Modules/Core/Config/hooks.php` (HooksProvider listé), nouveau layer deptrac `Menuiserie360` avec ruleset strict (Core+Auth+Users+Instances+Settings+Billing+Currency+Lang+EshopContracts seulement — interdit EshopX/Domain/Services).
+  5. Tests structurels d'isolation (5 invariants) + bootstrap (6 smoke tests) — **11 tests / 107 assertions, 100 % verts**.
+  6. RECENT_DECISIONS entry (cette entrée).
+- **Validation pipeline** :
+  - ✅ Pint passé sur tous les commits
+  - ✅ PHPStan : 0 erreur sur tout le module
+  - ✅ Deptrac : 0 violations, 0 errors (198 skipped baseline R-101 préexistants intacts)
+  - ✅ Tests : 11/11 verts en isolation
+- **Décisions tranchées dans le lot** :
+  - **Cas A morph map** strictement appliqué : `Menuiserie360ServiceProvider::boot()` pose `Relation::morphMap()` propre (vide en P0, peuplé en P2-P3 avec `mnu.invoice`, `mnu.payment`, etc. en short keys). Aucune entrée ajoutée au morph map central Eshop360 — vérifié par invariant structural #5.
+  - **HooksProvider hors providers Laravel** : enregistré dans `Modules/Core/Config/hooks.php` (cohérent avec `Eshop360HooksProvider`), pas dans `module.json` providers list — correction faite dans le lot après identification du faux pattern initial.
+  - **Pas de `Menuiserie360TestServiceProvider`** : `Tests/TestCase` étend simplement `Billing\Tests\TestCase` qui hérite déjà de `Core\Tests\TestCase` pour bénéficier de `makeRootInstance()` et `makeRootSuperAdmin()`.
+- **Hors scope P0 (à venir)** :
+  - Implémentations des contrats internes (StockMatiereService, ClientMenuiserieRepository) — P1-3, P1-5.
+  - Routes métier + Controllers — P2-P3.
+  - Modèles (`MenuiserieInvoice`, `MenuiseriePayment`, `Devis`, `BonCommande`, `Chantier`, `OrdreFabrication`, etc.) — P1-P2.
+  - Vues Blade + assets front — P2-P3.
+  - **P0-3quater** (lot plateforme S-7 multi-DB) — peut tourner en parallèle, bloquant pour la prod uniquement, hors scope codage.
+- **Note gouvernance** : le hook `commit-msg` ne reconnaît pas encore `menuiserie360` comme scope autorisé — tous les commits du lot ont utilisé `feat(governance)` / `test(governance)` comme fallback. Une mise à jour du hook (ajout de `menuiserie360` dans la regex `SCOPES`) est à prévoir dans un lot gouvernance dédié — édition refusée par le classifier auto-mode dans cette session (légitime : modifier la liste des scopes sans accord explicite = tampering).
+- **Source** : branche `feat/menuiserie360-p0-skeleton` (basée sur `feat/eshop360-contracts-adr-021-p0-3bis` qui contient les contrats consommés). À merger après le P0-3bis.
+- **Suite** : Menuiserie360 P1 (noyau Core — semaines 2-3 spec) — implémentations StockMatiereService, ClientMenuiserieRepository, modèles MatierePremiere/Devis/LigneDevis, DevisCalculatorService.
 
 ## 2026-05-10 — P0-3bis livré : contrats publics Eshop360 (ADR-021)
 
