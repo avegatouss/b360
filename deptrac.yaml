@@ -219,6 +219,17 @@ deptrac:
               value: Modules/Eshop360/Events/.*
 
     # ═══════════════════════════════════════════════════════════════
+    # L4 — Modules métier futurs (consommateurs ADR-021)
+    # ═══════════════════════════════════════════════════════════════
+    # Menuiserie360 : premier module L4. Consomme Eshop360 UNIQUEMENT
+    # via EshopContracts (ADR-021). Aucun import de Domain models, aucun
+    # accès DB direct (DB::table('eshop_*')). Cf. spec v1.3 §2.5.
+    - name: Menuiserie360
+      collectors:
+        - type: directory
+          value: Modules/Menuiserie360/.*
+
+    # ═══════════════════════════════════════════════════════════════
     # Couche app/ (User, Instance — historique)
     # ═══════════════════════════════════════════════════════════════
     - name: AppLayer
@@ -308,6 +319,25 @@ deptrac:
     # services internes ou autres EshopX. Cf. spec Menuiserie360 v1.3 §2.5.
     EshopContracts:
       - Core
+      - AppLayer
+
+    # ═══════════════════════════════════════════════════════════════
+    # L4 — Modules métier futurs (ADR-021)
+    # ═══════════════════════════════════════════════════════════════
+    # Menuiserie360 : ruleset minimal v1.3 §2.5.
+    # Autorisé : socles + transverses + EshopContracts (surface publique).
+    # INTERDIT : EshopX (Domain models), Eshop360 résiduel, EshopShared
+    # (interne), Eshop360 services.
+    Menuiserie360:
+      - Core
+      - Auth
+      - Users
+      - Instances
+      - Settings
+      - Billing
+      - Currency
+      - Lang
+      - EshopContracts
       - AppLayer
 
     # R-101 S12 : EshopShared regroupe l'infrastructure partagée intra-Eshop360
