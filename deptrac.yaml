@@ -178,9 +178,24 @@ deptrac:
         - type: directory
           value: Modules/Eshop360/Support/.*
 
-    # Eshop360 = "le reste" monolithique non encore extrait.
-    # Au fur et à mesure des sous-lots S1..S11, les fichiers migrent
-    # vers les layers EshopX ci-dessus et ce layer se vide.
+    # P0-3bis (ADR-021) : EshopContracts = surface publique d'Eshop360
+    # consommable par les modules L4 (Menuiserie360, futur CCC360, etc.).
+    # Contient UNIQUEMENT des interfaces et des DTO immuables, plus
+    # éventuellement des événements à payload DTO. Aucun import de modèle
+    # Eloquent n'est autorisé ici (la responsabilité d'import des modèles
+    # revient aux Adapters qui restent dans le layer Eshop360 résiduel).
+    # Cf. ADR-021 §1 et spec Menuiserie360 v1.3 §2.5.
+    - name: EshopContracts
+      collectors:
+        - type: directory
+          value: Modules/Eshop360/Contracts/.*
+        - type: directory
+          value: Modules/Eshop360/Events/.*
+
+    # Eshop360 = "le reste" monolithique non encore extrait
+    # (incluant les Adapters qui bridgent EshopContracts ↔ Domain models).
+    # Au fur et à mesure des sous-lots S1..S11, les fichiers Domain ont migré
+    # vers les layers EshopX ci-dessus et ce layer se vide progressivement.
     - name: Eshop360
       collectors:
         - type: bool
@@ -198,6 +213,10 @@ deptrac:
               value: Modules/Eshop360/Database/Scopes/.*
             - type: directory
               value: Modules/Eshop360/Support/.*
+            - type: directory
+              value: Modules/Eshop360/Contracts/.*
+            - type: directory
+              value: Modules/Eshop360/Events/.*
 
     # ═══════════════════════════════════════════════════════════════
     # Couche app/ (User, Instance — historique)
@@ -256,7 +275,8 @@ deptrac:
       - Users
       - AppLayer
     # Eshop360 "reste" monolithique — peut dépendre des socles + de
-    # tous ses sous-domaines extraits (transition) + EshopShared.
+    # tous ses sous-domaines extraits (transition) + EshopShared
+    # + EshopContracts (P0-3bis : les Adapters publient les contrats).
     Eshop360:
       - Core
       - Auth
@@ -266,6 +286,7 @@ deptrac:
       - Currency
       - Lang
       - EshopShared
+      - EshopContracts
       - EshopCatalog
       - EshopCRM
       - EshopChannel
@@ -279,6 +300,14 @@ deptrac:
       - EshopCommunication
       - EshopProjects
       - EshopReporting
+      - AppLayer
+
+    # P0-3bis (ADR-021) : EshopContracts est la surface publique. Pour rester
+    # sûre/portable, elle ne dépend QUE du Core (pour types Laravel comme
+    # Illuminate\Support\Collection). Aucune dépendance vers Domain models,
+    # services internes ou autres EshopX. Cf. spec Menuiserie360 v1.3 §2.5.
+    EshopContracts:
+      - Core
       - AppLayer
 
     # R-101 S12 : EshopShared regroupe l'infrastructure partagée intra-Eshop360
