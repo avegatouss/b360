@@ -1,9 +1,22 @@
 # RECENT_DECISIONS — B360
 
-> Décisions structurantes récentes. Mise à jour : **2026-05-08** (rebase Menuiserie360 v1.2).
+> Décisions structurantes récentes. Mise à jour : **2026-05-08** (5 décisions Menuiserie360 → spec v1.3).
 > Pour les décisions complètes argumentées, voir `docs/adr/`.
 
 ---
+
+## 2026-05-08 — Menuiserie360 : 5 décisions critiques tranchées + spec v1.2 → v1.3
+
+- **Contexte** : suite à l'analyse complémentaire post-v1.2 qui pointait 5 décisions critiques restant à trancher avant tout démarrage Menuiserie360, l'humain a tranché les 5 dans la même session.
+- **Décisions prises** :
+  1. **BC-Finance autonome** — Menuiserie360 a ses propres modèles `MenuiserieInvoice` et `MenuiseriePayment` (tables `mnu_invoices`, `mnu_payments`). Pas de `FinanceContract` à ajouter à Eshop360. Pas d'ACL `InvoiceServiceContract`. Numérotation atomique propre (pattern ADR-006), webhook idempotent propre (pattern ADR-003).
+  2. **Morphs Cas A** — Menuiserie360 a son propre morph map dans `Menuiserie360ServiceProvider::boot()` avec short keys (`mnu.invoice`, `mnu.payment`, etc.). Aucune entrée ajoutée au morph map central Eshop360. Cas B explicitement écarté.
+  3. **Permissions validées** — la liste préliminaire §5.6 + Annexe est confirmée pour activation telle quelle au commit initial du module.
+  4. **Tests structurels deptrac/PHPStan confirmés** — 5 tests minimum à activer dès le premier commit Menuiserie360 (3 PHPStan custom + 1 deptrac CI gate + 1 morph map invariant). Pas de baseline qui absorberait silencieusement des violations.
+  5. **S-7 multi-DB à corriger** — décision de **CORRIGER** (pas abandonner) via un lot plateforme dédié (P0-3quater nouveau dans la roadmap), parallélisable avec P0..P5 mais BLOQUANT pour la prod Menuiserie360. Tant que pas corrigé : scope `instance_id` Eloquent comme isolation primaire. Code Menuiserie360 écrit defensively pour fonctionner avant et après correction.
+- **Impact spec** : v1.3 publiée — sections touchées §1.4, §1.4bis, §1.4ter, §2.4, §3 (P0-3, P0-3bis, P0-3ter retiré, P0-3quater ajouté, P2-7), §4.5 (réécrit complet), §5.2 (RETIRED), §5.4, §5.6, §6.2 (tests structurels ajoutés), §7.1 (R2/R7 N/A, R12 mis à jour). Statut spec : **prête pour démarrage** sous condition de l'exécution préalable de P0-3bis (lot pré-démarrage Eshop360).
+- **Lots à planifier maintenant** : (a) **P0-3bis** côté Eshop360 (création contrats minimum ADR-021 + adapters + layer deptrac `EshopContracts` + tests structurels) — bloquant pour P1 Menuiserie360 ; (b) **P0-3quater** côté plateforme (correction S-7 `InstanceProvisioner` database-per-instance) — bloquant pour la prod uniquement.
+- **Source** : décisions humaines explicites 2026-05-08, branche `docs/menuiserie360-spec-v1.1` (commits Lot 4 v1.1 + v1.2 + v1.3), spec [`docs/Ins/CONCEPTION_TECHNIQUE_MENUISERIE360.md`](../Ins/CONCEPTION_TECHNIQUE_MENUISERIE360.md).
 
 ## 2026-05-08 — Spec Menuiserie360 v1.1 → v1.2 (harmonisation interne post-analyse)
 

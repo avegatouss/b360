@@ -5,9 +5,10 @@
 > **Date initiale** : 2026-04-04
 > **Date rebase v1.1** : 2026-05-08 (post-R-101 ADR-020 + ADR-021)
 > **Date rebase v1.2** : 2026-05-08 (résolution juxtapositions internes post-analyse)
-> **Version** : 1.2 — harmonisation interne (§1.4, §2.4, §4.5, §5.2, §5.4, §7.1, §3) suite à l'analyse complémentaire
-> **Statut** : Spec — prêt pour décision humaine de démarrage
-> **Changements** : voir section "Annexe — Changelog v1.0 → v1.1 → v1.2" en fin de document.
+> **Date rebase v1.3** : 2026-05-08 (5 décisions critiques tranchées — BC-Finance autonome, morphs Cas A, permissions validées, tests structurels confirmés, S-7 à corriger)
+> **Version** : 1.3 — décisions tranchées, spec prête pour démarrage
+> **Statut** : Spec — **prête pour démarrage du module** (sous condition de l'exécution préalable de P0-3bis côté Eshop360)
+> **Changements** : voir section "Annexe — Changelog v1.0 → v1.1 → v1.2 → v1.3" en fin de document.
 
 ---
 
@@ -112,12 +113,12 @@ Modules/Menuiserie360/
     Reporting/      ← BC-Reporting
 ```
 
-**Règles d'interopérabilité** (mises à jour v1.2 — alignées ADR-021) :
+**Règles d'interopérabilité** (mises à jour v1.3 — décisions tranchées 2026-05-08) :
 
 - Menuiserie360 lit `Customer` d'Eshop360 **via le contrat `CustomerReader`** producer-owned (cf. §1.4bis), pas en wrappant le modèle Eloquent. Il **ne modifie jamais** les tables `eshop_customers` directement.
-- Menuiserie360 utilise **`FinanceContract`** d'Eshop360 pour la création de factures (à ajouter au démarrage — hors périmètre minimum ADR-021, cf. §1.4bis). Tant que `FinanceContract` n'est pas exposé, fallback transitoire = §5.2 ACL pattern (`InvoiceServiceContract` côté Menuiserie360).
+- **DÉCISION v1.3 — BC-Finance autonome** : Menuiserie360 a ses **propres** modèles `MenuiserieInvoice` et `MenuiseriePayment` (tables `mnu_invoices`, `mnu_payments`). **Pas de consommation de Finance Eshop360**. Pas de `FinanceContract` à ajouter à ADR-021. La numérotation, la TVA, l'export comptable sont gérés en interne par BC-Finance Menuiserie360. Cf. §4.5 réécrit.
 - Menuiserie360 n'utilise **pas** les tables `eshop_stocks` — il a son propre stock matière (profilés alu, vitrages, accessoires) qui a une sémantique différente (unité de mesure mètres linéaires / m², pas pièces). BC-Stock entièrement autonome.
-- Les paiements Mobile Money passent par le `GatewayManager` du module Billing de B360 (interface existante `PaymentGatewayInterface`). **Note v1.2** : `PaymentGatewayInterface` vit côté Billing (L2), pas Eshop360 → consommation directe autorisée par les rulesets deptrac §2.5 (Menuiserie360 → Billing). Pas d'élargissement ADR-021 nécessaire.
+- Les paiements Mobile Money passent par le `GatewayManager` du module Billing de B360 (interface existante `PaymentGatewayInterface`). **Note** : `PaymentGatewayInterface` vit côté Billing (L2), pas Eshop360 → consommation directe autorisée par les rulesets deptrac §2.5 (Menuiserie360 → Billing). Pas d'élargissement ADR-021 nécessaire.
 
 ### 1.4bis Intégration avec Eshop360 — via contrats (ADR-021)
 
@@ -138,26 +139,41 @@ Modules/Menuiserie360/
 | BC-Clients | `CustomerReader` | OK minimum | Lecture identité (anti-corruption layer interne) |
 | BC-Production | (autonome — stock matières premières propres) | — | Pas de consommation Eshop360 par défaut |
 | BC-Stock | (autonome) | — | Idem |
-| BC-Finance | `FinanceContract` (à ajouter — hors périmètre minimum ADR-021) | à ajouter | Soit autonome (`MenuiserieFinance`), soit consommation `FinanceContract` Eshop360 si paiements partagés. Décision au démarrage du module. |
+| BC-Finance | **(autonome v1.3)** — modèles propres `MenuiserieInvoice` / `MenuiseriePayment` | — | Pas de consommation Eshop360. Numérotation, TVA, export comptable internes. |
 | BC-Reporting | DTO via Events | — | Projection à partir d'événements (pattern read-model) |
 
-**Note transitoire** : la §5.2 décrit un pattern « anti-corruption layer » (interface définie côté Menuiserie360 wrappant `\Modules\Eshop360\Services\InvoiceService`). Ce pattern reste **acceptable temporairement** pour BC-Finance tant que `FinanceContract` n'est pas ajouté au périmètre exposé par Eshop360 (cf. ADR-021 §1 « Hors périmètre minimum à ajouter quand un consumer le demande »). Au démarrage Menuiserie360, le bon flux est : (1) ajouter `FinanceContract` à `Modules/Eshop360/Contracts/Finance/`, (2) bind l'adapter Eloquent dans `Eshop360ServiceProvider`, (3) Menuiserie360 consomme directement la contract producer-owned. Le pattern §5.2 reste un fallback documenté si Finance refuse temporairement d'exposer.
+**Note v1.3** : la décision « BC-Finance autonome » rend obsolète l'ACL pattern §5.2 (`InvoiceServiceContract` côté Menuiserie360) — cette section est marquée RETIRED v1.3. L'ajout d'un `FinanceContract` à `Modules/Eshop360/Contracts/Finance/` n'est **plus requis** pour démarrer Menuiserie360. Si une future intégration Finance émerge (rapprochement comptable consolidé, par exemple), elle fera l'objet d'un ADR séparé.
 
-**Décision à prendre au démarrage Menuiserie360** :
-- BC-Finance autonome ou via contrat Eshop360 ?
-- Si paiements partagés → décision morphs cross-module (cf. §1.4ter).
+**Décisions tranchées 2026-05-08** :
+- ✅ BC-Finance **autonome** (pas de FinanceContract Eshop360)
+- ✅ Morphs **Cas A** — cf. §1.4ter (morph map propre Menuiserie360)
 
 ### 1.4ter Position dans le morph map central (ADR-020)
 
-**Cas A — Menuiserie360 introduit ses propres morphs (recommandé par défaut)** :
+**✅ DÉCIDÉ v1.3 — Cas A : Menuiserie360 introduit ses propres morphs (autonomie totale)** :
 
-Si Menuiserie360 crée des entités morphiques (ex. `MenuiserieInvoice` → `payable_type` dans une table `mnu_payments` propre), elles vivent dans le morph map de Menuiserie360 (à créer dans `Menuiserie360ServiceProvider::boot()`). Pas d'interaction avec le morph map Eshop360.
+Menuiserie360 crée ses entités morphiques propres (`MenuiserieInvoice` → `payable_type` dans `mnu_payments`, `MenuiserieOrdresFabrication` → `reference_type` dans `mnu_movements_stock` si besoin, etc.). **Toutes vivent dans un morph map dédié Menuiserie360**, posé en première instruction de `Menuiserie360ServiceProvider::boot()` :
 
-**Cas B — Menuiserie360 réutilise les morphs Eshop360** :
+```php
+// Modules/Menuiserie360/Providers/Menuiserie360ServiceProvider.php
+public function boot(): void
+{
+    Relation::morphMap([
+        'mnu.invoice'  => \Modules\Menuiserie360\Domain\Finance\Models\MenuiserieInvoice::class,
+        'mnu.payment'  => \Modules\Menuiserie360\Domain\Finance\Models\MenuiseriePayment::class,
+        'mnu.devis'    => \Modules\Menuiserie360\Domain\Commercial\Models\Devis::class,
+        // ... une entrée par classe morphique du module
+    ]);
 
-Si décision de réutiliser `eshop_payments.payable_type = MenuiserieInvoice` (ex. portefeuille de paiements partagé), Menuiserie360 **doit** ajouter ses entrées dans le morph map central de `Eshop360ServiceProvider::boot()` (cf. ADR-020 §contraintes).
+    parent::boot();
+}
+```
 
-**Recommandation v1.1** : Cas A par défaut (cohérent avec le préfixe `mnu_*` déjà prévu §5.3). Cas B uniquement si la spec Finance partage l'infrastructure paiements explicitement.
+**Choix de short keys (`mnu.invoice`, etc.) plutôt que FQN** : ADR-020 a conservé legacy FQN pour Eshop360 par contrainte de migration de données existantes. Menuiserie360 démarre sur table vide → on bénéficie d'emblée de short keys stables, plus courtes en base et indépendantes du namespace PHP.
+
+**Pas d'interaction avec le morph map central Eshop360** : c'est l'objectif du Cas A. Aucune entrée Menuiserie360 n'est ajoutée à `Eshop360ServiceProvider::boot()`.
+
+**Cas B (réutilisation morphs Eshop360)** : explicitement écarté v1.3.
 
 ---
 
@@ -355,7 +371,7 @@ Modules/Menuiserie360/
 - Permissions déclarées via le hook `PermissionGroup` du `HookManager` de Core
 - Menus injectés via le hook `MenuContributor`
 
-**Mécanisme de découplage** (mis à jour v1.2 — aligné ADR-021) :
+**Mécanisme de découplage** (mis à jour v1.3 — décision BC-Finance autonome) :
 
 ```php
 // Dans Menuiserie360ServiceProvider::register()
@@ -373,14 +389,9 @@ $this->app->bind(
     fn($app) => $app->make(\Modules\Menuiserie360\Domain\Client\Repositories\ClientMenuiserieRepository::class)
 );
 
-// Pattern transitoire (DEPRECATED v1.2 — cf. §5.2) tant que `FinanceContract`
-// n'est pas exposé par Eshop360 (hors périmètre minimum ADR-021) :
-$this->app->bind(
-    InvoiceServiceContract::class,  // Interface définie côté Menuiserie360 (ACL pattern)
-    Eshop360InvoiceAdapter::class   // Wrap \Modules\Eshop360\Services\InvoiceService
-);
-// → À remplacer par consommation directe de \Modules\Eshop360\Contracts\Finance\InvoiceContract
-//   dès que celui-ci est ajouté à Eshop360 (cf. plan §3 lot pré-démarrage).
+// BC-Finance : autonome (décision v1.3) → AUCUN bind d'ACL InvoiceServiceContract.
+// Les modèles MenuiserieInvoice / MenuiseriePayment vivent en interne, pas de
+// délégation à Eshop360. Cf. §4.5 et §5.2 RETIRED.
 ```
 
 **Gestion des migrations** :
@@ -445,9 +456,10 @@ Ces tests sont prévus mais **implémentés au démarrage Menuiserie360** — pa
 |----|-------|--------|---------------|
 | P0-1 | Créer squelette module `Menuiserie360` via `php artisan module:make` | S | — |
 | P0-2 | Configurer `module.json` (dépendances : Core, Auth, Eshop360) | S | P0-1 |
-| P0-3 | Définir les interfaces (Contracts) **internes Menuiserie360** : `StockContract`, `ClientRepositoryContract`. **Note v1.2** : `InvoiceServiceContract` reste l'ACL transitoire (§5.2 DEPRECATED) tant que `\Modules\Eshop360\Contracts\Finance\InvoiceContract` n'est pas exposé côté Eshop360 — ce dernier est à ajouter dans le **lot pré-démarrage** (cf. §3 bis ci-dessous). | M | P0-1 |
-| P0-3bis | **Lot pré-démarrage côté Eshop360** : créer les contrats producer-owned du périmètre minimum ADR-021 (`Catalog/CatalogReader` + `ProductDto`, `Customer/CustomerReader` + `CustomerDto`, `Pricing/PricingResolver` + `PricingContextDto`/`PricingResultDto`) + adapters Eloquent par défaut + bindings dans `Eshop360ServiceProvider` + nouveau layer deptrac `EshopContracts` + tests structurels d'isolation Menuiserie360. **Bloquant pour P1.** | XL | aucun (préalable Eshop360) |
-| P0-3ter | **Lot pré-démarrage côté Eshop360 (optionnel selon décision BC-Finance)** : ajouter `Finance/InvoiceContract` + DTOs + adapter Eloquent. Si retenu, supprime ensuite §5.2 ACL pattern. Si BC-Finance autonome, à omettre. | L | décision BC-Finance |
+| P0-3 | Définir les interfaces (Contracts) **internes Menuiserie360** : `StockContract`, `ClientRepositoryContract`. **v1.3 — Pas d'`InvoiceServiceContract`** (BC-Finance autonome). | M | P0-1 |
+| P0-3bis | **Lot pré-démarrage côté Eshop360** (BLOQUANT pour P1) : créer les contrats producer-owned du périmètre minimum ADR-021 (`Catalog/CatalogReader` + `ProductDto`, `Customer/CustomerReader` + `CustomerDto`, `Pricing/PricingResolver` + `PricingContextDto`/`PricingResultDto`) + adapters Eloquent par défaut + bindings dans `Eshop360ServiceProvider` + nouveau layer deptrac `EshopContracts` + tests structurels d'isolation Menuiserie360 (deptrac + PHPStan custom). | XL | aucun (préalable Eshop360) |
+| P0-3ter | ~~Lot Finance contract~~ | — | **SUPPRIMÉ v1.3** — BC-Finance autonome, pas de FinanceContract Eshop360 nécessaire. |
+| P0-3quater | **Lot plateforme S-7** (BLOQUANT pour la prod Menuiserie360, parallélisable avec P0..P5) : corriger ou stabiliser `InstanceProvisioner` database-per-instance (cf. §5.4 et R12). Sortie : un mode multi-DB fonctionnel ou une décision documentée de rester en single-DB avec scope `instance_id`. | XL | équipe plateforme |
 | P0-4 | Configurer les bindings dans `Menuiserie360ServiceProvider` | S | P0-3 |
 | P0-5 | Enregistrer les permissions via Hook `PermissionGroup` (7 rôles × permissions) | M | P0-2 |
 | P0-6 | Enregistrer les menus via Hook `MenuContributor` | S | P0-2 |
@@ -478,7 +490,7 @@ Ces tests sont prévus mais **implémentés au démarrage Menuiserie360** — pa
 | P2-4 | Modèle + migration `mnu_bon_commandes`, `mnu_bc_items` | M | P1-6 |
 | P2-5 | CRUD BonCommande + vues | M | P2-3, P2-4 |
 | P2-6 | Transformation BC → OrdreFabrication (Action + Event) | M | P2-4 |
-| P2-7 | Transformation BC → Facture acompte (via `InvoiceServiceContract`) | M | P2-4 |
+| P2-7 | Transformation BC → Facture acompte (création `MenuiserieInvoice` native + `InvoiceNumberGenerator` atomique pattern ADR-006) | M | P2-4 |
 | P2-8 | Modèle + migration `mnu_ordres_fabrication`, `mnu_of_lignes`, `mnu_decoupes` | L | P2-6 |
 | P2-9 | Interface Atelier : liste OF, changement statut, fiches techniques | L | P2-8 |
 | P2-10 | `BesoinMatiereService` : calcul automatique besoin matière depuis OF | L | P2-8, P1-3 |
@@ -823,54 +835,122 @@ interface StockContract
 
 ### 4.5 BC-Finance
 
-> ⚠️ **Statut v1.2** : ce BC repose actuellement sur le **pattern transitoire ACL** (§5.2 DEPRECATED) — interface `InvoiceServiceContract` définie côté Menuiserie360 wrappant `\Modules\Eshop360\Services\InvoiceService`. La cible producer-owned (ADR-021) est : ajouter `\Modules\Eshop360\Contracts\Finance\InvoiceContract` côté Eshop360 et le consommer directement. Décision et plan dans le lot pré-démarrage Menuiserie360. Cf. §1.4bis et Annexe Changelog v1.2.
+> ✅ **Statut v1.3 — BC-Finance autonome** : décision tranchée 2026-05-08. Menuiserie360 gère ses propres factures et paiements via les modèles `MenuiserieInvoice` et `MenuiseriePayment` en interne, sans délégation à Eshop360. Pas de `FinanceContract` à ajouter à ADR-021. Cf. §1.4bis et §5.2 RETIRED.
 
 #### Description fonctionnelle
-Gère la facturation liée aux projets menuiserie. S'appuie sur Eshop360 (via contrat à terme producer-owned, via ACL transitoire aujourd'hui) pour la création des factures. Gère les acomptes, soldes, paiements (espèces, virement, Mobile Money) et l'export comptable.
+Gère la facturation liée aux projets menuiserie de manière autonome. Crée et numérote ses propres factures (acomptes, soldes), gère les paiements (espèces, virement, Mobile Money via `PaymentGatewayInterface` Billing), produit l'export comptable. Aucun appel à Eshop360 Finance.
 
-**Règle** : Ce BC **ne crée pas** ses propres modèles `Invoice`. Il délègue à Eshop360 via le contrat Finance, en passant un contexte `menuiserie` pour distinguer ces factures dans les listings.
+**Règle** : Ce BC **possède** ses propres modèles `MenuiserieInvoice` et `MenuiseriePayment`. Il dispose de sa propre numérotation (séquence atomique par instance) et de sa propre stratégie d'idempotence webhook (pattern hérité d'ADR-003 / ADR-006).
 
-**Signatures attendues v1.2** (DTO immutables conformes ADR-021 §1) :
+#### Modèles de données
+
+**`mnu_invoices`**
+
+| Colonne | Type | Contrainte | Description |
+|---------|------|-----------|-------------|
+| id | bigint unsigned | PK | — |
+| instance_id | bigint unsigned | FK instances, NOT NULL | Multi-tenant |
+| invoice_number | varchar(30) | UNIQUE (instance_id, invoice_number) | MNU-FAC-YYYY-NNNN |
+| client_id | bigint unsigned | FK eshop_customers (lecture via `CustomerReader`) | Anti-corruption layer §1.4bis |
+| bc_id | bigint unsigned NULLABLE | FK mnu_bon_commandes | — |
+| chantier_id | bigint unsigned NULLABLE | FK mnu_chantiers | — |
+| type | enum | NOT NULL | acompte, solde, avoir |
+| amount_ht | decimal(15,2) | NOT NULL | Hors taxe |
+| tax_rate | decimal(5,2) | NOT NULL | TVA CI 18 % par défaut, configurable `mnu_settings` |
+| amount_tva | decimal(15,2) | NOT NULL | calculé `amount_ht * tax_rate` |
+| amount_ttc | decimal(15,2) | NOT NULL | TTC final |
+| paid_amount | decimal(15,2) | NOT NULL DEFAULT 0 | Cumul paiements |
+| due_amount | decimal(15,2) | GENERATED `amount_ttc - paid_amount` | Solde restant |
+| status | enum | NOT NULL | draft, issued, paid_partial, paid_full, cancelled |
+| issued_at | timestamp NULLABLE | — | Date émission |
+| pdf_path | varchar(500) NULLABLE | — | MediaLibrary collection `invoices_pdf` |
+| timestamps | — | — | — |
+
+**`mnu_payments`** (table morphique propre, Cas A §1.4ter)
+
+| Colonne | Type | Description |
+|---------|------|-------------|
+| id | bigint unsigned PK | — |
+| instance_id | bigint unsigned | Multi-tenant |
+| payable_type | varchar(50) | morph short key (`mnu.invoice` typiquement, cf. §1.4ter) |
+| payable_id | bigint unsigned | FK polymorphe |
+| amount | decimal(15,2) | Montant payé |
+| method | enum | especes, virement, mobile_money, cheque |
+| gateway | varchar(50) NULLABLE | cinetpay, mtn_momo, orange_money, wave |
+| transaction_ref | varchar(100) NULLABLE | Référence externe |
+| idempotency_key | varchar(128) NULLABLE | UNIQUE — pattern ADR-003 |
+| status | enum | pending, succeeded, failed, refunded |
+| paid_at | timestamp NULLABLE | — |
+| timestamps | — | — |
+
+#### Numérotation atomique
+
+Pattern hérité d'ADR-006 (atomicité numéros de facture) :
 
 ```php
-interface InvoiceContract  // côté Eshop360 à terme, ACL côté Menuiserie360 transitoirement
+// Modules/Menuiserie360/Domain/Finance/Services/InvoiceNumberGenerator.php
+final class InvoiceNumberGenerator
 {
-    public function createAcompte(CreateInvoiceDto $dto): InvoiceCreatedDto;
-    public function createFactureFinale(CreateInvoiceDto $dto): InvoiceCreatedDto;
-}
+    private const MAX_NUMBER_ATTEMPTS = 5;
 
-readonly class CreateInvoiceDto {
-    public function __construct(
-        public int $instanceId,
-        public int $customerId,
-        public string $context,        // 'menuiserie' / 'eshop' / etc.
-        public ?string $reference,     // ex. 'BC-2026-0042'
-        public array $lines,           // [['label' => ..., 'qty' => ..., 'unit_price' => ...], ...]
-        public float $taxRate = 0.18,  // TVA CI par défaut
-    ) {}
-}
-
-readonly class InvoiceCreatedDto {
-    public function __construct(
-        public int $invoiceId,
-        public string $invoiceNumber,
-        public float $amountTtc,
-    ) {}
+    public function generate(int $instanceId): string
+    {
+        return DB::transaction(function () use ($instanceId) {
+            for ($i = 0; $i < self::MAX_NUMBER_ATTEMPTS; $i++) {
+                try {
+                    $next = $this->computeNext($instanceId);
+                    // INSERT testera la contrainte UNIQUE (instance_id, invoice_number)
+                    return $next;
+                } catch (UniqueConstraintViolationException) {
+                    // Race avec un autre process — réessayer
+                    continue;
+                }
+            }
+            throw new \RuntimeException('MAX_NUMBER_ATTEMPTS reached for invoice numbering');
+        });
+    }
 }
 ```
 
-> Note : la signature v1.0 `createAcompte(array $data): int` violait l'esprit ADR-021 (pas de DTO immutables, pas de typage explicite). Corrigé en v1.2.
-
-**Listeners** :
+#### Listeners (interaction inter-BC interne)
 
 ```
 DevisAccepte         → CreateAcompteOnDevisAccepte
-                       → appelle InvoiceContract::createAcompte(CreateInvoiceDto $dto)
-                       → retourne InvoiceCreatedDto, dont invoiceId stocké dans
-                         mnu_bon_commandes.facture_acompte_id
+                       → CreateInvoiceAction::execute(...)
+                       → MenuiserieInvoice::create(...)
+                       → mnu_bon_commandes.facture_acompte_id mis à jour
 
 ChantierTermine      → CreateFactureFinaleOnChantierTermine
-                       → appelle InvoiceContract::createFactureFinale(CreateInvoiceDto $dto)
+                       → CreateInvoiceAction::execute(...)
+                       → MenuiserieInvoice::create(...)
+```
+
+> Note : aucun appel à `\Modules\Eshop360\Services\InvoiceService` ni à un quelconque contrat Finance Eshop360. Tout est interne au module.
+
+#### Webhook paiements (Mobile Money)
+
+Pattern hérité d'ADR-003 (idempotence webhooks) :
+
+```php
+// Modules/Menuiserie360/Http/Controllers/Finance/PaymentWebhookController.php
+public function handle(Request $request): Response
+{
+    $idempotencyKey = $this->buildIdempotencyKey($request);
+
+    try {
+        DB::transaction(function () use ($request, $idempotencyKey) {
+            MenuiseriePayment::create([
+                'idempotency_key' => $idempotencyKey,
+                // ...
+            ]);
+            $this->updateInvoiceStatus(...);
+        });
+    } catch (UniqueConstraintViolationException) {
+        // Replay → 200 OK sans retraitement
+    }
+
+    return response('OK', 200);
+}
 ```
 
 **`mnu_paiements_chantier`** (pivot pour tracking contexte menuiserie)
@@ -964,69 +1044,13 @@ app(HookManager::class)->register(new MenuiserieDemoDataProvider());
 
 ### 5.2 Stratégie de découplage
 
-> ⚠️ **DEPRECATED v1.2 — Pattern transitoire (anti-corruption layer)**
+> ❌ **RETIRED v1.3 — Section sans objet**
 >
-> Cette section décrit le **fallback transitoire** ACL pour BC-Finance, conservé tant que `\Modules\Eshop360\Contracts\Finance\InvoiceContract` n'est pas exposé côté Eshop360 (hors périmètre minimum ADR-021, cf. §1.4bis et §4.5).
+> La décision « BC-Finance autonome » (2026-05-08, cf. §1.4 et §4.5 réécrit) rend cette section sans objet. Menuiserie360 ne consomme **aucun** contrat Finance Eshop360. L'ACL `InvoiceServiceContract` n'est pas implémenté. `Eshop360InvoiceAdapter` n'existe pas.
 >
-> **Cible v1.2** : remplacer par consommation directe du contrat producer-owned (lot pré-démarrage Menuiserie360, cf. §3 — à insérer). Ne plus écrire de nouveau code basé sur ce pattern.
+> **Pour le découplage des autres BC vis-à-vis d'Eshop360** (Catalog, Customer, Pricing) : voir §1.4bis (consommation directe des contrats producer-owned ADR-021, sans ACL intermédiaire).
 >
-> **Pour Catalog / Customer / Pricing** (périmètre minimum ADR-021), **NE PAS utiliser ce pattern** — consommer directement les contrats `\Modules\Eshop360\Contracts\<Domain>\<Reader|Resolver>`.
-
-```php
-// Contract définie par Menuiserie360 (ACL — anti-corruption layer)
-interface InvoiceServiceContract {
-    // Note v1.2 : signature originale array→int conservée pour traçabilité du
-    // pattern legacy. La cible producer-owned utilise des DTO immutables
-    // (cf. §4.5 InvoiceContract / CreateInvoiceDto / InvoiceCreatedDto).
-    public function createAcompte(array $data): int;       // legacy v1.0
-    public function createFactureFinale(array $data): int; // legacy v1.0
-}
-
-// Implémentation : adapter wrappant Eshop360 (ACL)
-class Eshop360InvoiceAdapter implements InvoiceServiceContract {
-    public function __construct(
-        private readonly \Modules\Eshop360\Services\InvoiceService $eshopInvoiceService
-    ) {}
-
-    public function createAcompte(array $data): int {
-        // Traduit les données menuiserie → format Eshop360
-        return $this->eshopInvoiceService->create([...])->id;
-    }
-}
-```
-
-Si Eshop360 n'est pas actif sur une instance, le binding peut pointer vers un `NullInvoiceAdapter` qui lève une exception métier claire.
-
-**Cible producer-owned (à coder au démarrage Menuiserie360)** :
-
-```php
-// Côté Eshop360 — nouveau contrat à ajouter au démarrage Menuiserie360
-namespace Modules\Eshop360\Contracts\Finance;
-
-interface InvoiceContract {
-    public function createAcompte(CreateInvoiceDto $dto): InvoiceCreatedDto;
-    public function createFactureFinale(CreateInvoiceDto $dto): InvoiceCreatedDto;
-}
-
-// Côté Menuiserie360 — consommation directe via DI, plus d'ACL
-final class CreateAcompteOnDevisAccepte {
-    public function __construct(
-        private readonly \Modules\Eshop360\Contracts\Finance\InvoiceContract $invoices,
-    ) {}
-
-    public function handle(DevisAccepte $event): void {
-        $dto = new CreateInvoiceDto(
-            instanceId: $event->instanceId,
-            customerId: $event->customerId,
-            context: 'menuiserie',
-            reference: $event->bcReference,
-            lines: $event->acompteLines,
-        );
-        $invoice = $this->invoices->createAcompte($dto);
-        // ... stockage de $invoice->invoiceId dans mnu_bon_commandes.facture_acompte_id
-    }
-}
-```
+> Section conservée à titre d'archive du raisonnement initial — son code n'est PAS à implémenter.
 
 ### 5.3 Compatibilité des données
 
@@ -1066,7 +1090,7 @@ class Devis extends Model {
 
 - **Scope implicite** : chaque query sur `Devis`, `Chantier`, `OrdreFabrication`, etc. filtre automatiquement par `instance_id`
 - En production multi-DB : la connexion est switchée par le middleware `BindInstanceFromRoute` → les scopes `instance_id` restent présents comme double protection
-  > **⚠️ Caveat v1.2** : la stratégie multi-DB (`InstanceProvisioner` database-per-instance) est marquée S-7 dans `audit_comparatif_final.md` §5.5 — recommandation **« ABANDONNER OU CORRIGER »** car cassée silencieusement aujourd'hui. Avant de baser BC-Stock / BC-Commercial sur le multi-DB en prod, **statuer explicitement sur S-7**. Le scope `instance_id` Eloquent (single-DB) reste fiable comme isolation primaire — ne pas dépendre du switch de connexion comme protection unique.
+  > **✅ Décision v1.3 — S-7 à corriger (lot plateforme dédié)** : la stratégie multi-DB (`InstanceProvisioner` database-per-instance) est cassée silencieusement aujourd'hui (cf. `audit_comparatif_final.md` §5.5 / OPEN_RISKS S-7). Décision tranchée 2026-05-08 : **CORRIGER** (pas abandonner) via un lot plateforme dédié, à exécuter **avant la mise en prod de Menuiserie360**. Tant que S-7 n'est pas corrigé, le scope `instance_id` Eloquent (single-DB) reste l'isolation primaire — ne pas dépendre du switch de connexion comme protection unique. Le code Menuiserie360 doit être écrit defensively (scope `instance_id` systématique sur tous les modèles) pour fonctionner correctement dans les deux modes (avant et après correction S-7).
 
 **Permissions Spatie** : `team_id = instance_id` via `SetSpatieTeamContextFromInstance` — les rôles menuiserie sont scopés à l'instance automatiquement.
 
@@ -1087,7 +1111,7 @@ Pour exposer un menu, un widget, un settings_group, une permission, une feature,
 - `registerBillableFeatures()` : si Menuiserie360 a des features premium
 - `registerPaymentGateways()` : si Menuiserie360 introduit des passerelles paiement spécifiques
 
-**Liste préliminaire des permissions Menuiserie360 par BC** (à affiner au démarrage) :
+**Liste validée des permissions Menuiserie360 par BC** (✅ décidée v1.3 — 2026-05-08, à activer telle quelle au commit initial du module) :
 
 | BC | Permission | Description |
 |---|---|---|
@@ -1174,9 +1198,26 @@ Menuiserie360B360IntegrationTest
   ✓ permissions_menuiserie_disponibles_dans_spatie
   ✓ menus_injectes_dans_layout_b360
   ✓ eshop360_routes_non_affectees
-  ✓ facture_eshop360_creee_depuis_bc_menuiserie
+  ✓ menuiserie_invoice_creee_depuis_bc_menuiserie         ← v1.3 (BC-Finance autonome)
   ✓ desactivation_module_ne_casse_pas_eshop360
+  ✓ scope_instance_id_isole_menuiserie_entre_2_instances  ← v1.3 (isolation primaire avant S-7)
 ```
+
+#### Tests structurels d'isolation (✅ décidés v1.3 — au commit initial du module)
+
+Pattern hérité d'ADR-021 §5. À activer dès le premier commit Menuiserie360 :
+
+```
+// Modules/Menuiserie360/Tests/Unit/Structural/
+EshopIsolationTest
+  ✓ aucun_fichier_menuiserie_importe_modules_eshop360_models       (PHPStan custom rule)
+  ✓ aucun_fichier_menuiserie_importe_modules_eshop360_domain_models (PHPStan custom rule)
+  ✓ aucun_fichier_menuiserie_appelle_db_table_eshop                 (PHPStan: NoDirectCrossModuleTableAccess)
+  ✓ deptrac_layer_menuiserie360_respecte_ruleset_§2_5               (deptrac CI gate)
+  ✓ aucune_classe_menuiserie_dans_morph_map_eshop360                (vérifie Cas A §1.4ter)
+```
+
+Le rejet d'un commit qui violerait ces invariants est attendu (CI gate). Pas de baseline qui absorberait silencieusement des violations à terme — chaque violation = à corriger.
 
 ### 6.3 Plan de vérification pré-production
 
@@ -1205,17 +1246,17 @@ Menuiserie360B360IntegrationTest
 | # | Risque | Probabilité | Impact | Atténuation |
 |---|--------|------------|--------|-------------|
 | R1 | Conflit de nommage de routes avec Eshop360 | FAIBLE | HAUT | Toutes les routes sous préfixe `menuiserie/` + name `menuiserie.*` |
-| R2 | Surcharge involontaire du `InvoiceService` Eshop360 | MOYENNE | HAUT | Adapter pattern : Menuiserie360 injecte via `InvoiceServiceContract`, pas directement |
+| R2 | ~~Surcharge involontaire du `InvoiceService` Eshop360~~ | — | — | **N/A v1.3** — BC-Finance autonome (cf. §4.5), aucun appel à `InvoiceService` Eshop360. |
 | R3 | `BelongsToInstance` scope global bypassé | FAIBLE | CRITIQUE | Tests d'intégration multi-tenant obligatoires en CI |
 | R4 | N+1 queries sur les listings (Devis + lignes, Chantier + étapes) | HAUTE | MOYEN | `with()` systématique dans Repository, Debugbar en staging |
 | R5 | Migration longue sur instance avec volume de données élevé | FAIBLE | HAUT | Migrations Menuiserie360 créent de nouvelles tables uniquement — pas d'ALTER TABLE |
 | R6 | Conflit de clé de permission Spatie (si nom déjà pris) | FAIBLE | MOYEN | Préfixer toutes les permissions : `menuiserie.devis.create`, etc. |
-| R7 | InvoiceService d'Eshop360 change d'API (breaking change) | FAIBLE | MOYEN | Interface `InvoiceServiceContract` isole le module — adapter à mettre à jour |
+| R7 | ~~InvoiceService d'Eshop360 change d'API (breaking change)~~ | — | — | **N/A v1.3** — BC-Finance autonome, aucune surface API Eshop360 consommée pour Finance. Le risque équivalent pour les contrats `Catalog/Customer/Pricing` reste couvert par R13. |
 | R8 | Connexion internet instable (contexte CI) → timeout upload photos | HAUTE | MOYEN | Chunked upload + retry côté JS, compression image avant envoi, MediaLibrary responsive |
 | R9 | TVA ivoirienne change (actuellement 18%) | FAIBLE | FAIBLE | Taux configuré dans `mnu_settings`, pas en dur dans le code |
 | R10 | `Gate::before` dans `CoreAuthServiceProvider` (try/finally fragile) | EXISTANT | MOYEN | Ne pas modifier ce composant — les tests Policy Menuiserie360 valident le comportement |
 | R11 | Import accidentel d'un modèle `Modules\Eshop360\Domain\*\Models\*` ou `Modules\Eshop360\Models\*` (post-R-101) | MOYENNE | HAUT | Test deptrac (ruleset Menuiserie360 sans EshopX, cf. §2.5) + PHPStan custom rule. Bloque le merge si violation — règle ADR-021 §5. |
-| R12 | Stratégie multi-DB S-7 cassée (cf. §5.4 caveat) → connexion switchée silencieusement vers la mauvaise base | EXISTANT (audit S-7) | CRITIQUE | Scope `instance_id` Eloquent comme isolation primaire (jamais s'appuyer uniquement sur le switch de connexion). Statuer S-7 avant prod. |
+| R12 | Stratégie multi-DB S-7 cassée (cf. §5.4) → connexion switchée silencieusement vers la mauvaise base | EXISTANT (audit S-7) | CRITIQUE | **Décision v1.3 : S-7 à corriger** via lot plateforme dédié AVANT prod Menuiserie360. Tant que pas corrigé : scope `instance_id` Eloquent comme isolation primaire (jamais s'appuyer uniquement sur le switch de connexion). Code Menuiserie360 écrit defensively pour fonctionner avant/après correction. |
 | R13 | Ajout/breaking change d'un contrat Eshop360 sans coordination → casse Menuiserie360 silencieusement | MOYENNE | HAUT | Cf. §7.X (déjà documenté). Versioning contrats + ADR pour breaking change + test d'intégration via DI au binding par défaut. |
 
 ### 7.2 Zones critiques détaillées
@@ -1454,7 +1495,34 @@ parameters:
 
 ---
 
-## Annexe — Changelog v1.0 → v1.1 → v1.2
+## Annexe — Changelog v1.0 → v1.1 → v1.2 → v1.3
+
+### v1.3 — 2026-05-08 (décisions critiques tranchées)
+
+**Auteur** : Claude
+**Source** : décisions humaines explicites suite à l'analyse complémentaire post-v1.1/v1.2.
+
+**5 décisions tranchées (2026-05-08) :**
+
+| # | Décision | Impact spec |
+|---|---|---|
+| 1 | **BC-Finance autonome** | §4.5 réécrit avec modèles propres `MenuiserieInvoice` / `MenuiseriePayment` ; §1.4 et §1.4bis retirent toute mention de FinanceContract Eshop360 ; §2.4 supprime le bind ACL ; §5.2 marquée **RETIRED** ; §7.1 R2/R7 marqués **N/A** ; P0-3ter retiré du plan §3. |
+| 2 | **Morphs Cas A** (`mnu_*` propres) | §1.4ter confirme Cas A explicitement, exemple `Relation::morphMap()` dans `Menuiserie360ServiceProvider::boot()` avec short keys (`mnu.invoice`, `mnu.payment`, etc.) — choix de short keys vs FQN justifié (table vide au démarrage). Cas B explicitement écarté. |
+| 3 | **Permissions validées** | §5.6 : « Liste préliminaire » → « Liste **validée** v1.3, à activer telle quelle au commit initial du module ». Annexe permissions intacte (déjà alignée). |
+| 4 | **Tests structurels deptrac/PHPStan confirmés** | §6.2 ajout d'un sous-bloc « Tests structurels d'isolation » (5 tests minimum : 3 PHPStan custom + 1 deptrac CI gate + 1 morph map invariant). Activation au premier commit Menuiserie360. |
+| 5 | **S-7 multi-DB à corriger** | §5.4 caveat passe de « ABANDONNER OU CORRIGER » à « **CORRIGER via lot plateforme dédié** » ; §7.1 R12 mitigation refondue ; ajout d'un nouveau lot **P0-3quater** dans le plan §3 (lot plateforme S-7, parallélisable avec P0..P5, BLOQUANT pour la prod Menuiserie360). Le code Menuiserie360 doit être écrit defensively pour fonctionner avant et après correction. |
+
+**Changements appliqués (sections touchées)** : §1.4, §1.4bis, §1.4ter, §2.4, §3 (P0-3, P0-3bis, P0-3ter retiré, P0-3quater nouveau, P2-7), §4.5 (réécrit complet), §5.2 (RETIRED), §5.4, §5.6, §6.2 (tests structurels ajoutés), §7.1 (R2/R7 N/A, R12 mis à jour).
+
+**Patterns d'architecture hérités (cités explicitement v1.3)** :
+- ADR-003 (idempotence webhooks) appliqué à §4.5 webhook paiements.
+- ADR-006 (atomicité numéros de facture) appliqué à §4.5 `InvoiceNumberGenerator`.
+- ADR-020 (morph map) appliqué à §1.4ter morph map propre Menuiserie360.
+- ADR-021 (contrats inter-modules) reste l'épine dorsale pour les BC consommateurs (Commercial, Clients, Reporting), inchangé.
+
+**État de la spec** : **prête pour démarrage** dès que P0-3bis (lot pré-démarrage Eshop360) est exécuté. P0-3quater (S-7) peut tourner en parallèle, à condition d'être terminé avant la prod.
+
+---
 
 ### v1.2 — 2026-05-08 (post-analyse, harmonisation interne)
 
