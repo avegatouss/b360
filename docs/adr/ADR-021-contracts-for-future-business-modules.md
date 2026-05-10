@@ -4,8 +4,7 @@
 
 ## Statut
 
-**Proposé** — 2026-05-08
-> Statut promu à "Accepté" après validation humaine explicite (cf. design spec §7).
+**Accepté** — 2026-05-08 (validation humaine après merge de la PR Lot 3 sur `base`)
 
 ## Contexte
 
