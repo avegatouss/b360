@@ -1,9 +1,19 @@
 # RECENT_DECISIONS — B360
 
-> Décisions structurantes récentes. Mise à jour : **2026-04-22 19:08:13    **
+> Décisions structurantes récentes. Mise à jour : **2026-05-08** (ajout ADR-021).
 > Pour les décisions complètes argumentées, voir `docs/adr/`.
 
 ---
+
+## 2026-05-08 — ADR-021 : contrats inter-modules pour modules métier futurs
+
+- **Décision** : adoption d'un triptyque pattern pour permettre à Menuiserie360 (et tout futur module L4) de consommer Eshop360 sans importer de modèle Eloquent : (1) interfaces + adapters dans `Modules/Eshop360/Contracts/` pour la lecture synchrone, (2) événements `Modules/Eshop360/Events/*` pour les notifications asynchrones, (3) HookRegistry inchangé pour menus/permissions/features.
+- **Périmètre minimum des contrats** : Catalog (produit/catégorie/marque), Customer (identité), Pricing (résolution prix). Élargissable à la demande des consumers.
+- **Statut ADR** : `Proposé` — promu à `Accepté` après validation humaine explicite.
+- **Implémentation** : différée jusqu'au démarrage effectif de Menuiserie360. Cet ADR est purement décisionnel, aucune ligne de code applicatif touchée.
+- **Tests structurels** : règles deptrac/PHPStan d'isolation à ajouter en même temps que le code Menuiserie360, pas dans ce lot.
+- **Décision différée** : morphs cross-module Menuiserie360 → Eshop360 (réutiliser `eshop_payments` ou non) — à trancher au démarrage Menuiserie360.
+- **Source** : sprint pré-Menuiserie360 lot 3, branche `docs/adr-021-future-modules-contracts`, design [`docs/superpowers/specs/2026-05-08-pre-menuiserie360-sprint-design.md`](../superpowers/specs/2026-05-08-pre-menuiserie360-sprint-design.md). Voir [ADR-021](../adr/ADR-021-contracts-for-future-business-modules.md).
 
 ## 2026-05-05 — R-101 fermée : clôture du découpage Eshop360 (sous-lot S12)
 

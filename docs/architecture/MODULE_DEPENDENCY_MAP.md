@@ -24,7 +24,7 @@
 | **L2 — Transverse** | Billing | L0, L1 |
 | **L2 — Support** | Lang, Currency, Dashboard, ModuleManager, Demo, Installer | L0, L1 |
 | **L3 — Métier** | Eshop360 (catalog, pricing, inventory, sales, finance, crm, channel, hr, projects) | L0, L1, L2 |
-| **L4 — Modules futurs** | Menuiserie360, etc. | L0, L1, L2, contrats Eshop360 (pas modèles) |
+| **L4 — Modules futurs** | Menuiserie360, etc. | L0, L1, L2, `Modules/Eshop360/Contracts/*` et `Modules/Eshop360/Events/*` (interfaces + DTO + événements). **Interdit** : `Modules/Eshop360/Domain/*/Models/*`, `Modules/Eshop360/Models/*`, `DB::table('eshop_*')`. Voir [ADR-021](../adr/ADR-021-contracts-for-future-business-modules.md). |
 
 ---
 
@@ -63,6 +63,15 @@
 
 ### Via Contracts (pour services partagés)
 - À documenter dans `docs/index/API_INDEX.md` section "Contracts internes"
+
+### Via Contracts Eshop360 (pour modules L4)
+
+Pour qu'un module L4 (Menuiserie360, futur CCC360, etc.) consomme Eshop360 :
+- **Interfaces synchrones** : `Modules/Eshop360/Contracts/<Domain>/<Reader|Resolver>.php` (DI binding par défaut sur `Modules/Eshop360/Adapters/Eloquent*.php`)
+- **DTO immutables** : `Modules/Eshop360/Contracts/<Domain>/*Dto.php`
+- **Événements asynchrones** : `Modules/Eshop360/Events/*.php`
+
+Voir [ADR-021](../adr/ADR-021-contracts-for-future-business-modules.md) pour le détail du pattern et le périmètre minimum (Catalog + Customer + Pricing).
 
 ---
 
