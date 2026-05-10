@@ -5,6 +5,15 @@
 
 ---
 
+## 2026-05-08 — Spec Menuiserie360 rebasée v1.0 → v1.1 (sprint pré-Menuiserie360 lot 4)
+
+- **Décision** : la spec [`docs/Ins/CONCEPTION_TECHNIQUE_MENUISERIE360.md`](../Ins/CONCEPTION_TECHNIQUE_MENUISERIE360.md) passe en v1.1, rebasée sur l'architecture post-R-101 (ADR-020) et ADR-021 (contrats inter-modules).
+- **Sections nouvelles** : §1.4bis intégration via contrats (mapping BC → contrat), §1.4ter morph map (Cas A/B), §2.5 rulesets deptrac, §5.6 HookRegistry + permissions préliminaires, §7.X risque désynchronisation contrats, Annexe Changelog.
+- **§5.2 — Note transitoire** : le pattern ACL (interface côté Menuiserie360 wrappant `\Modules\Eshop360\Services\InvoiceService`) reste acceptable tant que `FinanceContract` n'est pas dans le périmètre minimum ADR-021. Préférence future : ajouter `FinanceContract` côté producer (Eshop360) et le consommer directement.
+- **Statut** : spec **prête pour décision humaine de démarrage**. Aucun code Menuiserie360 créé — la décision « démarrer ou attendre » reste à l'humain.
+- **Décisions différées au démarrage** : BC-Finance autonome ou via contrat ; Cas A/B morphs ; périmètre permissions ; activation tests structurels deptrac/PHPStan.
+- **Source** : sprint pré-Menuiserie360 lot 4, branche `docs/menuiserie360-spec-v1.1`, design [`docs/superpowers/specs/2026-05-08-pre-menuiserie360-sprint-design.md`](../superpowers/specs/2026-05-08-pre-menuiserie360-sprint-design.md).
+
 ## 2026-05-08 — ADR-021 : contrats inter-modules pour modules métier futurs
 
 - **Décision** : adoption d'un triptyque pattern pour permettre à Menuiserie360 (et tout futur module L4) de consommer Eshop360 sans importer de modèle Eloquent : (1) interfaces + adapters dans `Modules/Eshop360/Contracts/` pour la lecture synchrone, (2) événements `Modules/Eshop360/Events/*` pour les notifications asynchrones, (3) HookRegistry inchangé pour menus/permissions/features.

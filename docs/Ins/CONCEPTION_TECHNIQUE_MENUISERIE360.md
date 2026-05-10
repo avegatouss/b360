@@ -1,10 +1,12 @@
 # CONCEPTION TECHNIQUE — MODULE `Menuiserie360`
 ### Intégration dans le SaaS B360 (Laravel 12 / nwidart-modules v12)
 
-> **Auteur** : Architecte Technique / Lead Développeur  
-> **Date** : 2026-04-04  
-> **Version** : 1.0  
-> **Statut** : Prêt pour revue équipe de développement
+> **Auteur** : Architecte Technique / Lead Développeur (rebase 2026-05-08 par Claude)
+> **Date initiale** : 2026-04-04
+> **Date rebase** : 2026-05-08
+> **Version** : 1.1 — rebasé post-R-101 (ADR-020) + ADR-021 (contrats inter-modules)
+> **Statut** : Spec — prêt pour décision humaine de démarrage
+> **Changements v1.0 → v1.1** : voir section "Annexe — Changelog v1.1" en fin de document.
 
 ---
 
@@ -115,6 +117,46 @@ Modules/Menuiserie360/
 - Menuiserie360 réutilise `InvoiceService` d'Eshop360 pour la création de factures (injection via interface `InvoiceServiceContract`).
 - Menuiserie360 n'utilise **pas** les tables `eshop_stocks` — il a son propre stock matière (profilés alu, vitrages, accessoires) qui a une sémantique différente (unité de mesure mètres linéaires / m², pas pièces).
 - Les paiements Mobile Money passent par le `GatewayManager` du module Billing de B360 (interface existante `PaymentGatewayInterface`).
+
+### 1.4bis Intégration avec Eshop360 — via contrats (ADR-021)
+
+**Pattern obligatoire (ADR-021)** : Menuiserie360 ne peut **pas** importer un modèle Eloquent d'Eshop360. Les consommations passent par :
+
+1. **Interfaces synchrones** dans `Modules/Eshop360/Contracts/<Domain>/<Reader|Resolver>.php` (DI binding par défaut sur `Modules/Eshop360/Adapters/Eloquent*.php`)
+2. **DTO immutables** dans `Modules/Eshop360/Contracts/<Domain>/*Dto.php` (jamais de `Product`, `Customer` Eloquent dans la signature publique)
+3. **Événements asynchrones** dans `Modules/Eshop360/Events/*.php` (payloads = DTO, pas Eloquent)
+4. **HookRegistry** (Core) pour menu / widgets / permissions / features / payment_gateways
+
+**Mapping consumers Menuiserie360 → contrats Eshop360 :**
+
+| BC Menuiserie360 | Contrat Eshop360 consommé | Périmètre ADR-021 | Usage |
+|---|---|---|---|
+| BC-Commercial | `CatalogReader` | OK minimum | Référence catalogue commun (matières/accessoires standards) si pertinent |
+| BC-Commercial | `CustomerReader` | OK minimum | Récupérer identité client si Customer reste partagé |
+| BC-Commercial | `PricingResolver` | OK minimum | Résoudre prix d'éléments catalogue Eshop360 (si Menuiserie360 vend aussi du catalogue Eshop) |
+| BC-Clients | `CustomerReader` | OK minimum | Lecture identité (anti-corruption layer interne) |
+| BC-Production | (autonome — stock matières premières propres) | — | Pas de consommation Eshop360 par défaut |
+| BC-Stock | (autonome) | — | Idem |
+| BC-Finance | `FinanceContract` (à ajouter — hors périmètre minimum ADR-021) | à ajouter | Soit autonome (`MenuiserieFinance`), soit consommation `FinanceContract` Eshop360 si paiements partagés. Décision au démarrage du module. |
+| BC-Reporting | DTO via Events | — | Projection à partir d'événements (pattern read-model) |
+
+**Note transitoire** : la §5.2 décrit un pattern « anti-corruption layer » (interface définie côté Menuiserie360 wrappant `\Modules\Eshop360\Services\InvoiceService`). Ce pattern reste **acceptable temporairement** pour BC-Finance tant que `FinanceContract` n'est pas ajouté au périmètre exposé par Eshop360 (cf. ADR-021 §1 « Hors périmètre minimum à ajouter quand un consumer le demande »). Au démarrage Menuiserie360, le bon flux est : (1) ajouter `FinanceContract` à `Modules/Eshop360/Contracts/Finance/`, (2) bind l'adapter Eloquent dans `Eshop360ServiceProvider`, (3) Menuiserie360 consomme directement la contract producer-owned. Le pattern §5.2 reste un fallback documenté si Finance refuse temporairement d'exposer.
+
+**Décision à prendre au démarrage Menuiserie360** :
+- BC-Finance autonome ou via contrat Eshop360 ?
+- Si paiements partagés → décision morphs cross-module (cf. §1.4ter).
+
+### 1.4ter Position dans le morph map central (ADR-020)
+
+**Cas A — Menuiserie360 introduit ses propres morphs (recommandé par défaut)** :
+
+Si Menuiserie360 crée des entités morphiques (ex. `MenuiserieInvoice` → `payable_type` dans une table `mnu_payments` propre), elles vivent dans le morph map de Menuiserie360 (à créer dans `Menuiserie360ServiceProvider::boot()`). Pas d'interaction avec le morph map Eshop360.
+
+**Cas B — Menuiserie360 réutilise les morphs Eshop360** :
+
+Si décision de réutiliser `eshop_payments.payable_type = MenuiserieInvoice` (ex. portefeuille de paiements partagé), Menuiserie360 **doit** ajouter ses entrées dans le morph map central de `Eshop360ServiceProvider::boot()` (cf. ADR-020 §contraintes).
+
+**Recommandation v1.1** : Cas A par défaut (cohérent avec le préfixe `mnu_*` déjà prévu §5.3). Cas B uniquement si la spec Finance partage l'infrastructure paiements explicitement.
 
 ---
 
@@ -330,6 +372,51 @@ $this->app->bind(
 - Toutes les migrations préfixées `mnu_` (ex: `mnu_devis`, `mnu_chantiers`, `mnu_of`)
 - Vérification `Schema::hasTable()` dans chaque migration avant création
 - Pas d'`ALTER TABLE` sur les tables Eshop360 ou Core
+
+### 2.5 Discipline d'isolation — rulesets deptrac (ADR-021)
+
+**Layer Menuiserie360** dans `deptrac.yaml` :
+
+```yaml
+- name: Menuiserie360
+  collectors:
+    - { type: directory, regex: Modules/Menuiserie360/.* }
+```
+
+**Ruleset autorisé** :
+
+```yaml
+Menuiserie360:
+  - Core
+  - Auth
+  - Users
+  - Instances
+  - Settings
+  - Billing
+  - Currency
+  - Lang
+  - EshopContracts  # nouveau layer = Modules/Eshop360/Contracts/* + Modules/Eshop360/Events/*
+```
+
+**Layer EshopContracts** (à créer en même temps) :
+
+```yaml
+- name: EshopContracts
+  collectors:
+    - { type: directory, regex: Modules/Eshop360/Contracts/.* }
+    - { type: directory, regex: Modules/Eshop360/Events/.* }
+```
+
+**Interdictions explicites pour Menuiserie360** (à matérialiser par tests structurels, cf. ADR-021 §5) :
+
+| Pattern interdit | Test associé |
+|---|---|
+| `use Modules\Eshop360\Domain\*\Models\*` | Deptrac (ruleset Menuiserie360 sans EshopX) |
+| `use Modules\Eshop360\Models\*` | PHPStan custom rule |
+| `DB::table('eshop_*')` | PHPStan custom rule (déjà existante : `NoDirectCrossModuleTableAccess`) |
+| `use Modules\Eshop360\Services\*` | Deptrac (ruleset Menuiserie360 sans EshopX) — exception transitoire §5.2 ACL pattern |
+
+Ces tests sont prévus mais **implémentés au démarrage Menuiserie360** — pas dans la phase spec.
 
 ---
 
@@ -896,6 +983,33 @@ Via `ModuleManager` de B360 (interface existante) :
 - Les données restent en base (pas de suppression)
 - Les factures Eshop360 créées pour des BC menuiserie subsistent (découplage intentionnel)
 
+### 5.6 Extension du noyau — HookRegistry (cohérent avec ADR-021 §3)
+
+Pour exposer un menu, un widget, un settings_group, une permission, une feature, ou un payment_gateway, **Menuiserie360 passe par HookRegistry** (Core), comme tous les modules existants.
+
+**Pattern de référence** : `Modules/Eshop360/Providers/Eshop360HooksProvider.php` — voir notamment :
+- `registerMenu()` : entrée principale Menuiserie360 dans le menu latéral
+- `registerPermissions()` : permissions par BC (Commercial, Clients, Chantiers, Production, Stock, Finance, Reporting)
+- `registerBillableFeatures()` : si Menuiserie360 a des features premium
+- `registerPaymentGateways()` : si Menuiserie360 introduit des passerelles paiement spécifiques
+
+**Liste préliminaire des permissions Menuiserie360 par BC** (à affiner au démarrage) :
+
+| BC | Permission | Description |
+|---|---|---|
+| Commercial | `menuiserie.devis.view` | Lire les devis |
+| Commercial | `menuiserie.devis.create` | Créer un devis |
+| Commercial | `menuiserie.bc.validate` | Valider un BC |
+| Clients | `menuiserie.client.view` | Lire fiche client menuiserie |
+| Chantiers | `menuiserie.chantier.view` | Voir chantiers |
+| Chantiers | `menuiserie.chantier.update` | Mettre à jour avancement |
+| Production | `menuiserie.of.create` | Créer ordre de fabrication |
+| Stock | `menuiserie.stock.adjust` | Ajuster stock matières |
+| Finance | `menuiserie.invoice.create` | Créer facture menuiserie |
+| Reporting | `menuiserie.report.view` | Voir tableaux de bord |
+
+(Liste indicative — à compléter selon le découpage final des actions.)
+
 ---
 
 ## 6. Points de contrôle & validation
@@ -1051,6 +1165,23 @@ Toutes les migrations sont de type CREATE TABLE uniquement.
 Si un besoin futur nécessite d'étendre une table Eshop360 → discussion
 préalable avec l'équipe et stratégie online schema change (pt-online-schema-change).
 ```
+
+### 7.X Risque : désynchronisation contrats Eshop360 ↔ Menuiserie360 (ajout v1.1)
+
+**Description** : si Eshop360 modifie un contrat (`CatalogReader::findProduct` change de signature, `ProductDto` ajoute/retire un champ obligatoire), Menuiserie360 casse silencieusement à l'exécution sauf si un test l'attrape.
+
+**Probabilité** : MOYENNE | **Impact** : HAUT.
+
+**Mitigation** :
+1. Tests structurels deptrac (cf. §2.5) qui interdisent l'import direct d'un modèle.
+2. Tests d'intégration Menuiserie360 qui consomment les contrats via DI (le binding par défaut Eloquent → DTO valide la signature).
+3. Versionning des contrats — toute modification breaking change passe par un ADR (cf. ADR-021 §contraintes au futur).
+4. Convention : ajout d'un champ optionnel sur un DTO = non-breaking, retrait ou changement de type = breaking.
+
+**Risques rendus obsolètes par R-101 fermée (v1.0 → v1.1)** :
+- ~~Eshop360 monolithique difficile à intégrer~~ → résolu, cf. ADR-020 (13 sous-domaines extraits).
+- ~~FeatureGate à éviter~~ → résolu, FeatureGate retiré (R-102 fermé). Utiliser `FeatureRegistry` (Billing) + middleware `EnsureFeature`.
+- ~~Codifarm coexistant~~ → résolu, R-103 fermé. Canon = `DistributionChannel`.
 
 ---
 
@@ -1223,3 +1354,37 @@ parameters:
 ---
 
 *Document prêt pour revue technique. Toute modification de périmètre doit être tracée et validée par le lead développeur avant implémentation.*
+
+---
+
+## Annexe — Changelog v1.0 → v1.1
+
+**Date** : 2026-05-08
+**Auteur du rebase** : Claude (sprint pré-Menuiserie360 lot 4)
+**Source des changements** : [PLAN_ACTION_DOCUMENTAIRE_2026-05-06](../PLAN_ACTION_DOCUMENTAIRE_2026-05-06.md) §P2.1 + [ADR-021](../adr/ADR-021-contracts-for-future-business-modules.md) (Accepté 2026-05-08).
+
+### Changements appliqués
+
+1. **Bandeau version** : v1.0 → v1.1, statut "Spec — prêt pour décision humaine de démarrage".
+2. **Sections nouvelles** :
+   - §1.4bis — Intégration avec Eshop360 via contrats ADR-021 (mapping BC → contrat, périmètre minimum vs à ajouter)
+   - §1.4ter — Position dans le morph map central (Cas A morphs propres / Cas B réutilisation Eshop360)
+   - §2.5 — Discipline d'isolation, rulesets deptrac proposés (Menuiserie360 + EshopContracts)
+   - §5.6 — Extension du noyau via HookRegistry, permissions préliminaires par BC
+   - §7.X — Risque désynchronisation contrats + mitigation
+3. **Risques marqués résolus** : R-101 fermée (Eshop360 monolithique, ADR-020), R-102 (FeatureGate retiré), R-103 (Codifarm consolidé).
+4. **§5.2 — Note transitoire ajoutée** : le pattern « anti-corruption layer » (interface définie côté Menuiserie360 wrappant `\Modules\Eshop360\Services\InvoiceService`) reste acceptable temporairement pour BC-Finance tant que `FinanceContract` n'est pas exposé par Eshop360. Au démarrage du module, le flux préféré est : ajouter `FinanceContract` à Eshop360, puis Menuiserie360 le consomme.
+
+### Décisions à prendre au démarrage du module
+
+1. BC-Finance autonome ou via contrat Eshop360 ? Si via contrat → ajouter `FinanceContract` à `Modules/Eshop360/Contracts/Finance/` (en dehors du périmètre minimum ADR-021).
+2. Cas A (morphs propres `mnu_*`) ou Cas B (réutilisation morphs Eshop360) ?
+3. Périmètre exact des permissions par BC (liste préliminaire dans §5.6 à valider).
+4. Tests structurels deptrac/PHPStan à activer au commit initial du module (cf. §2.5 + ADR-021 §5).
+
+### Hors scope v1.1
+
+- Implémentation des contrats Eshop360 `Catalog/Customer/Pricing` (sera faite au démarrage Menuiserie360).
+- Création du module Laravel `Menuiserie360` (composer.json, ServiceProvider, etc.).
+- Migrations initiales (à dériver de §4 existant).
+- Ajout de `FinanceContract` à Eshop360 (lot dédié, à déclencher au démarrage Menuiserie360).
