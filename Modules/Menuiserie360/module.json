@@ -1,0 +1,12 @@
+{
+    "name": "Menuiserie360",
+    "alias": "menuiserie360",
+    "description": "ERP métier menuiserie aluminium (Côte d'Ivoire) — module L4 consommant Eshop360 via contrats ADR-021.",
+    "keywords": ["menuiserie", "metier", "l4"],
+    "priority": 10,
+    "providers": [
+        "Modules\\Menuiserie360\\Providers\\Menuiserie360ServiceProvider",
+        "Modules\\Menuiserie360\\Providers\\Menuiserie360HooksProvider"
+    ],
+    "files": []
+}

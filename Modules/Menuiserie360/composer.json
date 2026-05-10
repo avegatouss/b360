@@ -1,0 +1,30 @@
+{
+    "name": "b360/menuiserie360",
+    "description": "ERP métier menuiserie aluminium — module L4 B360 (consommation Eshop360 via contrats ADR-021).",
+    "authors": [
+        {
+            "name": "B360 Core",
+            "email": "dev@b360.app"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Menuiserie360\\": "",
+            "Modules\\Menuiserie360\\Database\\Factories\\": "Database/Factories/",
+            "Modules\\Menuiserie360\\Database\\Seeders\\": "Database/Seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\Menuiserie360\\Tests\\": "Tests/"
+        }
+    }
+}
