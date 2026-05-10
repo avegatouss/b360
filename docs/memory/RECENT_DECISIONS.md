@@ -1,9 +1,28 @@
 # RECENT_DECISIONS — B360
 
-> Décisions structurantes récentes. Mise à jour : **2026-05-08** (5 décisions Menuiserie360 → spec v1.3).
+> Décisions structurantes récentes. Mise à jour : **2026-05-10** (P0-3bis livré : contrats Eshop360 ADR-021).
 > Pour les décisions complètes argumentées, voir `docs/adr/`.
 
 ---
+
+## 2026-05-10 — P0-3bis livré : contrats publics Eshop360 (ADR-021)
+
+- **Décision** : exécution du lot P0-3bis (préalable bloquant pour P1 Menuiserie360, cf. spec v1.3 §3). Création de la **surface publique minimum** d'Eshop360 selon ADR-021 §1.
+- **Contrats créés** dans `Modules/Eshop360/Contracts/` :
+  1. **Catalog** : `CatalogReader` (4 méthodes : findProduct, findProductBySku, productExists, productsByCategory) + `ProductDto` (16 champs immuables).
+  2. **Customer** : `CustomerReader` (3 méthodes : findCustomer, findCustomerByCode, customerExists) + `CustomerDto` (17 champs immuables, wallet_balance/credit_limit en lecture seule).
+  3. **Pricing** : `PricingResolver` (1 méthode : resolveForProduct) + `PricingRequestDto` + `PricingResultDto`. Wrap thin de `PricingEngine` (zone L1 protégée, **non modifiée** — l'adapter ne fait que lire le produit, construire un `PricingContext` interne et déléguer). Détails de marge canal (parts owner/channel/debt) **intentionnellement non exposés** au DTO public.
+- **Adapters Eloquent par défaut** dans `Modules/Eshop360/Adapters/Eloquent/` : `EloquentCatalogReader`, `EloquentCustomerReader`, `EloquentPricingResolver`. Seuls fichiers où les modèles `Domain\Catalog\Models\Product` et `Domain\CRM\Models\Customer` sont importés dans le contexte des contrats publics.
+- **Bindings DI** dans `Eshop360ServiceProvider::register()` — `bind` (pas singleton, adapters stateless).
+- **Layer deptrac `EshopContracts`** ajouté avec ruleset minimal (Core uniquement). La résiduelle `Eshop360` exclut désormais `Contracts/` et `Events/` de son collecteur et autorise la dépendance vers `EshopContracts` (les Adapters publient les contrats). Validé : `deptrac analyse` → 0 violations, 0 erreurs.
+- **Tests** : `EshopContractsBindingsTest` (Feature, 13 tests, 42 assertions) — DI bindings + round-trip mapping + isolation multi-tenant + DTO `readonly` invariant. Tests passés en isolation. **Note** : pour les futures intégrations (Menuiserie360 et au-delà), les tests structurels deptrac/PHPStan d'isolation seront ajoutés au commit initial du module L4 consommateur (cf. spec v1.3 §6.2).
+- **Limites volontaires v1 du contrat** :
+  - Pas de méthode d'écriture exposée — toute mutation reste interne à Eshop360 (cohérent avec ADR-021 §1).
+  - Pas de `FinanceContract` (BC-Finance Menuiserie360 = autonome, décision spec v1.3).
+  - Périmètre minimum strict : Channel, Inventory, Sales, Promotions, HR, Finance ne sont **pas** exposés. Ajouts à la demande d'un consumer concret (procédure ADR).
+  - Le bind est `bind` (factory-style) plutôt que `singleton` — stateless, isolation des tests facilitée.
+- **Source** : branche `feat/eshop360-contracts-adr-021-p0-3bis` (7 commits), spec [`docs/Ins/CONCEPTION_TECHNIQUE_MENUISERIE360.md`](../Ins/CONCEPTION_TECHNIQUE_MENUISERIE360.md) v1.3 §1.4bis et §3 P0-3bis, [ADR-021](../adr/ADR-021-contracts-for-future-business-modules.md).
+- **Suite** : Menuiserie360 P0..P5 peut démarrer (P0-3bis n'est plus bloquant). P0-3quater (S-7 multi-DB) reste à exécuter en parallèle, bloquant pour la prod uniquement.
 
 ## 2026-05-08 — Menuiserie360 : 5 décisions critiques tranchées + spec v1.2 → v1.3
 
