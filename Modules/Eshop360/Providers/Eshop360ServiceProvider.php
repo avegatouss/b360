@@ -100,6 +100,23 @@ final class Eshop360ServiceProvider extends ServiceProvider
         $this->app->singleton(SmsService::class);
         $this->app->singleton(CinetPayService::class);
         $this->app->singleton(InetPayService::class, fn ($app) => $app->make(CinetPayService::class));
+
+        // Public contracts (ADR-021 §1) — minimum perimeter for L4 modules
+        // (Menuiserie360, future CCC360, etc.). Each contract is bound to its
+        // Eloquent adapter by default. Consumers depend on the interface, never
+        // on the adapter or the underlying Domain model.
+        $this->app->bind(
+            \Modules\Eshop360\Contracts\Catalog\CatalogReader::class,
+            \Modules\Eshop360\Adapters\Eloquent\EloquentCatalogReader::class,
+        );
+        $this->app->bind(
+            \Modules\Eshop360\Contracts\Customer\CustomerReader::class,
+            \Modules\Eshop360\Adapters\Eloquent\EloquentCustomerReader::class,
+        );
+        $this->app->bind(
+            \Modules\Eshop360\Contracts\Pricing\PricingResolver::class,
+            \Modules\Eshop360\Adapters\Eloquent\EloquentPricingResolver::class,
+        );
     }
 
     public function boot(): void
