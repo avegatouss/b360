@@ -1,9 +1,22 @@
 # RECENT_DECISIONS — B360
 
-> Décisions structurantes récentes. Mise à jour : **2026-05-08** (ajout ADR-021).
+> Décisions structurantes récentes. Mise à jour : **2026-05-08** (rebase Menuiserie360 v1.2).
 > Pour les décisions complètes argumentées, voir `docs/adr/`.
 
 ---
+
+## 2026-05-08 — Spec Menuiserie360 v1.1 → v1.2 (harmonisation interne post-analyse)
+
+- **Décision** : seconde passe sur la spec [`docs/Ins/CONCEPTION_TECHNIQUE_MENUISERIE360.md`](../Ins/CONCEPTION_TECHNIQUE_MENUISERIE360.md) pour résoudre les **6 juxtapositions internes** identifiées par l'analyse complémentaire post-v1.1.
+- **§1.4** : refondue pour aligner avec ADR-021 (suppression de la formulation « wrappant le modèle Eshop360 », remplacée par « via le contrat `CustomerReader` producer-owned »).
+- **§2.4** : commentaires explicites sur les bindings — pas de bind à faire pour les contrats minimum ADR-021 (déjà bind dans Eshop360ServiceProvider). InvoiceServiceContract → adapter marqué DEPRECATED v1.2 transitoire.
+- **§4.5 BC-Finance** : encart « ⚠️ Statut v1.2 ». Signatures `InvoiceContract` refondées en DTO immutables (`CreateInvoiceDto`, `InvoiceCreatedDto`) conformes ADR-021. Note explicite que la signature v1.0 `array → int` violait l'esprit ADR-021.
+- **§5.2** : marqué **DEPRECATED v1.2** avec encart d'avertissement. Code legacy conservé pour traçabilité. Ajouté un extrait de la cible producer-owned (DI directe sans ACL).
+- **§5.4** : ajouté caveat S-7 (database-per-instance cassé silencieusement). Recommandation : isolation primaire = scope `instance_id` Eloquent, pas le switch de connexion.
+- **§7.1** : ajouté **R11** (import accidentel d'un Domain model post-R-101), **R12** (multi-DB S-7 cassé), **R13** (breaking change contrat Eshop360).
+- **§3 Roadmap** : annoté P0-3 + ajouté **P0-3bis** (lot pré-démarrage côté Eshop360 — création des contrats minimum ADR-021 + adapters + layer deptrac + tests structurels — **bloquant pour P1**) et **P0-3ter** (optionnel : `FinanceContract`).
+- **Statut** : v1.2 prête pour décision humaine de démarrage. Décisions critiques encore à trancher : BC-Finance autonome vs FinanceContract, morphs Cas A vs B, statut S-7 (à corriger ou abandonner).
+- **Source** : analyse complémentaire post-livraison v1.1, branche `docs/menuiserie360-spec-v1.1` (commits Lot 4 v1.1 + Lot 4bis v1.2).
 
 ## 2026-05-08 — Spec Menuiserie360 rebasée v1.0 → v1.1 (sprint pré-Menuiserie360 lot 4)
 
