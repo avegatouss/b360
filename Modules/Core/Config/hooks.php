@@ -17,6 +17,7 @@ return [
         \Modules\Lang\Providers\LangHooksProvider::class,
         \Modules\Currency\Providers\CurrencyHooksProvider::class,
         \Modules\Eshop360\Providers\Eshop360HooksProvider::class,
+        \Modules\Menuiserie360\Providers\Menuiserie360HooksProvider::class,
         \Modules\Demo\Providers\DemoHooksProvider::class,
     ],
 ];

@@ -21,6 +21,7 @@
             <directory>Modules/Settings/Tests</directory>
             <directory>Modules/Billing/Tests</directory>
             <directory>Modules/Eshop360/Tests</directory>
+            <directory>Modules/Menuiserie360/Tests</directory>
             <directory>Modules/Lang/Tests</directory>
             <directory>Modules/Currency/Tests</directory>
             <directory phpVersion="8.2" phpVersionOperator=">=">Modules/Installer/Tests</directory>
