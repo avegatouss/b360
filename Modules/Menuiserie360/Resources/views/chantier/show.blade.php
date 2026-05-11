@@ -1,19 +1,28 @@
 <x-menuiserie360::layout title="Chantier {{ $chantier->numero }}">
+    <x-menuiserie360::page-header
+        :title="'Chantier ' . $chantier->numero"
+        :back-route="route('menuiserie.chantiers.index', ['slug' => request()->route('slug')])"
+        back-label="Liste des chantiers"
+        :status="$chantier->statut"
+        :status-variant="$chantier->statut === 'termine' || $chantier->statut === 'livre' ? 'success' : ($chantier->statut === 'annule' ? 'danger' : 'info')"
+    >
+        <x-slot:actions>
+            @if ($chantier->statut !== 'termine' && $chantier->statut !== 'livre' && $chantier->statut !== 'annule')
+                <form method="POST" action="{{ route('menuiserie.chantiers.terminer', ['slug' => request()->route('slug'), 'chantier' => $chantier->id]) }}">
+                    @csrf
+                    <button class="btn btn-success btn-sm" onclick="return confirm('Clôturer ce chantier ? La facture de solde sera générée automatiquement.')">Clôturer (générer facture solde)</button>
+                </form>
+            @endif
+        </x-slot:actions>
+    </x-menuiserie360::page-header>
+
     <div class="card mb-3">
         <div class="card-body">
-            <p><strong>Statut :</strong> <span class="badge bg-info">{{ $chantier->statut }}</span></p>
             <p><strong>BC :</strong> #{{ $chantier->bc_id }} | <strong>Client :</strong> #{{ $chantier->client_id }}</p>
             <p><strong>Adresse pose :</strong> {{ $chantier->adresse_pose ?? '—' }}</p>
             <p><strong>Contact :</strong> {{ $chantier->contact_chantier ?? '—' }}</p>
             <p><strong>Chef chantier :</strong> #{{ $chantier->chef_chantier_id ?? '—' }}</p>
             <p><strong>Période prévue :</strong> {{ optional($chantier->date_debut_prevue)->format('Y-m-d') ?? '—' }} → {{ optional($chantier->date_fin_prevue)->format('Y-m-d') ?? '—' }}</p>
-
-            @if ($chantier->statut !== 'termine' && $chantier->statut !== 'livre' && $chantier->statut !== 'annule')
-                <form method="POST" action="{{ route('menuiserie.chantiers.terminer', ['slug' => request()->route('slug'), 'chantier' => $chantier->id]) }}" class="mt-3">
-                    @csrf
-                    <button class="btn btn-success" onclick="return confirm('Clôturer ce chantier ? La facture de solde sera générée automatiquement.')">Clôturer le chantier (générer facture solde)</button>
-                </form>
-            @endif
         </div>
     </div>
 

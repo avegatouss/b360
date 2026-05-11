@@ -1,8 +1,19 @@
 <x-menuiserie360::layout title="Devis {{ $devis->numero }}">
+    <x-menuiserie360::page-header
+        :title="'Devis ' . $devis->numero"
+        :back-route="route('menuiserie.devis.index', ['slug' => request()->route('slug')])"
+        back-label="Liste des devis"
+        :status="$devis->statut"
+        :status-variant="$devis->statut === 'accepte' ? 'success' : ($devis->statut === 'refuse' ? 'danger' : 'secondary')"
+    >
+        <x-slot:actions>
+            <a href="{{ route('menuiserie.devis.pdf', ['slug' => request()->route('slug'), 'devis' => $devis->id]) }}" class="btn btn-outline-secondary btn-sm">Télécharger PDF</a>
+        </x-slot:actions>
+    </x-menuiserie360::page-header>
+
     <div class="row g-4">
         <div class="col-md-8">
             <div class="card">
-                <div class="card-header"><strong>{{ $devis->numero }}</strong> — {{ $devis->statut }}</div>
                 <div class="card-body">
                     <p><strong>Client :</strong> #{{ $devis->client_id }}</p>
                     <p><strong>Montant HT :</strong> {{ number_format((float) $devis->montant_ht, 0, ',', ' ') }} XOF</p>
