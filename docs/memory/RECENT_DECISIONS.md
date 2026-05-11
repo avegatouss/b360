@@ -1,9 +1,45 @@
 # RECENT_DECISIONS — B360
 
-> Décisions structurantes récentes. Mise à jour : **2026-05-10** (Menuiserie360 P0 squelette livré).
+> Décisions structurantes récentes. Mise à jour : **2026-05-11** (Menuiserie360 P1 noyau Core livré).
 > Pour les décisions complètes argumentées, voir `docs/adr/`.
 
 ---
+
+## 2026-05-11 — Menuiserie360 P1 livré : noyau Core (Stock + Client + Commercial)
+
+- **Décision** : exécution du lot P1 de [`docs/Ins/CONCEPTION_TECHNIQUE_MENUISERIE360.md`](../Ins/CONCEPTION_TECHNIQUE_MENUISERIE360.md) v1.3 §3 (Phase 1 — Noyau Core, semaines 2-3 spec). 9 sous-tâches livrées en 8 commits + 1 commit doc.
+- **Lot livré (9 commits sur branche `feat/menuiserie360-p1-noyau-core`)** :
+  1. **P1-1+P1-2** Stock models + migrations : `MatierePremiere` (catalogue m_lineaire/m2/piece), `StockMatiere` (niveau courant + CHECK SGBD non-négatif), `MouvementStock` (audit trail immuable + UNIQUE pour idempotence). 3 migrations `mnu_*`, 3 models, 2 enums (UniteMesure, CategorieMatiere).
+  2. **P1-3** `StockMatiereService` implémente `StockContract` interne — 4 méthodes (isAvailable, reserve, consume, release) + recevoir() entrée fournisseur. `lockForUpdate()` + `DB::transaction()` (pattern ADR-002 stock concurrency Eshop360), idempotence via UNIQUE + try/catch UniqueConstraintViolationException (pattern ADR-003 webhook). Bind comme singleton dans Menuiserie360ServiceProvider.
+  3. **P1-9** `StockMatiereServiceTest` — 20 tests / 39 assertions, 100 % verts. Couvre DI binding, mouvements, idempotence, multi-tenant, exceptions.
+  4. **P1-4** `ClientMenuiserie` model + migration `mnu_clients_menuiserie`. Pivot/extension Customer Eshop360 avec attributs propres (preferred_contact_method, total_chantiers_count, total_revenue_xof). **Pas de FK SQL vers `eshop_customers`** — relation applicative validée par `CustomerReader::customerExists()` (cohérence ADR-021 §1).
+  5. **P1-5** `ClientMenuiserieRepository` implémente `ClientRepositoryContract` — 4 méthodes (find, withMenuiserieHistory, canReference, fromCustomerDto). Consomme `CustomerReader` Eshop360 via DI (contrat ADR-021), JAMAIS le modèle Customer Eloquent. Bind comme singleton. Test : 10 tests / 28 assertions.
+  6. **P1-6** Models `Devis` + `LigneDevis` + migrations + enum `StatutDevis` (workflow : brouillon → soumis → valide → accepte/refuse → transforme). Helpers `surfaceM2()` (vitrages) et `perimetreLineaire()` (profilés alu) sur LigneDevis.
+  7. **P1-7** `DevisCalculatorService` — service PUR (sans I/O, testable sans DB). Méthodes : `calculate()` (HT/TVA/TTC/marge), `surfaceM2()`, `perimetreLineaire()`, `suggestPriceFromMatiere()`. Règles métier : remise ligne plancher 0, remise globale plafonnée HT brut, TVA 18% CI par défaut, marge brute = HT_avant_remise - cout_revient_total, enforce optionnel via MargeInsuffisanteException, arrondi 2 décimales (cohérent decimal(14,2)).
+  8. **P1-8** `DevisCalculatorServiceTest` — **27 tests / 52 assertions**, 100 % verts. Couvre calcul lignes, remises, TVA custom, marge brute/fraction (incluant valeurs négatives = vente à perte), enforcement marge, helpers dimensionnels, suggestPriceFromMatiere, 5 guards d'invariants, précision arrondie. **Spec demandait 20+ tests — atteint 27.**
+  9. RECENT_DECISIONS entry P1 (cette entrée).
+- **Validation pipeline** :
+  - ✅ Pint passé sur tous les commits
+  - ✅ PHPStan : 0 erreur sur tout le module (annotations génériques HasFactory<TFactory>, BelongsTo<X, $this>, getAttribute() systématique)
+  - ✅ Deptrac : 0 violations Menuiserie360 (198 skipped baseline R-101 préexistants intacts)
+  - ✅ **Tests Menuiserie360 : 68 passed / 0 failed (226 assertions)** — incluant les 11 tests P0 (5 structural + 6 bootstrap) et les 57 tests P1 (20 Stock + 10 Client + 27 Devis).
+- **Patterns hérités appliqués** :
+  - ADR-002 (stock concurrency Eshop360) → `lockForUpdate()` dans `StockMatiereService`
+  - ADR-003 (webhook idempotence) → UNIQUE(instance, type, reference) + try/catch sur `mnu_mouvements_stock` et bind matière
+  - ADR-004 (wallet integrity) → CHECK SGBD `quantite_actuelle >= 0` et `quantite_reservee >= 0` sur MySQL/PG
+  - ADR-006 (atomic numbering) → préparé via UNIQUE(instance_id, numero) sur `mnu_devis` (numérotation atomique service à coder en P2)
+  - ADR-021 (contrats inter-modules) → BC-Clients consomme Eshop360 uniquement via `CustomerReader`
+- **Statut Menuiserie360 module global** :
+  - 6 sous-domaines `Domain/<Sub>/` créés à ce stade : Stock (complet), Client (complet pour P1), Commercial (models + calcul, controllers/routes en P2), + 4 vides en attente (Chantier, Production, Finance, Reporting → P2-P3).
+  - 0 modèle morphique encore (Cas A morph map propre vide en P0/P1, peuplé en P2-P3).
+  - Aucun controller / route métier encore — viendront en P2 avec les CRUD.
+- **Hors scope P1** :
+  - Tests d'intégration Stock ↔ Devis (P2 quand workflow en bout-en-bout)
+  - Routes / Controllers / Vues Blade / PDF (P2-P3)
+  - Modèles Chantier / OF / Invoice / Payment (P2-P3)
+  - Stress test concurrence multi-process MySQL (cf. ADR-002 limite assumée — SQLite :memory: ne reproduit pas la race physique)
+- **Source** : branche `feat/menuiserie360-p1-noyau-core` (basée sur `base` après merge P0 + P0-3bis).
+- **Suite** : Menuiserie360 **P2** (semaines 4-7 spec) — fonctionnalités MVP : CRUD Devis/BC/Chantier/Production, transformations devis→BC→OF, alertes stock, suivi avancement chantier, listeners cross-BC.
 
 ## 2026-05-10 — Menuiserie360 P0 livré : squelette module L4
 
