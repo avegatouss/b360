@@ -56,19 +56,22 @@ final class Menuiserie360ServiceProvider extends ServiceProvider
      * du namespace PHP. Aucune entrée n'est ajoutée au morph map central
      * Eshop360 (Cas B explicitement écarté en spec v1.3).
      *
-     * À compléter au fur et à mesure que les modèles morphiques apparaissent
-     * (MenuiserieInvoice, MenuiseriePayment, etc. — cf. §4.5 spec).
+     * P2 — peuplement initial avec les modèles morphiques créés :
+     * MenuiserieInvoice (payable_type sur mnu_payments).
      */
     private function registerMorphMap(): void
     {
         Relation::morphMap([
-            // Aucune entrée pour P0 — placeholder. Les modèles morphiques
-            // arrivent en P2..P3 (BC-Sales, BC-Finance).
+            // P2-7 : Finance autonome (BC-Finance v1.3 §4.5)
+            'mnu.invoice' => \Modules\Menuiserie360\Domain\Finance\Models\MenuiserieInvoice::class,
+            // mnu.payment intentionnellement absent — MenuiseriePayment n'est
+            // jamais TARGET d'un morphTo (il est lui-même morphTo via payable),
+            // donc pas besoin d'entrée dans le map. Si un autre modèle
+            // morphTo vers MenuiseriePayment apparaît un jour, ajouter ici.
             //
-            // Exemples cibles (à activer dès création des modèles) :
-            // 'mnu.invoice'  => \Modules\Menuiserie360\Domain\Finance\Models\MenuiserieInvoice::class,
-            // 'mnu.payment'  => \Modules\Menuiserie360\Domain\Finance\Models\MenuiseriePayment::class,
-            // 'mnu.devis'    => \Modules\Menuiserie360\Domain\Commercial\Models\Devis::class,
+            // Modèles non-morphiques (Devis, BonCommande, OF, Chantier) —
+            // pas d'entrée morph map nécessaire (ils sont référencés via FK
+            // standard, pas via polymorphisme).
         ]);
     }
 }

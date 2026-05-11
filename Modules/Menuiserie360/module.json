@@ -5,7 +5,8 @@
     "keywords": ["menuiserie", "metier", "l4"],
     "priority": 10,
     "providers": [
-        "Modules\\Menuiserie360\\Providers\\Menuiserie360ServiceProvider"
+        "Modules\\Menuiserie360\\Providers\\Menuiserie360ServiceProvider",
+        "Modules\\Menuiserie360\\Providers\\EventServiceProvider"
     ],
     "files": []
 }
