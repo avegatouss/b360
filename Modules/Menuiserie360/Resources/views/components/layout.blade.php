@@ -1,17 +1,20 @@
-<x-core::layouts.master>
-    <div class="container-fluid p-4">
-        @if (session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
-        @if (session('warning'))
-            <div class="alert alert-warning">{{ session('warning') }}</div>
-        @endif
-        @if (session('error'))
-            <div class="alert alert-danger">{{ session('error') }}</div>
-        @endif
+@php $instance = $instance ?? \Modules\Core\Support\CurrentInstance::get(); @endphp
+<x-dashboard::layouts.master :instance="$instance" :title="$title ?? 'Menuiserie360'">
+    <div class="page-wrapper">
+        <div class="content">
+            @if (session('success'))
+                <div class="alert alert-success">{{ session('success') }}</div>
+            @endif
+            @if (session('warning'))
+                <div class="alert alert-warning">{{ session('warning') }}</div>
+            @endif
+            @if (session('error'))
+                <div class="alert alert-danger">{{ session('error') }}</div>
+            @endif
 
-        <h1 class="h3 mb-4">{{ $title ?? 'Menuiserie360' }}</h1>
+            <h1 class="h3 mb-4">{{ $title ?? 'Menuiserie360' }}</h1>
 
-        {{ $slot }}
+            {{ $slot }}
+        </div>
     </div>
-</x-core::layouts.master>
+</x-dashboard::layouts.master>
