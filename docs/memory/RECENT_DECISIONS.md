@@ -1,9 +1,56 @@
 # RECENT_DECISIONS — B360
 
-> Décisions structurantes récentes. Mise à jour : **2026-05-11** (Menuiserie360 P1 noyau Core livré).
+> Décisions structurantes récentes. Mise à jour : **2026-05-11** (Menuiserie360 P2-A backend livré).
 > Pour les décisions complètes argumentées, voir `docs/adr/`.
 
 ---
+
+## 2026-05-11 — Menuiserie360 P2-A livré : MVP backend (models + orchestration cross-BC)
+
+- **Décision** : exécution du lot P2-A (backend) du MVP Menuiserie360. Phase 2 spec v1.3 §3 découpée en 2 phases : **P2-A backend** (cette livraison — modèles, services, actions, listeners, jobs, tests) et **P2-B UI** (à venir — Controllers + FormRequests + Views Blade + PDFs).
+- **Lot livré (11 commits sur branche `feat/menuiserie360-p2a-backend-core`)** :
+  1. **P2-2** TypeProduitMenuiserie (biblio produits) + migration + enum
+  2. **P2-7 part 1** MenuiserieInvoice + MenuiseriePayment + 4 enums + 2 migrations
+  3. **P2-7 part 2** InvoiceNumberGenerator atomique + 5 tests
+  4. **P2-4** BonCommande + BonCommandeItem + enum + 2 migrations
+  5. **P2-8** OrdreFabrication + OFLigne + DecoupeAluminium + enum + 3 migrations
+  6. **P2-11** Chantier + EtapeChantier + enum + 2 migrations
+  7. **P2-3+6+7+14** Orchestration : 3 events (DevisAccepte, BCCreee, ChantierTermine) + 3 actions (TransformDevisToBc, TransformBcToOf, CreateMenuiserieInvoice) + 1 listener (CreateAcompteOnDevisAccepte) + EventServiceProvider + morph map `'mnu.invoice'`
+  8. **P2-10** BesoinMatiereService (calcul + vérif dispo + réserver/libérer via StockContract)
+  9. **P2-16** CheckStockAlertJob (queue 'menuiserie-notify') + StockCritiqueNotification
+  10. **P2-A tests + morph map update** — 8 tests workflow bout-en-bout + correction test P0 morph map (devenu obsolète : `'mnu.invoice'` présent désormais)
+  11. RECENT_DECISIONS (cette entrée)
+- **Validation pipeline** :
+  - ✅ Pint passé sur tous les commits
+  - ✅ PHPStan : 0 erreur sur tout le module
+  - ✅ Deptrac : 0 violations Menuiserie360 (198 skipped baseline R-101 préexistants intacts)
+  - ✅ **Tests Menuiserie360 : 81 passed / 0 failed (172 assertions)** — 11 P0 + 57 P1 + 13 P2-A
+- **Patterns plateforme appliqués** :
+  - ADR-002 stock concurrency (hérité P1, étendu via BesoinMatiereService)
+  - ADR-003 webhook idempotence (mnu_payments UNIQUE idempotency_key)
+  - ADR-006 atomic numbering généralisé : 3 séquences distinctes avec retry — InvoiceNumberGenerator (MNU-FAC), inline dans TransformDevisToBcAction (BC), inline dans TransformBcToOfAction (OF). Toutes UNIQUE(instance, numero) + retry sur UniqueConstraintViolationException + max 5 tentatives.
+  - ADR-021 contrats inter-modules (hérité P1)
+- **Décisions techniques v1.3 confirmées en P2** :
+  - **BC-Finance autonome strict** : MenuiserieInvoice/Payment natifs, 0 ligne touche `Modules\Eshop360\Services\InvoiceService`.
+  - **Cas A morph map** : `'mnu.invoice'` enregistré dans `Menuiserie360ServiceProvider::boot()`, JAMAIS dans Eshop360. MenuiseriePayment est morphTo (pas TARGET), donc pas d'entrée map nécessaire.
+  - **Idempotence systématique** : toutes les Actions (TransformDevis, TransformBc, CreateInvoice) idempotentes par identifiant naturel. Re-jeu inoffensif.
+- **Statut Menuiserie360 module global** :
+  - 7 sous-domaines `Domain/<Sub>/` actifs : Stock, Client, Commercial (+ biblio produits), Sales, Production, Chantier, Finance.
+  - 1 modèle morphique enregistré (MenuiserieInvoice).
+  - 13 migrations `mnu_*` totales (P1+P2).
+  - 0 controllers/routes/vues — viennent en P2-B.
+- **Hors scope P2-A (pour P2-B UI)** :
+  - P2-1 CRUD Devis Controller/FormRequest/Views/PDF
+  - P2-5 CRUD BonCommande UI
+  - P2-9 Interface Atelier UI
+  - P2-12 CRUD Chantier UI
+  - P2-13 Suivi avancement + upload photos MediaLibrary
+  - P2-15 CRUD StockMatière UI (entrées/sorties manuelles, inventaire)
+  - Webhooks Mobile Money (CinetPay, MTN, Orange) via PaymentGatewayInterface Billing
+  - Listeners automatiques sur BonCommandeCreee → CreateOrdreFabricationOnBonCommandeCreee (l'Action existe, le wiring auto sera ajouté avec les controllers)
+  - Listener CreateFactureFinaleOnChantierTermine (P3 spec)
+- **Source** : branche `feat/menuiserie360-p2a-backend-core` (basée sur `base` après merge P0 + P0-3bis + P1).
+- **Suite** : Menuiserie360 **P2-B UI** — Controllers + FormRequests + Views Blade + PDFs pour les 6 BC. Estimation : ~10 commits, ~30-40 fichiers. À démarrer après merge de P2-A.
 
 ## 2026-05-11 — Menuiserie360 P1 livré : noyau Core (Stock + Client + Commercial)
 
