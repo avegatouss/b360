@@ -84,6 +84,19 @@ final class MenuiserieControllersTest extends TestCase
             ->assertOk();
     }
 
+    public function test_super_admin_can_access_devis_create_form_with_matieres(): void
+    {
+        $this->makeMatiere(); // 'TEST-PROFIL'
+
+        $response = $this->actingAs($this->superAdmin)
+            ->get(route('menuiserie.devis.create', ['slug' => $this->slug()]))
+            ->assertOk();
+
+        // La vue charge la liste des matières actives et la sérialise pour Alpine.
+        $response->assertSee('TEST-PROFIL', escape: false);
+        $response->assertSee('devisForm(', escape: false);
+    }
+
     public function test_super_admin_can_access_bc_index(): void
     {
         $this->actingAs($this->superAdmin)

@@ -161,6 +161,15 @@ final class EshopIsolationTest extends TestCase
                 continue;
             }
 
+            // Exclure Database/Seeders : les seeders de démo (M-UI-1) sont par
+            // nature cross-module — ils créent un scénario complet incluant
+            // Customer Eshop360, exactement comme les seeders DemoCustomers
+            // d'Eshop360 référencent leurs propres modèles. Ce n'est pas du
+            // code runtime de production, c'est de la fixture.
+            if (str_contains($path, DIRECTORY_SEPARATOR.'Database'.DIRECTORY_SEPARATOR.'Seeders'.DIRECTORY_SEPARATOR)) {
+                continue;
+            }
+
             $content = (string) file_get_contents($path);
             if (preg_match('#'.$regex.'#', $content) === 1) {
                 $matches[] = $path;

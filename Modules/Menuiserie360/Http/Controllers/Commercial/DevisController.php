@@ -16,6 +16,7 @@ use Modules\Menuiserie360\Domain\Commercial\Enums\StatutDevis;
 use Modules\Menuiserie360\Domain\Commercial\Models\Devis;
 use Modules\Menuiserie360\Domain\Commercial\Models\LigneDevis;
 use Modules\Menuiserie360\Domain\Sales\Actions\TransformDevisToBcAction;
+use Modules\Menuiserie360\Domain\Stock\Models\MatierePremiere;
 
 /**
  * P2-1 — Controller CRUD Devis (BC-Commercial).
@@ -46,7 +47,16 @@ final class DevisController extends Controller
 
     public function create(): View
     {
-        return view('menuiserie360::commercial.devis.create');
+        $instance = CurrentInstance::get();
+        abort_if($instance === null, 503, 'No instance context.');
+
+        $matieres = MatierePremiere::query()
+            ->where('instance_id', $instance->id)
+            ->where('is_active', true)
+            ->orderBy('designation')
+            ->get(['id', 'code', 'designation', 'unite', 'prix_unitaire']);
+
+        return view('menuiserie360::commercial.devis.create', compact('matieres'));
     }
 
     public function store(Request $request): RedirectResponse
