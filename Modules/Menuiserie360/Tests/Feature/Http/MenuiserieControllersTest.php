@@ -198,6 +198,13 @@ final class MenuiserieControllersTest extends TestCase
             ->assertOk();
     }
 
+    public function test_super_admin_can_access_alertes(): void
+    {
+        $this->actingAs($this->superAdmin)
+            ->get(route('menuiserie.alertes.index', ['slug' => $this->slug()]))
+            ->assertOk();
+    }
+
     // ─── Devis happy path : create + accept ────────────────────────
 
     public function test_super_admin_can_store_devis_and_show_it(): void

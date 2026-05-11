@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
+use Modules\Menuiserie360\Http\Controllers\Alertes\AlerteController;
 use Modules\Menuiserie360\Http\Controllers\Chantier\ChantierController;
 use Modules\Menuiserie360\Http\Controllers\Client\ClientController;
 use Modules\Menuiserie360\Http\Controllers\Commercial\DevisController;
@@ -139,6 +140,11 @@ Route::middleware([
             Route::get('/journal', [DashboardMenuiserieController::class, 'journal'])->name('journal');
             Route::get('/exports/comptable.csv', [DashboardMenuiserieController::class, 'exportComptable'])->name('exports.comptable');
         });
+
+        // ─── M-UI-8 : Alertes opérationnelles ───────────────────
+        Route::get('/alertes', [AlerteController::class, 'index'])
+            ->middleware('can:menuiserie.report.view')
+            ->name('alertes.index');
 
         // ─── BC-Commercial : Bibliothèque types produits (P2-C) ──
         Route::prefix('types-produits')->name('types-produits.')->middleware('can:menuiserie.devis.view')->group(function () {
