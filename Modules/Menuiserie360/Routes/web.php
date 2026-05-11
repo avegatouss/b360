@@ -107,6 +107,7 @@ Route::middleware([
         // ─── BC-Reporting : Dashboard ────────────────────────────
         Route::prefix('reporting')->name('reporting.')->middleware('can:menuiserie.report.view')->group(function () {
             Route::get('/', [DashboardMenuiserieController::class, 'index'])->name('index');
+            Route::get('/exports/comptable.csv', [DashboardMenuiserieController::class, 'exportComptable'])->name('exports.comptable');
         });
 
         // ─── BC-Commercial : Bibliothèque types produits (P2-C) ──

@@ -49,4 +49,23 @@
             </div>
         </div>
     </div>
+
+    <div class="card mt-3">
+        <div class="card-header">Exports</div>
+        <div class="card-body">
+            <form method="GET" action="{{ route('menuiserie.reporting.exports.comptable', ['slug' => request()->route('slug')]) }}" class="row g-2 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label small">Du</label>
+                    <input type="date" name="from" value="{{ now()->startOfMonth()->toDateString() }}" class="form-control"/>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small">Au</label>
+                    <input type="date" name="to" value="{{ now()->endOfMonth()->toDateString() }}" class="form-control"/>
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-outline-primary">Télécharger CSV comptable</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </x-menuiserie360::layout>

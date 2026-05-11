@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Menuiserie360\Http\Controllers\Reporting;
 
+use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -12,6 +13,8 @@ use Modules\Menuiserie360\Domain\Chantier\Models\Chantier;
 use Modules\Menuiserie360\Domain\Commercial\Models\Devis;
 use Modules\Menuiserie360\Domain\Finance\Models\MenuiserieInvoice;
 use Modules\Menuiserie360\Domain\Production\Models\OrdreFabrication;
+use Modules\Menuiserie360\Domain\Reporting\Services\ExportComptableService;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * P2 — Dashboard menuiserie (KPIs direction simples MVP).
@@ -37,5 +40,29 @@ final class DashboardMenuiserieController extends Controller
         ];
 
         return view('menuiserie360::reporting.dashboard', compact('kpis'));
+    }
+
+    /**
+     * P3-3 — Export comptable CSV des factures sur la période demandée.
+     * Format URL : ?from=YYYY-MM-DD&to=YYYY-MM-DD (défaut = mois courant).
+     */
+    public function exportComptable(Request $request, ExportComptableService $service): StreamedResponse
+    {
+        $instance = CurrentInstance::get();
+        abort_if($instance === null, 503, 'No instance context.');
+
+        $data = $request->validate([
+            'from' => 'nullable|date',
+            'to' => 'nullable|date|after_or_equal:from',
+        ]);
+
+        $from = isset($data['from'])
+            ? CarbonImmutable::parse($data['from'])
+            : CarbonImmutable::now()->startOfMonth();
+        $to = isset($data['to'])
+            ? CarbonImmutable::parse($data['to'])
+            : CarbonImmutable::now()->endOfMonth();
+
+        return $service->streamCsv($instance->id, $from, $to);
     }
 }
