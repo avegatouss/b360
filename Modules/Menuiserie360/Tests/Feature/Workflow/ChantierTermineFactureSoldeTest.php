@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Modules\Core\Support\CurrentInstance;
 use Modules\Core\Support\TeamContext;
+use Modules\Core\Tests\Concerns\RequiresEshop360Schema;
 use Modules\Eshop360\Domain\CRM\Models\Customer;
 use Modules\Menuiserie360\Domain\Chantier\Enums\StatutChantier;
 use Modules\Menuiserie360\Domain\Chantier\Models\Chantier;
@@ -25,6 +26,8 @@ use Modules\Menuiserie360\Tests\TestCase;
  */
 final class ChantierTermineFactureSoldeTest extends TestCase
 {
+    use RequiresEshop360Schema;
+
     private Instance $instance;
 
     private User $superAdmin;
@@ -32,6 +35,7 @@ final class ChantierTermineFactureSoldeTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->requireEshop360Schema();
         Cache::flush();
 
         $this->instance = $this->makeRootInstance();

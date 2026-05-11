@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Modules\Core\Support\CurrentInstance;
 use Modules\Core\Support\TeamContext;
+use Modules\Core\Tests\Concerns\RequiresEshop360Schema;
 use Modules\Eshop360\Domain\CRM\Models\Customer;
 use Modules\Menuiserie360\Domain\Chantier\Models\Chantier;
 use Modules\Menuiserie360\Domain\Chantier\Models\EtapeChantier;
@@ -36,6 +37,8 @@ use Spatie\Permission\Models\Role;
  */
 final class MenuiserieControllersTest extends TestCase
 {
+    use RequiresEshop360Schema;
+
     private Instance $instance;
 
     private User $superAdmin;
@@ -43,6 +46,7 @@ final class MenuiserieControllersTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->requireEshop360Schema();
         Cache::flush();
 
         $this->instance = $this->makeRootInstance();

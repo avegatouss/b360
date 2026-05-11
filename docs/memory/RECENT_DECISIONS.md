@@ -5,6 +5,21 @@
 
 ---
 
+## 2026-05-11 — R-403 extension : trait `RequiresEshop360Schema` partagé
+
+- **Décision** : extraction du pattern de skip conditionnel en un trait partagé `Modules\Core\Tests\Concerns\RequiresEshop360Schema`. Le trait expose `requireEshop360Schema()` qui marque le test skipped si `Schema::hasTable('eshop_customers')` est false. Vit dans Core (modules socle) pour permettre la consommation cross-module sans créer de dépendance code Core → Eshop360 (le trait n'importe aucune classe Eshop360).
+- **Application** :
+  - `Modules/Menuiserie360/Tests/Feature/Http/MenuiserieControllersTest` : `use RequiresEshop360Schema` + `$this->requireEshop360Schema()` dans `setUp()` (skip global des 7 tests de la classe).
+  - `Modules/Menuiserie360/Tests/Feature/Workflow/ChantierTermineFactureSoldeTest` : idem (skip global des 2 tests).
+  - `Modules/Currency/Tests/Unit/MultiCurrencyTest` : `use RequiresEshop360Schema` + appel inline `$this->requireEshop360Schema()` au début de chacun des 9 tests qui touchent `eshop_*`. Les 9 autres tests Currency (ExchangeRateService, etc.) restent verts car ne consomment pas le trait.
+- **Effets sur la suite tests** (Eshop360 OFF sur la branche dev) :
+  - **Avant** : 28 errors / 10 skipped.
+  - **Après** : 0 errors / 42 skipped (504 tests / 998 assertions / 0 failures).
+  - Tous les skips portent le tag R-403 + message d'action explicite (réactiver Eshop360 dans modules_statuses.json).
+- **Doc** : OPEN_RISKS R-403 mis à jour avec le détail par test, RECENT_DECISIONS entrée 2026-05-11.
+
+---
+
 ## 2026-05-11 — R-403 : preflight check ADR-021 dans Menuiserie360ServiceProvider
 
 - **Décision** : ajout d'un preflight check au boot de `Menuiserie360ServiceProvider::register()` qui détecte l'absence des bindings Eshop360 (CustomerReader / CatalogReader / PricingResolver) et log un `Log::warning(...)` explicite mentionnant R-403 et les contrats manquants. Le boot continue (Menuiserie360 garde ses features autonomes Stock/Production), mais toute action qui touche un repository couplé Eshop360 échouera dès l'usage avec un BindingResolutionException désormais contextualisé.

@@ -4,6 +4,7 @@ namespace Modules\Currency\Tests\Unit;
 
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Modules\Core\Tests\Concerns\RequiresEshop360Schema;
 use Modules\Currency\Models\ExchangeRateHistory;
 use Modules\Currency\Models\OrderCurrencySnapshot;
 use Modules\Currency\Models\TenantCurrencySetting;
@@ -16,6 +17,8 @@ use Modules\Currency\Services\TenantCurrencyManager;
  */
 final class MultiCurrencyTest extends \Modules\Billing\Tests\TestCase
 {
+    use RequiresEshop360Schema;
+
     // ──────────────────────────────────────────
     // ExchangeRateService
     // ──────────────────────────────────────────
@@ -161,6 +164,7 @@ final class MultiCurrencyTest extends \Modules\Billing\Tests\TestCase
 
     public function test_snapshot_creates_immutable_record(): void
     {
+        $this->requireEshop360Schema();
         $instance = $this->makeRootInstance();
         $this->makeRootSuperAdmin($instance);
 
@@ -187,6 +191,7 @@ final class MultiCurrencyTest extends \Modules\Billing\Tests\TestCase
 
     public function test_snapshot_does_not_change_after_rate_update(): void
     {
+        $this->requireEshop360Schema();
         $instance = $this->makeRootInstance();
         $this->makeRootSuperAdmin($instance);
 
@@ -215,6 +220,7 @@ final class MultiCurrencyTest extends \Modules\Billing\Tests\TestCase
 
     public function test_orders_without_currency_code_default_to_null(): void
     {
+        $this->requireEshop360Schema();
         $instance = $this->makeRootInstance();
         $this->makeRootSuperAdmin($instance);
 
@@ -236,6 +242,7 @@ final class MultiCurrencyTest extends \Modules\Billing\Tests\TestCase
 
     public function test_order_currency_columns_are_mass_assignable(): void
     {
+        $this->requireEshop360Schema();
         $instance = $this->makeRootInstance();
         $this->makeRootSuperAdmin($instance);
 
@@ -260,6 +267,7 @@ final class MultiCurrencyTest extends \Modules\Billing\Tests\TestCase
 
     public function test_invoice_currency_columns_are_mass_assignable(): void
     {
+        $this->requireEshop360Schema();
         $instance = $this->makeRootInstance();
         $this->makeRootSuperAdmin($instance);
 
@@ -282,6 +290,7 @@ final class MultiCurrencyTest extends \Modules\Billing\Tests\TestCase
 
     public function test_payment_currency_columns_are_mass_assignable(): void
     {
+        $this->requireEshop360Schema();
         $instance = $this->makeRootInstance();
         $this->makeRootSuperAdmin($instance);
 
@@ -317,6 +326,7 @@ final class MultiCurrencyTest extends \Modules\Billing\Tests\TestCase
 
     public function test_snapshot_if_enabled_is_noop_when_multi_currency_disabled(): void
     {
+        $this->requireEshop360Schema();
         $instance = $this->makeRootInstance();
         $this->makeRootSuperAdmin($instance);
 
@@ -339,6 +349,7 @@ final class MultiCurrencyTest extends \Modules\Billing\Tests\TestCase
 
     public function test_snapshot_if_enabled_writes_base_when_display_equals_base(): void
     {
+        $this->requireEshop360Schema();
         $instance = $this->makeRootInstance();
         $this->makeRootSuperAdmin($instance);
 
@@ -372,6 +383,7 @@ final class MultiCurrencyTest extends \Modules\Billing\Tests\TestCase
 
     public function test_snapshot_if_enabled_creates_polymorphic_snapshot_when_currencies_differ(): void
     {
+        $this->requireEshop360Schema();
         Cache::flush();
 
         $instance = $this->makeRootInstance();
