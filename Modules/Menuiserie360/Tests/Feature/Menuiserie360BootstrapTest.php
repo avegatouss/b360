@@ -114,20 +114,23 @@ final class Menuiserie360BootstrapTest extends TestCase
         );
     }
 
-    public function test_morph_map_does_not_contain_menuiserie_entries_yet(): void
+    public function test_morph_map_contains_expected_menuiserie_entries(): void
     {
-        // Cas A v1.3 §1.4ter — Menuiserie360 a son propre morph map propre,
-        // séparé du morph map central Eshop360. En P0 le morph map propre est
-        // vide (placeholder) car aucun modèle morphique n'existe encore — il
-        // sera peuplé en P2-P3 (MenuiserieInvoice, MenuiseriePayment, Devis).
+        // Cas A v1.3 §1.4ter — Menuiserie360 a son propre morph map propre.
+        // P2-7 : 'mnu.invoice' enregistré pour MenuiserieInvoice (BC-Finance).
+        // Les modèles non-morphiques (Devis, BC, OF, Chantier) sont référencés
+        // par FK standard, pas via polymorphisme.
         $morphMap = \Illuminate\Database\Eloquent\Relations\Relation::morphMap();
 
-        foreach ($morphMap as $key => $class) {
-            $this->assertStringStartsNotWith(
-                'mnu.',
-                (string) $key,
-                "P0: aucune entrée mnu.* ne doit être dans le morph map encore. Trouvé : {$key} → {$class}"
-            );
-        }
+        $this->assertArrayHasKey(
+            'mnu.invoice',
+            $morphMap,
+            'P2-7: mnu.invoice doit être dans le morph map propre (Menuiserie360ServiceProvider::registerMorphMap()).'
+        );
+        $this->assertSame(
+            \Modules\Menuiserie360\Domain\Finance\Models\MenuiserieInvoice::class,
+            $morphMap['mnu.invoice'],
+            'mnu.invoice doit pointer vers MenuiserieInvoice canonique.'
+        );
     }
 }
