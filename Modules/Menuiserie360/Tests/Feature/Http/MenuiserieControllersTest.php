@@ -24,6 +24,7 @@ use Modules\Menuiserie360\Domain\Sales\Models\BonCommande;
 use Modules\Menuiserie360\Domain\Stock\Models\MatierePremiere;
 use Modules\Menuiserie360\Domain\Stock\Models\MouvementStock;
 use Modules\Menuiserie360\Domain\Stock\Models\StockMatiere;
+use Modules\Menuiserie360\Domain\Stock\Services\StockMatiereService;
 use Modules\Menuiserie360\Tests\TestCase;
 use Spatie\Permission\Models\Role;
 
@@ -426,6 +427,153 @@ final class MenuiserieControllersTest extends TestCase
                 'reference' => 'PO-ZERO',
             ])
             ->assertSessionHasErrors(['quantite']);
+    }
+
+    // ─── Matière CRUD (M-UI-2) ────────────────────────────────────
+
+    public function test_super_admin_can_view_matiere_create_form(): void
+    {
+        $this->actingAs($this->superAdmin)
+            ->get(route('menuiserie.stocks.create', ['slug' => $this->slug()]))
+            ->assertOk();
+    }
+
+    public function test_super_admin_can_store_new_matiere(): void
+    {
+        $this->actingAs($this->superAdmin)
+            ->post(route('menuiserie.stocks.store', ['slug' => $this->slug()]), [
+                'code' => 'ALU-NEW-01',
+                'designation' => 'Profil neuf de test',
+                'categorie' => 'profile_alu',
+                'unite' => 'm_lineaire',
+                'prix_unitaire' => 2500,
+                'seuil_alerte' => 10,
+                'fournisseur_principal' => 'Fournisseur A',
+                'is_active' => '1',
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('mnu_matieres_premieres', [
+            'instance_id' => $this->instance->id,
+            'code' => 'ALU-NEW-01',
+            'designation' => 'Profil neuf de test',
+        ]);
+    }
+
+    public function test_matiere_store_validates_required_fields(): void
+    {
+        $this->actingAs($this->superAdmin)
+            ->post(route('menuiserie.stocks.store', ['slug' => $this->slug()]), [])
+            ->assertSessionHasErrors(['code', 'designation', 'categorie', 'unite', 'prix_unitaire', 'seuil_alerte']);
+    }
+
+    public function test_matiere_store_rejects_duplicate_code_in_same_instance(): void
+    {
+        $this->makeMatiere(); // crée 'TEST-PROFIL'
+
+        $this->actingAs($this->superAdmin)
+            ->post(route('menuiserie.stocks.store', ['slug' => $this->slug()]), [
+                'code' => 'TEST-PROFIL', // doublon
+                'designation' => 'Doublon',
+                'categorie' => 'profile_alu',
+                'unite' => 'm_lineaire',
+                'prix_unitaire' => 1000,
+                'seuil_alerte' => 5,
+            ])
+            ->assertSessionHasErrors(['code']);
+    }
+
+    public function test_super_admin_can_view_matiere_edit_form(): void
+    {
+        $matiere = $this->makeMatiere();
+
+        $this->actingAs($this->superAdmin)
+            ->get(route('menuiserie.stocks.edit', ['slug' => $this->slug(), 'matiere' => $matiere->getKey()]))
+            ->assertOk();
+    }
+
+    public function test_super_admin_can_update_matiere(): void
+    {
+        $matiere = $this->makeMatiere();
+
+        $this->actingAs($this->superAdmin)
+            ->put(route('menuiserie.stocks.update', ['slug' => $this->slug(), 'matiere' => $matiere->getKey()]), [
+                'code' => $matiere->getAttribute('code'),
+                'designation' => 'Désignation mise à jour',
+                'categorie' => 'profile_alu',
+                'unite' => 'm_lineaire',
+                'prix_unitaire' => 3000,
+                'seuil_alerte' => 25,
+                'is_active' => '0',
+            ])
+            ->assertRedirect();
+
+        $matiere->refresh();
+        $this->assertSame('Désignation mise à jour', $matiere->getAttribute('designation'));
+        $this->assertEqualsWithDelta(3000, (float) $matiere->getAttribute('prix_unitaire'), 0.0001);
+        $this->assertFalse((bool) $matiere->getAttribute('is_active'));
+    }
+
+    public function test_super_admin_can_destroy_unused_matiere(): void
+    {
+        $matiere = $this->makeMatiere();
+
+        $this->actingAs($this->superAdmin)
+            ->delete(route('menuiserie.stocks.destroy', ['slug' => $this->slug(), 'matiere' => $matiere->getKey()]))
+            ->assertRedirect(route('menuiserie.stocks.index', ['slug' => $this->slug()]));
+
+        $this->assertSoftDeleted('mnu_matieres_premieres', ['id' => $matiere->getKey()]);
+    }
+
+    public function test_matiere_destroy_blocked_when_stock_not_zero(): void
+    {
+        $matiere = $this->makeMatiere();
+
+        // Réception fournisseur → stock > 0
+        app(StockMatiereService::class)->recevoir(
+            (int) $this->instance->id,
+            (int) $matiere->getKey(),
+            50.0,
+            'PO-001',
+        );
+
+        $this->actingAs($this->superAdmin)
+            ->delete(route('menuiserie.stocks.destroy', ['slug' => $this->slug(), 'matiere' => $matiere->getKey()]))
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('mnu_matieres_premieres', [
+            'id' => $matiere->getKey(),
+            'deleted_at' => null,
+        ]);
+    }
+
+    public function test_matiere_destroy_blocked_when_referenced_in_devis(): void
+    {
+        $matiere = $this->makeMatiere();
+        $customer = $this->makeCustomer();
+        $devis = $this->makeDevis($customer->getKey());
+
+        // Lie une ligne de devis à la matière
+        LigneDevis::create([
+            'instance_id' => $this->instance->id,
+            'devis_id' => $devis->getKey(),
+            'designation' => 'Ligne référençant la matière',
+            'quantite' => 1,
+            'prix_unitaire_ht' => 50000,
+            'montant_ht' => 50000,
+            'cout_revient' => 30000,
+            'matiere_id' => $matiere->getKey(),
+            'ordre' => 2,
+        ]);
+
+        $this->actingAs($this->superAdmin)
+            ->delete(route('menuiserie.stocks.destroy', ['slug' => $this->slug(), 'matiere' => $matiere->getKey()]))
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('mnu_matieres_premieres', [
+            'id' => $matiere->getKey(),
+            'deleted_at' => null,
+        ]);
     }
 
     // ─── Helpers ───────────────────────────────────────────────────

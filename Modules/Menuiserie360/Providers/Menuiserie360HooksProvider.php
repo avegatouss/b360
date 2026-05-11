@@ -124,6 +124,7 @@ final class Menuiserie360HooksProvider implements RegistersHooks
             label: 'Stocks Matières Premières',
             permissions: [
                 'menuiserie.stock.adjust' => 'Ajuster stock matières (entrées/sorties)',
+                'menuiserie.stock.matiere.manage' => 'Créer / éditer / supprimer une matière première',
             ],
             priority: 560,
             module: 'Menuiserie360',

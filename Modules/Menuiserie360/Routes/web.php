@@ -102,10 +102,24 @@ Route::middleware([
         });
 
         // ─── BC-Stock : Matières premières ───────────────────────
-        Route::prefix('stocks')->name('stocks.')->middleware('can:menuiserie.stock.adjust')->group(function () {
-            Route::get('/', [StockMatiereController::class, 'index'])->name('index');
-            Route::get('/{matiere}', [StockMatiereController::class, 'show'])->name('show');
-            Route::post('/{matiere}/recevoir', [StockMatiereController::class, 'recevoir'])->name('recevoir');
+        // Routes statiques (/create) déclarées AVANT les paramétrées (/{matiere})
+        // et {matiere} contraint à numérique pour éviter tout shadowing futur.
+        Route::prefix('stocks')->name('stocks.')->group(function () {
+            // CRUD matière (M-UI-2) — permission .matiere.manage
+            Route::middleware('can:menuiserie.stock.matiere.manage')->group(function () {
+                Route::get('/create', [StockMatiereController::class, 'create'])->name('create');
+                Route::post('/', [StockMatiereController::class, 'store'])->name('store');
+                Route::get('/{matiere}/edit', [StockMatiereController::class, 'edit'])->whereNumber('matiere')->name('edit');
+                Route::put('/{matiere}', [StockMatiereController::class, 'update'])->whereNumber('matiere')->name('update');
+                Route::delete('/{matiere}', [StockMatiereController::class, 'destroy'])->whereNumber('matiere')->name('destroy');
+            });
+
+            // Lecture + réception (permission .stock.adjust existante)
+            Route::middleware('can:menuiserie.stock.adjust')->group(function () {
+                Route::get('/', [StockMatiereController::class, 'index'])->name('index');
+                Route::get('/{matiere}', [StockMatiereController::class, 'show'])->whereNumber('matiere')->name('show');
+                Route::post('/{matiere}/recevoir', [StockMatiereController::class, 'recevoir'])->whereNumber('matiere')->name('recevoir');
+            });
         });
 
         // ─── BC-Finance : Factures ───────────────────────────────
