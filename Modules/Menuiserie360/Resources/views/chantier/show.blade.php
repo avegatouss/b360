@@ -7,6 +7,13 @@
             <p><strong>Contact :</strong> {{ $chantier->contact_chantier ?? '—' }}</p>
             <p><strong>Chef chantier :</strong> #{{ $chantier->chef_chantier_id ?? '—' }}</p>
             <p><strong>Période prévue :</strong> {{ optional($chantier->date_debut_prevue)->format('Y-m-d') ?? '—' }} → {{ optional($chantier->date_fin_prevue)->format('Y-m-d') ?? '—' }}</p>
+
+            @if ($chantier->statut !== 'termine' && $chantier->statut !== 'livre' && $chantier->statut !== 'annule')
+                <form method="POST" action="{{ route('menuiserie.chantiers.terminer', ['slug' => request()->route('slug'), 'chantier' => $chantier->id]) }}" class="mt-3">
+                    @csrf
+                    <button class="btn btn-success" onclick="return confirm('Clôturer ce chantier ? La facture de solde sera générée automatiquement.')">Clôturer le chantier (générer facture solde)</button>
+                </form>
+            @endif
         </div>
     </div>
 

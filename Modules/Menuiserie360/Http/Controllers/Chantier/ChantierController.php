@@ -8,7 +8,9 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\DB;
 use Modules\Menuiserie360\Domain\Chantier\Enums\StatutChantier;
+use Modules\Menuiserie360\Domain\Chantier\Events\ChantierTermine;
 use Modules\Menuiserie360\Domain\Chantier\Models\Chantier;
 use Modules\Menuiserie360\Domain\Chantier\Models\EtapeChantier;
 
@@ -66,6 +68,42 @@ final class ChantierController extends Controller
         return redirect()
             ->route('menuiserie.chantiers.show', ['slug' => $request->route('slug'), 'chantier' => $chantier->getKey()])
             ->with('success', 'Avancement enregistré.');
+    }
+
+    /**
+     * P3-1 — Clôture d'un chantier (statut → TERMINE) + dispatch
+     * de l'event ChantierTermine qui déclenche la facture de solde.
+     *
+     * Idempotent : si le chantier est déjà TERMINE, l'event n'est pas
+     * re-dispatché (la facture solde existante serait de toute façon
+     * court-circuitée par CreateMenuiserieInvoiceAction::executeSolde).
+     */
+    public function terminer(Request $request, string $slug, int|string $chantier): RedirectResponse
+    {
+        $chantier = Chantier::findOrFail($chantier);
+
+        if ($chantier->getAttribute('statut') === StatutChantier::TERMINE->value) {
+            return redirect()
+                ->route('menuiserie.chantiers.show', ['slug' => $slug, 'chantier' => $chantier->getKey()])
+                ->with('info', 'Chantier déjà clôturé.');
+        }
+
+        DB::transaction(function () use ($chantier) {
+            $chantier->setAttribute('statut', StatutChantier::TERMINE->value);
+            $chantier->setAttribute('date_fin_reelle', now());
+            $chantier->save();
+
+            ChantierTermine::dispatch(
+                (int) $chantier->getAttribute('instance_id'),
+                (int) $chantier->getKey(),
+                (int) $chantier->getAttribute('bc_id'),
+                (int) $chantier->getAttribute('client_id'),
+            );
+        });
+
+        return redirect()
+            ->route('menuiserie.chantiers.show', ['slug' => $slug, 'chantier' => $chantier->getKey()])
+            ->with('success', 'Chantier clôturé. Facture de solde générée.');
     }
 
     public function uploadPhoto(Request $request, string $slug, int|string $chantier): RedirectResponse
