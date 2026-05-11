@@ -28,8 +28,12 @@ _(aucun risque majeur ouvert — R-101 fermée le 2026-05-05. Voir section FERM�
   2. **Nav home (`eshop360.nav.home`)** → exposer via `HookRegistry::menus()` ou un slot de layout ; Dashboard itère sur les modules activés.
   3. **Redirect post-enable (`ModuleController:116`)** → contrat `PostEnableRedirector` enregistré via HookRegistry (`post_enable_redirects`), chaque module métier déclare sa route de wizard si applicable.
   4. **`$hierarchicalMenuEnabled`** → variable de vue injectée par `Eshop360ServiceProvider::boot()` via `View::composer(['dashboard::components.layouts.master', …])`. Si Eshop360 est désactivé le composer n'est pas enregistré, donc `@if(!empty($hierarchicalMenuEnabled))` retombe à `false` par chance. À remplacer par un slot de layout déclaré côté Core/Dashboard, dont chaque module métier peut prendre le contrôle.
-- **Lot dédié à planifier post-Menuiserie360 P2-B** : R-401-FIX, taille estimée < 200 lignes, traverse Core+Dashboard+ModuleManager+Eshop360. Pas de seeders, pas de migrations. Probable ADR-022.
-- **Tests à écrire dans le lot fix** : tests Feature qui rendent le dashboard avec Eshop360 désactivé et vérifient absence de crash + présence/absence des widgets attendus.
+- **Lot R-401-FIX cadré 2026-05-11** :
+  - **Cadrage complet** : [docs/lots/R-401-FIX-impact-analysis.md](../lots/R-401-FIX-impact-analysis.md) — IMPACT_ANALYSIS au format B360 + hand-off Codex prêt-à-coller.
+  - **ADR associé** : [ADR-022](../adr/ADR-022-layout-slots-and-post-enable-redirects.md) statut **Proposé** — passera en **Accepté** au merge du sous-lot S7.
+  - **Approche** : 2 nouveaux types HookRegistry strictement additifs (`layout_slots`, `post_enable_redirects`), 7 sous-lots séquencés (S1→S7) ~320 lignes code + ~250 lignes tests + ~150 lignes doc.
+  - **Cible** : 0 référence `route('<business>.*')` dans modules socles, retrait des guards `Route::has` introduits par R-401.
+  - **Tests Feature critiques à écrire** : `DashboardLayoutRenderingTest` (4 scénarios verrouillant l'absence de RouteNotFoundException avec Eshop360 ON/OFF + hierarchical_menu ON/OFF).
 
 ### R-403 — Menuiserie360 dépend fortement d'Eshop360 via les Contracts ADR-021 (ouvert 2026-05-11)
 
