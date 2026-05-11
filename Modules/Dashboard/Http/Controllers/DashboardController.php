@@ -4,6 +4,7 @@ namespace Modules\Dashboard\Http\Controllers;
 
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
 use Modules\Core\Hooks\Registry\HookRegistry;
 use Modules\Core\Modules\ModuleManager;
 use Modules\Core\Support\CurrentInstance;
@@ -14,13 +15,13 @@ final class DashboardController extends Controller
     {
         $instance = CurrentInstance::get();
 
-        if (!$instance) {
+        if (! $instance) {
             abort(503, 'Instance non résolue.');
         }
 
         // When hierarchical menu is enabled, redirect to the nav home instead of dashboard
         $hmEnabled = (bool) config('eshop360.hierarchical_menu');
-        if (!$hmEnabled && class_exists(\Modules\Eshop360\Services\EshopSettingsService::class)) {
+        if (! $hmEnabled && class_exists(\Modules\Eshop360\Services\EshopSettingsService::class)) {
             try {
                 $hmEnabled = (bool) app(\Modules\Eshop360\Services\EshopSettingsService::class)
                     ->value('general', 'hierarchical_menu', false);
@@ -28,7 +29,7 @@ final class DashboardController extends Controller
                 // DB not ready
             }
         }
-        if ($hmEnabled) {
+        if ($hmEnabled && Route::has('eshop360.nav.home')) {
             return redirect()->route('eshop360.nav.home', $slug);
         }
 
@@ -51,24 +52,25 @@ final class DashboardController extends Controller
 
         $widgets = $registry->widgets()
             ->filter(function ($widget) use ($user, $instance, $modules) {
-                if ($widget->requiredModule && !$modules->isEnabled($widget->requiredModule)) {
+                if ($widget->requiredModule && ! $modules->isEnabled($widget->requiredModule)) {
                     return false;
                 }
-                if ($widget->requiredPermission && !$user?->can($widget->requiredPermission)) {
+                if ($widget->requiredPermission && ! $user?->can($widget->requiredPermission)) {
                     return false;
                 }
-                if ($widget->visibleWhen && !($widget->visibleWhen)($user, $instance)) {
+                if ($widget->visibleWhen && ! ($widget->visibleWhen)($user, $instance)) {
                     return false;
                 }
+
                 return true;
             })
             ->values();
 
         return view('dashboard::index', [
-            'instance'    => $instance,
+            'instance' => $instance,
             'memberCount' => $memberCount,
-            'totalUsers'  => $totalUsers,
-            'widgets'     => $widgets,
+            'totalUsers' => $totalUsers,
+            'widgets' => $widgets,
         ]);
     }
 }

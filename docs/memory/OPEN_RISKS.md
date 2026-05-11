@@ -1,6 +1,6 @@
 # OPEN_RISKS — B360
 
-> Risques techniques connus, suivi vivant. Mise à jour : **2026-04-22 19:08:13    **
+> Risques techniques connus, suivi vivant. Mise à jour : **2026-05-11**
 
 ---
 
@@ -11,6 +11,35 @@ _(aucun risque critique ouvert — R-001, R-002, R-003, R-004 fermés le 2026-04
 ## MAJEUR
 
 _(aucun risque majeur ouvert — R-101 fermée le 2026-05-05. Voir section FERMÉ ci-dessous.)_
+
+## MOYEN
+
+### R-401 — Couplage dur des modules socles vers les modules métier (ouvert 2026-05-11)
+
+- **Source** : crash production-like découvert le 2026-05-11 sur la branche `feat/menuiserie360-p2b-ui-core`. Eshop360 désactivé via `modules_statuses.json`, le layout maître `Modules/Dashboard/Resources/views/components/layouts/master.blade.php` faisait `route('eshop360.notifications.index', …)` sans guard → `RouteNotFoundException` sur tout écran authentifié multi-instance.
+- **Constat** : violation de la règle `MODULE_DEPENDENCY_MAP` §1 (« Le Core ne dépend d'aucun module métier ») et §83 (« Créer un module qui dépend de la vue Blade d'un autre module → utiliser composants UI partagés »). 6 références cross-module détectées dans les modules socles :
+  - `Modules/Dashboard/Resources/views/components/layouts/master.blade.php` lignes 186, 206, 227 (`eshop360.notifications.*`) et 325 (`eshop360.nav.home`).
+  - `Modules/Dashboard/Http/Controllers/DashboardController.php:32` (`redirect()->route('eshop360.nav.home')`).
+  - `Modules/ModuleManager/Http/Controllers/ModuleController.php:116` (`redirect()->route('eshop360.setup.hub')` après activation).
+- **Mitigation immédiate appliquée 2026-05-11** : chaque référence wrappée par `Route::has('<prefix>.<name>')` (PHP) ou `@if(Route::has(...))` (Blade). Le module métier peut désormais être désactivé sans crash.
+- **Garde anti-régression** : `Modules/Core/Tests/Unit/Architecture/NoUnguardedCrossModuleRoutesTest` scanne récursivement les 12 modules socles (Core, Auth, Users, Settings, Billing, Lang, Currency, Instances, ModuleManager, Installer, Dashboard, Demo) et échoue dès qu'un `route('<business>.…')` apparaît dans un fichier sans `Route::has('<business>.…')` correspondant. Prefixes business couverts : `eshop360`, `menuiserie360`, `ccc360`, `treso360` (extensible).
+- **Dette résiduelle** : la mitigation cache le couplage mais ne le supprime pas. La cible architecturale est de retirer ces références en passant par `HookRegistry` :
+  1. **Notifications** → migrer `Modules/Eshop360/Http/Controllers/Notification/NotificationController` + ses routes vers Core ou Dashboard (les notifications Laravel sont natives, pas Eshop360-spécifiques) ; OU exposer la cloche comme `widget` via HookRegistry et laisser chaque module producteur déclarer ses propres routes.
+  2. **Nav home (`eshop360.nav.home`)** → exposer via `HookRegistry::menus()` ou un slot de layout ; Dashboard itère sur les modules activés.
+  3. **Redirect post-enable (`ModuleController:116`)** → contrat `PostEnableRedirector` enregistré via HookRegistry (`post_enable_redirects`), chaque module métier déclare sa route de wizard si applicable.
+  4. **`$hierarchicalMenuEnabled`** → variable de vue injectée par `Eshop360ServiceProvider::boot()` via `View::composer(['dashboard::components.layouts.master', …])`. Si Eshop360 est désactivé le composer n'est pas enregistré, donc `@if(!empty($hierarchicalMenuEnabled))` retombe à `false` par chance. À remplacer par un slot de layout déclaré côté Core/Dashboard, dont chaque module métier peut prendre le contrôle.
+- **Lot dédié à planifier post-Menuiserie360 P2-B** : R-401-FIX, taille estimée < 200 lignes, traverse Core+Dashboard+ModuleManager+Eshop360. Pas de seeders, pas de migrations. Probable ADR-022.
+- **Tests à écrire dans le lot fix** : tests Feature qui rendent le dashboard avec Eshop360 désactivé et vérifient absence de crash + présence/absence des widgets attendus.
+
+### R-402 — MenuItems Menuiserie360 « invisibles » (placeholder P0 oublié post-V1, fermé 2026-05-11)
+
+- **Source** : observation 2026-05-11 — Eshop360 désactivé sur la branche Menuiserie360 P2-B, l'utilisateur a vu une sidebar sans aucune entrée Menuiserie alors que le module est V1 complet (122 tests, controllers et vues livrés en P3 / 2026-05-11).
+- **Cause** : `Modules/Menuiserie360/Providers/Menuiserie360HooksProvider::registerMenuItems()` déclarait les 8 MenuItems avec `visibleWhen: fn () => false` (placeholder P0 — `// activés en P2-P3 quand les controllers + routes existeront`). Le retrait du flag n'a jamais été fait lors des livraisons P2 / P3, donc le filtre `HookFilter` supprimait toutes les entrées.
+- **Résolution** : retrait des `visibleWhen: false`, chaque MenuItem reçoit sa `route` réelle (ex. `menuiserie.devis.index`) et son `requiredPermission` Spatie (10 permissions registres confirmées par `Menuiserie360BootstrapTest::test_all_10_validated_permissions_are_registered`). La racine `menuiserie360.root` reste sans route — affichage piloté par les enfants visibles via `HookRegistry::menu()`.
+- **Garde anti-régression** : `Modules/Menuiserie360/Tests/Unit/MenuVisibilityTest` (3 tests, 5+ assertions) :
+  1. Le menu est visible quand Menuiserie360 est actif **et** Eshop360 désactivé (le scénario qui était cassé).
+  2. Le menu disparaît quand Menuiserie360 est désactivé.
+  3. Chaque enfant a une `route` non nulle **et** un `requiredPermission` non nul — détecte le retour du `visibleWhen: false` ou la suppression d'une route nommée.
 
 ## FERMÉ
 
@@ -143,10 +172,6 @@ _(aucun risque majeur ouvert — R-101 fermée le 2026-05-05. Voir section FERM�
 
 - **Résolution** : suppression de `app/Models/Concerns/BelongsToInstance.php` (alias 4 lignes, 0 usage applicatif). Trait canonique conservé : `Modules\Core\Database\Traits\BelongsToInstance` (63 modèles l'importent). PHPDoc corrigé.
 - **Commit** : branche `refactor/core-unify-belongs-to-instance`
-
-## MOYEN
-
-_(aucun risque moyen ouvert — R-201 et R-202 fermés le 2026-04-23.)_
 
 ## FAIBLE
 

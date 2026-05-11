@@ -161,9 +161,9 @@
                 @endif
                 @endauth
 
-                {{-- Notification bell --}}
+                {{-- Notification bell (Eshop360 — guarded if module disabled) --}}
                 @auth
-                @if(isset($instance))
+                @if(isset($instance) && Route::has('eshop360.notifications.index'))
                 @php
                     try {
                         $unreadCount = auth()->user()->unreadNotifications()->count();
@@ -320,6 +320,7 @@
             .header .header-left { display: none; }
             #mobile_btn { display: none !important; }
         </style>
+        @if(Route::has('eshop360.nav.home'))
         <div style="position:fixed;bottom:24px;left:24px;z-index:1050;">
             <a href="{{ route('eshop360.nav.home', $instance->slug ?? '') }}"
                class="btn btn-primary d-flex align-items-center gap-2 shadow-lg"
@@ -327,6 +328,7 @@
                 <i class="ti ti-layout-grid fs-18"></i> Navigation
             </a>
         </div>
+        @endif
     @else
     <div class="sidebar" id="sidebar">
 

@@ -1,7 +1,31 @@
 # RECENT_DECISIONS — B360
 
-> Décisions structurantes récentes. Mise à jour : **2026-05-11** (Menuiserie360 P3 livré — Finance avancée + Reporting).
+> Décisions structurantes récentes. Mise à jour : **2026-05-11** (R-401 : guard cross-module + test structurel).
 > Pour les décisions complètes argumentées, voir `docs/adr/`.
+
+---
+
+## 2026-05-11 — R-402 : activation des MenuItems Menuiserie360 (placeholder P0 retiré)
+
+- **Décision** : retrait des `visibleWhen: fn () => false` placeholder dans `Modules/Menuiserie360/Providers/Menuiserie360HooksProvider::registerMenuItems()`. Chaque BC pointe désormais sur sa route principale (`menuiserie.<bc>.index`) et est filtré par sa permission Spatie (`menuiserie.<bc>.<action>`). Le module est autonome côté UI — sidebar visible même si Eshop360 est désactivé.
+- **Déclencheur** : observation utilisateur 2026-05-11 — Menuiserie360 V1 livré en P3 (2026-05-11) mais ses MenuItems étaient restés en mode placeholder P0 (`fn () => false`). Le filtre `HookFilter` les supprimait systématiquement → sidebar vide quand Eshop360 désactivé.
+- **Garde anti-régression** : `Modules/Menuiserie360/Tests/Unit/MenuVisibilityTest` (3 tests) — vérifie visibilité quand actif, disparition quand désactivé, et exige `route` + `requiredPermission` non null sur chaque enfant.
+- **Effets** : Menuiserie360 maintenant 100 % autonome côté UI. Aucun couplage de menu vers Eshop360. Pattern réutilisable pour les futurs modules métier (CCC360, Treso360).
+
+---
+
+## 2026-05-11 — R-401 : guard `Route::has` obligatoire pour références cross-module dans les modules socles
+
+- **Décision** : tout appel `route('<business>.<name>')` depuis un module socle (L0/L1/L2 : Core, Auth, Users, Settings, Billing, Lang, Currency, Instances, ModuleManager, Installer, Dashboard, Demo) doit être encadré par `Route::has('<business>.<name>')` (PHP) ou `@if(Route::has(...))` (Blade).
+- **Déclencheur** : crash `RouteNotFoundException` sur le master layout Dashboard quand Eshop360 est désactivé via `modules_statuses.json`, sur la branche `feat/menuiserie360-p2b-ui-core` (2026-05-11).
+- **6 références patchées** :
+  - `Modules/Dashboard/Resources/views/components/layouts/master.blade.php` : bloc notifications (lignes 165–233) sous `@if(isset($instance) && Route::has('eshop360.notifications.index'))` ; FAB Navigation (323–331) sous `@if(Route::has('eshop360.nav.home'))`.
+  - `Modules/Dashboard/Http/Controllers/DashboardController.php:31` : ajout `&& Route::has('eshop360.nav.home')` à la condition `$hmEnabled`.
+  - `Modules/ModuleManager/Http/Controllers/ModuleController.php:111-119` : ajout `class_exists(...) && Route::has('eshop360.setup.hub')` avant le redirect post-enable.
+- **Garde anti-régression** : `Modules/Core/Tests/Unit/Architecture/NoUnguardedCrossModuleRoutesTest` scanne récursivement les modules socles et échoue si un `route('<prefix>.…')` n'a pas son `Route::has('<prefix>.…')` dans le même fichier. Prefixes business couverts : `eshop360`, `menuiserie360`, `ccc360`, `treso360` (constante `BUSINESS_PREFIXES` extensible).
+- **Doc** : `docs/architecture/MODULE_DEPENDENCY_MAP.md` §Interdictions strictes + §Pattern de guard obligatoire ; `docs/memory/OPEN_RISKS.md` R-401.
+- **Dette résiduelle (lot futur R-401-FIX)** : la mitigation masque le couplage L2→L3 mais ne le supprime pas. Cible architecturale = retirer ces 6 références au profit de HookRegistry (`widgets`, `menus`, futur `post_enable_redirects`). À planifier post-Menuiserie360 P2-B, probable ADR-022.
+- **Effets** : la suite tests `Modules` reste verte (1 nouveau test structurel, 0 assertion échouée). Menuiserie360 P2-B peut continuer avec Eshop360 désactivé sans frein.
 
 ---
 

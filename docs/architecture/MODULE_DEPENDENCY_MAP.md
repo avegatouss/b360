@@ -81,6 +81,29 @@ Voir [ADR-021](../adr/ADR-021-contracts-for-future-business-modules.md) pour le 
 - ❌ `DB::table('eshop_products')` hors namespace `Eshop360` → bloqué PHPStan
 - ❌ Dupliquer un trait, modèle ou service déjà présent dans un autre module → factoriser
 - ❌ Créer un module qui dépend de la **vue Blade** d'un autre module → utiliser composants UI partagés
+- ❌ Référencer une route d'un module métier (`route('eshop360.*')`, `route('menuiserie360.*')`, etc.) depuis un module socle (L0/L1/L2) **sans guard** `Route::has(...)` → bloqué par `Modules/Core/Tests/Unit/Architecture/NoUnguardedCrossModuleRoutesTest`. Voir R-401 dans `docs/memory/OPEN_RISKS.md`.
+
+### Pattern de guard obligatoire
+
+Quand un module socle DOIT pointer vers une route d'un module métier (cas transitoire, en attendant le passage par HookRegistry) :
+
+```php
+// PHP — contrôleur, service
+use Illuminate\Support\Facades\Route;
+
+if (Route::has('eshop360.nav.home')) {
+    return redirect()->route('eshop360.nav.home', $slug);
+}
+```
+
+```blade
+{{-- Blade — vue --}}
+@if(Route::has('eshop360.notifications.index'))
+    <a href="{{ route('eshop360.notifications.index', $instance->slug) }}">…</a>
+@endif
+```
+
+Le test structurel `NoUnguardedCrossModuleRoutesTest` exige qu'un `Route::has('<prefix>.…')` correspondant au préfixe métier appelé apparaisse dans **le même fichier** (peu importe la position, mais en pratique le bloc englobant). Couvre `eshop360`, `menuiserie360`, `ccc360`, `treso360` — étendre la constante `BUSINESS_PREFIXES` du test à chaque nouveau vertical.
 
 ---
 

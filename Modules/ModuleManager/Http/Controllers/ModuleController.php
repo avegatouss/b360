@@ -6,6 +6,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Modules\Core\Modules\ModuleManager;
 use Modules\Core\Support\CurrentInstance;
@@ -56,7 +57,7 @@ final class ModuleController extends Controller
         $instance = CurrentInstance::get();
 
         $mod = Module::find($name);
-        if (!$mod) {
+        if (! $mod) {
             abort(404, 'Module introuvable.');
         }
 
@@ -69,7 +70,7 @@ final class ModuleController extends Controller
             ->first();
 
         $readme = null;
-        $readmePath = $mod->getPath() . '/README.md';
+        $readmePath = $mod->getPath().'/README.md';
         if (file_exists($readmePath)) {
             $readme = Str::markdown(file_get_contents($readmePath));
         }
@@ -84,7 +85,7 @@ final class ModuleController extends Controller
         }
 
         $mod = Module::find($name);
-        if (!$mod) {
+        if (! $mod) {
             abort(404, 'Module introuvable.');
         }
 
@@ -107,11 +108,18 @@ final class ModuleController extends Controller
                 );
             $message = "Module « {$name} » activé.";
 
-            // If Eshop360 just enabled and not initialized, redirect to wizard
-            if ($name === 'Eshop360') {
+            // If Eshop360 just enabled and not initialized, redirect to wizard.
+            // Guarded against the Eshop360 module being absent: the class might
+            // be autoloaded by Composer even when the module is disabled, but
+            // the route is only registered when the ServiceProvider has booted.
+            if ($name === 'Eshop360'
+                && class_exists(\Modules\Eshop360\Services\EshopInitializer::class)
+                && Route::has('eshop360.setup.hub')
+            ) {
                 $initializer = app(\Modules\Eshop360\Services\EshopInitializer::class);
-                if (!$initializer->isInitialized($instance->id)) {
+                if (! $initializer->isInitialized($instance->id)) {
                     app(ModuleManager::class)->clearCache();
+
                     return redirect()
                         ->route('eshop360.setup.hub', $instance->slug)
                         ->with('status', "Module « {$name} » activé. Configurez votre espace de vente.");
@@ -148,7 +156,7 @@ final class ModuleController extends Controller
         }
 
         $mod = Module::find($name);
-        if (!$mod) {
+        if (! $mod) {
             abort(404, 'Module introuvable.');
         }
 
@@ -174,9 +182,9 @@ final class ModuleController extends Controller
 
     private function readModuleJson($mod): array
     {
-        $path = $mod->getPath() . '/module.json';
+        $path = $mod->getPath().'/module.json';
 
-        if (!file_exists($path)) {
+        if (! file_exists($path)) {
             return [];
         }
 
