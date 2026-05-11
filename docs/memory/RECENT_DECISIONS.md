@@ -1,7 +1,43 @@
 # RECENT_DECISIONS — B360
 
-> Décisions structurantes récentes. Mise à jour : **2026-05-11** (Menuiserie360 P2-C — DomPDF + MediaLibrary + CRUD TypeProduit).
+> Décisions structurantes récentes. Mise à jour : **2026-05-11** (Menuiserie360 P3 livré — Finance avancée + Reporting).
 > Pour les décisions complètes argumentées, voir `docs/adr/`.
+
+---
+
+## 2026-05-11 — Menuiserie360 P3 livré (Finance avancée + Reporting, 7 sous-tâches)
+
+- **Décision** : exécution complète du lot P3 (clôture du module Menuiserie360 V1). Branche `feat/menuiserie360-p3-finance-reporting`, 7 commits granulaires (un par sous-tâche).
+- **Sous-lots livrés** :
+  - **P3-1** (`3e1c8ce`) : Facture solde sur chantier clôturé. Listener `CreateSoldeOnChantierTermine` (event `ChantierTermine`) + endpoint `POST /chantiers/{}/terminer` + bouton UI. Idempotent (re-clôture no-op + Action::executeSolde court-circuit). Calcul = montant_ttc_bc - somme(acomptes facturés).
+  - **P3-2** (`0f4862e`) : Paiements Mobile Money. `RecordPaymentAction` atomique (lockForUpdate + try/catch UniqueConstraintViolationException ADR-003) + endpoint `POST /factures/{}/payments` + UI form. Supporte cinetpay/mtn_momo/orange_money/wave avec idempotency_key. Auto-update status PAID_PARTIAL/PAID_FULL.
+  - **P3-3** (`4e72808`) : Export comptable CSV. `ExportComptableService` streamé (chunk 500) avec BOM UTF-8 + `;` séparateur (Excel FR). Endpoint `GET /reporting/exports/comptable.csv?from=&to=` (défaut mois courant).
+  - **P3-4** (`7201c3d`) : Journal ventes & paiements. Endpoint `GET /reporting/journal` avec KPIs agrégés (ventes_ttc, encaisse, impaye) + tables paginées factures et paiements de la période.
+  - **P3-5** (`08c9fc6`) : Dashboard Direction enrichi. +3 KPIs cards (Encaissé mois, Taux conversion devis 90j) + 3 widgets (CA mensuel 12m avec barres, Top 5 clients 180j, Mix méthodes paiement %).
+  - **P3-6** (`3448835`) : Dashboard Opérationnel. Endpoint `GET /reporting/operations` avec 4 panels temps réel — OFs à lancer, OFs en cours, Chantiers en retard, Stocks bas (sous seuil_alerte via JOIN matiere).
+  - **P3-7** (`d72a25f`) : Relances automatiques. `RelanceService` + `RelancerFacturesImpayeesJob` (daily 08:00 via schedule). Migration additive 2 colonnes (relance_count, last_relance_at). Cooldown 7j anti-flood. Notification mail/SMS différée à V2.
+- **Validation pipeline complète** :
+  - ✅ Pint passé sur tous les commits.
+  - ✅ PHPStan : 0 erreur (97 fichiers analysés).
+  - ✅ Tests : **122 verts (279 assertions)** — +17 nouveaux tests P3 sur la base de 105 P2-C.
+- **Décisions techniques** :
+  - **Idempotence systématique** : tous les workflows P3 sont idempotents par design (cooldown relance, idempotency_key paiement, executeSolde court-circuit). Conforme aux patterns ADR-003/ADR-006.
+  - **Notifications mail/SMS différées** : `RelanceService` log uniquement (audit). L'envoi effectif viendra quand SMTP B360 sera configuré + Notification Laravel branchée. Évite blocage P3 sur infra non disponible.
+  - **Stocks bas via DB::table** : usage de `DB::table()` plutôt que Eloquent pour la query JOIN avec colonnes qualifiées — PHPStan extension ne valide pas les noms qualifiés sur Eloquent. Trade-off accepté : moins de type-safety, mais query bien plus lisible et performante.
+  - **Schedule via ServiceProvider** : `registerScheduledJobs()` dans `Menuiserie360ServiceProvider::boot()` au lieu d'un Console Kernel séparé — pattern modulaire propre, le module possède son propre planning.
+  - **PAID_FULL vs PAID_PARTIAL** : enum `StatutFacture` utilise les valeurs existantes (pas créé PAID/PARTIAL_PAID). Cohérent avec l'enum déjà en place depuis P2.
+- **Statut Menuiserie360 module global après P3** :
+  - **Phase V1 complète** : tous les BC fonctionnels (Commercial/Sales/Production/Chantier/Stock/Finance/Reporting) couverts.
+  - **122 tests** verts, 279 assertions.
+  - **15 migrations** `mnu_*` (14 + media + relance_columns).
+  - **9 Controllers HTTP** + **20+ vues Blade** + **3 dashboards** (direction, opérationnel, journal).
+  - **Workflows complets** Devis → BC + acompte / Chantier → solde / Paiements / Relances.
+- **Hors scope V1, à planifier V2** :
+  - Notification mail/SMS effective (SMTP + Notification Laravel).
+  - Excel natif (OpenSpout) en complément du CSV.
+  - Webhook CinetPay/MTN/Orange entrants (controller dédié + signature verification).
+  - Multi-DB issue S-7 (migrations Menuiserie360 ciblent system DB par défaut).
+  - Tests Controllers Type Produit / Operations encore à étendre.
 
 ---
 
