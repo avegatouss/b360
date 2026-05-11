@@ -31,7 +31,7 @@ final class OrdreFabricationController extends Controller
         ]);
     }
 
-    public function show(int $ofId): View
+    public function show(int|string $ofId): View
     {
         $of = OrdreFabrication::query()->with(['lignes', 'bonCommande'])->findOrFail($ofId);
         $besoinService = app(BesoinMatiereService::class);
@@ -40,7 +40,7 @@ final class OrdreFabricationController extends Controller
         return view('menuiserie360::production.of.show', compact('of', 'disponibilite'));
     }
 
-    public function lancer(Request $request, int $ofId): RedirectResponse
+    public function lancer(Request $request, int|string $ofId): RedirectResponse
     {
         $of = OrdreFabrication::findOrFail($ofId);
 
@@ -56,7 +56,7 @@ final class OrdreFabricationController extends Controller
             ->with('success', "OF {$of->getAttribute('numero')} lancé en production.");
     }
 
-    public function terminer(Request $request, int $ofId): RedirectResponse
+    public function terminer(Request $request, int|string $ofId): RedirectResponse
     {
         $of = OrdreFabrication::findOrFail($ofId);
 

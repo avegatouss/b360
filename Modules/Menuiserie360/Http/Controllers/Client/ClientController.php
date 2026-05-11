@@ -33,13 +33,13 @@ final class ClientController extends Controller
         return view('menuiserie360::clients.index', compact('extensions'));
     }
 
-    public function show(Request $request, int $customerId): View
+    public function show(Request $request, int|string $customerId): View
     {
         $instance = CurrentInstance::get();
         abort_if($instance === null, 503, 'No instance context.');
 
         $client = app(ClientRepositoryContract::class)
-            ->find($instance->id, $customerId);
+            ->find($instance->id, (int) $customerId);
 
         abort_if($client === null, 404, 'Client menuiserie introuvable.');
 

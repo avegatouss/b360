@@ -20,11 +20,12 @@ use Modules\Menuiserie360\Http\Controllers\Stock\StockMatiereController;
 | Toutes les routes du module sont scopées sous `/i/{slug}/menuiserie/`
 | via le groupe instance B360 + le préfixe `menuiserie/` propre au module.
 |
-| Middleware stack héritée (cf. spec v1.3 §5.1) :
-|   - `auth`
-|   - `instance` (BindInstanceFromRoute)
-|   - `instance.membership` (EnsureInstanceMembershipActive)
-|   - `spatie.team` (SetSpatieTeamContextFromInstance)
+| Middleware stack héritée (alias définis dans CoreHttpServiceProvider) :
+|   - `core.instance.bind` (BindInstanceFromRoute : résout {slug} → Instance)
+|   - `core.instance.resolved` (EnsureInstanceResolved)
+|   - `core.spatie.team` (SetSpatieTeamContextFromInstance)
+|   - `auth` (Laravel standard)
+|   - `core.instance.member` (EnsureInstanceMembershipActive : user ∈ instance)
 |
 | Permissions : check via `can:menuiserie.<bc>.<action>` Spatie.
 | Feature gating Billing : non activé en MVP (à ajouter dans un lot
@@ -32,12 +33,14 @@ use Modules\Menuiserie360\Http\Controllers\Stock\StockMatiereController;
 */
 
 Route::middleware([
+    'web',
+    'core.instance.bind',
+    'core.instance.resolved',
+    'core.spatie.team',
     'auth',
-    'instance',
-    'instance.membership',
-    'spatie.team',
+    'core.instance.member',
 ])
-    ->prefix('menuiserie')
+    ->prefix('/i/{slug}/menuiserie')
     ->name('menuiserie.')
     ->group(function () {
         // ─── BC-Commercial : Devis ───────────────────────────────

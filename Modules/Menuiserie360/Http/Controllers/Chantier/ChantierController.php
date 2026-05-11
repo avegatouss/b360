@@ -31,14 +31,14 @@ final class ChantierController extends Controller
         ]);
     }
 
-    public function show(int $chantierId): View
+    public function show(int|string $chantierId): View
     {
         $chantier = Chantier::query()->with(['etapes' => fn ($q) => $q->orderBy('ordre')])->findOrFail($chantierId);
 
         return view('menuiserie360::chantier.show', compact('chantier'));
     }
 
-    public function avancer(Request $request, int $chantierId): RedirectResponse
+    public function avancer(Request $request, int|string $chantierId): RedirectResponse
     {
         $chantier = Chantier::findOrFail($chantierId);
 

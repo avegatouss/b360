@@ -35,7 +35,7 @@ final class FactureMenuiserieController extends Controller
         ]);
     }
 
-    public function show(int $invoiceId): View
+    public function show(int|string $invoiceId): View
     {
         $invoice = MenuiserieInvoice::query()->with('payments')->findOrFail($invoiceId);
 

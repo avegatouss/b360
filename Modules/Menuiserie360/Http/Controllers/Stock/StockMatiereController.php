@@ -33,7 +33,7 @@ final class StockMatiereController extends Controller
         ]);
     }
 
-    public function show(int $matiereId): View
+    public function show(int|string $matiereId): View
     {
         $matiere = MatierePremiere::findOrFail($matiereId);
         $stock = StockMatiere::query()
@@ -43,7 +43,7 @@ final class StockMatiereController extends Controller
         return view('menuiserie360::stock.show', compact('matiere', 'stock'));
     }
 
-    public function recevoir(Request $request, int $matiereId): RedirectResponse
+    public function recevoir(Request $request, int|string $matiereId): RedirectResponse
     {
         $matiere = MatierePremiere::findOrFail($matiereId);
 
