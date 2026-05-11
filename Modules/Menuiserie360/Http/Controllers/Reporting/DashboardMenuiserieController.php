@@ -12,6 +12,7 @@ use Modules\Core\Support\CurrentInstance;
 use Modules\Menuiserie360\Domain\Chantier\Models\Chantier;
 use Modules\Menuiserie360\Domain\Commercial\Models\Devis;
 use Modules\Menuiserie360\Domain\Finance\Models\MenuiserieInvoice;
+use Modules\Menuiserie360\Domain\Finance\Models\MenuiseriePayment;
 use Modules\Menuiserie360\Domain\Production\Models\OrdreFabrication;
 use Modules\Menuiserie360\Domain\Reporting\Services\ExportComptableService;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -40,6 +41,62 @@ final class DashboardMenuiserieController extends Controller
         ];
 
         return view('menuiserie360::reporting.dashboard', compact('kpis'));
+    }
+
+    /**
+     * P3-4 — Journal des ventes (factures) + paiements pour la période.
+     */
+    public function journal(Request $request): View
+    {
+        $instance = CurrentInstance::get();
+        abort_if($instance === null, 503, 'No instance context.');
+
+        $data = $request->validate([
+            'from' => 'nullable|date',
+            'to' => 'nullable|date|after_or_equal:from',
+        ]);
+
+        $from = isset($data['from'])
+            ? CarbonImmutable::parse($data['from'])->startOfDay()
+            : CarbonImmutable::now()->startOfMonth();
+        $to = isset($data['to'])
+            ? CarbonImmutable::parse($data['to'])->endOfDay()
+            : CarbonImmutable::now()->endOfMonth();
+
+        $invoices = MenuiserieInvoice::query()
+            ->where('instance_id', $instance->id)
+            ->whereBetween('issued_at', [$from, $to])
+            ->orderByDesc('issued_at')
+            ->orderBy('id')
+            ->paginate(50)
+            ->withQueryString();
+
+        $payments = MenuiseriePayment::query()
+            ->where('instance_id', $instance->id)
+            ->whereBetween('paid_at', [$from, $to])
+            ->orderByDesc('paid_at')
+            ->orderBy('id')
+            ->paginate(50, ['*'], 'pay_page')
+            ->withQueryString();
+
+        $totals = [
+            'ventes_ttc' => (float) MenuiserieInvoice::query()
+                ->where('instance_id', $instance->id)
+                ->whereBetween('issued_at', [$from, $to])
+                ->sum('amount_ttc'),
+            'encaisse' => (float) MenuiseriePayment::query()
+                ->where('instance_id', $instance->id)
+                ->whereBetween('paid_at', [$from, $to])
+                ->where('status', 'succeeded')
+                ->sum('amount'),
+            'impaye' => (float) MenuiserieInvoice::query()
+                ->where('instance_id', $instance->id)
+                ->whereBetween('issued_at', [$from, $to])
+                ->selectRaw('SUM(amount_ttc - paid_amount) as impaye')
+                ->value('impaye'),
+        ];
+
+        return view('menuiserie360::reporting.journal', compact('invoices', 'payments', 'totals', 'from', 'to'));
     }
 
     /**

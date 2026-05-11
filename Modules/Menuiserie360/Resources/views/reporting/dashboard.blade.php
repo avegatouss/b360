@@ -51,9 +51,9 @@
     </div>
 
     <div class="card mt-3">
-        <div class="card-header">Exports</div>
+        <div class="card-header">Exports & Journal</div>
         <div class="card-body">
-            <form method="GET" action="{{ route('menuiserie.reporting.exports.comptable', ['slug' => request()->route('slug')]) }}" class="row g-2 align-items-end">
+            <form method="GET" action="{{ route('menuiserie.reporting.exports.comptable', ['slug' => request()->route('slug')]) }}" class="row g-2 align-items-end mb-2">
                 <div class="col-md-3">
                     <label class="form-label small">Du</label>
                     <input type="date" name="from" value="{{ now()->startOfMonth()->toDateString() }}" class="form-control"/>
@@ -66,6 +66,7 @@
                     <button class="btn btn-outline-primary">Télécharger CSV comptable</button>
                 </div>
             </form>
+            <a href="{{ route('menuiserie.reporting.journal', ['slug' => request()->route('slug')]) }}" class="btn btn-outline-secondary">Voir le journal ventes & paiements</a>
         </div>
     </div>
 </x-menuiserie360::layout>
