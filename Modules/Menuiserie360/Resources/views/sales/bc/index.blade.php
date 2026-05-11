@@ -7,7 +7,14 @@
                 @forelse ($bcs as $bc)
                     <tr>
                         <td><strong>{{ $bc->numero }}</strong></td>
-                        <td>#{{ $bc->client_id }}</td>
+                        <td>
+                            @if (isset($customers[$bc->client_id]))
+                                <strong>{{ $customers[$bc->client_id]->name }}</strong>
+                                <small class="d-block text-muted">{{ $customers[$bc->client_id]->code }}</small>
+                            @else
+                                <span class="text-muted">#{{ $bc->client_id }}</span>
+                            @endif
+                        </td>
                         <td><span class="badge bg-secondary">{{ $bc->statut }}</span></td>
                         <td>{{ number_format((float) $bc->montant_ttc, 0, ',', ' ') }} XOF</td>
                         <td>{{ optional($bc->date_livraison_prevue)->format('Y-m-d') ?? '—' }}</td>

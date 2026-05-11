@@ -44,4 +44,14 @@ interface CustomerReader
      * @return iterable<CustomerDto>
      */
     public function searchCustomers(int $instanceId, string $query, int $limit = 20): iterable;
+
+    /**
+     * Précharge un lot de clients par leurs IDs. Utile pour résoudre les
+     * libellés humains dans les listes (M-UI-5 Menuiserie360) sans
+     * provoquer un N+1 sur des tables externes.
+     *
+     * @param  list<int>  $ids
+     * @return array<int, CustomerDto> indexé par customer id
+     */
+    public function findCustomersByIds(int $instanceId, array $ids): array;
 }

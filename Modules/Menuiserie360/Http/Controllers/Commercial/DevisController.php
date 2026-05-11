@@ -17,14 +17,20 @@ use Modules\Menuiserie360\Domain\Commercial\Models\Devis;
 use Modules\Menuiserie360\Domain\Commercial\Models\LigneDevis;
 use Modules\Menuiserie360\Domain\Sales\Actions\TransformDevisToBcAction;
 use Modules\Menuiserie360\Domain\Stock\Models\MatierePremiere;
+use Modules\Menuiserie360\Http\Concerns\PreloadsCustomers;
 
 /**
  * P2-1 — Controller CRUD Devis (BC-Commercial).
  */
 final class DevisController extends Controller
 {
+    use PreloadsCustomers;
+
     public function index(Request $request): View
     {
+        $instance = CurrentInstance::get();
+        abort_if($instance === null, 503, 'No instance context.');
+
         $devis = Devis::query()
             ->when($request->statut, fn ($q, $s) => $q->where('statut', $s))
             ->when($request->client_id, fn ($q, $c) => $q->where('client_id', $c))
@@ -35,6 +41,7 @@ final class DevisController extends Controller
         return view('menuiserie360::commercial.devis.index', [
             'devis' => $devis,
             'statuts' => StatutDevis::cases(),
+            'customers' => $this->preloadCustomers($devis->items(), $instance->id),
         ]);
     }
 

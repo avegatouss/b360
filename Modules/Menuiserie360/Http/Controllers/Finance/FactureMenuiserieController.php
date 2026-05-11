@@ -8,11 +8,13 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Modules\Core\Support\CurrentInstance;
 use Modules\Menuiserie360\Domain\Finance\Actions\RecordPaymentAction;
 use Modules\Menuiserie360\Domain\Finance\Enums\MethodePaiement;
 use Modules\Menuiserie360\Domain\Finance\Enums\StatutFacture;
 use Modules\Menuiserie360\Domain\Finance\Enums\TypeFacture;
 use Modules\Menuiserie360\Domain\Finance\Models\MenuiserieInvoice;
+use Modules\Menuiserie360\Http\Concerns\PreloadsCustomers;
 
 /**
  * P2-7 part 4 — Controller Facture menuiserie (lecture seule v1).
@@ -22,8 +24,13 @@ use Modules\Menuiserie360\Domain\Finance\Models\MenuiserieInvoice;
  */
 final class FactureMenuiserieController extends Controller
 {
+    use PreloadsCustomers;
+
     public function index(Request $request): View
     {
+        $instance = CurrentInstance::get();
+        abort_if($instance === null, 503, 'No instance context.');
+
         $invoices = MenuiserieInvoice::query()
             ->when($request->statut, fn ($q, $s) => $q->where('status', $s))
             ->when($request->type, fn ($q, $t) => $q->where('type', $t))
@@ -35,6 +42,7 @@ final class FactureMenuiserieController extends Controller
             'invoices' => $invoices,
             'statuts' => StatutFacture::cases(),
             'types' => TypeFacture::cases(),
+            'customers' => $this->preloadCustomers($invoices->items(), $instance->id),
         ]);
     }
 

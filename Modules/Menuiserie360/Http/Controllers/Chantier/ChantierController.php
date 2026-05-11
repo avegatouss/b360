@@ -9,27 +9,44 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
+use Modules\Core\Support\CurrentInstance;
 use Modules\Menuiserie360\Domain\Chantier\Enums\StatutChantier;
 use Modules\Menuiserie360\Domain\Chantier\Events\ChantierTermine;
 use Modules\Menuiserie360\Domain\Chantier\Models\Chantier;
 use Modules\Menuiserie360\Domain\Chantier\Models\EtapeChantier;
+use Modules\Menuiserie360\Domain\Sales\Models\BonCommande;
+use Modules\Menuiserie360\Http\Concerns\PreloadsCustomers;
 
 /**
  * P2-12 — Controller Chantier (lecture + avancement).
  */
 final class ChantierController extends Controller
 {
+    use PreloadsCustomers;
+
     public function index(Request $request): View
     {
+        $instance = CurrentInstance::get();
+        abort_if($instance === null, 503, 'No instance context.');
+
         $chantiers = Chantier::query()
             ->when($request->statut, fn ($q, $s) => $q->where('statut', $s))
             ->orderByDesc('created_at')
             ->paginate(20)
             ->withQueryString();
 
+        // Préchargement BC pour afficher le numéro humain au lieu de #id.
+        $bcIds = array_values(array_filter(array_map(
+            static fn ($c) => $c->getAttribute('bc_id'),
+            $chantiers->items()
+        )));
+        $bcsByid = $bcIds === [] ? [] : BonCommande::query()->whereIn('id', $bcIds)->get()->keyBy('id');
+
         return view('menuiserie360::chantier.index', [
             'chantiers' => $chantiers,
             'statuts' => StatutChantier::cases(),
+            'customers' => $this->preloadCustomers($chantiers->items(), $instance->id),
+            'bcs' => $bcsByid,
         ]);
     }
 

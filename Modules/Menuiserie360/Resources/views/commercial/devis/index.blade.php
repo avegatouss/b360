@@ -20,7 +20,14 @@
                     @forelse ($devis as $d)
                         <tr>
                             <td><strong>{{ $d->numero }}</strong></td>
-                            <td>#{{ $d->client_id }}</td>
+                            <td>
+                                @if (isset($customers[$d->client_id]))
+                                    <strong>{{ $customers[$d->client_id]->name }}</strong>
+                                    <small class="d-block text-muted">{{ $customers[$d->client_id]->code }}</small>
+                                @else
+                                    <span class="text-muted">#{{ $d->client_id }}</span>
+                                @endif
+                            </td>
                             <td><span class="badge bg-secondary">{{ $d->statut }}</span></td>
                             <td class="text-end">{{ number_format((float) $d->montant_ttc, 0, ',', ' ') }} XOF</td>
                             <td>{{ $d->created_at?->format('Y-m-d') }}</td>

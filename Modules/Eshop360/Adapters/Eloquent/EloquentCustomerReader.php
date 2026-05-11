@@ -48,6 +48,26 @@ final class EloquentCustomerReader implements CustomerReader
             ->exists();
     }
 
+    public function findCustomersByIds(int $instanceId, array $ids): array
+    {
+        $ids = array_values(array_unique(array_map('intval', $ids)));
+        if ($ids === []) {
+            return [];
+        }
+
+        $customers = Customer::withoutGlobalScopes()
+            ->where('instance_id', $instanceId)
+            ->whereIn('id', $ids)
+            ->get();
+
+        $byId = [];
+        foreach ($customers as $c) {
+            $byId[(int) $c->getKey()] = $this->mapToDto($c);
+        }
+
+        return $byId;
+    }
+
     public function searchCustomers(int $instanceId, string $query, int $limit = 20): iterable
     {
         $query = trim($query);
