@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use Modules\Menuiserie360\Http\Controllers\Chantier\ChantierController;
 use Modules\Menuiserie360\Http\Controllers\Client\ClientController;
 use Modules\Menuiserie360\Http\Controllers\Commercial\DevisController;
+use Modules\Menuiserie360\Http\Controllers\Commercial\TypeProduitController;
 use Modules\Menuiserie360\Http\Controllers\Finance\FactureMenuiserieController;
 use Modules\Menuiserie360\Http\Controllers\Production\OrdreFabricationController;
 use Modules\Menuiserie360\Http\Controllers\Reporting\DashboardMenuiserieController;
@@ -102,5 +103,16 @@ Route::middleware([
         // ─── BC-Reporting : Dashboard ────────────────────────────
         Route::prefix('reporting')->name('reporting.')->middleware('can:menuiserie.report.view')->group(function () {
             Route::get('/', [DashboardMenuiserieController::class, 'index'])->name('index');
+        });
+
+        // ─── BC-Commercial : Bibliothèque types produits (P2-C) ──
+        Route::prefix('types-produits')->name('types-produits.')->middleware('can:menuiserie.devis.view')->group(function () {
+            Route::get('/', [TypeProduitController::class, 'index'])->name('index');
+            Route::get('/create', [TypeProduitController::class, 'create'])->name('create');
+            Route::post('/', [TypeProduitController::class, 'store'])->name('store');
+            Route::get('/{type}', [TypeProduitController::class, 'show'])->name('show');
+            Route::get('/{type}/edit', [TypeProduitController::class, 'edit'])->name('edit');
+            Route::put('/{type}', [TypeProduitController::class, 'update'])->name('update');
+            Route::delete('/{type}', [TypeProduitController::class, 'destroy'])->name('destroy');
         });
     });
