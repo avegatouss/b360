@@ -27,10 +27,12 @@ final class Menuiserie360ServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__.'/../Config/config.php', 'menuiserie360');
 
         // Bindings internes : interfaces Menuiserie360 → implémentations.
-        // À compléter en P1 quand StockMatiereService et ClientMenuiserieRepository
-        // seront créés. Pour P0 (squelette), les interfaces existent sans implémentation.
-        // Aucun bind par défaut à ce stade — toute consommation explicite échouera
-        // intentionnellement tant que les services concrets ne sont pas livrés.
+        // P1-3 : StockMatiereService implémente StockContract.
+        // P1-5 : ClientMenuiserieRepository à brancher au commit P1-5.
+        $this->app->singleton(
+            \Modules\Menuiserie360\Domain\Stock\Contracts\StockContract::class,
+            \Modules\Menuiserie360\Domain\Stock\Services\StockMatiereService::class,
+        );
     }
 
     public function boot(): void
