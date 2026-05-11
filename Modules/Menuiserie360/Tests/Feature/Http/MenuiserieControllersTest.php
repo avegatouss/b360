@@ -97,6 +97,58 @@ final class MenuiserieControllersTest extends TestCase
         $response->assertSee('devisForm(', escape: false);
     }
 
+    // ─── Client search (M-UI-4) ────────────────────────────────────
+
+    public function test_client_search_returns_matching_customers(): void
+    {
+        $this->makeCustomer(); // crée 'TEST-CUS-001' / 'Test Client'
+        Customer::withoutGlobalScopes()->create([
+            'instance_id' => $this->instance->id,
+            'code' => 'CUST-OTHER',
+            'name' => 'Karim Coulibaly',
+            'phone' => '+225 07 50 80 90 00',
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($this->superAdmin)
+            ->getJson(route('menuiserie.clients.search', ['slug' => $this->slug()]).'?q=Karim');
+
+        $response->assertOk();
+        $data = $response->json();
+        $this->assertIsArray($data['results']);
+        $this->assertCount(1, $data['results']);
+        $this->assertSame('CUST-OTHER', $data['results'][0]['code']);
+        $this->assertSame('Karim Coulibaly', $data['results'][0]['name']);
+    }
+
+    public function test_client_search_returns_empty_when_query_blank_or_short(): void
+    {
+        $this->makeCustomer();
+
+        $this->actingAs($this->superAdmin)
+            ->getJson(route('menuiserie.clients.search', ['slug' => $this->slug()]).'?q=')
+            ->assertOk()
+            ->assertJsonPath('results', []);
+    }
+
+    public function test_client_search_filters_by_email_phone_and_code(): void
+    {
+        Customer::withoutGlobalScopes()->create([
+            'instance_id' => $this->instance->id,
+            'code' => 'PHO-001',
+            'name' => 'Joindre par téléphone',
+            'phone' => '+225 27 22 99 11 22',
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($this->superAdmin)
+            ->getJson(route('menuiserie.clients.search', ['slug' => $this->slug()]).'?q=22%2099');
+
+        $response->assertOk();
+        $this->assertCount(1, $response->json('results'));
+        $this->assertSame('PHO-001', $response->json('results.0.code'));
+    }
+
     public function test_super_admin_can_access_bc_index(): void
     {
         $this->actingAs($this->superAdmin)

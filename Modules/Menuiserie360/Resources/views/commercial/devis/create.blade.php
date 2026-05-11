@@ -7,9 +7,8 @@
 
                 <div class="row g-3">
                     <div class="col-md-6">
-                        <label class="form-label">Client (ID Eshop360) <span class="text-danger">*</span></label>
-                        <input type="number" name="client_id" class="form-control" required min="1" value="{{ old('client_id') }}"/>
-                        <small class="text-muted">Autocomplete client à venir (M-UI-4).</small>
+                        <label class="form-label">Client <span class="text-danger">*</span></label>
+                        <x-menuiserie360::client-search name="client_id" :value="old('client_id')" required />
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">Taux TVA</label>

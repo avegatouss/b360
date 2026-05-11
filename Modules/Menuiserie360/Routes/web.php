@@ -72,7 +72,10 @@ Route::middleware([
         // ─── BC-Clients ──────────────────────────────────────────
         Route::prefix('clients')->name('clients.')->middleware('can:menuiserie.client.view')->group(function () {
             Route::get('/', [ClientController::class, 'index'])->name('index');
-            Route::get('/{customerId}', [ClientController::class, 'show'])->name('show');
+            // Endpoint JSON pour autocomplete (M-UI-4) — déclaré avant /{customerId}
+            // (de toute façon protégé par whereNumber sur la route show).
+            Route::get('/search', [ClientController::class, 'search'])->name('search');
+            Route::get('/{customerId}', [ClientController::class, 'show'])->whereNumber('customerId')->name('show');
         });
 
         // ─── BC-Sales : BonCommande ──────────────────────────────

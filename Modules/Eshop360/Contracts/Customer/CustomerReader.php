@@ -36,4 +36,12 @@ interface CustomerReader
      * avant de créer une référence depuis un module L4).
      */
     public function customerExists(int $instanceId, int $customerId): bool;
+
+    /**
+     * Recherche full-text sur le code, le nom, l'email ou le téléphone du
+     * client. Utile pour les autocompletes côté UI (M-UI-4 Menuiserie360).
+     *
+     * @return iterable<CustomerDto>
+     */
+    public function searchCustomers(int $instanceId, string $query, int $limit = 20): iterable;
 }

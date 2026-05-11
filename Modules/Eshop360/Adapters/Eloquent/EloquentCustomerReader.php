@@ -48,6 +48,32 @@ final class EloquentCustomerReader implements CustomerReader
             ->exists();
     }
 
+    public function searchCustomers(int $instanceId, string $query, int $limit = 20): iterable
+    {
+        $query = trim($query);
+        if ($query === '') {
+            return [];
+        }
+
+        $needle = '%'.$query.'%';
+        $limit = max(1, min($limit, 100));
+
+        $customers = Customer::withoutGlobalScopes()
+            ->where('instance_id', $instanceId)
+            ->where('is_active', true)
+            ->where(function ($q) use ($needle) {
+                $q->where('code', 'like', $needle)
+                    ->orWhere('name', 'like', $needle)
+                    ->orWhere('email', 'like', $needle)
+                    ->orWhere('phone', 'like', $needle);
+            })
+            ->orderBy('name')
+            ->limit($limit)
+            ->get();
+
+        return $customers->map(fn (Customer $c) => $this->mapToDto($c))->all();
+    }
+
     private function mapToDto(Customer $c): CustomerDto
     {
         $channelId = $c->getAttribute('channel_id');
