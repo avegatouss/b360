@@ -31,18 +31,18 @@ final class OrdreFabricationController extends Controller
         ]);
     }
 
-    public function show(int|string $ofId): View
+    public function show(string $slug, int|string $of): View
     {
-        $of = OrdreFabrication::query()->with(['lignes', 'bonCommande'])->findOrFail($ofId);
+        $of = OrdreFabrication::query()->with(['lignes', 'bonCommande'])->findOrFail($of);
         $besoinService = app(BesoinMatiereService::class);
         $disponibilite = $besoinService->verifierDisponibilite($of);
 
         return view('menuiserie360::production.of.show', compact('of', 'disponibilite'));
     }
 
-    public function lancer(Request $request, int|string $ofId): RedirectResponse
+    public function lancer(Request $request, string $slug, int|string $of): RedirectResponse
     {
-        $of = OrdreFabrication::findOrFail($ofId);
+        $of = OrdreFabrication::findOrFail($of);
 
         // Réservation des matières via BesoinMatiereService
         app(BesoinMatiereService::class)->reserverPourOf($of);
@@ -56,9 +56,9 @@ final class OrdreFabricationController extends Controller
             ->with('success', "OF {$of->getAttribute('numero')} lancé en production.");
     }
 
-    public function terminer(Request $request, int|string $ofId): RedirectResponse
+    public function terminer(Request $request, string $slug, int|string $of): RedirectResponse
     {
-        $of = OrdreFabrication::findOrFail($ofId);
+        $of = OrdreFabrication::findOrFail($of);
 
         $of->setAttribute('statut', StatutOrdreFabrication::TERMINE->value);
         $of->setAttribute('date_fin_reelle', now());

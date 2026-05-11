@@ -35,9 +35,9 @@ final class DevisController extends Controller
         ]);
     }
 
-    public function show(int|string $devisId): View
+    public function show(string $slug, int|string $devis): View
     {
-        $devis = Devis::query()->with('lignes')->findOrFail($devisId);
+        $devis = Devis::query()->with('lignes')->findOrFail($devis);
 
         return view('menuiserie360::commercial.devis.show', compact('devis'));
     }
@@ -123,9 +123,9 @@ final class DevisController extends Controller
      * Marque un devis comme accepté + transforme en BonCommande
      * (déclenche aussi facture acompte via listener — workflow P2-A).
      */
-    public function accepter(Request $request, int|string $devisId): RedirectResponse
+    public function accepter(Request $request, string $slug, int|string $devis): RedirectResponse
     {
-        $devis = Devis::findOrFail($devisId);
+        $devis = Devis::findOrFail($devis);
 
         $data = $request->validate([
             'acompte_pct' => 'nullable|numeric|min:0|max:100',
@@ -149,9 +149,9 @@ final class DevisController extends Controller
      * V2 (P2-B-2) : remplacement par génération PDF DomPDF (`barryvdh/laravel-dompdf`)
      * une fois la dépendance Composer ajoutée par l'humain.
      */
-    public function pdf(int|string $devisId): View
+    public function pdf(string $slug, int|string $devis): View
     {
-        $devis = Devis::query()->with('lignes')->findOrFail($devisId);
+        $devis = Devis::query()->with('lignes')->findOrFail($devis);
 
         return view('menuiserie360::commercial.devis.pdf', compact('devis'));
     }

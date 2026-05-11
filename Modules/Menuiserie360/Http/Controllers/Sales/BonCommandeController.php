@@ -31,9 +31,9 @@ final class BonCommandeController extends Controller
         ]);
     }
 
-    public function show(int|string $bcId): View
+    public function show(string $slug, int|string $bc): View
     {
-        $bc = BonCommande::query()->with(['items', 'devis', 'factureAcompte'])->findOrFail($bcId);
+        $bc = BonCommande::query()->with(['items', 'devis', 'factureAcompte'])->findOrFail($bc);
 
         return view('menuiserie360::sales.bc.show', compact('bc'));
     }

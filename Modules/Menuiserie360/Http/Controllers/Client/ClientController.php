@@ -33,7 +33,7 @@ final class ClientController extends Controller
         return view('menuiserie360::clients.index', compact('extensions'));
     }
 
-    public function show(Request $request, int|string $customerId): View
+    public function show(Request $request, string $slug, int|string $customerId): View
     {
         $instance = CurrentInstance::get();
         abort_if($instance === null, 503, 'No instance context.');

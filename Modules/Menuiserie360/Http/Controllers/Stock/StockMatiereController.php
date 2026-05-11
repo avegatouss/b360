@@ -33,9 +33,9 @@ final class StockMatiereController extends Controller
         ]);
     }
 
-    public function show(int|string $matiereId): View
+    public function show(string $slug, int|string $matiere): View
     {
-        $matiere = MatierePremiere::findOrFail($matiereId);
+        $matiere = MatierePremiere::findOrFail($matiere);
         $stock = StockMatiere::query()
             ->where('matiere_id', $matiere->getKey())
             ->first();
@@ -43,9 +43,9 @@ final class StockMatiereController extends Controller
         return view('menuiserie360::stock.show', compact('matiere', 'stock'));
     }
 
-    public function recevoir(Request $request, int|string $matiereId): RedirectResponse
+    public function recevoir(Request $request, string $slug, int|string $matiere): RedirectResponse
     {
-        $matiere = MatierePremiere::findOrFail($matiereId);
+        $matiere = MatierePremiere::findOrFail($matiere);
 
         $data = $request->validate([
             'quantite' => 'required|numeric|min:0.0001',

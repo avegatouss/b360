@@ -128,22 +128,9 @@ final class MenuiserieControllersTest extends TestCase
             ->assertOk();
     }
 
-    // ─── Devis / Stock / OF / Chantier write paths : tests skipped P2-B-2 ───
-    //
-    // Les tests des chemins d'écriture (POST devis/store, devis/accepter,
-    // stocks/recevoir, of/lancer-terminer, chantiers/avancer) ont besoin
-    // d'une investigation approfondie sur l'interaction middleware
-    // `core.instance.bind` ↔ scope `BelongsToInstance` en environnement
-    // de test HTTP — décalage entre le CurrentInstance::set() du test et
-    // celui résolu par le middleware lors du POST. Tous les chemins
-    // d'écriture sont déjà couverts au niveau service par les 81 tests
-    // backend (P0+P1+P2-A) — voir WorkflowDevisToInvoiceTest pour le
-    // workflow bout-en-bout devis→BC→OF→facture.
-    //
-    // À reprendre en P2-B-2 dédié tests Controllers HTTP.
+    // ─── Devis happy path : create + accept ────────────────────────
 
-    /** @phpstan-ignore-next-line — placeholder pour P2-B-2 */
-    public function _disabled_test_super_admin_can_store_devis_and_show_it(): void
+    public function test_super_admin_can_store_devis_and_show_it(): void
     {
         $customer = $this->makeCustomer();
 
@@ -184,7 +171,7 @@ final class MenuiserieControllersTest extends TestCase
             ->assertSee($devis->getAttribute('numero'));
     }
 
-    public function _disabled_test_accepter_devis_creates_bc_and_acompte_invoice_via_listener(): void
+    public function test_accepter_devis_creates_bc_and_acompte_invoice_via_listener(): void
     {
         $customer = $this->makeCustomer();
         $devis = $this->makeDevis($customer->getKey());
@@ -223,7 +210,7 @@ final class MenuiserieControllersTest extends TestCase
 
     // ─── Devis PDF returns view (HTML printable v1) ────────────────
 
-    public function _disabled_test_super_admin_can_download_devis_pdf(): void
+    public function test_super_admin_can_download_devis_pdf(): void
     {
         $customer = $this->makeCustomer();
         $devis = $this->makeDevis($customer->getKey());
@@ -236,7 +223,7 @@ final class MenuiserieControllersTest extends TestCase
 
     // ─── Stock recevoir (entrée fournisseur) ───────────────────────
 
-    public function _disabled_test_super_admin_can_receive_stock(): void
+    public function test_super_admin_can_receive_stock(): void
     {
         $matiere = $this->makeMatiere();
 
@@ -267,7 +254,7 @@ final class MenuiserieControllersTest extends TestCase
 
     // ─── OF lancer + terminer workflow ─────────────────────────────
 
-    public function _disabled_test_super_admin_can_lancer_and_terminer_of(): void
+    public function test_super_admin_can_lancer_and_terminer_of(): void
     {
         $customer = $this->makeCustomer();
         $devis = $this->makeDevis($customer->getKey());
@@ -312,7 +299,7 @@ final class MenuiserieControllersTest extends TestCase
 
     // ─── Chantier avancer étape ────────────────────────────────────
 
-    public function _disabled_test_super_admin_can_update_chantier_etape_avancement(): void
+    public function test_super_admin_can_update_chantier_etape_avancement(): void
     {
         $customer = $this->makeCustomer();
         $devis = $this->makeDevis($customer->getKey());
@@ -361,7 +348,7 @@ final class MenuiserieControllersTest extends TestCase
         $this->assertNotNull($etape->getAttribute('demarree_at'));
     }
 
-    public function _disabled_test_chantier_etape_at_100_pct_is_marked_fait(): void
+    public function test_chantier_etape_at_100_pct_is_marked_fait(): void
     {
         $customer = $this->makeCustomer();
         $devis = $this->makeDevis($customer->getKey());
@@ -423,7 +410,7 @@ final class MenuiserieControllersTest extends TestCase
             ->assertSessionHasErrors(['lignes']);
     }
 
-    public function _disabled_test_stock_recevoir_refuses_zero_quantity(): void
+    public function test_stock_recevoir_refuses_zero_quantity(): void
     {
         $matiere = $this->makeMatiere();
 
