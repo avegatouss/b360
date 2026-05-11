@@ -101,6 +101,7 @@ Route::middleware([
         Route::prefix('factures')->name('factures.')->middleware('can:menuiserie.invoice.create')->group(function () {
             Route::get('/', [FactureMenuiserieController::class, 'index'])->name('index');
             Route::get('/{invoice}', [FactureMenuiserieController::class, 'show'])->name('show');
+            Route::post('/{invoice}/payments', [FactureMenuiserieController::class, 'recordPayment'])->name('payments.store');
         });
 
         // ─── BC-Reporting : Dashboard ────────────────────────────

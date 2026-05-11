@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace Modules\Menuiserie360\Http\Controllers\Finance;
 
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Modules\Menuiserie360\Domain\Finance\Actions\RecordPaymentAction;
+use Modules\Menuiserie360\Domain\Finance\Enums\MethodePaiement;
 use Modules\Menuiserie360\Domain\Finance\Enums\StatutFacture;
 use Modules\Menuiserie360\Domain\Finance\Enums\TypeFacture;
 use Modules\Menuiserie360\Domain\Finance\Models\MenuiserieInvoice;
@@ -39,6 +42,41 @@ final class FactureMenuiserieController extends Controller
     {
         $invoice = MenuiserieInvoice::query()->with('payments')->findOrFail($invoice);
 
-        return view('menuiserie360::finance.factures.show', compact('invoice'));
+        return view('menuiserie360::finance.factures.show', [
+            'invoice' => $invoice,
+            'methodes' => MethodePaiement::cases(),
+        ]);
+    }
+
+    /**
+     * P3-2 — Enregistre un paiement (manual entry / Mobile Money).
+     */
+    public function recordPayment(
+        Request $request,
+        RecordPaymentAction $recordAction,
+        string $slug,
+        int|string $invoice,
+    ): RedirectResponse {
+        $invoice = MenuiserieInvoice::findOrFail($invoice);
+
+        $data = $request->validate([
+            'amount' => 'required|numeric|min:0.01',
+            'method' => ['required', 'string'],
+            'gateway' => 'nullable|string|max:50',
+            'transaction_ref' => 'nullable|string|max:100',
+            'idempotency_key' => 'nullable|string|max:128',
+        ]);
+
+        $recordAction->execute($invoice, [
+            'amount' => (float) $data['amount'],
+            'method' => $data['method'],
+            'gateway' => $data['gateway'] ?? null,
+            'transaction_ref' => $data['transaction_ref'] ?? null,
+            'idempotency_key' => $data['idempotency_key'] ?? null,
+        ]);
+
+        return redirect()
+            ->route('menuiserie.factures.show', ['slug' => $slug, 'invoice' => $invoice->getKey()])
+            ->with('success', 'Paiement enregistré.');
     }
 }

@@ -15,6 +15,43 @@
             <p><strong>Payé :</strong> {{ number_format((float) $invoice->paid_amount, 2, ',', ' ') }} XOF</p>
             <p><strong>Restant dû :</strong> {{ number_format($invoice->dueAmount(), 2, ',', ' ') }} XOF</p>
 
+            @if ($invoice->status !== 'paid_full' && $invoice->status !== 'cancelled')
+                <hr/>
+                <h5>Enregistrer un paiement</h5>
+                <form method="POST" action="{{ route('menuiserie.factures.payments.store', ['slug' => request()->route('slug'), 'invoice' => $invoice->id]) }}" class="row g-2 mb-3">
+                    @csrf
+                    <div class="col-md-3">
+                        <label class="form-label small">Montant (XOF)</label>
+                        <input type="number" name="amount" step="0.01" min="0.01" max="{{ $invoice->dueAmount() }}" required class="form-control"/>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small">Méthode</label>
+                        <select name="method" required class="form-select">
+                            @foreach ($methodes as $m)
+                                <option value="{{ $m->value }}">{{ $m->value }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small">Gateway (Mobile Money)</label>
+                        <select name="gateway" class="form-select">
+                            <option value="">—</option>
+                            <option value="cinetpay">CinetPay</option>
+                            <option value="mtn_momo">MTN MoMo</option>
+                            <option value="orange_money">Orange Money</option>
+                            <option value="wave">Wave</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small">Réf. transaction</label>
+                        <input type="text" name="transaction_ref" maxlength="100" class="form-control"/>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button class="btn btn-success w-100">Enregistrer</button>
+                    </div>
+                </form>
+            @endif
+
             <h5 class="mt-4">Paiements ({{ $invoice->payments->count() }})</h5>
             @if ($invoice->payments->count() === 0)
                 <p class="text-muted">Aucun paiement enregistré.</p>
