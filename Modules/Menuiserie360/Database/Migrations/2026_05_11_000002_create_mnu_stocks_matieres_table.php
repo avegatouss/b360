@@ -33,20 +33,21 @@ return new class extends Migration
 
             $table->unique(['instance_id', 'matiere_id'], 'mnu_stocks_instance_matiere_unique');
             $table->index(['instance_id'], 'mnu_stocks_instance_idx');
-
-            // Garde-fou applicatif via migration : quantité ne peut être négative.
-            // Pattern hérité d'ADR-004 wallet integrity (CHECK SGBD MySQL/PG, no-op SQLite).
-            $driver = Schema::getConnection()->getDriverName();
-            if (in_array($driver, ['mysql', 'pgsql'], true)) {
-                $tableName = 'mnu_stocks_matieres';
-                Schema::getConnection()->statement(
-                    "ALTER TABLE {$tableName} ADD CONSTRAINT mnu_stocks_qte_actuelle_non_neg CHECK (quantite_actuelle >= 0)"
-                );
-                Schema::getConnection()->statement(
-                    "ALTER TABLE {$tableName} ADD CONSTRAINT mnu_stocks_qte_reservee_non_neg CHECK (quantite_reservee >= 0)"
-                );
-            }
         });
+
+        // Garde-fou applicatif via migration : quantité ne peut être négative.
+        // Pattern hérité d'ADR-004 wallet integrity (CHECK SGBD MySQL/PG, no-op SQLite).
+        // Doit être exécuté APRÈS Schema::create() — sur MySQL le Blueprint est
+        // différé, la table n'existe pas encore à l'intérieur du closure.
+        $driver = Schema::getConnection()->getDriverName();
+        if (in_array($driver, ['mysql', 'pgsql'], true)) {
+            Schema::getConnection()->statement(
+                'ALTER TABLE mnu_stocks_matieres ADD CONSTRAINT mnu_stocks_qte_actuelle_non_neg CHECK (quantite_actuelle >= 0)'
+            );
+            Schema::getConnection()->statement(
+                'ALTER TABLE mnu_stocks_matieres ADD CONSTRAINT mnu_stocks_qte_reservee_non_neg CHECK (quantite_reservee >= 0)'
+            );
+        }
     }
 
     public function down(): void
