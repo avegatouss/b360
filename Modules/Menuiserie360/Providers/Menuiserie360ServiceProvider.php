@@ -28,10 +28,14 @@ final class Menuiserie360ServiceProvider extends ServiceProvider
 
         // Bindings internes : interfaces Menuiserie360 → implémentations.
         // P1-3 : StockMatiereService implémente StockContract.
-        // P1-5 : ClientMenuiserieRepository à brancher au commit P1-5.
+        // P1-5 : ClientMenuiserieRepository implémente ClientRepositoryContract.
         $this->app->singleton(
             \Modules\Menuiserie360\Domain\Stock\Contracts\StockContract::class,
             \Modules\Menuiserie360\Domain\Stock\Services\StockMatiereService::class,
+        );
+        $this->app->singleton(
+            \Modules\Menuiserie360\Domain\Client\Contracts\ClientRepositoryContract::class,
+            \Modules\Menuiserie360\Domain\Client\Repositories\ClientMenuiserieRepository::class,
         );
     }
 
