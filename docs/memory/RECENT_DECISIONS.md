@@ -1,9 +1,45 @@
 # RECENT_DECISIONS — B360
 
-> Décisions structurantes récentes. Mise à jour : **2026-05-11** (Menuiserie360 P2-A backend livré).
+> Décisions structurantes récentes. Mise à jour : **2026-05-11** (Menuiserie360 P2-B core UI livré).
 > Pour les décisions complètes argumentées, voir `docs/adr/`.
 
 ---
+
+## 2026-05-11 — Menuiserie360 P2-B core UI livré (Routes + 8 Controllers + 17 Views)
+
+- **Décision** : exécution du lot P2-B core UI (deuxième moitié de la Phase 2 spec v1.3 §3, après P2-A backend). Couvre les sous-tâches P2-1, P2-5, P2-9, P2-12, P2-13, P2-15 spec en mode **MVP fonctionnel** (UI minimale exploitable, conventions Bootstrap 5 héritées du Core, pas de PDF binaire en V1).
+- **Lot livré (1 commit massif sur branche `feat/menuiserie360-p2b-ui-core`)** :
+  - `Modules/Menuiserie360/Routes/web.php` — 8 groupes BC scopés sous `/i/{slug}/menuiserie/` avec middleware standard B360 (`auth`, `instance`, `instance.membership`, `spatie.team`) + permissions Spatie par route (`can:menuiserie.<bc>.<action>`)
+  - 8 Controllers (`Http/Controllers/<BC>/`) : DevisController (le plus complet : index/show/create/store/accepter/pdf, atomic numbering inline DEV-YYYY-NNNN), BonCommandeController, OrdreFabricationController (lancer + terminer + réservation matières via BesoinMatiereService), ChantierController (avancer étapes), StockMatiereController (recevoir entrées), FactureMenuiserieController, ClientController (consomme `ClientRepositoryContract` ADR-021), DashboardMenuiserieController (6 KPIs MVP)
+  - 17 Views Blade (`Resources/views/`) : `components/layout.blade.php` shared (wrap `x-core::layouts.master`), 4 vues Devis (index/show/create/pdf imprimable), 2 vues BC, 2 vues OF (avec disponibilité matières via service), 2 vues Chantier (avec barre de progression), 2 vues Stock (avec form réception), 2 vues Factures, 2 vues Clients, 1 dashboard
+- **Validation pipeline** :
+  - ✅ Pint passé sur tous les fichiers
+  - ✅ PHPStan : 0 erreur sur tout le module
+  - ✅ Deptrac : pas de violation Menuiserie360 (vérifié hérité)
+  - ⚠️ Tests Controllers : **non livrés en P2-B core** (différés à P2-B-2 ou P2-C). Les tests unitaires backend (P0+P1+P2-A = 81 tests) couvrent les invariants critiques du domaine, et les actions cross-BC sont testées par `WorkflowDevisToInvoiceTest`. Les tests Controllers ajoutent surtout de la couverture HTTP + permissions + middleware — utiles mais non bloquants pour MVP exploration.
+- **Décisions techniques de simplification MVP** :
+  - **PDF Devis V1 = view HTML imprimable** (pas de binaire PDF). Raison : `barryvdh/laravel-dompdf` n'est pas installé dans Composer. Décision documentée dans le PHPDoc de `DevisController::pdf()` — V2 = ajouter la dépendance Composer + remplacer le retour par `Pdf::loadView()->download()`. Le template HTML existant (`devis/pdf.blade.php`) est déjà compatible DomPDF (style inline, pas de JS).
+  - **Pas de `billing.feature` gating** sur les routes Menuiserie360 en MVP. Raison : aucun `BillableFeature` Menuiserie360 n'est encore enregistré dans HookRegistry (le plan Billing n'est pas configuré pour ce module). Sécurité = permissions Spatie uniquement (via `can:menuiserie.xxx`). À ajouter dans un lot dédié quand l'humain configurera les Plans Billing.
+  - **Pas de FormRequest classes** — pattern Eshop360 : `Request::validate()` inline dans le Controller. Cohérent avec le reste du codebase, moins de fichiers à maintenir.
+  - **Upload photos chantier (P2-13 spec) déféré** à P2-B-2 — nécessite `spatie/laravel-medialibrary` + UI drag&drop. Le modèle Chantier est prêt à l'accueillir (relation MorphMany à ajouter).
+  - **Bibliothèque produits CRUD UI déféré** : le model TypeProduitMenuiserie + migration sont en P2-A, mais l'UI de gestion (CRUD) viendra en P2-B-2 quand un cas d'usage concret se présente.
+- **Statut Menuiserie360 module global après P2-B core** :
+  - 7 sous-domaines `Domain/<Sub>/` actifs (inchangé vs P2-A)
+  - 13 migrations `mnu_*` (inchangé vs P2-A)
+  - **8 Controllers HTTP** + **17 Views Blade** + **1 layout component**
+  - **Routes complètes** pour les 6 BC fonctionnels
+  - 0 controller test — couvert par les 81 tests backend
+- **Hors scope P2-B core (à venir P2-B-2 ou P2-C)** :
+  - Tests Controllers (HTTP + auth + permissions + scoping multi-tenant)
+  - PDF binaire DomPDF (dépendance Composer à ajouter)
+  - Upload photos chantier (MediaLibrary)
+  - CRUD UI TypeProduitMenuiserie (bibliothèque produits)
+  - Webhooks Mobile Money (CinetPay/MTN/Orange) endpoints
+  - Listener `CreateOrdreFabricationOnBonCommandeCreee` (auto-création OF à la validation BC)
+  - Listener `CreateFactureFinaleOnChantierTermine` (P3 spec)
+  - UI riche de saisie Devis (drag-drop lignes, autocomplete matières, etc.)
+- **Source** : branche `feat/menuiserie360-p2b-ui-core` (basée sur `feat/menuiserie360-p2a-backend-core`). À merger après P2-A.
+- **Suite recommandée** : Menuiserie360 **P2-B-2 tests + UX polishing** OU passage direct à **P3 Finance & Reporting avancés** (semaines 8-9 spec) selon priorité business.
 
 ## 2026-05-11 — Menuiserie360 P2-A livré : MVP backend (models + orchestration cross-BC)
 
