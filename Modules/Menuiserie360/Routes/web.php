@@ -9,6 +9,7 @@ use Modules\Menuiserie360\Http\Controllers\Client\ClientController;
 use Modules\Menuiserie360\Http\Controllers\Commercial\DevisController;
 use Modules\Menuiserie360\Http\Controllers\Commercial\TypeProduitController;
 use Modules\Menuiserie360\Http\Controllers\Finance\FactureMenuiserieController;
+use Modules\Menuiserie360\Http\Controllers\Imports\ImportController;
 use Modules\Menuiserie360\Http\Controllers\Production\OrdreFabricationController;
 use Modules\Menuiserie360\Http\Controllers\Reporting\DashboardMenuiserieController;
 use Modules\Menuiserie360\Http\Controllers\Sales\BonCommandeController;
@@ -145,6 +146,12 @@ Route::middleware([
         Route::get('/alertes', [AlerteController::class, 'index'])
             ->middleware('can:menuiserie.report.view')
             ->name('alertes.index');
+
+        // ─── M-UI-9 : Imports CSV ───────────────────────────────
+        Route::prefix('imports')->name('imports.')->middleware('can:menuiserie.stock.matiere.manage')->group(function () {
+            Route::get('/', [ImportController::class, 'index'])->name('index');
+            Route::post('/matieres', [ImportController::class, 'uploadMatieres'])->name('matieres.upload');
+        });
 
         // ─── BC-Commercial : Bibliothèque types produits (P2-C) ──
         Route::prefix('types-produits')->name('types-produits.')->middleware('can:menuiserie.devis.view')->group(function () {

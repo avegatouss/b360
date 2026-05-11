@@ -205,6 +205,48 @@ final class MenuiserieControllersTest extends TestCase
             ->assertOk();
     }
 
+    public function test_super_admin_can_access_imports_page(): void
+    {
+        $this->actingAs($this->superAdmin)
+            ->get(route('menuiserie.imports.index', ['slug' => $this->slug()]))
+            ->assertOk();
+    }
+
+    public function test_csv_import_creates_matieres_and_reports_errors(): void
+    {
+        // CSV avec 2 lignes valides + 1 ligne invalide (categorie inconnue).
+        $csv = "code,designation,categorie,unite,prix_unitaire,seuil_alerte\n"
+            ."CSV-001,Profil import 1,profile_alu,m_lineaire,3000,40\n"
+            ."CSV-002,Verre import 1,vitrage,m2,9000,15\n"
+            ."CSV-BAD,Désignation OK,categorie_inconnue,m_lineaire,1000,10\n";
+
+        $tmp = tempnam(sys_get_temp_dir(), 'mnu_import_test_');
+        file_put_contents($tmp, $csv);
+
+        $file = new \Illuminate\Http\Testing\File('import.csv', fopen($tmp, 'r'));
+
+        $response = $this->actingAs($this->superAdmin)
+            ->post(route('menuiserie.imports.matieres.upload', ['slug' => $this->slug()]), [
+                'file' => $file,
+            ]);
+
+        $response->assertRedirect(route('menuiserie.imports.index', ['slug' => $this->slug()]));
+
+        $this->assertDatabaseHas('mnu_matieres_premieres', [
+            'instance_id' => $this->instance->id,
+            'code' => 'CSV-001',
+        ]);
+        $this->assertDatabaseHas('mnu_matieres_premieres', [
+            'instance_id' => $this->instance->id,
+            'code' => 'CSV-002',
+        ]);
+        $this->assertDatabaseMissing('mnu_matieres_premieres', [
+            'code' => 'CSV-BAD',
+        ]);
+
+        @unlink($tmp);
+    }
+
     // ─── Devis happy path : create + accept ────────────────────────
 
     public function test_super_admin_can_store_devis_and_show_it(): void
