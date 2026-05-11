@@ -208,17 +208,19 @@ final class MenuiserieControllersTest extends TestCase
         $this->assertSame($invoice->getKey(), $bc->fresh()->getAttribute('facture_acompte_id'));
     }
 
-    // ─── Devis PDF returns view (HTML printable v1) ────────────────
+    // ─── Devis PDF returns binary PDF via DomPDF (P2-C step 3) ─────
 
     public function test_super_admin_can_download_devis_pdf(): void
     {
         $customer = $this->makeCustomer();
         $devis = $this->makeDevis($customer->getKey());
 
-        $this->actingAs($this->superAdmin)
-            ->get(route('menuiserie.devis.pdf', ['slug' => $this->slug(), 'devis' => $devis->getKey()]))
-            ->assertOk()
-            ->assertSee($devis->getAttribute('numero'));
+        $response = $this->actingAs($this->superAdmin)
+            ->get(route('menuiserie.devis.pdf', ['slug' => $this->slug(), 'devis' => $devis->getKey()]));
+
+        $response->assertOk();
+        $this->assertSame('application/pdf', $response->headers->get('Content-Type'));
+        $this->assertStringStartsWith('%PDF-', (string) $response->getContent());
     }
 
     // ─── Stock recevoir (entrée fournisseur) ───────────────────────

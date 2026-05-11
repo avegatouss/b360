@@ -1,7 +1,43 @@
 # RECENT_DECISIONS — B360
 
-> Décisions structurantes récentes. Mise à jour : **2026-05-11** (Menuiserie360 P2-B core UI livré).
+> Décisions structurantes récentes. Mise à jour : **2026-05-11** (Menuiserie360 P2-C — DomPDF + MediaLibrary + CRUD TypeProduit).
 > Pour les décisions complètes argumentées, voir `docs/adr/`.
+
+---
+
+## 2026-05-11 — Menuiserie360 P2-C livré (DomPDF + MediaLibrary + CRUD TypeProduit)
+
+- **Décision** : exécution du lot P2-C (clôture des reports MVP listés dans P2-B core et P2-B-3). Trois axes :
+  1. **CRUD TypeProduit** : controller + 4 vues Blade (index/show/create/edit) + 6 tests HTTP (validation, archive soft-delete, store/update happy path).
+  2. **PDF binaire Devis** : `barryvdh/laravel-dompdf:^3.0` ajouté ; `DevisController::pdf()` retourne désormais un `Response` PDF/A4 portrait via `Pdf::loadView()->download()` ; test mis à jour pour asserter `Content-Type: application/pdf` + signature `%PDF-`.
+  3. **Photos avancement chantier** : `spatie/laravel-medialibrary:^11.0` ajouté ; modèle `Chantier` implémente `HasMedia` + collection `'avancement'` (JPEG/PNG/WebP, max 8 Mo) ; controller `uploadPhoto`/`deletePhoto` + UI dans `chantier/show.blade.php` (form upload + grid responsive).
+- **Lot livré (commits sur branche `feat/menuiserie360-p2c-deps-typeproduit`)** :
+  - `a7b5dbf` — P2-C step 1 CRUD TypeProduit (controller + 4 views + 6 tests + routes).
+  - Commit P2-C step 2+3 (à venir) — composer + Chantier HasMedia + DevisController PDF + UI upload.
+- **Validation pipeline** :
+  - ✅ Pint passé.
+  - ✅ PHPStan : 0 erreur sur tout le module Menuiserie360.
+  - ✅ Tests : **105 verts (236 assertions)** — 99 P2-B-3 + 6 nouveaux TypeProduit. Test PDF mis à jour pour binary.
+- **Décisions techniques** :
+  - **Migration `media` table déplacée vers `Modules/Menuiserie360/Database/Migrations/`** au lieu de `database/migrations/`. Raison : la table doit vivre sur la connection instance (où vivent les modèles `Chantier`), pas sur la connection système. Cohérent avec les 13 migrations `mnu_*` existantes.
+  - **`Chantier::registerMediaCollections()`** déclare `'avancement'` avec `acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp'])` — pas de PDF/vidéo en V1, pas de conversions (vignettes, etc.) pour limiter la complexité d'install (besoin imagick/gd).
+  - **TypeProduit permissions** : protection via `can:menuiserie.devis.view` (lecture). Création/édition par instance-admin via Gate::before super-admin (pas de feature dédiée création). Cohérent avec la nature "bibliothèque admin" du modèle.
+  - **DomPDF stream** : utilisation de `download()` (transient, pas de stockage local). Pour V2 archivage (cf. P3 Finance), bascule en `save()` + lien MediaLibrary.
+- **S-7 multi-DB déjà connu** : `php artisan migrate` échoue toujours (migrations Menuiserie360 ciblent system DB par défaut au lieu d'instance DB) — non corrigé dans P2-C, à traiter en lot dédié.
+- **Hors scope P2-C, à venir P3** :
+  - Facturation finale depuis Chantier terminé.
+  - Suivi paiements Mobile Money (CinetPay/MTN/Orange).
+  - Export comptable + Journal ventes.
+  - Dashboards Direction et Opérationnel enrichis.
+  - Relances automatiques.
+
+---
+
+## 2026-05-11 — Menuiserie360 P2-B-3 livré (Tests Controllers HTTP)
+
+- **Décision** : finalisation des tests HTTP des 8 Controllers déférés en P2-B core. 18 tests / 46 assertions passent — couverture auth + permissions + middleware + happy paths workflows (devis store/accepter, OF lancer/terminer, chantier avancer, stock recevoir).
+- **Root cause fix critique** : Laravel passe les params de route positionnellement quand les noms ne matchent pas — d'où des controllers recevant `$devis = "root"` (le slug). Fix : ajout de `string $slug` comme premier param sur 13 méthodes controllers (DevisController, BonCommandeController, etc.). Pattern à appliquer systématiquement pour tout controller avec routes scopées `/i/{slug}/`.
+- **Commit** : `1ef49cf` sur branche `feat/menuiserie360-p2b3-controller-tests`.
 
 ---
 

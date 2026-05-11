@@ -11,16 +11,18 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Core\Database\Traits\BelongsToInstance;
 use Modules\Menuiserie360\Domain\Sales\Models\BonCommande;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
 /**
  * P2-11 — Chantier de pose menuiserie.
  *
  * @phpstan-type ChantierFactory \Illuminate\Database\Eloquent\Factories\Factory<\Modules\Menuiserie360\Domain\Chantier\Models\Chantier>
  */
-class Chantier extends Model
+class Chantier extends Model implements HasMedia
 {
     /** @use HasFactory<ChantierFactory> */
-    use BelongsToInstance, HasFactory, SoftDeletes;
+    use BelongsToInstance, HasFactory, InteractsWithMedia, SoftDeletes;
 
     protected $table = 'mnu_chantiers';
 
@@ -63,5 +65,11 @@ class Chantier extends Model
     public function etapes(): HasMany
     {
         return $this->hasMany(EtapeChantier::class, 'chantier_id');
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('avancement')
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
     }
 }

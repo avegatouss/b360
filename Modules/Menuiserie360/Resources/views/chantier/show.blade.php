@@ -10,6 +10,47 @@
         </div>
     </div>
 
+    <div class="card mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span>Photos avancement ({{ $chantier->getMedia('avancement')->count() }})</span>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ route('menuiserie.chantiers.photos.upload', ['slug' => request()->route('slug'), 'chantier' => $chantier->id]) }}" enctype="multipart/form-data" class="row g-2 mb-3 align-items-end">
+                @csrf
+                <div class="col-md-6">
+                    <label class="form-label small">Photo (JPG/PNG/WebP, max 8 Mo)</label>
+                    <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" required class="form-control"/>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small">Légende</label>
+                    <input type="text" name="legende" maxlength="200" class="form-control" placeholder="Ex : pose fenêtre cuisine"/>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-primary w-100">Téléverser</button>
+                </div>
+            </form>
+            <div class="row g-2">
+                @forelse ($chantier->getMedia('avancement') as $photo)
+                    <div class="col-md-3">
+                        <div class="card">
+                            <img src="{{ $photo->getUrl() }}" alt="{{ $photo->name }}" class="card-img-top" style="object-fit:cover;height:160px;"/>
+                            <div class="card-body p-2">
+                                <small class="d-block text-muted">{{ $photo->getCustomProperty('legende') ?: $photo->name }}</small>
+                                <small class="text-muted">{{ $photo->created_at->format('Y-m-d H:i') }}</small>
+                                <form method="POST" action="{{ route('menuiserie.chantiers.photos.delete', ['slug' => request()->route('slug'), 'chantier' => $chantier->id, 'media' => $photo->id]) }}" class="mt-1">
+                                    @csrf @method('DELETE')
+                                    <button class="btn btn-sm btn-link text-danger p-0" onclick="return confirm('Supprimer cette photo ?')">Supprimer</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                @empty
+                    <p class="text-muted small col-12">Aucune photo. Téléversez la première photo d'avancement.</p>
+                @endforelse
+            </div>
+        </div>
+    </div>
+
     <div class="card">
         <div class="card-header">Étapes ({{ $chantier->etapes->count() }})</div>
         <div class="card-body p-0">

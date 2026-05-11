@@ -85,6 +85,8 @@ Route::middleware([
         });
         Route::middleware('can:menuiserie.chantier.update')->group(function () {
             Route::post('/chantiers/{chantier}/avancer', [ChantierController::class, 'avancer'])->name('chantiers.avancer');
+            Route::post('/chantiers/{chantier}/photos', [ChantierController::class, 'uploadPhoto'])->name('chantiers.photos.upload');
+            Route::delete('/chantiers/{chantier}/photos/{media}', [ChantierController::class, 'deletePhoto'])->name('chantiers.photos.delete');
         });
 
         // ─── BC-Stock : Matières premières ───────────────────────

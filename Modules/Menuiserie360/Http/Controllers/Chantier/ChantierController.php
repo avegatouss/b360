@@ -67,4 +67,34 @@ final class ChantierController extends Controller
             ->route('menuiserie.chantiers.show', ['slug' => $request->route('slug'), 'chantier' => $chantier->getKey()])
             ->with('success', 'Avancement enregistré.');
     }
+
+    public function uploadPhoto(Request $request, string $slug, int|string $chantier): RedirectResponse
+    {
+        $chantier = Chantier::findOrFail($chantier);
+
+        $request->validate([
+            'photo' => 'required|file|image|max:8192',
+            'legende' => 'nullable|string|max:200',
+        ]);
+
+        $chantier->addMedia($request->file('photo'))
+            ->withCustomProperties(['legende' => $request->input('legende', '')])
+            ->toMediaCollection('avancement');
+
+        return redirect()
+            ->route('menuiserie.chantiers.show', ['slug' => $slug, 'chantier' => $chantier->getKey()])
+            ->with('success', 'Photo ajoutée.');
+    }
+
+    public function deletePhoto(string $slug, int|string $chantier, int|string $media): RedirectResponse
+    {
+        $chantier = Chantier::findOrFail($chantier);
+
+        $mediaItem = $chantier->media()->findOrFail($media);
+        $mediaItem->delete();
+
+        return redirect()
+            ->route('menuiserie.chantiers.show', ['slug' => $slug, 'chantier' => $chantier->getKey()])
+            ->with('success', 'Photo supprimée.');
+    }
 }

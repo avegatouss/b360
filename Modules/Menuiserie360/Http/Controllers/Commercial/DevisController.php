@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Modules\Menuiserie360\Http\Controllers\Commercial;
 
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
 use Modules\Core\Support\CurrentInstance;
@@ -143,17 +145,19 @@ final class DevisController extends Controller
     }
 
     /**
-     * Sortie imprimable du devis (HTML print-friendly).
+     * Génération PDF du devis via DomPDF (P2-C step 3).
      *
-     * V1 : retourne une vue HTML stylée pour impression navigateur (Ctrl+P).
-     * V2 (P2-B-2) : remplacement par génération PDF DomPDF (`barryvdh/laravel-dompdf`)
-     * une fois la dépendance Composer ajoutée par l'humain.
+     * Format A4 portrait. Le téléchargement utilise stream() pour éviter
+     * de matérialiser le fichier sur disque (S3 / pas de stockage local
+     * requis pour cet artefact transient).
      */
-    public function pdf(string $slug, int|string $devis): View
+    public function pdf(string $slug, int|string $devis): Response
     {
         $devis = Devis::query()->with('lignes')->findOrFail($devis);
 
-        return view('menuiserie360::commercial.devis.pdf', compact('devis'));
+        return Pdf::loadView('menuiserie360::commercial.devis.pdf', compact('devis'))
+            ->setPaper('A4', 'portrait')
+            ->download("devis-{$devis->getAttribute('numero')}.pdf");
     }
 
     private function generateNumero(int $instanceId): string
