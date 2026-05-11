@@ -1,4 +1,11 @@
 <x-menuiserie360::layout title="Stock matières premières">
+    <x-menuiserie360::filter-bar
+        :action="route('menuiserie.stocks.index', ['slug' => request()->route('slug')])"
+        :status-options="$categories"
+        status-param="categorie"
+        status-label="Catégorie"
+        search-placeholder="Code ou désignation…"
+    />
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <span>Catalogue matières</span>

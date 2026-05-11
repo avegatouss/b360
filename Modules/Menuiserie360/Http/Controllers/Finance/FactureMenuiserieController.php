@@ -34,6 +34,7 @@ final class FactureMenuiserieController extends Controller
         $invoices = MenuiserieInvoice::query()
             ->when($request->statut, fn ($q, $s) => $q->where('status', $s))
             ->when($request->type, fn ($q, $t) => $q->where('type', $t))
+            ->when($request->search, fn ($q, $s) => $q->where('invoice_number', 'like', "%{$s}%"))
             ->orderByDesc('created_at')
             ->paginate(20)
             ->withQueryString();

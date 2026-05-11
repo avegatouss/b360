@@ -1,4 +1,9 @@
 <x-menuiserie360::layout title="Devis menuiserie">
+    <x-menuiserie360::filter-bar
+        :action="route('menuiserie.devis.index', ['slug' => request()->route('slug')])"
+        :status-options="$statuts"
+        search-placeholder="Numéro de devis…"
+    />
     <div class="card">
         <div class="card-header d-flex justify-content-between">
             <span>Liste des devis</span>

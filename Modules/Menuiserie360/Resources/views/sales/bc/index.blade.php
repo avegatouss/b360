@@ -1,4 +1,9 @@
 <x-menuiserie360::layout title="Bons de commande">
+    <x-menuiserie360::filter-bar
+        :action="route('menuiserie.bc.index', ['slug' => request()->route('slug')])"
+        :status-options="$statuts"
+        search-placeholder="Numéro de BC…"
+    />
     <div class="card">
         <div class="card-body">
             <table class="table">

@@ -31,6 +31,7 @@ final class ChantierController extends Controller
 
         $chantiers = Chantier::query()
             ->when($request->statut, fn ($q, $s) => $q->where('statut', $s))
+            ->when($request->search, fn ($q, $s) => $q->where('numero', 'like', "%{$s}%"))
             ->orderByDesc('created_at')
             ->paginate(20)
             ->withQueryString();

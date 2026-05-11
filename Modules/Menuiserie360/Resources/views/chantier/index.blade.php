@@ -1,4 +1,9 @@
 <x-menuiserie360::layout title="Chantiers">
+    <x-menuiserie360::filter-bar
+        :action="route('menuiserie.chantiers.index', ['slug' => request()->route('slug')])"
+        :status-options="$statuts"
+        search-placeholder="Numéro de chantier…"
+    />
     <div class="card">
         <div class="card-body">
             <table class="table">

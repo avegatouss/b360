@@ -1,4 +1,9 @@
 <x-menuiserie360::layout title="Ordres de fabrication">
+    <x-menuiserie360::filter-bar
+        :action="route('menuiserie.production.index', ['slug' => request()->route('slug')])"
+        :status-options="$statuts"
+        search-placeholder="Numéro d'OF…"
+    />
     <div class="card">
         <div class="card-body">
             <table class="table">

@@ -28,6 +28,7 @@ final class BonCommandeController extends Controller
         $bcs = BonCommande::query()
             ->when($request->statut, fn ($q, $s) => $q->where('statut', $s))
             ->when($request->client_id, fn ($q, $c) => $q->where('client_id', $c))
+            ->when($request->search, fn ($q, $s) => $q->where('numero', 'like', "%{$s}%"))
             ->orderByDesc('created_at')
             ->paginate(20)
             ->withQueryString();

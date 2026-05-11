@@ -1,4 +1,9 @@
 <x-menuiserie360::layout title="Factures menuiserie">
+    <x-menuiserie360::filter-bar
+        :action="route('menuiserie.factures.index', ['slug' => request()->route('slug')])"
+        :status-options="$statuts"
+        search-placeholder="Numéro de facture…"
+    />
     <div class="card">
         <div class="card-body">
             <table class="table">
