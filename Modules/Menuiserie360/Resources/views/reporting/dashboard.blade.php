@@ -48,6 +48,75 @@
                 </div>
             </div>
         </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="text-muted">Encaissé (mois)</h6>
+                    <p class="h3 mb-0 text-success">{{ number_format($kpis['encaisse_mois'], 0, ',', ' ') }} XOF</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="text-muted">Taux conversion devis (90j)</h6>
+                    <p class="h3 mb-0">{{ number_format($kpis['taux_conversion_devis_90j'], 1, ',', ' ') }} %</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mt-1">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">CA mensuel (12 derniers mois, TTC)</div>
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead><tr><th>Mois</th><th class="text-end">TTC</th><th>Bar</th></tr></thead>
+                        <tbody>
+                            @php
+                                $maxCa = max(array_column($caMensuel12m, 'ttc')) ?: 1;
+                            @endphp
+                            @foreach ($caMensuel12m as $row)
+                                <tr>
+                                    <td>{{ $row['mois'] }}</td>
+                                    <td class="text-end">{{ number_format($row['ttc'], 0, ',', ' ') }}</td>
+                                    <td><div class="progress" style="height:14px;"><div class="progress-bar" style="width: {{ $maxCa > 0 ? round($row['ttc'] / $maxCa * 100) : 0 }}%"></div></div></td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-2">
+                <div class="card-header">Top 5 clients (180j)</div>
+                <ul class="list-group list-group-flush">
+                    @forelse ($topClients as $c)
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Client #{{ $c['client_id'] }} <small class="text-muted">({{ $c['count'] }} fac.)</small></span>
+                            <strong>{{ number_format($c['ttc'], 0, ',', ' ') }}</strong>
+                        </li>
+                    @empty
+                        <li class="list-group-item text-muted">Aucune facture sur 180j.</li>
+                    @endforelse
+                </ul>
+            </div>
+            <div class="card">
+                <div class="card-header">Mix paiements (mois)</div>
+                <ul class="list-group list-group-flush">
+                    @forelse ($mixPaiements as $m)
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>{{ $m['method'] }}</span>
+                            <strong>{{ $m['share'] }}%</strong>
+                        </li>
+                    @empty
+                        <li class="list-group-item text-muted">Aucun encaissement ce mois.</li>
+                    @endforelse
+                </ul>
+            </div>
+        </div>
     </div>
 
     <div class="card mt-3">

@@ -38,9 +38,97 @@ final class DashboardMenuiserieController extends Controller
                 ->whereIn('status', ['issued', 'paid_partial'])
                 ->selectRaw('SUM(amount_ttc - paid_amount) as creances_total')
                 ->value('creances_total'),
+            'encaisse_mois' => (float) MenuiseriePayment::query()
+                ->where('instance_id', $instance->id)
+                ->where('status', 'succeeded')
+                ->where('paid_at', '>=', now()->startOfMonth())
+                ->sum('amount'),
+            'taux_conversion_devis_90j' => $this->tauxConversionDevis90j($instance->id),
         ];
 
-        return view('menuiserie360::reporting.dashboard', compact('kpis'));
+        $caMensuel12m = $this->caMensuel12m($instance->id);
+        $topClients = $this->topClientsParCa($instance->id, limit: 5);
+        $mixPaiements = $this->mixPaiementsMois($instance->id);
+
+        return view('menuiserie360::reporting.dashboard', compact('kpis', 'caMensuel12m', 'topClients', 'mixPaiements'));
+    }
+
+    /**
+     * @return array<int, array{mois: string, ttc: float}>
+     */
+    private function caMensuel12m(int $instanceId): array
+    {
+        $rows = [];
+        for ($offset = 11; $offset >= 0; $offset--) {
+            $start = now()->subMonths($offset)->startOfMonth();
+            $end = now()->subMonths($offset)->endOfMonth();
+            $sum = (float) MenuiserieInvoice::query()
+                ->where('instance_id', $instanceId)
+                ->whereBetween('issued_at', [$start, $end])
+                ->sum('amount_ttc');
+            $rows[] = ['mois' => $start->format('Y-m'), 'ttc' => $sum];
+        }
+
+        return $rows;
+    }
+
+    /**
+     * @return array<int, array{client_id: int|string, ttc: float, count: int}>
+     */
+    private function topClientsParCa(int $instanceId, int $limit): array
+    {
+        return MenuiserieInvoice::query()
+            ->where('instance_id', $instanceId)
+            ->where('issued_at', '>=', now()->subDays(180))
+            ->selectRaw('client_id, SUM(amount_ttc) as ttc, COUNT(*) as count')
+            ->groupBy('client_id')
+            ->orderByDesc('ttc')
+            ->limit($limit)
+            ->get()
+            ->map(fn ($r): array => [
+                'client_id' => $r->getAttribute('client_id'),
+                'ttc' => (float) $r->getAttribute('ttc'),
+                'count' => (int) $r->getAttribute('count'),
+            ])
+            ->all();
+    }
+
+    /**
+     * @return array<int, array{method: string, total: float, share: float}>
+     */
+    private function mixPaiementsMois(int $instanceId): array
+    {
+        $rows = MenuiseriePayment::query()
+            ->where('instance_id', $instanceId)
+            ->where('status', 'succeeded')
+            ->where('paid_at', '>=', now()->startOfMonth())
+            ->selectRaw('method, SUM(amount) as total')
+            ->groupBy('method')
+            ->get();
+
+        $totalMois = (float) $rows->sum('total');
+
+        return $rows->map(fn ($r): array => [
+            'method' => (string) $r->getAttribute('method'),
+            'total' => (float) $r->getAttribute('total'),
+            'share' => $totalMois > 0 ? round((float) $r->getAttribute('total') / $totalMois * 100, 1) : 0.0,
+        ])->all();
+    }
+
+    private function tauxConversionDevis90j(int $instanceId): float
+    {
+        $base = Devis::query()
+            ->where('instance_id', $instanceId)
+            ->where('updated_at', '>=', now()->subDays(90));
+
+        $total = (int) (clone $base)->count();
+        if ($total === 0) {
+            return 0.0;
+        }
+
+        $accepted = (int) (clone $base)->where('statut', 'accepte')->count();
+
+        return round($accepted / $total * 100, 1);
     }
 
     /**
