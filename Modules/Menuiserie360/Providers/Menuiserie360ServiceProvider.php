@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Modules\Menuiserie360\Providers;
 
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider;
+use Modules\Menuiserie360\Domain\Finance\Jobs\RelancerFacturesImpayeesJob;
 
 /**
  * Service provider principal du module Menuiserie360 (L4).
@@ -46,6 +48,24 @@ final class Menuiserie360ServiceProvider extends ServiceProvider
         $this->loadViewsFrom(__DIR__.'/../Resources/views', 'menuiserie360');
 
         $this->registerMorphMap();
+        $this->registerScheduledJobs();
+    }
+
+    /**
+     * P3-7 — Programme la relance quotidienne des factures impayées.
+     *
+     * Exécution chaque jour à 08:00 ; idempotent grâce au cooldown 7j
+     * du RelanceService → ré-exécutions silencieuses sur même invoice.
+     */
+    private function registerScheduledJobs(): void
+    {
+        $this->app->booted(function () {
+            $schedule = $this->app->make(Schedule::class);
+            $schedule->job(new RelancerFacturesImpayeesJob)
+                ->dailyAt('08:00')
+                ->name('menuiserie360.relancer.factures.impayees')
+                ->withoutOverlapping();
+        });
     }
 
     /**

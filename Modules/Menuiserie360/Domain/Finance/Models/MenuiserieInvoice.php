@@ -47,6 +47,8 @@ class MenuiserieInvoice extends Model
         'pdf_path',
         'notes',
         'created_by',
+        'relance_count',
+        'last_relance_at',
     ];
 
     protected $casts = [
@@ -56,6 +58,8 @@ class MenuiserieInvoice extends Model
         'amount_ttc' => 'decimal:2',
         'paid_amount' => 'decimal:2',
         'issued_at' => 'datetime',
+        'last_relance_at' => 'datetime',
+        'relance_count' => 'integer',
     ];
 
     /**
