@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Modules\Menuiserie360\Providers;
 
 use Modules\Core\Hooks\Contracts\RegistersHooks;
+use Modules\Core\Hooks\DTO\DemoDataProvider;
 use Modules\Core\Hooks\DTO\MenuItem;
 use Modules\Core\Hooks\DTO\PermissionGroup;
 use Modules\Core\Hooks\Registry\HookRegistry;
+use Modules\Menuiserie360\Database\Seeders\MenuiserieDemoSeeder;
 
 /**
  * Hooks Menuiserie360 — registre Core (HookRegistry + permissions Spatie).
@@ -30,6 +32,20 @@ final class Menuiserie360HooksProvider implements RegistersHooks
     {
         $this->registerMenuItems($registry);
         $this->registerPermissionGroups($registry);
+        $this->registerDemoProviders($registry);
+    }
+
+    private function registerDemoProviders(HookRegistry $registry): void
+    {
+        $registry->addDemoProvider(new DemoDataProvider(
+            id: 'menuiserie360.demo',
+            label: 'Démo Menuiserie360',
+            module: 'Menuiserie360',
+            seederClass: MenuiserieDemoSeeder::class,
+            priority: 80,
+            description: '5 matières + stocks, 3 clients, 1 devis brouillon, 1 devis accepté → BC + acompte + OF + chantier (4 étapes).',
+            category: 'metier',
+        ));
     }
 
     private function registerMenuItems(HookRegistry $registry): void
