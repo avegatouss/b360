@@ -45,18 +45,29 @@ Route::middleware([
     ->name('menuiserie.')
     ->group(function () {
         // ─── BC-Commercial : Devis ───────────────────────────────
-        Route::prefix('devis')->name('devis.')->middleware('can:menuiserie.devis.view')->group(function () {
-            Route::get('/', [DevisController::class, 'index'])->name('index');
-            Route::get('/{devis}', [DevisController::class, 'show'])->name('show');
-            Route::get('/{devis}/pdf', [DevisController::class, 'pdf'])->name('pdf');
+        // Les routes statiques (/create) doivent être déclarées AVANT les
+        // routes paramétrées (/{devis}) pour éviter que Laravel ne route
+        // /devis/create vers show() avec $devis = 'create' → 404.
+        Route::prefix('devis')->name('devis.')->group(function () {
+            // Création (permission .create) — déclarée en premier
+            Route::middleware('can:menuiserie.devis.create')->group(function () {
+                Route::get('/create', [DevisController::class, 'create'])->name('create');
+                Route::post('/', [DevisController::class, 'store'])->name('store');
+            });
+
+            // Validation BC (permission .bc.validate)
+            Route::post('/{devis}/accepter', [DevisController::class, 'accepter'])
+                ->middleware('can:menuiserie.bc.validate')
+                ->whereNumber('devis')
+                ->name('accepter');
+
+            // Lecture (permission .view) — {devis} contraint à numérique
+            Route::middleware('can:menuiserie.devis.view')->group(function () {
+                Route::get('/', [DevisController::class, 'index'])->name('index');
+                Route::get('/{devis}', [DevisController::class, 'show'])->whereNumber('devis')->name('show');
+                Route::get('/{devis}/pdf', [DevisController::class, 'pdf'])->whereNumber('devis')->name('pdf');
+            });
         });
-        Route::middleware('can:menuiserie.devis.create')->group(function () {
-            Route::get('/devis/create', [DevisController::class, 'create'])->name('devis.create');
-            Route::post('/devis', [DevisController::class, 'store'])->name('devis.store');
-        });
-        Route::post('/devis/{devis}/accepter', [DevisController::class, 'accepter'])
-            ->name('devis.accepter')
-            ->middleware('can:menuiserie.bc.validate');
 
         // ─── BC-Clients ──────────────────────────────────────────
         Route::prefix('clients')->name('clients.')->middleware('can:menuiserie.client.view')->group(function () {
