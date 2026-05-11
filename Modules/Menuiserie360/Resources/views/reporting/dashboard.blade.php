@@ -70,22 +70,8 @@
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header">CA mensuel (12 derniers mois, TTC)</div>
-                <div class="table-responsive">
-                    <table class="table table-sm mb-0">
-                        <thead><tr><th>Mois</th><th class="text-end">TTC</th><th>Bar</th></tr></thead>
-                        <tbody>
-                            @php
-                                $maxCa = max(array_column($caMensuel12m, 'ttc')) ?: 1;
-                            @endphp
-                            @foreach ($caMensuel12m as $row)
-                                <tr>
-                                    <td>{{ $row['mois'] }}</td>
-                                    <td class="text-end">{{ number_format($row['ttc'], 0, ',', ' ') }}</td>
-                                    <td><div class="progress" style="height:14px;"><div class="progress-bar" style="width: {{ $maxCa > 0 ? round($row['ttc'] / $maxCa * 100) : 0 }}%"></div></div></td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                <div class="card-body">
+                    <canvas id="caMensuelChart" height="120"></canvas>
                 </div>
             </div>
         </div>
@@ -105,16 +91,21 @@
             </div>
             <div class="card">
                 <div class="card-header">Mix paiements (mois)</div>
-                <ul class="list-group list-group-flush">
-                    @forelse ($mixPaiements as $m)
-                        <li class="list-group-item d-flex justify-content-between">
-                            <span>{{ $m['method'] }}</span>
-                            <strong>{{ $m['share'] }}%</strong>
-                        </li>
-                    @empty
-                        <li class="list-group-item text-muted">Aucun encaissement ce mois.</li>
-                    @endforelse
-                </ul>
+                <div class="card-body">
+                    @if (count($mixPaiements) > 0)
+                        <canvas id="mixPaiementsChart" height="180"></canvas>
+                        <ul class="list-group list-group-flush mt-3 small">
+                            @foreach ($mixPaiements as $m)
+                                <li class="list-group-item d-flex justify-content-between p-2">
+                                    <span>{{ $m['method'] }}</span>
+                                    <strong>{{ $m['share'] }}%</strong>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @else
+                        <p class="text-muted text-center mb-0">Aucun encaissement ce mois.</p>
+                    @endif
+                </div>
             </div>
         </div>
     </div>
@@ -139,4 +130,69 @@
             <a href="{{ route('menuiserie.reporting.operations', ['slug' => request()->route('slug')]) }}" class="btn btn-outline-info">Dashboard opérationnel</a>
         </div>
     </div>
+
+    @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // CA mensuel — bar chart
+            const caData = @json($caMensuel12m);
+            const caCanvas = document.getElementById('caMensuelChart');
+            if (caCanvas && caData.length > 0) {
+                new Chart(caCanvas, {
+                    type: 'bar',
+                    data: {
+                        labels: caData.map(r => r.mois),
+                        datasets: [{
+                            label: 'CA TTC (XOF)',
+                            data: caData.map(r => r.ttc),
+                            backgroundColor: 'rgba(13, 110, 253, 0.6)',
+                            borderColor: 'rgba(13, 110, 253, 1)',
+                            borderWidth: 1,
+                        }],
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: v => new Intl.NumberFormat('fr-FR').format(v),
+                                },
+                            },
+                        },
+                    },
+                });
+            }
+
+            // Mix paiements — donut
+            const mixData = @json($mixPaiements);
+            const mixCanvas = document.getElementById('mixPaiementsChart');
+            if (mixCanvas && mixData.length > 0) {
+                new Chart(mixCanvas, {
+                    type: 'doughnut',
+                    data: {
+                        labels: mixData.map(m => m.method),
+                        datasets: [{
+                            data: mixData.map(m => m.share),
+                            backgroundColor: [
+                                'rgba(25, 135, 84, 0.8)',
+                                'rgba(13, 110, 253, 0.8)',
+                                'rgba(255, 193, 7, 0.8)',
+                                'rgba(220, 53, 69, 0.8)',
+                                'rgba(108, 117, 125, 0.8)',
+                                'rgba(102, 16, 242, 0.8)',
+                            ],
+                        }],
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } },
+                    },
+                });
+            }
+        });
+    </script>
+    @endpush
 </x-menuiserie360::layout>
