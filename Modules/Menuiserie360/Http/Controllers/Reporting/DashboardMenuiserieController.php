@@ -8,6 +8,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\DB;
 use Modules\Core\Support\CurrentInstance;
 use Modules\Menuiserie360\Domain\Chantier\Models\Chantier;
 use Modules\Menuiserie360\Domain\Commercial\Models\Devis;
@@ -129,6 +130,54 @@ final class DashboardMenuiserieController extends Controller
         $accepted = (int) (clone $base)->where('statut', 'accepte')->count();
 
         return round($accepted / $total * 100, 1);
+    }
+
+    /**
+     * P3-6 — Dashboard opérationnel (atelier + chantier + stock).
+     */
+    public function operations(): View
+    {
+        $instance = CurrentInstance::get();
+        abort_if($instance === null, 503, 'No instance context.');
+
+        $ofsEnAttente = OrdreFabrication::query()
+            ->where('instance_id', $instance->id)
+            ->where('statut', 'en_attente')
+            ->orderBy('created_at')
+            ->limit(20)
+            ->get();
+
+        $ofsEnCours = OrdreFabrication::query()
+            ->where('instance_id', $instance->id)
+            ->where('statut', 'en_cours')
+            ->orderBy('date_demarrage')
+            ->limit(20)
+            ->get();
+
+        $chantiersEnRetard = Chantier::query()
+            ->where('instance_id', $instance->id)
+            ->whereNotIn('statut', ['termine', 'livre', 'annule'])
+            ->whereNotNull('date_fin_prevue')
+            ->where('date_fin_prevue', '<', now()->toDateString())
+            ->orderBy('date_fin_prevue')
+            ->limit(20)
+            ->get();
+
+        $stocksBas = DB::table('mnu_stocks_matieres')
+            ->join('mnu_matieres_premieres as mp', 'mp.id', '=', 'mnu_stocks_matieres.matiere_id')
+            ->where('mnu_stocks_matieres.instance_id', $instance->id)
+            ->whereColumn('mnu_stocks_matieres.quantite_actuelle', '<=', 'mp.seuil_alerte')
+            ->select('mnu_stocks_matieres.id', 'mnu_stocks_matieres.quantite_actuelle', 'mp.code as matiere_code', 'mp.designation as matiere_designation', 'mp.seuil_alerte', 'mp.unite')
+            ->orderBy('mnu_stocks_matieres.quantite_actuelle')
+            ->limit(20)
+            ->get();
+
+        return view('menuiserie360::reporting.operations', compact(
+            'ofsEnAttente',
+            'ofsEnCours',
+            'chantiersEnRetard',
+            'stocksBas',
+        ));
     }
 
     /**

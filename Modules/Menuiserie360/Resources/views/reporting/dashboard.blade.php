@@ -136,6 +136,7 @@
                 </div>
             </form>
             <a href="{{ route('menuiserie.reporting.journal', ['slug' => request()->route('slug')]) }}" class="btn btn-outline-secondary">Voir le journal ventes & paiements</a>
+            <a href="{{ route('menuiserie.reporting.operations', ['slug' => request()->route('slug')]) }}" class="btn btn-outline-info">Dashboard opérationnel</a>
         </div>
     </div>
 </x-menuiserie360::layout>
