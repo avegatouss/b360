@@ -172,6 +172,27 @@ Un namespace `Shared/Models/` héberge les modèles partagés entre modules.
 5. Tout événement publié dans `Modules/Eshop360/Events/` doit être documenté dans `docs/index/EVENT_INDEX.md` (au démarrage du premier consumer).
 6. Le morph map central reste la seule source de vérité — un module L4 qui introduit ses propres types morphiques doit ajouter ses entrées dans `Eshop360ServiceProvider::boot()` (cf. ADR-020).
 
+## Contraintes runtime — dépendance forte L4 → L3 (ajouté 2026-05-11, R-403)
+
+Les bindings des contrats (`CustomerReader → EloquentCustomerReader`, etc.) sont enregistrés dans `Eshop360ServiceProvider::register()`. Quand Eshop360 est désactivé via `modules_statuses.json`, ces bindings n'existent pas. Toute résolution DI d'un service Menuiserie360 qui type-hint un contrat Eshop360 (cf. `ClientMenuiserieRepository(__construct(CustomerReader))`) lève `BindingResolutionException` au runtime.
+
+**Mode supporté en production** : Menuiserie360 actif **implique** Eshop360 actif. Le module L4 est strictement L4-sur-L3, pas un standalone.
+
+**Mode développement** : pour permettre de bosser sur Menuiserie360 sans charger Eshop360, `Menuiserie360ServiceProvider::register()` exécute un preflight check (R-403) qui :
+
+1. Détecte l'absence des bindings `CustomerReader`/`CatalogReader`/`PricingResolver`.
+2. Log `Log::warning(...)` avec la liste des contrats manquants, une référence à R-403, et l'action attendue (réactiver Eshop360 ou désactiver Menuiserie360).
+3. **Ne bloque pas le boot** — Menuiserie360 conserve ses features autonomes (Stock matières, Production OF sans client). Toute action qui résout un repository couplé Eshop360 échouera explicitement.
+
+**Test du contrat de preflight** : `Modules/Menuiserie360/Tests/Unit/Eshop360PreflightTest` (4 tests) verrouille la liste des contrats vérifiés et la forme du message de warning.
+
+**Évolutions possibles (non décidées)** :
+
+- Module gating dur dans `ModuleController::toggle()` (refuser l'activation d'un L4 si son L3 est OFF, refuser la désactivation d'un L3 si un L4 le consomme).
+- Null adapters côté Menuiserie360 pour un mode degraded UI-only.
+
+Tout passage de l'un à l'autre fera l'objet d'un nouvel ADR.
+
 ## Références
 
 - [ADR-008](ADR-008-eshop360-subdomain-decomposition-strategy.md) — découpage Eshop360 en sous-domaines (Phase 1 hybride, Phase 2 différée).

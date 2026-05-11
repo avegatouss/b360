@@ -32,6 +32,19 @@ final class ClientMenuiserieRepositoryTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        // R-403 — ce test exige Eshop360 actif (binding CustomerReader +
+        // table eshop_customers chargée par les migrations du module). Si
+        // Eshop360 est désactivé via modules_statuses.json, on skip pour
+        // signaler explicitement la cause au lieu d'un BindingResolutionException
+        // opaque. Voir docs/memory/OPEN_RISKS.md R-403 et ADR-021 §contraintes runtime.
+        if (! $this->app->bound(CustomerReader::class)) {
+            $this->markTestSkipped(
+                'R-403 : Eshop360 désactivé — binding CustomerReader absent du container. '
+                .'Réactiver Eshop360 dans modules_statuses.json pour exécuter ce test.'
+            );
+        }
+
         Cache::flush();
 
         $instance = $this->makeRootInstance();

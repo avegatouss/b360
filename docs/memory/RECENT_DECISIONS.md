@@ -5,6 +5,17 @@
 
 ---
 
+## 2026-05-11 — R-403 : preflight check ADR-021 dans Menuiserie360ServiceProvider
+
+- **Décision** : ajout d'un preflight check au boot de `Menuiserie360ServiceProvider::register()` qui détecte l'absence des bindings Eshop360 (CustomerReader / CatalogReader / PricingResolver) et log un `Log::warning(...)` explicite mentionnant R-403 et les contrats manquants. Le boot continue (Menuiserie360 garde ses features autonomes Stock/Production), mais toute action qui touche un repository couplé Eshop360 échouera dès l'usage avec un BindingResolutionException désormais contextualisé.
+- **Déclencheur** : audit cross-module 2026-05-11 — 28 tests Menuiserie360/Currency rouges sur la branche dev quand Eshop360 est désactivé. Cause identifiée : Menuiserie360 est par design un module L4 dépendant strictement de L3 Eshop360 (ADR-021, MODULE_DEPENDENCY_MAP). Le mode « Menuiserie360 actif + Eshop360 inactif » n'est **pas** supporté en prod.
+- **Pattern choisi** : preflight check + doc, **pas** de null adapter (pollue l'archi), **pas** de module gating dur (empêche le dev en isolation).
+- **Garde anti-régression** : `Modules/Menuiserie360/Tests/Unit/Eshop360PreflightTest` (4 tests, 6 assertions) — vérifie la détection complète/partielle/absente + la forme du message warning (R-403 + FQN des contrats).
+- **Doc** : ADR-021 enrichi d'une section « Contraintes runtime — dépendance forte L4 → L3 » ; OPEN_RISKS R-403 ouvert MOYEN.
+- **Effets** : un développeur qui désactive Eshop360 pour bosser sur Menuiserie360 obtient maintenant un signal clair dans les logs au lieu d'un crash opaque à la première action client. Les 28 tests rouges restent rouges (accepté comme by-design) — réactiver Eshop360 les remet au vert.
+
+---
+
 ## 2026-05-11 — R-402 : activation des MenuItems Menuiserie360 (placeholder P0 retiré)
 
 - **Décision** : retrait des `visibleWhen: fn () => false` placeholder dans `Modules/Menuiserie360/Providers/Menuiserie360HooksProvider::registerMenuItems()`. Chaque BC pointe désormais sur sa route principale (`menuiserie.<bc>.index`) et est filtré par sa permission Spatie (`menuiserie.<bc>.<action>`). Le module est autonome côté UI — sidebar visible même si Eshop360 est désactivé.
