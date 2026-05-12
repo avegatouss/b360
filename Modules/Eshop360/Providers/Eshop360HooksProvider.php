@@ -6,8 +6,10 @@ use Modules\Core\Hooks\Contracts\RegistersHooks;
 use Modules\Core\Hooks\DTO\BillableFeature;
 use Modules\Core\Hooks\DTO\DashboardWidget;
 use Modules\Core\Hooks\DTO\DemoDataProvider;
+use Modules\Core\Hooks\DTO\LayoutSlotContribution;
 use Modules\Core\Hooks\DTO\MenuItem;
 use Modules\Core\Hooks\DTO\PermissionGroup;
+use Modules\Core\Hooks\DTO\PostEnableRedirect;
 use Modules\Core\Hooks\DTO\SettingsGroup;
 use Modules\Core\Hooks\Registry\HookRegistry;
 use Modules\Eshop360\Database\Seeders\DemoCatalogPharmaSeeder;
@@ -26,6 +28,8 @@ use Modules\Eshop360\Database\Seeders\DemoPromotionsSeeder;
 use Modules\Eshop360\Database\Seeders\DemoSettingsSeeder;
 use Modules\Eshop360\Database\Seeders\DemoSuppliersSeeder;
 use Modules\Eshop360\Database\Seeders\DemoWebhooksSeeder;
+use Modules\Eshop360\Services\EshopInitializer;
+use Modules\Eshop360\Services\EshopSettingsService;
 
 final class Eshop360HooksProvider implements RegistersHooks
 {
@@ -42,6 +46,68 @@ final class Eshop360HooksProvider implements RegistersHooks
         $this->registerSettingsGroups($registry);
         $this->registerBillableFeatures($registry);
         $this->registerDemoProviders($registry);
+        $this->registerLayoutSlots($registry);
+        $this->registerPostEnableRedirects($registry);
+    }
+
+    /**
+     * R-401-FIX S3 / ADR-022 — Contributions Eshop360 aux slots du
+     * master layout Dashboard.
+     */
+    private function registerLayoutSlots(HookRegistry $registry): void
+    {
+        // Cloche notifications (header). Visible si Eshop360 actif.
+        $registry->addLayoutSlot(new LayoutSlotContribution(
+            id: 'eshop360.header.notifications',
+            slot: 'header.notifications',
+            view: 'eshop360::layouts.notification-bell',
+            requiredModule: 'Eshop360',
+            priority: 100,
+        ));
+
+        // FAB navigation hiérarchique. Visible si Eshop360 actif ET le
+        // setting hierarchical_menu est activé pour l'instance courante.
+        $registry->addLayoutSlot(new LayoutSlotContribution(
+            id: 'eshop360.hierarchical-nav.fab',
+            slot: 'hierarchical-nav.fab',
+            view: 'eshop360::layouts.nav-fab',
+            requiredModule: 'Eshop360',
+            priority: 100,
+            visibleWhen: static function ($user, $instance): bool {
+                if ((bool) config('eshop360.hierarchical_menu')) {
+                    return true;
+                }
+                try {
+                    return (bool) app(EshopSettingsService::class)->value('general', 'hierarchical_menu', false);
+                } catch (\Throwable) {
+                    return false;
+                }
+            },
+        ));
+    }
+
+    /**
+     * R-401-FIX S3 / ADR-022 — Redirect post-activation Eshop360 vers
+     * son setup wizard si l'instance n'est pas encore initialisée.
+     *
+     * Remplace le `if ($name === 'Eshop360')` hardcodé du
+     * ModuleController::toggle (cf. R-401 mitigation).
+     */
+    private function registerPostEnableRedirects(HookRegistry $registry): void
+    {
+        $registry->addPostEnableRedirect(new PostEnableRedirect(
+            moduleName: 'Eshop360',
+            route: 'eshop360.setup.hub',
+            condition: static function ($instance): bool {
+                // L'instance est garantie non-null par ModuleController (qui
+                // abort 503 sinon avant d'invoquer la closure).
+                try {
+                    return ! app(EshopInitializer::class)->isInitialized((int) $instance->id);
+                } catch (\Throwable) {
+                    return false;
+                }
+            },
+        ));
     }
 
     private function registerDashboardWidgets(HookRegistry $registry): void
