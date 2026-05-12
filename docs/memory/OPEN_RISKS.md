@@ -14,14 +14,22 @@ _(aucun risque majeur ouvert — R-101 fermée le 2026-05-05. Voir section FERM�
 
 ## MOYEN
 
-### R-401 — Couplage dur des modules socles vers les modules métier (ouvert 2026-05-11)
+### R-401 — Couplage dur des modules socles vers les modules métier (fermé 2026-05-12)
 
 - **Source** : crash production-like découvert le 2026-05-11 sur la branche `feat/menuiserie360-p2b-ui-core`. Eshop360 désactivé via `modules_statuses.json`, le layout maître `Modules/Dashboard/Resources/views/components/layouts/master.blade.php` faisait `route('eshop360.notifications.index', …)` sans guard → `RouteNotFoundException` sur tout écran authentifié multi-instance.
 - **Constat** : violation de la règle `MODULE_DEPENDENCY_MAP` §1 (« Le Core ne dépend d'aucun module métier ») et §83 (« Créer un module qui dépend de la vue Blade d'un autre module → utiliser composants UI partagés »). 6 références cross-module détectées dans les modules socles :
   - `Modules/Dashboard/Resources/views/components/layouts/master.blade.php` lignes 186, 206, 227 (`eshop360.notifications.*`) et 325 (`eshop360.nav.home`).
   - `Modules/Dashboard/Http/Controllers/DashboardController.php:32` (`redirect()->route('eshop360.nav.home')`).
   - `Modules/ModuleManager/Http/Controllers/ModuleController.php:116` (`redirect()->route('eshop360.setup.hub')` après activation).
-- **Mitigation immédiate appliquée 2026-05-11** : chaque référence wrappée par `Route::has('<prefix>.<name>')` (PHP) ou `@if(Route::has(...))` (Blade). Le module métier peut désormais être désactivé sans crash.
+- **Résolution finale 2026-05-12 (lot R-401-FIX, 7 sous-lots S1→S7)** : passage à HookRegistry layout_slots + post_enable_redirects (cf. [ADR-022](../adr/ADR-022-layout-slots-and-post-enable-redirects.md) **Accepté**). Modules socles ne référencent plus aucune route métier en dur :
+  - S1 (`7cb0187`) — DTOs `LayoutSlotContribution` + `PostEnableRedirect` + 4 getters HookRegistry additifs. 8 tests Unit.
+  - S2 (`865dc5a`) — Composant Blade `<x-dashboard::layout-slot>` + 2 tests Feature.
+  - S3 (`dd69e1a`) — Eshop360 expose 2 layout_slots (notification-bell, nav-fab) + 1 post_enable_redirect (setup.hub). Vues extraites de master.blade.php vers Eshop360.
+  - S4 (`db26e9a`) — master.blade.php consomme les 2 slots. -81/+8 lignes. 0 `route('eshop360.*')` restante.
+  - S5 (`b603ebf`) — View::composer `$hierarchicalMenuEnabled` migré d'Eshop360ServiceProvider vers DashboardServiceProvider. Le slot lui-même devient le signal.
+  - S6 (`4043d14`) — DashboardController + ModuleController consomment `postEnableRedirect()`. Agnostiques au nom du module.
+  - S7 (présent commit) — ADR-022 statut **Accepté**, OPEN_RISKS R-401 fermé, MODULE_DEPENDENCY_MAP enrichi.
+- **Mitigation intermédiaire 2026-05-11** : `Route::has('<prefix>.<name>')` (PHP) ou `@if(Route::has(...))` (Blade) sur chaque référence. Servait de pont entre R-401 (détection 2026-05-11) et R-401-FIX (résolution 2026-05-12). Tous les guards défensifs sont retirés depuis S6.
 - **Garde anti-régression** : `Modules/Core/Tests/Unit/Architecture/NoUnguardedCrossModuleRoutesTest` scanne récursivement les 12 modules socles (Core, Auth, Users, Settings, Billing, Lang, Currency, Instances, ModuleManager, Installer, Dashboard, Demo) et échoue dès qu'un `route('<business>.…')` apparaît dans un fichier sans `Route::has('<business>.…')` correspondant. Prefixes business couverts : `eshop360`, `menuiserie360`, `ccc360`, `treso360` (extensible).
 - **Dette résiduelle** : la mitigation cache le couplage mais ne le supprime pas. La cible architecturale est de retirer ces références en passant par `HookRegistry` :
   1. **Notifications** → migrer `Modules/Eshop360/Http/Controllers/Notification/NotificationController` + ses routes vers Core ou Dashboard (les notifications Laravel sont natives, pas Eshop360-spécifiques) ; OU exposer la cloche comme `widget` via HookRegistry et laisser chaque module producteur déclarer ses propres routes.

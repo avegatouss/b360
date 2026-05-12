@@ -1,7 +1,40 @@
 # RECENT_DECISIONS — B360
 
-> Décisions structurantes récentes. Mise à jour : **2026-05-11** (R-401 : guard cross-module + test structurel).
+> Décisions structurantes récentes. Mise à jour : **2026-05-12** (R-401-FIX livré, ADR-022 Accepté).
 > Pour les décisions complètes argumentées, voir `docs/adr/`.
+
+---
+
+## 2026-05-12 — R-401-FIX livré : HookRegistry layout_slots + post_enable_redirects (ADR-022 Accepté)
+
+- **Décision** : implémentation complète du lot cadré le 2026-05-11 (commit `c15a59a`). 7 sous-lots S1→S7 livrés sur la branche `base` en une journée. ADR-022 passe de **Proposé** à **Accepté**. R-401 fermé.
+- **Résultat** :
+  - 2 nouveaux types de hook dans HookRegistry : `layout_slots` (contributions UI nommées) + `post_enable_redirects` (route post-activation module). Strictement additifs (cf. PROTECTED_AREAS L2).
+  - DTOs `LayoutSlotContribution` (id+slot+view+priority+requiredModule+requiredPermission+visibleWhen+params) et `PostEnableRedirect` (moduleName+route+condition closure+priority) ajoutés à `Modules/Core/Hooks/DTO/`.
+  - Composant `<x-dashboard::layout-slot name="..." :instance="..." />` consomme les contributions filtrées par HookFilter (`requiredModule` + `requiredPermission` + `visibleWhen`). Fragment vide si 0 contribution → pas de wrapping conditionnel côté caller.
+  - Eshop360 expose ses 3 contributions (notification-bell, nav-fab, setup.hub post-enable) via `Eshop360HooksProvider`.
+  - master.blade.php : 2 invocations du composant remplacent 81 lignes hardcodées (cloche notifications + FAB navigation hiérarchique).
+  - `$hierarchicalMenuEnabled` migré : View::composer Eshop360 retiré, le slot 'hierarchical-nav.fab' devient lui-même le signal (calcul côté `DashboardServiceProvider`).
+  - DashboardController : bloc redirect hierarchical retiré. Le user voit le dashboard widgets puis utilise le FAB. Changement d'UX subtile : 1 clic supplémentaire pour atteindre nav.home.
+  - ModuleController : `if ($name === 'Eshop360')` remplacé par boucle générique `postEnableRedirect($name)`. Agnostique au nom du module — extension Menuiserie360 / CCC360 future = ajout d'un hook, pas de refactor controller.
+- **Surface mesurée** :
+  - 0 occurrence de `route('eshop360.*')` ou `Route::has('eshop360...')` dans `Modules/{Core,Dashboard,Auth,Users,Settings,Billing,Lang,Currency,Instances,ModuleManager,Installer,Demo}/` (vérifié grep).
+  - Test structurel `NoUnguardedCrossModuleRoutesTest` reste vert trivialement (0 occurrence à scanner).
+  - `MenuVisibilityTest` (R-402) reste vert (HookFilter inchangé).
+  - `Eshop360PreflightTest` (R-403) reste vert.
+- **Tests** :
+  - 8 nouveaux Unit Core (HookRegistryLayoutSlotsTest + HookRegistryPostEnableRedirectsTest).
+  - 2 nouveaux Feature Dashboard (LayoutSlotComponentTest).
+  - Suites régression : Core 23 verts, Dashboard 8 verts, ModuleManager OK, Eshop360 contracts 13 verts, Menuiserie360 inchangé.
+- **Documentation** :
+  - [ADR-022](../adr/ADR-022-layout-slots-and-post-enable-redirects.md) — statut **Accepté**.
+  - [docs/lots/R-401-FIX-impact-analysis.md](../lots/R-401-FIX-impact-analysis.md) — IMPACT_ANALYSIS qui a guidé l'implémentation (créé S0, cadrage).
+  - OPEN_RISKS R-401 fermé.
+  - MODULE_DEPENDENCY_MAP enrichi (cf. RECENT_DECISIONS suivantes pour le lot).
+- **Contraintes futures (cf. ADR-022 §contraintes)** :
+  - Toute nouvelle contribution UI nommée passe par `addLayoutSlot()`. Plus de `@include('<module>::…')` ni `route('<business>.*')` en dur dans les modules socles.
+  - Tout nouveau wizard post-activation passe par `addPostEnableRedirect()`. Plus de `if ($name === '...')`.
+- **Phase 2 hors scope ADR-022** : déplacement physique de `NotificationController` Eshop360 vers Core/Dashboard reste différé. Acceptable car la vue `notification-bell.blade.php` vit dans Eshop360 et n'est chargée que si Eshop360 actif via `requiredModule`.
 
 ---
 

@@ -4,9 +4,9 @@
 
 ## Statut
 
-**Proposé** — 2026-05-11 (cadrage Claude, en attente d'implémentation Codex + validation humaine)
+**Accepté** — 2026-05-12 (implémentation R-401-FIX S1→S7 livrée sur la branche `base`, commits `7cb0187` → S7).
 
-Sera marqué **Accepté** au merge du sous-lot S7 du lot R-401-FIX.
+Statut initial **Proposé** — 2026-05-11.
 
 ## Contexte
 

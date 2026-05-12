@@ -57,6 +57,8 @@
 - `payment_gateways` (PaymentGatewayDefinition)
 - `demo_providers` (DemoDataProvider)
 - `notification_types`
+- `layout_slots` (LayoutSlotContribution) — contributions UI nommées dans les layouts socles (header.notifications, hierarchical-nav.fab, …). Consommé par `<x-dashboard::layout-slot name="…" :instance="…" />`. Ajouté par ADR-022 (R-401-FIX 2026-05-12).
+- `post_enable_redirects` (PostEnableRedirect) — route de redirection après activation d'un module via ModuleController (wizard de setup, page d'init). Ajouté par ADR-022.
 
 ### Via Events (recommandé pour découpler)
 - À documenter dans `docs/index/EVENT_INDEX.md`
@@ -81,29 +83,34 @@ Voir [ADR-021](../adr/ADR-021-contracts-for-future-business-modules.md) pour le 
 - ❌ `DB::table('eshop_products')` hors namespace `Eshop360` → bloqué PHPStan
 - ❌ Dupliquer un trait, modèle ou service déjà présent dans un autre module → factoriser
 - ❌ Créer un module qui dépend de la **vue Blade** d'un autre module → utiliser composants UI partagés
-- ❌ Référencer une route d'un module métier (`route('eshop360.*')`, `route('menuiserie360.*')`, etc.) depuis un module socle (L0/L1/L2) **sans guard** `Route::has(...)` → bloqué par `Modules/Core/Tests/Unit/Architecture/NoUnguardedCrossModuleRoutesTest`. Voir R-401 dans `docs/memory/OPEN_RISKS.md`.
+- ❌ Référencer une route d'un module métier (`route('eshop360.*')`, `route('menuiserie360.*')`, etc.) depuis un module socle (L0/L1/L2) → bloqué par `Modules/Core/Tests/Unit/Architecture/NoUnguardedCrossModuleRoutesTest`. Voir R-401 (fermé 2026-05-12) et [ADR-022](../adr/ADR-022-layout-slots-and-post-enable-redirects.md) pour le pattern de remplacement (HookRegistry layout_slots + post_enable_redirects).
 
-### Pattern de guard obligatoire
+### Pattern de contribution UI cross-module (ADR-022)
 
-Quand un module socle DOIT pointer vers une route d'un module métier (cas transitoire, en attendant le passage par HookRegistry) :
+Quand un module métier veut afficher du HTML dans un layout socle, il NE référence PLUS sa propre route depuis le layout. Il déclare une contribution via HookRegistry :
 
 ```php
-// PHP — contrôleur, service
-use Illuminate\Support\Facades\Route;
-
-if (Route::has('eshop360.nav.home')) {
-    return redirect()->route('eshop360.nav.home', $slug);
-}
+// Dans <Module>HooksProvider::registerLayoutSlots($registry)
+$registry->addLayoutSlot(new LayoutSlotContribution(
+    id: 'eshop360.header.notifications',
+    slot: 'header.notifications',
+    view: 'eshop360::layouts.notification-bell',
+    requiredModule: 'Eshop360',
+    visibleWhen: fn ($user, $instance) => /* condition */,
+));
 ```
+
+Le layout socle consomme en aveugle :
 
 ```blade
-{{-- Blade — vue --}}
-@if(Route::has('eshop360.notifications.index'))
-    <a href="{{ route('eshop360.notifications.index', $instance->slug) }}">…</a>
-@endif
+<x-dashboard::layout-slot name="header.notifications" :instance="$instance ?? null" />
 ```
 
-Le test structurel `NoUnguardedCrossModuleRoutesTest` exige qu'un `Route::has('<prefix>.…')` correspondant au préfixe métier appelé apparaisse dans **le même fichier** (peu importe la position, mais en pratique le bloc englobant). Couvre `eshop360`, `menuiserie360`, `ccc360`, `treso360` — étendre la constante `BUSINESS_PREFIXES` du test à chaque nouveau vertical.
+Le composant itère sur les contributions filtrées par `HookFilter` (`requiredModule`, `requiredPermission`, `visibleWhen`). 0 contribution → fragment vide → pas de wrapping conditionnel côté caller.
+
+Pour les redirections post-activation de module (wizard setup) : pattern jumeau via `addPostEnableRedirect(new PostEnableRedirect(moduleName, route, condition))`. Consommé par `ModuleController::toggle()`.
+
+Le test structurel `NoUnguardedCrossModuleRoutesTest` reste actif et exige **0 occurrence** de `route('<business>.*')` dans les modules socles. Couvre `eshop360`, `menuiserie360`, `ccc360`, `treso360` — étendre la constante `BUSINESS_PREFIXES` du test à chaque nouveau vertical.
 
 ---
 
