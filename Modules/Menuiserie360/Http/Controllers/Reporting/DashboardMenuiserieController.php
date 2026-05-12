@@ -28,30 +28,71 @@ final class DashboardMenuiserieController extends Controller
         $instance = CurrentInstance::get();
         abort_if($instance === null, 503, 'No instance context.');
 
+        $period = $this->parsePeriod($request);
+        $from = $period['from'];
+        $to = $period['to'];
+
         $kpis = [
+            // KPIs absolus (état courant, indépendant de la période)
             'devis_brouillons' => Devis::query()->where('instance_id', $instance->id)->where('statut', 'brouillon')->count(),
-            'devis_acceptes_30j' => Devis::query()->where('instance_id', $instance->id)->where('statut', 'accepte')->where('updated_at', '>=', now()->subDays(30))->count(),
             'of_en_cours' => OrdreFabrication::query()->where('instance_id', $instance->id)->where('statut', 'en_cours')->count(),
             'chantiers_en_cours' => Chantier::query()->where('instance_id', $instance->id)->where('statut', 'en_cours')->count(),
-            'ca_mois' => (float) MenuiserieInvoice::query()->where('instance_id', $instance->id)->where('issued_at', '>=', now()->startOfMonth())->sum('amount_ttc'),
             'creances' => (float) MenuiserieInvoice::query()
                 ->where('instance_id', $instance->id)
                 ->whereIn('status', ['issued', 'paid_partial'])
                 ->selectRaw('SUM(amount_ttc - paid_amount) as creances_total')
                 ->value('creances_total'),
-            'encaisse_mois' => (float) MenuiseriePayment::query()
+            // KPIs périodisés (utilisent la fenêtre $from/$to)
+            'devis_acceptes_periode' => Devis::query()->where('instance_id', $instance->id)->where('statut', 'accepte')->whereBetween('updated_at', [$from, $to])->count(),
+            'ca_periode' => (float) MenuiserieInvoice::query()->where('instance_id', $instance->id)->whereBetween('issued_at', [$from, $to])->sum('amount_ttc'),
+            'encaisse_periode' => (float) MenuiseriePayment::query()
                 ->where('instance_id', $instance->id)
                 ->where('status', 'succeeded')
-                ->where('paid_at', '>=', now()->startOfMonth())
+                ->whereBetween('paid_at', [$from, $to])
                 ->sum('amount'),
-            'taux_conversion_devis_90j' => $this->tauxConversionDevis90j($instance->id),
+            'taux_conversion_devis_periode' => $this->tauxConversionDevisPeriode($instance->id, $from, $to),
         ];
 
-        $caMensuel12m = $this->caMensuel12m($instance->id);
-        $topClients = $this->topClientsParCa($instance->id, limit: 5);
-        $mixPaiements = $this->mixPaiementsMois($instance->id);
+        $caMensuel12m = $this->caMensuel12m($instance->id); // toujours glissant 12m (lecture temporelle)
+        $topClients = $this->topClientsParCa($instance->id, $from, $to, limit: 5);
+        $mixPaiements = $this->mixPaiements($instance->id, $from, $to);
 
-        return view('menuiserie360::reporting.dashboard', compact('kpis', 'caMensuel12m', 'topClients', 'mixPaiements'));
+        return view('menuiserie360::reporting.dashboard', compact('kpis', 'caMensuel12m', 'topClients', 'mixPaiements', 'period'));
+    }
+
+    /**
+     * V1.2-1 — Parse les paramètres de période depuis la query string.
+     *
+     * Presets supportés : this-month (défaut), last-month, last-3m, last-6m,
+     * last-12m, ytd (year-to-date), custom (from/to obligatoires).
+     *
+     * @return array{preset: string, from: CarbonImmutable, to: CarbonImmutable, label: string}
+     */
+    private function parsePeriod(Request $request): array
+    {
+        $preset = (string) $request->query('preset', 'this-month');
+        $now = CarbonImmutable::now();
+
+        [$from, $to, $label] = match ($preset) {
+            'last-month' => [$now->subMonth()->startOfMonth(), $now->subMonth()->endOfMonth(), 'Mois dernier'],
+            'last-3m' => [$now->subMonths(3)->startOfMonth(), $now->endOfMonth(), '3 derniers mois'],
+            'last-6m' => [$now->subMonths(6)->startOfMonth(), $now->endOfMonth(), '6 derniers mois'],
+            'last-12m' => [$now->subMonths(12)->startOfMonth(), $now->endOfMonth(), '12 derniers mois'],
+            'ytd' => [$now->startOfYear(), $now->endOfMonth(), 'Depuis le 1er janvier'],
+            'custom' => [
+                $request->query('from') ? CarbonImmutable::parse((string) $request->query('from'))->startOfDay() : $now->startOfMonth(),
+                $request->query('to') ? CarbonImmutable::parse((string) $request->query('to'))->endOfDay() : $now->endOfMonth(),
+                'Période personnalisée',
+            ],
+            default => [$now->startOfMonth(), $now->endOfMonth(), 'Mois en cours'],
+        };
+
+        return [
+            'preset' => $preset === 'custom' || in_array($preset, ['this-month', 'last-month', 'last-3m', 'last-6m', 'last-12m', 'ytd'], true) ? $preset : 'this-month',
+            'from' => $from,
+            'to' => $to,
+            'label' => $label,
+        ];
     }
 
     /**
@@ -76,11 +117,11 @@ final class DashboardMenuiserieController extends Controller
     /**
      * @return array<int, array{client_id: int|string, ttc: float, count: int}>
      */
-    private function topClientsParCa(int $instanceId, int $limit): array
+    private function topClientsParCa(int $instanceId, CarbonImmutable $from, CarbonImmutable $to, int $limit): array
     {
         return MenuiserieInvoice::query()
             ->where('instance_id', $instanceId)
-            ->where('issued_at', '>=', now()->subDays(180))
+            ->whereBetween('issued_at', [$from, $to])
             ->selectRaw('client_id, SUM(amount_ttc) as ttc, COUNT(*) as count')
             ->groupBy('client_id')
             ->orderByDesc('ttc')
@@ -97,30 +138,30 @@ final class DashboardMenuiserieController extends Controller
     /**
      * @return array<int, array{method: string, total: float, share: float}>
      */
-    private function mixPaiementsMois(int $instanceId): array
+    private function mixPaiements(int $instanceId, CarbonImmutable $from, CarbonImmutable $to): array
     {
         $rows = MenuiseriePayment::query()
             ->where('instance_id', $instanceId)
             ->where('status', 'succeeded')
-            ->where('paid_at', '>=', now()->startOfMonth())
+            ->whereBetween('paid_at', [$from, $to])
             ->selectRaw('method, SUM(amount) as total')
             ->groupBy('method')
             ->get();
 
-        $totalMois = (float) $rows->sum('total');
+        $totalPeriode = (float) $rows->sum('total');
 
         return $rows->map(fn ($r): array => [
             'method' => (string) $r->getAttribute('method'),
             'total' => (float) $r->getAttribute('total'),
-            'share' => $totalMois > 0 ? round((float) $r->getAttribute('total') / $totalMois * 100, 1) : 0.0,
+            'share' => $totalPeriode > 0 ? round((float) $r->getAttribute('total') / $totalPeriode * 100, 1) : 0.0,
         ])->all();
     }
 
-    private function tauxConversionDevis90j(int $instanceId): float
+    private function tauxConversionDevisPeriode(int $instanceId, CarbonImmutable $from, CarbonImmutable $to): float
     {
         $base = Devis::query()
             ->where('instance_id', $instanceId)
-            ->where('updated_at', '>=', now()->subDays(90));
+            ->whereBetween('updated_at', [$from, $to]);
 
         $total = (int) (clone $base)->count();
         if ($total === 0) {

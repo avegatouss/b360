@@ -1,66 +1,105 @@
 <x-menuiserie360::layout title="Tableau de bord menuiserie">
+    @php($slug = request()->route('slug'))
+
+    {{-- V1.2-1 : barre de filtre période + drilldown KPIs --}}
+    <form method="GET" class="card mb-3" x-data="{ preset: '{{ $period['preset'] }}' }">
+        <div class="card-body py-2">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label small mb-1">Période</label>
+                    <select name="preset" x-model="preset" class="form-select form-select-sm" onchange="if (preset !== 'custom') this.form.submit()">
+                        <option value="this-month">Mois en cours</option>
+                        <option value="last-month">Mois dernier</option>
+                        <option value="last-3m">3 derniers mois</option>
+                        <option value="last-6m">6 derniers mois</option>
+                        <option value="last-12m">12 derniers mois</option>
+                        <option value="ytd">Depuis le 1er janvier</option>
+                        <option value="custom">Personnalisé</option>
+                    </select>
+                </div>
+                <div class="col-md-3" x-show="preset === 'custom'" x-cloak>
+                    <label class="form-label small mb-1">Du</label>
+                    <input type="date" name="from" value="{{ $period['from']->toDateString() }}" class="form-control form-control-sm"/>
+                </div>
+                <div class="col-md-3" x-show="preset === 'custom'" x-cloak>
+                    <label class="form-label small mb-1">Au</label>
+                    <input type="date" name="to" value="{{ $period['to']->toDateString() }}" class="form-control form-control-sm"/>
+                </div>
+                <div class="col-md-auto" x-show="preset === 'custom'" x-cloak>
+                    <button type="submit" class="btn btn-sm btn-primary">Appliquer</button>
+                </div>
+                <div class="col-md-auto ms-auto text-end">
+                    <small class="text-muted">
+                        <strong>{{ $period['label'] }}</strong> ·
+                        {{ $period['from']->format('Y-m-d') }} → {{ $period['to']->format('Y-m-d') }}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </form>
+
     <div class="row g-3">
         <div class="col-md-4">
-            <div class="card">
+            <a href="{{ route('menuiserie.devis.index', ['slug' => $slug, 'statut' => 'brouillon']) }}" class="card text-decoration-none text-dark h-100">
                 <div class="card-body">
                     <h6 class="text-muted">Devis brouillons</h6>
                     <p class="display-6 mb-0">{{ $kpis['devis_brouillons'] }}</p>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-md-4">
-            <div class="card">
+            <a href="{{ route('menuiserie.devis.index', ['slug' => $slug, 'statut' => 'accepte']) }}" class="card text-decoration-none text-dark h-100">
                 <div class="card-body">
-                    <h6 class="text-muted">Devis acceptés (30j)</h6>
-                    <p class="display-6 mb-0">{{ $kpis['devis_acceptes_30j'] }}</p>
+                    <h6 class="text-muted">Devis acceptés ({{ $period['label'] }})</h6>
+                    <p class="display-6 mb-0">{{ $kpis['devis_acceptes_periode'] }}</p>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-md-4">
-            <div class="card">
+            <a href="{{ route('menuiserie.production.index', ['slug' => $slug, 'statut' => 'en_cours']) }}" class="card text-decoration-none text-dark h-100">
                 <div class="card-body">
                     <h6 class="text-muted">OF en cours</h6>
                     <p class="display-6 mb-0">{{ $kpis['of_en_cours'] }}</p>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-md-4">
-            <div class="card">
+            <a href="{{ route('menuiserie.chantiers.index', ['slug' => $slug, 'statut' => 'en_cours']) }}" class="card text-decoration-none text-dark h-100">
                 <div class="card-body">
                     <h6 class="text-muted">Chantiers en cours</h6>
                     <p class="display-6 mb-0">{{ $kpis['chantiers_en_cours'] }}</p>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-md-4">
-            <div class="card">
+            <a href="{{ route('menuiserie.reporting.journal', ['slug' => $slug, 'from' => $period['from']->toDateString(), 'to' => $period['to']->toDateString()]) }}" class="card text-decoration-none text-dark h-100">
                 <div class="card-body">
-                    <h6 class="text-muted">CA mois (factures émises)</h6>
-                    <p class="h3 mb-0">{{ number_format($kpis['ca_mois'], 0, ',', ' ') }} XOF</p>
+                    <h6 class="text-muted">CA {{ $period['label'] }}</h6>
+                    <p class="h3 mb-0">{{ number_format($kpis['ca_periode'], 0, ',', ' ') }} XOF</p>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-md-4">
-            <div class="card">
+            <a href="{{ route('menuiserie.factures.index', ['slug' => $slug, 'statut' => 'issued']) }}" class="card text-decoration-none text-dark h-100">
                 <div class="card-body">
                     <h6 class="text-muted">Créances clients</h6>
                     <p class="h3 mb-0">{{ number_format($kpis['creances'], 0, ',', ' ') }} XOF</p>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-md-4">
-            <div class="card">
+            <a href="{{ route('menuiserie.reporting.journal', ['slug' => $slug, 'from' => $period['from']->toDateString(), 'to' => $period['to']->toDateString()]) }}" class="card text-decoration-none text-dark h-100">
                 <div class="card-body">
-                    <h6 class="text-muted">Encaissé (mois)</h6>
-                    <p class="h3 mb-0 text-success">{{ number_format($kpis['encaisse_mois'], 0, ',', ' ') }} XOF</p>
+                    <h6 class="text-muted">Encaissé ({{ $period['label'] }})</h6>
+                    <p class="h3 mb-0 text-success">{{ number_format($kpis['encaisse_periode'], 0, ',', ' ') }} XOF</p>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-md-4">
-            <div class="card">
+            <div class="card h-100">
                 <div class="card-body">
-                    <h6 class="text-muted">Taux conversion devis (90j)</h6>
-                    <p class="h3 mb-0">{{ number_format($kpis['taux_conversion_devis_90j'], 1, ',', ' ') }} %</p>
+                    <h6 class="text-muted">Taux conversion devis ({{ $period['label'] }})</h6>
+                    <p class="h3 mb-0">{{ number_format($kpis['taux_conversion_devis_periode'], 1, ',', ' ') }} %</p>
                 </div>
             </div>
         </div>
@@ -77,7 +116,7 @@
         </div>
         <div class="col-md-4">
             <div class="card mb-2">
-                <div class="card-header">Top 5 clients (180j)</div>
+                <div class="card-header">Top 5 clients ({{ $period['label'] }})</div>
                 <ul class="list-group list-group-flush">
                     @forelse ($topClients as $c)
                         <li class="list-group-item d-flex justify-content-between">
@@ -85,12 +124,12 @@
                             <strong>{{ number_format($c['ttc'], 0, ',', ' ') }}</strong>
                         </li>
                     @empty
-                        <li class="list-group-item text-muted">Aucune facture sur 180j.</li>
+                        <li class="list-group-item text-muted">Aucune facture sur la période.</li>
                     @endforelse
                 </ul>
             </div>
             <div class="card">
-                <div class="card-header">Mix paiements (mois)</div>
+                <div class="card-header">Mix paiements ({{ $period['label'] }})</div>
                 <div class="card-body">
                     @if (count($mixPaiements) > 0)
                         <canvas id="mixPaiementsChart" height="180"></canvas>
