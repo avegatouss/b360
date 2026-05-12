@@ -148,10 +148,17 @@ Route::middleware([
             ->middleware('can:menuiserie.report.view')
             ->name('alertes.index');
 
-        // ─── M-UI-9 : Imports CSV ───────────────────────────────
-        Route::prefix('imports')->name('imports.')->middleware('can:menuiserie.stock.matiere.manage')->group(function () {
-            Route::get('/', [ImportController::class, 'index'])->name('index');
-            Route::post('/matieres', [ImportController::class, 'uploadMatieres'])->name('matieres.upload');
+        // ─── M-UI-9 / V1.2-3 : Imports CSV ──────────────────────
+        Route::prefix('imports')->name('imports.')->group(function () {
+            Route::get('/', [ImportController::class, 'index'])
+                ->middleware('can:menuiserie.stock.matiere.manage')
+                ->name('index');
+            Route::post('/matieres', [ImportController::class, 'uploadMatieres'])
+                ->middleware('can:menuiserie.stock.matiere.manage')
+                ->name('matieres.upload');
+            Route::post('/devis', [ImportController::class, 'uploadDevis'])
+                ->middleware('can:menuiserie.devis.create')
+                ->name('devis.upload');
         });
 
         // ─── BC-Commercial : Bibliothèque types produits (P2-C) ──

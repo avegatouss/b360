@@ -221,6 +221,67 @@ final class MenuiserieControllersTest extends TestCase
         $this->assertSame('application/pdf', $response->headers->get('content-type'));
     }
 
+    public function test_devis_csv_import_creates_grouped_devis_and_skips_duplicates(): void
+    {
+        $customer = $this->makeCustomer();
+        $matiere = $this->makeMatiere();
+        $clientCode = $customer->getAttribute('code');
+        $matiereCode = $matiere->getAttribute('code');
+
+        // CSV avec 2 devis : DEV-A (2 lignes) + DEV-B (1 ligne).
+        $csv = "devis_ref,client_code,designation,quantite,prix_unitaire_ht,cout_revient,largeur_mm,hauteur_mm,matiere_code,taux_tva,validite_jours,marge_minimum\n"
+            ."DEV-A,{$clientCode},Fenêtre alu A,2,200000,130000,1500,1200,{$matiereCode},0.18,30,0.20\n"
+            ."DEV-A,{$clientCode},Porte alu A,1,500000,320000,900,2100,{$matiereCode},0.18,30,0.20\n"
+            ."DEV-B,{$clientCode},Vitrine B,1,600000,400000,2000,1800,,0.18,30,0.20\n";
+
+        $tmp = tempnam(sys_get_temp_dir(), 'mnu_devis_import_test_');
+        file_put_contents($tmp, $csv);
+        $file = new \Illuminate\Http\Testing\File('import_devis.csv', fopen($tmp, 'r'));
+
+        $this->actingAs($this->superAdmin)
+            ->post(route('menuiserie.imports.devis.upload', ['slug' => $this->slug()]), [
+                'file' => $file,
+            ])
+            ->assertRedirect(route('menuiserie.imports.index', ['slug' => $this->slug()]));
+
+        $this->assertDatabaseHas('mnu_devis', [
+            'instance_id' => $this->instance->id,
+            'numero' => 'IMPORT-DEV-A',
+            'client_id' => $customer->getKey(),
+        ]);
+        $this->assertDatabaseHas('mnu_devis', [
+            'instance_id' => $this->instance->id,
+            'numero' => 'IMPORT-DEV-B',
+        ]);
+
+        $devisA = Devis::query()
+            ->where('instance_id', $this->instance->id)
+            ->where('numero', 'IMPORT-DEV-A')
+            ->first();
+        $this->assertNotNull($devisA);
+        $this->assertSame(2, $devisA->lignes()->count(), 'DEV-A doit avoir 2 lignes.');
+
+        // Re-import → skip (idempotence)
+        $tmp2 = tempnam(sys_get_temp_dir(), 'mnu_devis_import_test_2_');
+        file_put_contents($tmp2, $csv);
+        $file2 = new \Illuminate\Http\Testing\File('import_devis_2.csv', fopen($tmp2, 'r'));
+
+        $this->actingAs($this->superAdmin)
+            ->post(route('menuiserie.imports.devis.upload', ['slug' => $this->slug()]), [
+                'file' => $file2,
+            ])
+            ->assertRedirect();
+
+        $count = Devis::query()
+            ->where('instance_id', $this->instance->id)
+            ->where('numero', 'like', 'IMPORT-%')
+            ->count();
+        $this->assertSame(2, $count, 'Re-import ne doit pas dupliquer.');
+
+        @unlink($tmp);
+        @unlink($tmp2);
+    }
+
     public function test_csv_import_creates_matieres_and_reports_errors(): void
     {
         // CSV avec 2 lignes valides + 1 ligne invalide (categorie inconnue).

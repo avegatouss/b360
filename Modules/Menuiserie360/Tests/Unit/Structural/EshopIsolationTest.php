@@ -170,6 +170,14 @@ final class EshopIsolationTest extends TestCase
                 continue;
             }
 
+            // Exclure les services d'import CSV (V1.2-3) : par essence ils
+            // résolvent un client_code Eshop360 pour rattacher le devis importé
+            // au bon Customer. C'est une feature de migration de données, pas
+            // un service runtime. Pattern jumeau de l'exclusion Seeders.
+            if (preg_match('#'.preg_quote(DIRECTORY_SEPARATOR.'Services'.DIRECTORY_SEPARATOR, '#').'Import[A-Z][A-Za-z0-9]*CsvService\\.php$#', $path) === 1) {
+                continue;
+            }
+
             $content = (string) file_get_contents($path);
             if (preg_match('#'.$regex.'#', $content) === 1) {
                 $matches[] = $path;
