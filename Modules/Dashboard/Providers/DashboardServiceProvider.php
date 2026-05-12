@@ -3,7 +3,11 @@
 namespace Modules\Dashboard\Providers;
 
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Modules\Core\Hooks\HookFilter;
+use Modules\Core\Hooks\Registry\HookRegistry;
+use Modules\Core\Support\CurrentInstance;
 use Nwidart\Modules\Traits\PathNamespace;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -27,6 +31,42 @@ class DashboardServiceProvider extends ServiceProvider
         $this->registerConfig();
         $this->registerViews();
         $this->loadMigrationsFrom(module_path($this->name, 'Database/Migrations'));
+        $this->registerHierarchicalMenuFlagComposer();
+    }
+
+    /**
+     * R-401-FIX S5 / ADR-022 — Pilote le mode "hierarchical menu" via le
+     * slot HookRegistry plutôt que via le View::composer Eshop360.
+     *
+     * Le master layout teste `$hierarchicalMenuEnabled` pour décider de
+     * cacher la sidebar et d'activer le FAB. Cette variable est désormais
+     * calculée à partir de la présence d'au moins une contribution
+     * filtrée pour le slot 'hierarchical-nav.fab' — c'est le slot
+     * lui-même qui devient le signal (cf. ADR-022 §hypothèses retenues).
+     *
+     * Conséquence : aucun module socle (Dashboard) ne dépend plus de
+     * Eshop360 pour ce signal. Si Eshop360 OFF → 0 contribution → flag
+     * false → sidebar normale. Eshop360 ON + setting hierarchical_menu
+     * activé → contribution visibleWhen=true → flag true → sidebar
+     * cachée + FAB rendu par x-dashboard::layout-slot.
+     */
+    private function registerHierarchicalMenuFlagComposer(): void
+    {
+        View::composer(['layout.partials.sidebar', 'dashboard::components.layouts.master'], function ($view): void {
+            try {
+                $registry = app(HookRegistry::class);
+                $filter = app(HookFilter::class);
+                $contributions = $filter->filter(
+                    $registry->layoutSlots('hierarchical-nav.fab'),
+                    auth()->user(),
+                    CurrentInstance::get(),
+                );
+                $view->with('hierarchicalMenuEnabled', $contributions->isNotEmpty());
+            } catch (\Throwable) {
+                // Container non encore prêt (install phase) → flag false.
+                $view->with('hierarchicalMenuEnabled', false);
+            }
+        });
     }
 
     /**
@@ -129,7 +169,7 @@ class DashboardServiceProvider extends ServiceProvider
 
         $this->loadViewsFrom(array_merge($this->getPublishableViewPaths(), [$sourcePath]), $this->nameLower);
 
-        Blade::componentNamespace(config('modules.namespace').'\\' . $this->name . '\\View\\Components', $this->nameLower);
+        Blade::componentNamespace(config('modules.namespace').'\\'.$this->name.'\\View\\Components', $this->nameLower);
     }
 
     /**

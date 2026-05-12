@@ -299,17 +299,11 @@ final class Eshop360ServiceProvider extends ServiceProvider
             }
         });
 
-        // Share hierarchical menu flag with all layouts that contain a sidebar
-        View::composer(['layout.partials.sidebar', 'dashboard::components.layouts.master'], function ($view) {
-            $enabled = (bool) config('eshop360.hierarchical_menu');
-            if (! $enabled) {
-                try {
-                    $enabled = (bool) app(EshopSettingsService::class)->value('general', 'hierarchical_menu', false);
-                } catch (\Throwable) {
-                    // DB not ready yet (install phase)
-                }
-            }
-            $view->with('hierarchicalMenuEnabled', $enabled);
-        });
+        // R-401-FIX S5 — Le View::composer pour `$hierarchicalMenuEnabled`
+        // est désormais piloté par DashboardServiceProvider (le slot
+        // 'hierarchical-nav.fab' devient le signal). La logique
+        // hierarchical_menu spécifique à Eshop360 est encapsulée dans
+        // la closure `visibleWhen` du `LayoutSlotContribution` enregistré
+        // par Eshop360HooksProvider::registerLayoutSlots() (S3).
     }
 }
