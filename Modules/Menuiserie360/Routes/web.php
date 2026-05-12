@@ -140,6 +140,7 @@ Route::middleware([
             Route::get('/operations', [DashboardMenuiserieController::class, 'operations'])->name('operations');
             Route::get('/journal', [DashboardMenuiserieController::class, 'journal'])->name('journal');
             Route::get('/exports/comptable.csv', [DashboardMenuiserieController::class, 'exportComptable'])->name('exports.comptable');
+            Route::get('/exports/dashboard.pdf', [DashboardMenuiserieController::class, 'exportPdf'])->name('exports.dashboard-pdf');
         });
 
         // ─── M-UI-8 : Alertes opérationnelles ───────────────────

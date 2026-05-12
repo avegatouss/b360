@@ -212,6 +212,15 @@ final class MenuiserieControllersTest extends TestCase
             ->assertOk();
     }
 
+    public function test_super_admin_can_export_dashboard_pdf(): void
+    {
+        $response = $this->actingAs($this->superAdmin)
+            ->get(route('menuiserie.reporting.exports.dashboard-pdf', ['slug' => $this->slug()]));
+
+        $response->assertOk();
+        $this->assertSame('application/pdf', $response->headers->get('content-type'));
+    }
+
     public function test_csv_import_creates_matieres_and_reports_errors(): void
     {
         // CSV avec 2 lignes valides + 1 ligne invalide (categorie inconnue).

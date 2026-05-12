@@ -165,6 +165,9 @@
                     <button class="btn btn-outline-primary">Télécharger CSV comptable</button>
                 </div>
             </form>
+            <a href="{{ route('menuiserie.reporting.exports.dashboard-pdf', ['slug' => request()->route('slug'), 'preset' => $period['preset'], 'from' => $period['from']->toDateString(), 'to' => $period['to']->toDateString()]) }}" class="btn btn-outline-danger">
+                <i class="ti ti-file-type-pdf"></i> Export PDF du dashboard (période)
+            </a>
             <a href="{{ route('menuiserie.reporting.journal', ['slug' => request()->route('slug')]) }}" class="btn btn-outline-secondary">Voir le journal ventes & paiements</a>
             <a href="{{ route('menuiserie.reporting.operations', ['slug' => request()->route('slug')]) }}" class="btn btn-outline-info">Dashboard opérationnel</a>
         </div>

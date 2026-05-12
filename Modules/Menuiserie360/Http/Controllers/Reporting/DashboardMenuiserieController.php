@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Modules\Menuiserie360\Http\Controllers\Reporting;
 
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
 use Modules\Core\Support\CurrentInstance;
@@ -275,6 +277,63 @@ final class DashboardMenuiserieController extends Controller
         ];
 
         return view('menuiserie360::reporting.journal', compact('invoices', 'payments', 'totals', 'from', 'to'));
+    }
+
+    /**
+     * V1.2-2 — Export PDF du dashboard direction (snapshot imprimable).
+     *
+     * Format A4 portrait, sans JS (DomPDF). Charts remplacés par des
+     * tables CA mensuel + listes Top clients / Mix paiements.
+     */
+    public function exportPdf(Request $request): Response
+    {
+        $instance = CurrentInstance::get();
+        abort_if($instance === null, 503, 'No instance context.');
+
+        $period = $this->parsePeriod($request);
+        $from = $period['from'];
+        $to = $period['to'];
+
+        $kpis = [
+            'devis_brouillons' => Devis::query()->where('instance_id', $instance->id)->where('statut', 'brouillon')->count(),
+            'of_en_cours' => OrdreFabrication::query()->where('instance_id', $instance->id)->where('statut', 'en_cours')->count(),
+            'chantiers_en_cours' => Chantier::query()->where('instance_id', $instance->id)->where('statut', 'en_cours')->count(),
+            'creances' => (float) MenuiserieInvoice::query()
+                ->where('instance_id', $instance->id)
+                ->whereIn('status', ['issued', 'paid_partial'])
+                ->selectRaw('SUM(amount_ttc - paid_amount) as creances_total')
+                ->value('creances_total'),
+            'devis_acceptes_periode' => Devis::query()->where('instance_id', $instance->id)->where('statut', 'accepte')->whereBetween('updated_at', [$from, $to])->count(),
+            'ca_periode' => (float) MenuiserieInvoice::query()->where('instance_id', $instance->id)->whereBetween('issued_at', [$from, $to])->sum('amount_ttc'),
+            'encaisse_periode' => (float) MenuiseriePayment::query()
+                ->where('instance_id', $instance->id)
+                ->where('status', 'succeeded')
+                ->whereBetween('paid_at', [$from, $to])
+                ->sum('amount'),
+            'taux_conversion_devis_periode' => $this->tauxConversionDevisPeriode($instance->id, $from, $to),
+        ];
+
+        $caMensuel12m = $this->caMensuel12m($instance->id);
+        $topClients = $this->topClientsParCa($instance->id, $from, $to, limit: 5);
+        $mixPaiements = $this->mixPaiements($instance->id, $from, $to);
+
+        $filename = sprintf(
+            'dashboard-menuiserie-%s-%s.pdf',
+            $from->format('Y-m-d'),
+            $to->format('Y-m-d')
+        );
+
+        return Pdf::loadView('menuiserie360::reporting.dashboard-pdf', [
+            'instance' => $instance,
+            'period' => $period,
+            'kpis' => $kpis,
+            'caMensuel12m' => $caMensuel12m,
+            'topClients' => $topClients,
+            'mixPaiements' => $mixPaiements,
+            'generatedAt' => CarbonImmutable::now(),
+        ])
+            ->setPaper('A4', 'portrait')
+            ->download($filename);
     }
 
     /**
