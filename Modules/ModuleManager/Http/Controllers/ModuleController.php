@@ -6,8 +6,8 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
+use Modules\Core\Hooks\Registry\HookRegistry;
 use Modules\Core\Modules\ModuleManager;
 use Modules\Core\Support\CurrentInstance;
 use Modules\ModuleManager\Services\ModuleInstaller;
@@ -108,21 +108,20 @@ final class ModuleController extends Controller
                 );
             $message = "Module « {$name} » activé.";
 
-            // If Eshop360 just enabled and not initialized, redirect to wizard.
-            // Guarded against the Eshop360 module being absent: the class might
-            // be autoloaded by Composer even when the module is disabled, but
-            // the route is only registered when the ServiceProvider has booted.
-            if ($name === 'Eshop360'
-                && class_exists(\Modules\Eshop360\Services\EshopInitializer::class)
-                && Route::has('eshop360.setup.hub')
-            ) {
-                $initializer = app(\Modules\Eshop360\Services\EshopInitializer::class);
-                if (! $initializer->isInitialized($instance->id)) {
+            // R-401-FIX S6 — Le module fraîchement activé peut déclarer une
+            // route de redirection (wizard de setup, page d'init, …) via
+            // HookRegistry::addPostEnableRedirect (cf. Eshop360HooksProvider).
+            // Le ModuleController est désormais agnostique au nom du module.
+            $redirect = app(HookRegistry::class)->postEnableRedirect($name);
+            if ($redirect !== null) {
+                $shouldRedirect = $redirect->condition === null
+                    || (bool) ($redirect->condition)($instance);
+                if ($shouldRedirect) {
                     app(ModuleManager::class)->clearCache();
 
                     return redirect()
-                        ->route('eshop360.setup.hub', $instance->slug)
-                        ->with('status', "Module « {$name} » activé. Configurez votre espace de vente.");
+                        ->route($redirect->route, $instance->slug)
+                        ->with('status', "Module « {$name} » activé. Configurez l'espace dédié.");
                 }
             }
         }

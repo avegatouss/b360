@@ -4,7 +4,6 @@ namespace Modules\Dashboard\Http\Controllers;
 
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Route;
 use Modules\Core\Hooks\Registry\HookRegistry;
 use Modules\Core\Modules\ModuleManager;
 use Modules\Core\Support\CurrentInstance;
@@ -19,19 +18,15 @@ final class DashboardController extends Controller
             abort(503, 'Instance non résolue.');
         }
 
-        // When hierarchical menu is enabled, redirect to the nav home instead of dashboard
-        $hmEnabled = (bool) config('eshop360.hierarchical_menu');
-        if (! $hmEnabled && class_exists(\Modules\Eshop360\Services\EshopSettingsService::class)) {
-            try {
-                $hmEnabled = (bool) app(\Modules\Eshop360\Services\EshopSettingsService::class)
-                    ->value('general', 'hierarchical_menu', false);
-            } catch (\Throwable) {
-                // DB not ready
-            }
-        }
-        if ($hmEnabled && Route::has('eshop360.nav.home')) {
-            return redirect()->route('eshop360.nav.home', $slug);
-        }
+        // R-401-FIX S6 — Le mode "hierarchical menu" est désormais piloté
+        // par le slot HookRegistry 'hierarchical-nav.fab' (le FAB est
+        // rendu dans le master layout via x-dashboard::layout-slot).
+        // L'ancienne redirection inconditionnelle vers eshop360.nav.home
+        // a été retirée : l'utilisateur voit le dashboard widgets et
+        // clique le FAB pour atteindre la nav hiérarchique. Le bouton
+        // est masqué automatiquement si Eshop360 OFF ou si setting
+        // hierarchical_menu désactivé (cf. Eshop360HooksProvider
+        // registerLayoutSlots visibleWhen).
 
         $memberCount = DB::connection('system')
             ->table('instance_user')
