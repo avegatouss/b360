@@ -161,77 +161,11 @@
                 @endif
                 @endauth
 
-                {{-- Notification bell (Eshop360 — guarded if module disabled) --}}
-                @auth
-                @if(isset($instance) && Route::has('eshop360.notifications.index'))
-                @php
-                    try {
-                        $unreadCount = auth()->user()->unreadNotifications()->count();
-                        $latestNotifications = auth()->user()->notifications()->latest()->take(5)->get();
-                    } catch (\Exception $e) {
-                        $unreadCount = 0;
-                        $latestNotifications = collect();
-                    }
-                @endphp
-                <li class="nav-item dropdown nav-item-box">
-                    <a href="javascript:void(0);" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="ti ti-bell"></i>
-                        <span class="badge rounded-pill bg-danger badge-notification" id="notification-count"
-                              style="{{ $unreadCount > 0 ? '' : 'display:none' }}">{{ $unreadCount }}</span>
-                    </a>
-                    <div class="dropdown-menu dropdown-menu-end notification-dropdown" style="width:360px;max-height:450px;overflow-y:auto;">
-                        <div class="d-flex align-items-center justify-content-between p-3 pb-2 border-bottom">
-                            <h6 class="fw-semibold mb-0">Notifications</h6>
-                            @if($unreadCount > 0)
-                            <form method="POST" action="{{ route('eshop360.notifications.mark-all-read', $instance->slug) }}" id="mark-all-read-form">
-                                @csrf
-                                <a href="javascript:void(0);" class="text-primary fs-12" onclick="document.getElementById('mark-all-read-form').submit();">
-                                    Tout marquer comme lu
-                                </a>
-                            </form>
-                            @endif
-                        </div>
-                        <div class="p-0">
-                            @forelse($latestNotifications as $notif)
-                            @php
-                                $nd = $notif->data;
-                                $isUnread = is_null($notif->read_at);
-                                $typeBorder = match($nd['type'] ?? 'info') {
-                                    'danger'  => 'border-danger',
-                                    'warning' => 'border-warning',
-                                    'success' => 'border-success',
-                                    default   => 'border-info',
-                                };
-                            @endphp
-                            <form method="POST" action="{{ route('eshop360.notifications.mark-read', [$instance->slug, $notif->id]) }}">
-                                @csrf
-                                <button type="submit" class="dropdown-item d-flex align-items-start p-3 {{ $isUnread ? 'bg-light border-start border-3 ' . $typeBorder : '' }}" style="white-space:normal;">
-                                    <span class="flex-shrink-0 me-2">
-                                        <i class="{{ $nd['icon'] ?? 'ti ti-bell' }} fs-20"></i>
-                                    </span>
-                                    <span class="flex-grow-1">
-                                        <span class="d-block fw-semibold fs-13">{{ $nd['title'] ?? 'Notification' }}</span>
-                                        <span class="d-block text-muted fs-12 text-truncate" style="max-width:250px;">{{ $nd['message'] ?? '' }}</span>
-                                        <span class="d-block text-muted fs-11 mt-1">{{ $notif->created_at->diffForHumans() }}</span>
-                                    </span>
-                                </button>
-                            </form>
-                            @empty
-                            <div class="text-center py-4">
-                                <i class="ti ti-bell-off fs-24 text-muted"></i>
-                                <p class="text-muted fs-12 mb-0 mt-1">Aucune notification</p>
-                            </div>
-                            @endforelse
-                        </div>
-                        <div class="border-top p-2 text-center">
-                            <a href="{{ route('eshop360.notifications.index', $instance->slug) }}" class="text-primary fs-12">
-                                Voir toutes les notifications
-                            </a>
-                        </div>
-                    </div>
-                </li>
-                @endif
-                @endauth
+                {{-- R-401-FIX S4 — Contributions des modules au slot
+                     header.notifications (HookRegistry layout_slots).
+                     Eshop360 fournit sa cloche via Eshop360HooksProvider.
+                     S'affiche en aveugle : 0 contribution → 0 HTML. --}}
+                <x-dashboard::layout-slot name="header.notifications" :instance="$instance ?? null" />
 
                 {{-- Language switcher --}}
                 @include('lang::components.language-switcher')
@@ -313,22 +247,15 @@
     {{-- SIDEBAR                                                      --}}
     {{-- ============================================================ --}}
     @if(!empty($hierarchicalMenuEnabled))
-        {{-- Hierarchical menu mode: hide sidebar, show floating nav button --}}
+        {{-- Hierarchical menu mode: hide sidebar, show floating nav button. --}}
         <div class="sidebar" id="sidebar" style="display:none"></div>
         <style>
             .page-wrapper { margin-left: 0 !important; }
             .header .header-left { display: none; }
             #mobile_btn { display: none !important; }
         </style>
-        @if(Route::has('eshop360.nav.home'))
-        <div style="position:fixed;bottom:24px;left:24px;z-index:1050;">
-            <a href="{{ route('eshop360.nav.home', $instance->slug ?? '') }}"
-               class="btn btn-primary d-flex align-items-center gap-2 shadow-lg"
-               style="border-radius:12px;padding:12px 20px;font-weight:600;">
-                <i class="ti ti-layout-grid fs-18"></i> Navigation
-            </a>
-        </div>
-        @endif
+        {{-- R-401-FIX S4 — FAB contribué via HookRegistry layout_slots. --}}
+        <x-dashboard::layout-slot name="hierarchical-nav.fab" :instance="$instance ?? null" />
     @else
     <div class="sidebar" id="sidebar">
 
