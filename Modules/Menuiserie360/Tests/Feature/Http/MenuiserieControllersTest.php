@@ -205,6 +205,41 @@ final class MenuiserieControllersTest extends TestCase
             ->assertOk();
     }
 
+    public function test_super_admin_can_access_notifications_page(): void
+    {
+        $this->actingAs($this->superAdmin)
+            ->get(route('menuiserie.notifications.index', ['slug' => $this->slug()]))
+            ->assertOk()
+            ->assertSee('Notifications');
+    }
+
+    public function test_user_can_mark_all_menuiserie_notifications_read(): void
+    {
+        // Dispatch 2 notifications directes (database channel) au user.
+        $this->superAdmin->notify(new \Modules\Menuiserie360\Domain\Stock\Notifications\StockCritiqueNotification(
+            matiereCode: 'TEST-A',
+            matiereDesignation: 'Test A',
+            quantiteDisponible: 1.0,
+            seuilAlerte: 10.0,
+            unite: 'm_lineaire',
+        ));
+        $this->superAdmin->notify(new \Modules\Menuiserie360\Domain\Stock\Notifications\StockCritiqueNotification(
+            matiereCode: 'TEST-B',
+            matiereDesignation: 'Test B',
+            quantiteDisponible: 0.5,
+            seuilAlerte: 5.0,
+            unite: 'm2',
+        ));
+
+        $this->assertSame(2, $this->superAdmin->fresh()->unreadNotifications()->count());
+
+        $this->actingAs($this->superAdmin)
+            ->post(route('menuiserie.notifications.mark-all-read', ['slug' => $this->slug()]))
+            ->assertRedirect();
+
+        $this->assertSame(0, $this->superAdmin->fresh()->unreadNotifications()->count());
+    }
+
     public function test_super_admin_can_access_imports_page(): void
     {
         $this->actingAs($this->superAdmin)

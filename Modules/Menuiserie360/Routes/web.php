@@ -10,6 +10,7 @@ use Modules\Menuiserie360\Http\Controllers\Commercial\DevisController;
 use Modules\Menuiserie360\Http\Controllers\Commercial\TypeProduitController;
 use Modules\Menuiserie360\Http\Controllers\Finance\FactureMenuiserieController;
 use Modules\Menuiserie360\Http\Controllers\Imports\ImportController;
+use Modules\Menuiserie360\Http\Controllers\Notifications\NotificationController;
 use Modules\Menuiserie360\Http\Controllers\Production\OrdreFabricationController;
 use Modules\Menuiserie360\Http\Controllers\Reporting\DashboardMenuiserieController;
 use Modules\Menuiserie360\Http\Controllers\Sales\BonCommandeController;
@@ -147,6 +148,13 @@ Route::middleware([
         Route::get('/alertes', [AlerteController::class, 'index'])
             ->middleware('can:menuiserie.report.view')
             ->name('alertes.index');
+
+        // ─── V1.2-4 : Notifications database ────────────────────
+        Route::prefix('notifications')->name('notifications.')->group(function () {
+            Route::get('/', [NotificationController::class, 'index'])->name('index');
+            Route::post('/{id}/read', [NotificationController::class, 'markRead'])->name('mark-read');
+            Route::post('/read-all', [NotificationController::class, 'markAllRead'])->name('mark-all-read');
+        });
 
         // ─── M-UI-9 / V1.2-3 : Imports CSV ──────────────────────
         Route::prefix('imports')->name('imports.')->group(function () {

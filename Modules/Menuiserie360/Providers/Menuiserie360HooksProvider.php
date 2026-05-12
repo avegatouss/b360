@@ -72,6 +72,7 @@ final class Menuiserie360HooksProvider implements RegistersHooks
             ['id' => 'menuiserie360.finance',   'label' => 'Finance',           'icon' => 'ti ti-cash',         'priority' => 440, 'route' => 'menuiserie.factures.index',   'permission' => 'menuiserie.invoice.create'],
             ['id' => 'menuiserie360.reporting', 'label' => 'Tableaux de bord',  'icon' => 'ti ti-chart-bar',    'priority' => 430, 'route' => 'menuiserie.reporting.index',  'permission' => 'menuiserie.report.view'],
             ['id' => 'menuiserie360.alertes',   'label' => 'Alertes',           'icon' => 'ti ti-bell',         'priority' => 420, 'route' => 'menuiserie.alertes.index',    'permission' => 'menuiserie.report.view'],
+            ['id' => 'menuiserie360.notifications', 'label' => 'Notifications', 'icon' => 'ti ti-bell-ringing', 'priority' => 415, 'route' => 'menuiserie.notifications.index', 'permission' => 'menuiserie.report.view'],
         ];
 
         foreach ($bcMenus as $bc) {

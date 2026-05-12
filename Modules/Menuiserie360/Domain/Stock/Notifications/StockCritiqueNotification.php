@@ -34,7 +34,10 @@ final class StockCritiqueNotification extends Notification
      */
     public function via(mixed $notifiable): array
     {
-        return ['mail'];
+        // V1.2-4 — ajout du channel database pour persistence et affichage
+        // dans la page /menuiserie/notifications. Le mail reste l'alerte
+        // proactive ; la base persiste le signal pour consultation différée.
+        return ['mail', 'database'];
     }
 
     public function toMail(mixed $notifiable): MailMessage
