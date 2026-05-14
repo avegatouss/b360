@@ -6,22 +6,16 @@ namespace Modules\Menuiserie360\Providers;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
-use Modules\Eshop360\Contracts\Catalog\CatalogReader;
-use Modules\Eshop360\Contracts\Customer\CustomerReader;
-use Modules\Eshop360\Contracts\Pricing\PricingResolver;
 use Modules\Menuiserie360\Domain\Finance\Jobs\RelancerFacturesImpayeesJob;
 
 /**
- * Service provider principal du module Menuiserie360 (L4).
+ * Service provider principal du module Menuiserie360 (L3).
  *
  * Décisions architecturales (cf. spec v1.3) :
  *   - BC-Finance autonome : aucun contrat Finance Eshop360 consommé.
  *   - Morphs Cas A : morph map propre dans boot() avec short keys
  *     (`mnu.*`), aucune entrée ajoutée au morph map central Eshop360.
- *   - Consommation Eshop360 limitée aux contrats `Modules/Eshop360/Contracts/*`
- *     (ADR-021) — bindings résolus côté Eshop360, rien à bind ici pour eux.
  *   - Bindings INTERNES : interfaces `StockContract` et `ClientRepositoryContract`
  *     liées à leurs implémentations Menuiserie360. Liaisons à compléter au fil
  *     des phases P1..P5 quand les implémentations existeront.
@@ -31,8 +25,6 @@ final class Menuiserie360ServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__.'/../Config/config.php', 'menuiserie360');
-
-        $this->preflightCheckEshop360Contracts();
 
         // Bindings internes : interfaces Menuiserie360 → implémentations.
         // P1-3 : StockMatiereService implémente StockContract.
@@ -45,68 +37,6 @@ final class Menuiserie360ServiceProvider extends ServiceProvider
             \Modules\Menuiserie360\Domain\Client\Contracts\ClientRepositoryContract::class,
             \Modules\Menuiserie360\Domain\Client\Repositories\ClientMenuiserieRepository::class,
         );
-    }
-
-    /**
-     * R-403 — Menuiserie360 dépend fortement d'Eshop360 via les contracts
-     * ADR-021 (CustomerReader/CatalogReader/PricingResolver).
-     *
-     * Quand Eshop360 est désactivé, ces contracts n'ont aucun binding et
-     * la résolution silencieuse de `ClientMenuiserieRepository` (ou tout
-     * service qui en dépend) lèvera `BindingResolutionException` au moment
-     * où l'utilisateur ouvre un écran client/devis — symptôme opaque.
-     *
-     * Ce check transforme cet échec silencieux en signal explicite dans les
-     * logs, sans bloquer le boot : Menuiserie360 conserve ses fonctionnalités
-     * autonomes (Stock matières, Production OF) tant qu'aucun service ne
-     * touche aux contracts Eshop360. Voir docs/memory/OPEN_RISKS.md R-403.
-     */
-    private function preflightCheckEshop360Contracts(): void
-    {
-        $missing = self::missingEshop360Contracts($this->app);
-
-        if ($missing === []) {
-            return;
-        }
-
-        Log::warning(self::buildPreflightWarningMessage($missing), ['missing_contracts' => $missing]);
-    }
-
-    /**
-     * Liste les contracts Eshop360 attendus mais non bindés dans le container.
-     * Exposé publiquement pour permettre le test unitaire sans dupliquer la liste.
-     *
-     * @return list<class-string>
-     */
-    public static function missingEshop360Contracts(\Illuminate\Contracts\Container\Container $container): array
-    {
-        return array_values(array_filter(
-            self::eshop360RequiredContracts(),
-            static fn (string $contract): bool => ! $container->bound($contract),
-        ));
-    }
-
-    /**
-     * @return list<class-string>
-     */
-    public static function eshop360RequiredContracts(): array
-    {
-        return [
-            CustomerReader::class,
-            CatalogReader::class,
-            PricingResolver::class,
-        ];
-    }
-
-    /**
-     * @param  list<class-string>  $missing
-     */
-    public static function buildPreflightWarningMessage(array $missing): string
-    {
-        return 'Menuiserie360 actif mais Eshop360 désactivé — contracts ADR-021 absents : '
-            .implode(', ', $missing)
-            .'. Les fonctionnalités clients/catalogue/pricing lèveront BindingResolutionException '
-            .'à l\'usage. Réactiver Eshop360 ou désactiver Menuiserie360 (voir OPEN_RISKS R-403).';
     }
 
     public function boot(): void

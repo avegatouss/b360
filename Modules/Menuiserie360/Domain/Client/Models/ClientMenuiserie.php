@@ -6,30 +6,40 @@ namespace Modules\Menuiserie360\Domain\Client\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Core\Database\Traits\BelongsToInstance;
+use Modules\Menuiserie360\Domain\Client\Enums\StatutClientMenuiserie;
 
 /**
- * P1-4 — Pivot menuiserie sur Customer Eshop360.
- *
- * Stocke les attributs propres menuiserie (préférences contact, stats
- * agrégées). La relation vers Customer Eshop360 est **applicative** via
- * `customer_id` — pas de FK SQL pour respecter l'isolation ADR-021.
- *
- * Validation cross-module : le ClientRepositoryContract appelle
- * CustomerReader::customerExists() avant d'autoriser une référence.
+ * Referentiel client natif Menuiserie360 (ADR-023).
  *
  * @phpstan-type ClientMenuiserieFactory \Illuminate\Database\Eloquent\Factories\Factory<\Modules\Menuiserie360\Domain\Client\Models\ClientMenuiserie>
  */
 class ClientMenuiserie extends Model
 {
     /** @use HasFactory<ClientMenuiserieFactory> */
-    use BelongsToInstance, HasFactory;
+    use BelongsToInstance, HasFactory, SoftDeletes;
 
     protected $table = 'mnu_clients_menuiserie';
 
     protected $fillable = [
         'instance_id',
-        'customer_id',
+        'legacy_eshop_customer_id',
+        'code',
+        'type',
+        'nom',
+        'prenom',
+        'raison_sociale',
+        'email',
+        'telephone_principal',
+        'telephone_secondaire',
+        'adresse',
+        'ville',
+        'pays',
+        'rccm',
+        'nif',
+        'statut',
+        'is_active',
         'preferred_contact_method',
         'total_chantiers_count',
         'total_revenue_xof',
@@ -37,7 +47,23 @@ class ClientMenuiserie extends Model
     ];
 
     protected $casts = [
+        'legacy_eshop_customer_id' => 'integer',
+        'statut' => StatutClientMenuiserie::class,
+        'is_active' => 'boolean',
         'total_chantiers_count' => 'integer',
         'total_revenue_xof' => 'decimal:2',
     ];
+
+    public function getNameAttribute(): string
+    {
+        $raisonSociale = $this->getAttribute('raison_sociale');
+        if (is_string($raisonSociale) && $raisonSociale !== '') {
+            return $raisonSociale;
+        }
+
+        return trim(implode(' ', array_filter([
+            $this->getAttribute('prenom'),
+            $this->getAttribute('nom'),
+        ], static fn ($value): bool => is_string($value) && $value !== ''))) ?: (string) $this->getAttribute('code');
+    }
 }

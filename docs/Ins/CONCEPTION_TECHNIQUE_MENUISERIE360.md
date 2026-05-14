@@ -115,6 +115,8 @@ Modules/Menuiserie360/
 
 **Règles d'interopérabilité** (mises à jour v1.3 — décisions tranchées 2026-05-08) :
 
+> **EVOLUTION 2026-05-14 — ADR-023** : Menuiserie360 est reclassé L3 métier autonome. Le BC-Clients ne lit plus `Customer` Eshop360 via `CustomerReader` ; `mnu_clients_menuiserie` est le référentiel client natif. Les paragraphes v1.3 qui décrivent Menuiserie360 comme L4 consommateur d'Eshop360 sont historiques.
+
 - Menuiserie360 lit `Customer` d'Eshop360 **via le contrat `CustomerReader`** producer-owned (cf. §1.4bis), pas en wrappant le modèle Eloquent. Il **ne modifie jamais** les tables `eshop_customers` directement.
 - **DÉCISION v1.3 — BC-Finance autonome** : Menuiserie360 a ses **propres** modèles `MenuiserieInvoice` et `MenuiseriePayment` (tables `mnu_invoices`, `mnu_payments`). **Pas de consommation de Finance Eshop360**. Pas de `FinanceContract` à ajouter à ADR-021. La numérotation, la TVA, l'export comptable sont gérés en interne par BC-Finance Menuiserie360. Cf. §4.5 réécrit.
 - Menuiserie360 n'utilise **pas** les tables `eshop_stocks` — il a son propre stock matière (profilés alu, vitrages, accessoires) qui a une sémantique différente (unité de mesure mètres linéaires / m², pas pièces). BC-Stock entièrement autonome.
@@ -400,6 +402,8 @@ $this->app->bind(
 - Pas d'`ALTER TABLE` sur les tables Eshop360 ou Core
 
 ### 2.5 Discipline d'isolation — rulesets deptrac (ADR-021)
+
+> **EVOLUTION 2026-05-14 — ADR-023** : ruleset S1 = Menuiserie360 peut dépendre des socles/L2, mais plus de `EshopContracts`. Tout import `Modules\Eshop360\*` depuis `Modules\Menuiserie360\*` est interdit, hors migration de backfill de données sans import PHP.
 
 **Layer Menuiserie360** dans `deptrac.yaml` :
 
@@ -1102,6 +1106,8 @@ Via `ModuleManager` de B360 (interface existante) :
 - Les factures Eshop360 créées pour des BC menuiserie subsistent (découplage intentionnel)
 
 ### 5.6 Extension du noyau — HookRegistry (cohérent avec ADR-021 §3)
+
+> **EVOLUTION 2026-05-14 — ADR-023** : les permissions et menus restent exposés via HookRegistry. Le changement S1 ne modifie pas les permissions existantes ; il remplace seulement le référentiel client sous-jacent.
 
 Pour exposer un menu, un widget, un settings_group, une permission, une feature, ou un payment_gateway, **Menuiserie360 passe par HookRegistry** (Core), comme tous les modules existants.
 

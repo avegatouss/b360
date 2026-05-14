@@ -10,10 +10,9 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Modules\Core\Support\CurrentInstance;
 use Modules\Core\Support\TeamContext;
-use Modules\Core\Tests\Concerns\RequiresEshop360Schema;
-use Modules\Eshop360\Domain\CRM\Models\Customer;
 use Modules\Menuiserie360\Domain\Chantier\Models\Chantier;
 use Modules\Menuiserie360\Domain\Chantier\Models\EtapeChantier;
+use Modules\Menuiserie360\Domain\Client\Models\ClientMenuiserie;
 use Modules\Menuiserie360\Domain\Commercial\Enums\StatutDevis;
 use Modules\Menuiserie360\Domain\Commercial\Models\Devis;
 use Modules\Menuiserie360\Domain\Commercial\Models\LigneDevis;
@@ -38,8 +37,6 @@ use Spatie\Permission\Models\Role;
  */
 final class MenuiserieControllersTest extends TestCase
 {
-    use RequiresEshop360Schema;
-
     private Instance $instance;
 
     private User $superAdmin;
@@ -47,7 +44,6 @@ final class MenuiserieControllersTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->requireEshop360Schema();
         Cache::flush();
 
         $this->instance = $this->makeRootInstance();
@@ -99,14 +95,17 @@ final class MenuiserieControllersTest extends TestCase
 
     // ─── Client search (M-UI-4) ────────────────────────────────────
 
-    public function test_client_search_returns_matching_customers(): void
+    public function test_client_search_returns_matching_clients(): void
     {
-        $this->makeCustomer(); // crée 'TEST-CUS-001' / 'Test Client'
-        Customer::withoutGlobalScopes()->create([
+        $this->makeCustomer(); // cree 'TEST-CUS-001' / 'Test Client'
+        ClientMenuiserie::create([
             'instance_id' => $this->instance->id,
             'code' => 'CUST-OTHER',
-            'name' => 'Karim Coulibaly',
-            'phone' => '+225 07 50 80 90 00',
+            'type' => 'particulier',
+            'nom' => 'Coulibaly',
+            'prenom' => 'Karim',
+            'telephone_principal' => '+225 07 50 80 90 00',
+            'statut' => 'lead',
             'is_active' => true,
         ]);
 
@@ -133,11 +132,14 @@ final class MenuiserieControllersTest extends TestCase
 
     public function test_client_search_filters_by_email_phone_and_code(): void
     {
-        Customer::withoutGlobalScopes()->create([
+        ClientMenuiserie::create([
             'instance_id' => $this->instance->id,
             'code' => 'PHO-001',
-            'name' => 'Joindre par téléphone',
-            'phone' => '+225 27 22 99 11 22',
+            'type' => 'particulier',
+            'nom' => 'Telephone',
+            'prenom' => 'Joindre',
+            'telephone_principal' => '+225 27 22 99 11 22',
+            'statut' => 'lead',
             'is_active' => true,
         ]);
 
@@ -797,16 +799,20 @@ final class MenuiserieControllersTest extends TestCase
 
     // ─── Helpers ───────────────────────────────────────────────────
 
-    private function makeCustomer(): Customer
+    private function makeCustomer(): ClientMenuiserie
     {
         // S'assurer que les permissions sont initialisées (instance-admin context)
         TeamContext::set(0);
         Role::findOrCreate('agent');
 
-        return Customer::withoutGlobalScopes()->create([
+        return ClientMenuiserie::create([
             'instance_id' => $this->instance->id,
             'code' => 'TEST-CUS-001',
-            'name' => 'Test Client',
+            'type' => 'particulier',
+            'nom' => 'Client',
+            'prenom' => 'Test',
+            'pays' => 'CI',
+            'statut' => 'lead',
             'is_active' => true,
         ]);
     }

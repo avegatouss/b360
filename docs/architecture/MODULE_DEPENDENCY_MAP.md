@@ -23,8 +23,8 @@
 | **L1 — Configuration** | Settings | L0 |
 | **L2 — Transverse** | Billing | L0, L1 |
 | **L2 — Support** | Lang, Currency, Dashboard, ModuleManager, Demo, Installer | L0, L1 |
-| **L3 — Métier** | Eshop360 (catalog, pricing, inventory, sales, finance, crm, channel, hr, projects) | L0, L1, L2 |
-| **L4 — Modules futurs** | Menuiserie360, etc. | L0, L1, L2, `Modules/Eshop360/Contracts/*` et `Modules/Eshop360/Events/*` (interfaces + DTO + événements). **Interdit** : `Modules/Eshop360/Domain/*/Models/*`, `Modules/Eshop360/Models/*`, `DB::table('eshop_*')`. Voir [ADR-021](../adr/ADR-021-contracts-for-future-business-modules.md). |
+| **L3 — Métier** | Eshop360 (catalog, pricing, inventory, sales, finance, crm, channel, hr, projects), Menuiserie360 | L0, L1, L2. Modules L3 mutuellement indépendants : pas de dépendance Eshop360 ↔ Menuiserie360. |
+| **L4 — Modules futurs** | CCC360, etc. | L0, L1, L2, `Modules/Eshop360/Contracts/*` et `Modules/Eshop360/Events/*` si le module choisit le pattern ADR-021. **Interdit** : `Modules/Eshop360/Domain/*/Models/*`, `Modules/Eshop360/Models/*`, `DB::table('eshop_*')`. |
 
 ---
 
@@ -43,6 +43,7 @@
 | ModuleManager | Core | core / fort |
 | Demo | Core, Eshop360 | support / moyen |
 | **Eshop360** | Core, Auth, Users, Settings, Billing, app/User, app/Instance | métier / très fort |
+| **Menuiserie360** | Core, Auth, Users, Settings, Billing, Currency, Lang, app/User, app/Instance | métier / autonome |
 
 ---
 
@@ -68,18 +69,18 @@
 
 ### Via Contracts Eshop360 (pour modules L4)
 
-Pour qu'un module L4 (Menuiserie360, futur CCC360, etc.) consomme Eshop360 :
+Pour qu'un module L4 (futur CCC360, etc.) consomme Eshop360 :
 - **Interfaces synchrones** : `Modules/Eshop360/Contracts/<Domain>/<Reader|Resolver>.php` (DI binding par défaut sur `Modules/Eshop360/Adapters/Eloquent*.php`)
 - **DTO immutables** : `Modules/Eshop360/Contracts/<Domain>/*Dto.php`
 - **Événements asynchrones** : `Modules/Eshop360/Events/*.php`
 
-Voir [ADR-021](../adr/ADR-021-contracts-for-future-business-modules.md) pour le détail du pattern et le périmètre minimum (Catalog + Customer + Pricing).
+Voir [ADR-021](../adr/ADR-021-contracts-for-future-business-modules.md) pour le détail du pattern et le périmètre minimum (Catalog + Customer + Pricing). Menuiserie360 n'utilise plus ce pattern depuis [ADR-023](../adr/ADR-023-menuiserie360-autonomous-module.md).
 
 ---
 
 ## Interdictions strictes
 
-- ❌ `use Modules\Eshop360\Models\Product` depuis Menuiserie360 → utiliser un contrat
+- ❌ `use Modules\Eshop360\*` depuis Menuiserie360 → interdit depuis ADR-023
 - ❌ `DB::table('eshop_products')` hors namespace `Eshop360` → bloqué PHPStan
 - ❌ Dupliquer un trait, modèle ou service déjà présent dans un autre module → factoriser
 - ❌ Créer un module qui dépend de la **vue Blade** d'un autre module → utiliser composants UI partagés

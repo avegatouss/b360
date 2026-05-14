@@ -1,8 +1,8 @@
 <x-menuiserie360::layout title="Clients menuiserie">
     <div class="card mb-3">
-        <div class="card-header">Recherche client (Eshop360)</div>
+        <div class="card-header">Recherche client</div>
         <div class="card-body">
-            <p class="text-muted small mb-2">Recherche globale parmi tous les clients de l'instance (pas seulement ceux avec historique menuiserie ci-dessous). Sélectionne un client pour ouvrir sa fiche menuiserie.</p>
+            <p class="text-muted small mb-2">Recherche parmi les clients menuiserie de l'instance.</p>
             <div x-data="clientSearchRedirect({
                 endpoint: '{{ route('menuiserie.clients.search', ['slug' => request()->route('slug')]) }}',
                 showUrlTemplate: '{{ url('/i/'.request()->route('slug').'/menuiserie/clients/__ID__') }}',
@@ -35,20 +35,22 @@
     <div class="card">
         <div class="card-header">Clients avec historique menuiserie</div>
         <div class="card-body">
-            <p class="text-muted small">{{ $extensions->total() }} client(s) ayant au moins un chantier menuiserie enregistré.</p>
+            <p class="text-muted small">{{ $extensions->total() }} client(s) menuiserie enregistré(s).</p>
             <table class="table">
-                <thead><tr><th>Customer ID</th><th>Contact préféré</th><th>Chantiers</th><th class="text-end">CA cumulé</th><th></th></tr></thead>
+                <thead><tr><th>Code</th><th>Nom</th><th>Statut</th><th>Contact préféré</th><th>Chantiers</th><th class="text-end">CA cumulé</th><th></th></tr></thead>
                 <tbody>
                 @forelse ($extensions as $ext)
                     <tr>
-                        <td>#{{ $ext->customer_id }}</td>
+                        <td>{{ $ext->code }}</td>
+                        <td>{{ $ext->name }}</td>
+                        <td>{{ $ext->statut?->label() ?? $ext->statut }}</td>
                         <td>{{ $ext->preferred_contact_method ?? '—' }}</td>
                         <td>{{ $ext->total_chantiers_count }}</td>
                         <td class="text-end">{{ number_format((float) $ext->total_revenue_xof, 0, ',', ' ') }} XOF</td>
-                        <td><a href="{{ route('menuiserie.clients.show', ['slug' => request()->route('slug'), 'customerId' => $ext->customer_id]) }}" class="btn btn-sm btn-outline-primary">Voir</a></td>
+                        <td><a href="{{ route('menuiserie.clients.show', ['slug' => request()->route('slug'), 'customerId' => $ext->id]) }}" class="btn btn-sm btn-outline-primary">Voir</a></td>
                     </tr>
                 @empty
-                    <tr><td colspan="5" class="text-muted text-center">Aucun client menuiserie enregistré.</td></tr>
+                    <tr><td colspan="7" class="text-muted text-center">Aucun client menuiserie enregistré.</td></tr>
                 @endforelse
                 </tbody>
             </table>

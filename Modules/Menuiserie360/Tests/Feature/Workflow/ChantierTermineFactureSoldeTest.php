@@ -10,10 +10,9 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Modules\Core\Support\CurrentInstance;
 use Modules\Core\Support\TeamContext;
-use Modules\Core\Tests\Concerns\RequiresEshop360Schema;
-use Modules\Eshop360\Domain\CRM\Models\Customer;
 use Modules\Menuiserie360\Domain\Chantier\Enums\StatutChantier;
 use Modules\Menuiserie360\Domain\Chantier\Models\Chantier;
+use Modules\Menuiserie360\Domain\Client\Models\ClientMenuiserie;
 use Modules\Menuiserie360\Domain\Commercial\Enums\StatutDevis;
 use Modules\Menuiserie360\Domain\Commercial\Models\Devis;
 use Modules\Menuiserie360\Domain\Finance\Enums\TypeFacture;
@@ -26,8 +25,6 @@ use Modules\Menuiserie360\Tests\TestCase;
  */
 final class ChantierTermineFactureSoldeTest extends TestCase
 {
-    use RequiresEshop360Schema;
-
     private Instance $instance;
 
     private User $superAdmin;
@@ -35,7 +32,6 @@ final class ChantierTermineFactureSoldeTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->requireEshop360Schema();
         Cache::flush();
 
         $this->instance = $this->makeRootInstance();
@@ -115,17 +111,20 @@ final class ChantierTermineFactureSoldeTest extends TestCase
      */
     private function makeBcAndChantier(float $montantTtc, int $acomptePct): array
     {
-        $customer = Customer::withoutGlobalScopes()->create([
+        $client = ClientMenuiserie::create([
             'instance_id' => $this->instance->id,
             'code' => 'CUS-P3-1',
-            'name' => 'Client P3',
+            'type' => 'entreprise',
+            'nom' => 'Client P3',
+            'raison_sociale' => 'Client P3',
+            'statut' => 'lead',
             'is_active' => true,
         ]);
 
         $devis = Devis::create([
             'instance_id' => $this->instance->id,
             'numero' => 'DEV-P3-001',
-            'client_id' => $customer->getKey(),
+            'client_id' => $client->getKey(),
             'statut' => StatutDevis::ACCEPTE->value,
             'taux_tva' => 0.18,
             'montant_ht' => round($montantTtc / 1.18, 2),
@@ -139,7 +138,7 @@ final class ChantierTermineFactureSoldeTest extends TestCase
             'instance_id' => $this->instance->id,
             'numero' => 'BC-P3-001',
             'devis_id' => $devis->getKey(),
-            'client_id' => $customer->getKey(),
+            'client_id' => $client->getKey(),
             'statut' => 'cree',
             'montant_ht' => round($montantTtc / 1.18, 2),
             'taux_tva' => 0.18,
@@ -152,7 +151,7 @@ final class ChantierTermineFactureSoldeTest extends TestCase
             'instance_id' => $this->instance->id,
             'numero' => 'CH-P3-001',
             'bc_id' => $bc->getKey(),
-            'client_id' => $customer->getKey(),
+            'client_id' => $client->getKey(),
             'statut' => StatutChantier::EN_COURS->value,
         ]);
 

@@ -7,7 +7,7 @@ namespace Modules\Menuiserie360\Tests\Unit\Structural;
 use Modules\Menuiserie360\Tests\TestCase;
 
 /**
- * Tests structurels d'isolation Menuiserie360 ↔ Eshop360 (spec v1.3 §6.2).
+ * Tests structurels d'isolation Menuiserie360 autonome (ADR-023).
  *
  * 5 invariants ADR-021 + ADR-020 §1.4ter à activer dès le premier commit
  * (P0 — squelette). Toute violation = build broken.
@@ -25,19 +25,14 @@ final class EshopIsolationTest extends TestCase
 {
     private const MENUISERIE_ROOT = __DIR__.'/../../../';
 
-    /**
-     * Invariant 1 — Aucun fichier Menuiserie360 n'importe `Modules\Eshop360\Models\*`
-     * (ancien namespace legacy pré-R-101 / R-101 stubs S12).
-     */
-    public function test_no_file_imports_eshop360_legacy_models_namespace(): void
+    public function test_no_file_imports_any_eshop360_namespace(): void
     {
-        $matches = $this->grepInModule('use Modules\\\\Eshop360\\\\Models\\\\');
+        $matches = $this->grepInModule('use Modules\\\\Eshop360\\\\');
 
         $this->assertSame(
             [],
             $matches,
-            'Menuiserie360 ne doit jamais importer Modules\\Eshop360\\Models\\* (legacy R-101). '.
-            'Utiliser un contrat ADR-021 (Modules\\Eshop360\\Contracts\\*).'
+            'Menuiserie360 est un module L3 autonome : aucun import Modules\\Eshop360\\* n\'est autorise.'
         );
     }
 
@@ -78,8 +73,9 @@ final class EshopIsolationTest extends TestCase
     }
 
     /**
-     * Invariant 4 — Aucun fichier Menuiserie360 n'écrit `DB::table('eshop_*')`
-     * (accès direct aux tables Eshop360, contournement ADR-021).
+     * Invariant 4 — Aucun fichier runtime Menuiserie360 n'écrit
+     * `DB::table('eshop_*')`. Les migrations sont exclues pour permettre le
+     * backfill defensif ADR-023 depuis eshop_customers.
      *
      * Note : la PHPStan custom rule `NoDirectCrossModuleTableAccess` couvre déjà
      * cet invariant globalement. Ce test fournit une vérification indépendante
@@ -161,20 +157,7 @@ final class EshopIsolationTest extends TestCase
                 continue;
             }
 
-            // Exclure Database/Seeders : les seeders de démo (M-UI-1) sont par
-            // nature cross-module — ils créent un scénario complet incluant
-            // Customer Eshop360, exactement comme les seeders DemoCustomers
-            // d'Eshop360 référencent leurs propres modèles. Ce n'est pas du
-            // code runtime de production, c'est de la fixture.
-            if (str_contains($path, DIRECTORY_SEPARATOR.'Database'.DIRECTORY_SEPARATOR.'Seeders'.DIRECTORY_SEPARATOR)) {
-                continue;
-            }
-
-            // Exclure les services d'import CSV (V1.2-3) : par essence ils
-            // résolvent un client_code Eshop360 pour rattacher le devis importé
-            // au bon Customer. C'est une feature de migration de données, pas
-            // un service runtime. Pattern jumeau de l'exclusion Seeders.
-            if (preg_match('#'.preg_quote(DIRECTORY_SEPARATOR.'Services'.DIRECTORY_SEPARATOR, '#').'Import[A-Z][A-Za-z0-9]*CsvService\\.php$#', $path) === 1) {
+            if (str_contains($path, DIRECTORY_SEPARATOR.'Database'.DIRECTORY_SEPARATOR.'Migrations'.DIRECTORY_SEPARATOR)) {
                 continue;
             }
 

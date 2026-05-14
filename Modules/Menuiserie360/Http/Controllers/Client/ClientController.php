@@ -9,18 +9,13 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\Core\Support\CurrentInstance;
-use Modules\Eshop360\Contracts\Customer\CustomerDto;
-use Modules\Eshop360\Contracts\Customer\CustomerReader;
 use Modules\Menuiserie360\Domain\Client\Contracts\ClientRepositoryContract;
 use Modules\Menuiserie360\Domain\Client\Models\ClientMenuiserie;
 
 /**
  * P2 / M-UI-4 — Controller Client menuiserie.
  *
- * Consomme `ClientRepositoryContract` (qui passe par `CustomerReader`
- * Eshop360 + extension menuiserie, cf. ADR-021). Le endpoint `search`
- * permet l'autocomplete client global dans devis/create et autres
- * formulaires (lot M-UI-4).
+ * Consomme le referentiel client natif Menuiserie360 (ADR-023).
  */
 final class ClientController extends Controller
 {
@@ -54,42 +49,46 @@ final class ClientController extends Controller
     }
 
     /**
-     * Endpoint JSON pour l'autocomplete client (M-UI-4).
-     * Retourne les customers Eshop360 actifs qui matchent la query
-     * sur code / name / email / phone.
-     *
-     * Réponse 503 si Eshop360 est désactivé (R-403 — binding CustomerReader
-     * absent, le module ne peut pas servir cette donnée).
+     * Endpoint JSON pour l'autocomplete client natif.
      */
     public function search(Request $request): JsonResponse
     {
         $instance = CurrentInstance::get();
         abort_if($instance === null, 503, 'No instance context.');
 
-        if (! app()->bound(CustomerReader::class)) {
-            return response()->json([
-                'error' => 'Eshop360 désactivé — recherche client indisponible (R-403).',
-                'results' => [],
-            ], 503);
-        }
-
         $query = (string) $request->query('q', '');
         $limit = (int) $request->query('limit', 20);
 
-        $customers = app(CustomerReader::class)->searchCustomers($instance->id, $query, $limit);
+        if (mb_strlen(trim($query)) < 2) {
+            return response()->json(['results' => []]);
+        }
 
-        $results = array_map(
-            static fn (CustomerDto $c) => [
-                'id' => $c->id,
-                'code' => $c->code,
-                'name' => $c->name,
-                'email' => $c->email,
-                'phone' => $c->phone,
-                'city' => $c->city,
-                'label' => "{$c->code} — {$c->name}".($c->city !== null ? " ({$c->city})" : ''),
-            ],
-            is_array($customers) ? $customers : iterator_to_array($customers),
-        );
+        $clients = ClientMenuiserie::query()
+            ->where('instance_id', $instance->id)
+            ->where('is_active', true)
+            ->where(function ($builder) use ($query): void {
+                $like = '%'.$query.'%';
+                $builder
+                    ->where('code', 'like', $like)
+                    ->orWhere('nom', 'like', $like)
+                    ->orWhere('prenom', 'like', $like)
+                    ->orWhere('raison_sociale', 'like', $like)
+                    ->orWhere('email', 'like', $like)
+                    ->orWhere('telephone_principal', 'like', $like);
+            })
+            ->orderBy('code')
+            ->limit(max(1, min($limit, 50)))
+            ->get();
+
+        $results = $clients->map(static fn (ClientMenuiserie $client): array => [
+            'id' => (int) $client->getKey(),
+            'code' => (string) $client->getAttribute('code'),
+            'name' => $client->name,
+            'email' => $client->getAttribute('email'),
+            'phone' => $client->getAttribute('telephone_principal'),
+            'city' => $client->getAttribute('ville'),
+            'label' => $client->getAttribute('code').' - '.$client->name.($client->getAttribute('ville') !== null ? ' ('.$client->getAttribute('ville').')' : ''),
+        ])->all();
 
         return response()->json(['results' => $results]);
     }

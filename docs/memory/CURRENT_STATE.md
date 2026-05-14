@@ -32,10 +32,11 @@
 | ModuleManager | actif | à confirmer | oui | — |
 | Settings | actif | stable | oui | socle plateforme |
 | Users | actif | stable | oui | socle plateforme |
+| Menuiserie360 | actif | stable — V2 S1 livré (ADR-023 accepté, BC-Clients autonome, R-403 fermé) | oui | Module L3 autonome ; aucun import `Modules\Eshop360\*` |
 
 ## En cours
 
-- (vide — à remplir au fil des lots)
+- Menuiserie360 V2 : S1 autonomie BC-Clients livré ; prochains sous-lots S2..S10 à prioriser selon ADR-024/025.
 
 ## Prochaines actions priorisées
 

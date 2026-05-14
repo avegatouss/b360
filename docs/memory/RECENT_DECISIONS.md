@@ -1,7 +1,57 @@
 # RECENT_DECISIONS — B360
 
-> Décisions structurantes récentes. Mise à jour : **2026-05-12** (R-401-FIX livré, ADR-022 Accepté).
+> Décisions structurantes récentes. Mise à jour : **2026-05-14** (cadrage Menuiserie360 V2, ADR-023/024/025 Proposés).
 > Pour les décisions complètes argumentées, voir `docs/adr/`.
+
+---
+
+## 2026-05-14 — R-M-V2-S1 livré : Menuiserie360 autonome, R-403 fermé (ADR-023 Accepté)
+
+- **Décision** : exécution du sous-lot S1 du chantier V2. Menuiserie360 est désormais un module L3 métier autonome ; le BC-Clients lit `mnu_clients_menuiserie` comme référentiel natif au lieu de consommer `CustomerReader` Eshop360.
+- **Changements clés** : migrations `2026_05_14_000001/000002` (identité client native + backfill défensif depuis `eshop_customers` sans import PHP), enum `StatutClientMenuiserie`, refonte DTO/contract/repository, retrait du preflight Eshop360, remplacement des usages Customer dans HTTP/import/demo seeder.
+- **Architecture** : `deptrac.yaml` retire `EshopContracts` du ruleset Menuiserie360 et classe Menuiserie360 en L3 graphviz. `MODULE_DEPENDENCY_MAP.md` documente l'indépendance Eshop360 ↔ Menuiserie360. [ADR-023](../adr/ADR-023-menuiserie360-autonomous-module.md) passe en **Accepté**.
+- **Tests** : nouveaux gardes `NoEshop360ImportTest`, `ClientMenuiserieAutonomousTest`, `StatutClientWorkflowTest`; `ClientMenuiserieRepositoryTest` refondu ; `MenuiserieControllersTest` et `ChantierTermineFactureSoldeTest` réactivés sans `RequiresEshop360Schema`.
+- **Risque** : R-403 déplacé en FERMÉ dans [OPEN_RISKS](OPEN_RISKS.md). Les skips Currency qui dépendent réellement de `eshop_customers` restent hors scope S1.
+
+---
+
+## 2026-05-14 — Cadrage Menuiserie360 V2 : module autonome + extensions CDC 2026 (ADRs 023/024/025 Proposés)
+
+- **Décision** : démarrage du chantier V2 du module Menuiserie360 pour atteindre la conformité au [Cahier des Charges 2026](../Ins/CAHIER%20DE%20CHARGES%20WEB%20LOGICIEL%202026%20%20%285%29.pdf) (audit V1 livré vs CDC : ~85 % couvert post-P3) et combler 6 écarts fonctionnels explicites + 4 engagements V2 différés + 2 risques techniques bloquants prod.
+- **4 décisions critiques humaines tranchées (2026-05-14)** :
+  1. **Q1 — Menuiserie360 doit fonctionner de façon autonome** (sans Eshop360 actif). Option (a) refonte BC-Clients natif retenue (vs option (b) null adapters). Implique : reclasser le module de L4 vers L3 métier, refondre `mnu_clients_menuiserie` en référentiel client autonome, retirer tout import `Modules\Eshop360\*` du module, supprimer le preflight check Eshop360 dans le ServiceProvider. **R-403 sera fermé par S1**.
+  2. **Q2 — Communications** : SMTP **per-instance** (chaque instance configure son driver mail), SMS **différé** V2.1 (API à choisir : Orange CI vs Twilio), WhatsApp **self-host** (recommandation WAHA — WhatsApp HTTP API).
+  3. **Q3 — Avoirs** : **workflow dynamique** avec toggle `avoir_require_validation` dans `mnu_settings`. Toggle OFF = Comptable seul ; Toggle ON = double signature Comptable→Direction. Permission `menuiserie.invoice.validate` séparée de `menuiserie.invoice.create`. Statut intermédiaire `pending_validation` ajouté à `StatutFacture`.
+  4. **Q4 — Statut client enrichi** : 6 valeurs (lead / qualifié / converti / perdu / contentieux / archivé) vs 3 du CDC strict. Aligne sur un CRM léger attendu par la cible commerciale KHOGA 360°.
+- **3 ADRs proposés (en attente acceptation au merge des sous-lots)** :
+  - [ADR-023](../adr/ADR-023-menuiserie360-autonomous-module.md) — Menuiserie360 module autonome (refonte BC-Clients natif, reclassement L3, R-403 fermé). Acceptation au merge S1.
+  - [ADR-024](../adr/ADR-024-menuiserie360-v2-models.md) — Modèles V2 (incidents, rapports journaliers, statut client enrichi, docs client MediaLibrary). Acceptation au merge S2+S3.
+  - [ADR-025](../adr/ADR-025-menuiserie360-avoir-workflow-toggle.md) — Workflow avoir avec toggle validation Direction. Acceptation au merge S4.
+- **Découpage V2 (11 sous-lots)** :
+  - **S0** (ce commit) : Décisions + 3 ADRs Proposés + cadrage. **Pas de code.**
+  - **S1** R-403-FIX (4-5 j) — Autonomie BC-Clients. **BLOQUANT** pour S2..S10. IMPACT_ANALYSIS : [docs/lots/R-M-V2-S1-impact-analysis.md](../lots/R-M-V2-S1-impact-analysis.md).
+  - **S2** Statut client UI + Archivage docs client MediaLibrary (3 j) — cf. ADR-024 §"Documents client".
+  - **S3** Incidents + Rapports journaliers chantier (3-4 j) — cf. ADR-024.
+  - **S4** Avoirs toggle validation (4 j) — cf. ADR-025. Zone L2 numérotation.
+  - **S5** Inventaire périodique (3 j) — Zone L1 StockService.
+  - **S6** Notifications mail per-instance (4 j) — 3 canaux métier (relance impayés, stock critique, incident chantier).
+  - **S7** WhatsApp self-host WAHA (3 j) — channel Laravel custom.
+  - **S8** Webhooks Mobile Money signés + idempotents (5-6 j) — Zone L1 Billing, ADR-003.
+  - **S9** Audit Spatie ActivityLog (2 j) — 5 actions sensibles.
+  - **S10** Excel natif OpenSpout (2 j) — complète CSV existant.
+  - **S11** PWA / Mobile chef chantier (5 j, optionnel V2.1).
+  - **S12** Plateforme S-7 multi-DB (lot externe, parallèle, bloquant prod).
+- **État V1 livré (audit) vs CDC 2026** : 12 Controllers, 35 vues, 16 migrations, **122 tests** (19 skippés sous R-403). Couverture CDC §3 estimée à ~85 %. **Écarts identifiés** : A1 incidents, A2 rapports journaliers, A3 avoirs, A4 statut client, A5 docs client, A6 inventaire ; engagements V2 différés : B1 notifications effectives, B2 webhooks MM entrants, B3 Excel natif, B4 WhatsApp. Risques techniques : C1 R-403, C2 S-7 multi-DB, C3 tests Controllers skippés, C4 audit ActivityLog.
+- **Hors scope V2 explicite** : Comptabilité SYSCOHADA interne (le CDC ne le demande pas — export comptable suffit), WhatsApp Business API (KYC + coût), API REST publique avec Sanctum, Garanties/SAV, Import containers fournisseurs, Synchronisation Customer ↔ ClientMenuiserie multi-vertical (futur ADR-027 si besoin émerge V3).
+- **DoD V2 global** : CDC §3 couvert à 100 %, webhooks MM signés idempotents en prod, notifications mail effectives sur 3 canaux, ActivityLog sur 5 actions sensibles, tests ≥ 180 verts pour Menuiserie360, PHPStan 0, Pint propre, S-7 corrigé OU décision documentée single-DB, régression Eshop360 = 0.
+- **Documents produits dans ce lot S0** :
+  - [docs/adr/ADR-023-menuiserie360-autonomous-module.md](../adr/ADR-023-menuiserie360-autonomous-module.md)
+  - [docs/adr/ADR-024-menuiserie360-v2-models.md](../adr/ADR-024-menuiserie360-v2-models.md)
+  - [docs/adr/ADR-025-menuiserie360-avoir-workflow-toggle.md](../adr/ADR-025-menuiserie360-avoir-workflow-toggle.md)
+  - [docs/lots/R-M-V2-S1-impact-analysis.md](../lots/R-M-V2-S1-impact-analysis.md) (hand-off Codex prêt-à-coller)
+  - RECENT_DECISIONS (cette entrée)
+  - OPEN_RISKS R-403 enrichi (statut « résolution programmée S1 »)
+- **Suite immédiate** : Codex exécute S1 sur branche `feat/menuiserie360-v2-s1-autonomie` (3 commits granulaires). Claude relit le diff, ferme R-403, fait passer ADR-023 en Accepté. Puis S2 ou S3 selon priorité humaine.
 
 ---
 

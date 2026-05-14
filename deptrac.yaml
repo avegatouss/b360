@@ -218,12 +218,8 @@ deptrac:
             - type: directory
               value: Modules/Eshop360/Events/.*
 
-    # ═══════════════════════════════════════════════════════════════
-    # L4 — Modules métier futurs (consommateurs ADR-021)
-    # ═══════════════════════════════════════════════════════════════
-    # Menuiserie360 : premier module L4. Consomme Eshop360 UNIQUEMENT
-    # via EshopContracts (ADR-021). Aucun import de Domain models, aucun
-    # accès DB direct (DB::table('eshop_*')). Cf. spec v1.3 §2.5.
+    # Menuiserie360 : module métier L3 autonome (ADR-023).
+    # Aucun import Eshop360 n'est autorisé hors migration de backfill.
     - name: Menuiserie360
       collectors:
         - type: directory
@@ -321,13 +317,9 @@ deptrac:
       - Core
       - AppLayer
 
-    # ═══════════════════════════════════════════════════════════════
-    # L4 — Modules métier futurs (ADR-021)
-    # ═══════════════════════════════════════════════════════════════
-    # Menuiserie360 : ruleset minimal v1.3 §2.5.
-    # Autorisé : socles + transverses + EshopContracts (surface publique).
-    # INTERDIT : EshopX (Domain models), Eshop360 résiduel, EshopShared
-    # (interne), Eshop360 services.
+    # Menuiserie360 : L3 autonome (ADR-023).
+    # Autorisé : socles + transverses. INTERDIT : EshopContracts, EshopX,
+    # Eshop360 résiduel, EshopShared.
     Menuiserie360:
       - Core
       - Auth
@@ -337,7 +329,6 @@ deptrac:
       - Billing
       - Currency
       - Lang
-      - EshopContracts
       - AppLayer
 
     # R-101 S12 : EshopShared regroupe l'infrastructure partagée intra-Eshop360
@@ -611,8 +602,6 @@ deptrac:
       - Modules\Settings\Services\SettingsManager
     Modules\Core\Providers\CoreHttpServiceProvider:
       - Modules\Demo\Http\Middleware\DemoGuard
-    Modules\Dashboard\Http\Controllers\DashboardController:
-      - Modules\Eshop360\Services\EshopSettingsService
     # ─── R-101 S12 baseline ─────────────────────────────────────────────
     # Real cross-subdomain typed relations exposed by S12.3 (consumers
     # rewritten to canonical FQN). Previously hidden because imports went
@@ -905,8 +894,6 @@ deptrac:
     Modules\Eshop360\Domain\Sales\Models\SaleReturn:
       - Modules\Eshop360\Services\ChannelAccessService
     # ─── End R-101 S12 baseline ─────────────────────────────────────────
-    Modules\ModuleManager\Http\Controllers\ModuleController:
-      - Modules\Eshop360\Services\EshopInitializer
     currency():
       - Modules\Currency\Services\CurrencyManager
     format_currency():
@@ -934,6 +921,7 @@ deptrac:
           - Installer
         L3:
           - Eshop360
+          - Menuiserie360
           - EshopShared
           - EshopCatalog
           - EshopCRM

@@ -6,7 +6,6 @@ namespace Modules\Menuiserie360\Database\Seeders;
 
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use Modules\Eshop360\Domain\CRM\Models\Customer;
 use Modules\Menuiserie360\Domain\Chantier\Enums\StatutChantier;
 use Modules\Menuiserie360\Domain\Chantier\Models\Chantier;
 use Modules\Menuiserie360\Domain\Chantier\Models\EtapeChantier;
@@ -32,7 +31,7 @@ use Modules\Menuiserie360\Domain\Stock\Models\StockMatiere;
  *
  * Crée un scénario démo cohérent pour l'instance donnée :
  *   - 5 matières premières + leurs stocks initiaux
- *   - 3 customers Eshop360 (DEMO-MNU-CL-*) avec extensions menuiserie
+ *   - 3 clients Menuiserie360 (DEMO-MNU-CL-*)
  *   - 1 devis brouillon (2 lignes)
  *   - 1 devis accepté + son BC + facture acompte + OF planifié + chantier
  *     (4 étapes : préparation, fabrication, transport, pose)
@@ -67,14 +66,13 @@ final class MenuiserieDemoSeeder
             $matieres = $this->seedMatieres($instanceId);
             $this->seedStocks($instanceId, $matieres);
 
-            $customers = $this->seedCustomers($instanceId);
-            $this->seedClientExtensions($instanceId, $customers);
+            $clients = $this->seedClients($instanceId);
 
             // Devis brouillon (libre)
-            $this->seedDevisBrouillon($instanceId, $customers[0], $matieres);
+            $this->seedDevisBrouillon($instanceId, $clients[0], $matieres);
 
             // Devis accepté → workflow complet (BC + facture acompte + OF + chantier)
-            $this->seedDevisAccepteWorkflow($instanceId, $customers[1], $matieres);
+            $this->seedDevisAccepteWorkflow($instanceId, $clients[1], $matieres);
         });
     }
 
@@ -115,11 +113,10 @@ final class MenuiserieDemoSeeder
             LigneDevis::query()->whereIn('devis_id', $devisIds)->forceDelete();
             Devis::query()->whereIn('id', $devisIds)->forceDelete();
 
-            $customerIds = Customer::withoutGlobalScopes()
+            ClientMenuiserie::query()
                 ->where('instance_id', $instanceId)
                 ->where('code', 'like', self::CUSTOMER_CODE_PREFIX.'%')
-                ->pluck('id');
-            ClientMenuiserie::query()->whereIn('customer_id', $customerIds)->forceDelete();
+                ->forceDelete();
 
             // Stocks puis matières (FK matiere_id sur stocks).
             $matiereIds = MatierePremiere::query()
@@ -129,9 +126,6 @@ final class MenuiserieDemoSeeder
             StockMatiere::query()->whereIn('matiere_id', $matiereIds)->forceDelete();
             MatierePremiere::query()->whereIn('id', $matiereIds)->forceDelete();
 
-            // Customers Eshop360 conservés par défaut (impact potentiel sur d'autres
-            // modules). Décommenter si tu veux les nettoyer aussi.
-            // Customer::withoutGlobalScopes()->whereIn('id', $customerIds)->forceDelete();
         });
     }
 
@@ -183,22 +177,26 @@ final class MenuiserieDemoSeeder
     }
 
     /**
-     * @return array<int, Customer> (réindexé 0..2)
+     * @return array<int, ClientMenuiserie> (réindexé 0..2)
      */
-    private function seedCustomers(int $instanceId): array
+    private function seedClients(int $instanceId): array
     {
         $data = [
-            ['code' => self::CUSTOMER_CODE_PREFIX.'001', 'name' => 'Résidence Les Palmiers', 'email' => 'gestion@palmiers-abj.ci', 'phone' => '+225 27 22 100 200', 'city' => 'Abidjan', 'country' => 'CI'],
-            ['code' => self::CUSTOMER_CODE_PREFIX.'002', 'name' => 'Bureau Karim Coulibaly', 'email' => 'karim.c@example.ci', 'phone' => '+225 07 50 80 90 00', 'city' => 'Yamoussoukro', 'country' => 'CI'],
-            ['code' => self::CUSTOMER_CODE_PREFIX.'003', 'name' => 'Hôtel Tropicana', 'email' => 'reception@tropicana.ci', 'phone' => '+225 27 21 60 30 30', 'city' => 'Grand-Bassam', 'country' => 'CI'],
+            ['code' => self::CUSTOMER_CODE_PREFIX.'001', 'raison_sociale' => 'Résidence Les Palmiers', 'email' => 'gestion@palmiers-abj.ci', 'telephone_principal' => '+225 27 22 100 200', 'ville' => 'Abidjan', 'preferred_contact_method' => 'whatsapp', 'total_chantiers_count' => 0, 'total_revenue_xof' => 0],
+            ['code' => self::CUSTOMER_CODE_PREFIX.'002', 'raison_sociale' => 'Bureau Karim Coulibaly', 'email' => 'karim.c@example.ci', 'telephone_principal' => '+225 07 50 80 90 00', 'ville' => 'Yamoussoukro', 'preferred_contact_method' => 'email', 'total_chantiers_count' => 1, 'total_revenue_xof' => 850000],
+            ['code' => self::CUSTOMER_CODE_PREFIX.'003', 'raison_sociale' => 'Hôtel Tropicana', 'email' => 'reception@tropicana.ci', 'telephone_principal' => '+225 27 21 60 30 30', 'ville' => 'Grand-Bassam', 'preferred_contact_method' => 'phone', 'total_chantiers_count' => 3, 'total_revenue_xof' => 4200000],
         ];
 
         return array_map(
-            fn (array $d) => Customer::withoutGlobalScopes()->updateOrCreate(
+            fn (array $d) => ClientMenuiserie::updateOrCreate(
                 ['instance_id' => $instanceId, 'code' => $d['code']],
                 [
                     ...$d,
                     'instance_id' => $instanceId,
+                    'type' => 'entreprise',
+                    'nom' => $d['raison_sociale'],
+                    'pays' => 'CI',
+                    'statut' => 'lead',
                     'is_active' => true,
                 ]
             ),
@@ -207,39 +205,16 @@ final class MenuiserieDemoSeeder
     }
 
     /**
-     * @param  array<int, Customer>  $customers
-     */
-    private function seedClientExtensions(int $instanceId, array $customers): void
-    {
-        $extensions = [
-            ['preferred_contact_method' => 'whatsapp', 'total_chantiers_count' => 0, 'total_revenue_xof' => 0],
-            ['preferred_contact_method' => 'email', 'total_chantiers_count' => 1, 'total_revenue_xof' => 850000],
-            ['preferred_contact_method' => 'phone', 'total_chantiers_count' => 3, 'total_revenue_xof' => 4200000],
-        ];
-
-        foreach ($customers as $i => $customer) {
-            ClientMenuiserie::updateOrCreate(
-                ['instance_id' => $instanceId, 'customer_id' => $customer->getKey()],
-                [
-                    'instance_id' => $instanceId,
-                    'customer_id' => $customer->getKey(),
-                    ...$extensions[$i],
-                ]
-            );
-        }
-    }
-
-    /**
      * @param  array<int, MatierePremiere>  $matieres
      */
-    private function seedDevisBrouillon(int $instanceId, Customer $customer, array $matieres): Devis
+    private function seedDevisBrouillon(int $instanceId, ClientMenuiserie $client, array $matieres): Devis
     {
         $devis = Devis::updateOrCreate(
             ['instance_id' => $instanceId, 'numero' => self::DEVIS_NUMERO_PREFIX.'2026-0001'],
             [
                 'instance_id' => $instanceId,
                 'numero' => self::DEVIS_NUMERO_PREFIX.'2026-0001',
-                'client_id' => $customer->getKey(),
+                'client_id' => $client->getKey(),
                 'statut' => StatutDevis::BROUILLON->value,
                 'taux_tva' => 0.18,
                 'validite_jours' => 30,
@@ -289,7 +264,7 @@ final class MenuiserieDemoSeeder
     /**
      * @param  array<int, MatierePremiere>  $matieres
      */
-    private function seedDevisAccepteWorkflow(int $instanceId, Customer $customer, array $matieres): void
+    private function seedDevisAccepteWorkflow(int $instanceId, ClientMenuiserie $client, array $matieres): void
     {
         $now = Carbon::now();
 
@@ -299,7 +274,7 @@ final class MenuiserieDemoSeeder
             [
                 'instance_id' => $instanceId,
                 'numero' => self::DEVIS_NUMERO_PREFIX.'2026-0002',
-                'client_id' => $customer->getKey(),
+                'client_id' => $client->getKey(),
                 'statut' => StatutDevis::ACCEPTE->value,
                 'taux_tva' => 0.18,
                 'validite_jours' => 30,
@@ -350,7 +325,7 @@ final class MenuiserieDemoSeeder
                 'instance_id' => $instanceId,
                 'numero' => self::BC_NUMERO_PREFIX.'2026-0001',
                 'devis_id' => $devis->getKey(),
-                'client_id' => $customer->getKey(),
+                'client_id' => $client->getKey(),
                 'statut' => StatutBonCommande::CREE->value,
                 'taux_tva' => 0.18,
                 'montant_ht' => $totalHt,
@@ -387,7 +362,7 @@ final class MenuiserieDemoSeeder
             [
                 'instance_id' => $instanceId,
                 'invoice_number' => self::INVOICE_NUMBER_PREFIX.'2026-A-0001',
-                'client_id' => $customer->getKey(),
+                'client_id' => $client->getKey(),
                 'bc_id' => $bc->getKey(),
                 'type' => TypeFacture::ACOMPTE->value,
                 'amount_ht' => $acompteHt,
@@ -421,7 +396,7 @@ final class MenuiserieDemoSeeder
                 'instance_id' => $instanceId,
                 'numero' => self::CHANTIER_NUMERO_PREFIX.'2026-0001',
                 'bc_id' => $bc->getKey(),
-                'client_id' => $customer->getKey(),
+                'client_id' => $client->getKey(),
                 'statut' => StatutChantier::EN_ATTENTE->value,
                 'adresse_pose' => 'Quartier Cocody, rue des Jardins, Abidjan',
                 'contact_chantier' => '+225 07 11 22 33 44',

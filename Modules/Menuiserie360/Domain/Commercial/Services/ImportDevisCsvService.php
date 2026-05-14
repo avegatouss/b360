@@ -6,7 +6,7 @@ namespace Modules\Menuiserie360\Domain\Commercial\Services;
 
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
-use Modules\Eshop360\Domain\CRM\Models\Customer;
+use Modules\Menuiserie360\Domain\Client\Models\ClientMenuiserie;
 use Modules\Menuiserie360\Domain\Commercial\Enums\StatutDevis;
 use Modules\Menuiserie360\Domain\Commercial\Models\Devis;
 use Modules\Menuiserie360\Domain\Commercial\Models\LigneDevis;
@@ -27,15 +27,10 @@ use Modules\Menuiserie360\Domain\Stock\Models\MatierePremiere;
  *   - Devis ré-importés (devis_ref existant pour l'instance) : SKIP avec
  *     erreur "devis déjà importé". Pas d'écrasement (ce sont des données
  *     business potentiellement actées).
- *   - client_code → résolu via Customer Eshop360 (ADR-021 §exception
- *     seeders/imports : autorisé pour les services de migration).
+ *   - client_code → résolu via le referentiel natif ClientMenuiserie.
  *   - matiere_code → résolu via MatierePremiere (nullable, peut être vide).
  *   - Numérotation devis : IMPORT-<devis_ref> pour traçabilité.
  *   - Transaction unique : toute exception fatale rollback tout le batch.
- *
- * Note ADR-021 : cette dépendance directe au modèle Customer Eshop360 est
- * l'extension du même pattern que MenuiserieDemoSeeder (cf. exclusion
- * Database/Seeders/ dans EshopIsolationTest, étendue aux services Import*Csv).
  */
 final class ImportDevisCsvService
 {
@@ -129,12 +124,12 @@ final class ImportDevisCsvService
             return 'client_code vide.';
         }
 
-        $customer = Customer::withoutGlobalScopes()
+        $client = ClientMenuiserie::query()
             ->where('instance_id', $instanceId)
             ->where('code', $clientCode)
             ->first();
-        if ($customer === null) {
-            return "client_code '{$clientCode}' introuvable côté Eshop360.";
+        if ($client === null) {
+            return "client_code '{$clientCode}' introuvable cote Menuiserie360.";
         }
 
         $tauxTva = (float) ($first['taux_tva'] ?? 0.18);
@@ -144,7 +139,7 @@ final class ImportDevisCsvService
         $devis = Devis::create([
             'instance_id' => $instanceId,
             'numero' => $numero,
-            'client_id' => $customer->getKey(),
+            'client_id' => $client->getKey(),
             'statut' => StatutDevis::BROUILLON->value,
             'taux_tva' => $tauxTva,
             'validite_jours' => $validiteJours,

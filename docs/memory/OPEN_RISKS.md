@@ -1,6 +1,6 @@
 # OPEN_RISKS — B360
 
-> Risques techniques connus, suivi vivant. Mise à jour : **2026-05-11**
+> Risques techniques connus, suivi vivant. Mise à jour : **2026-05-14** (R-403 fermé par lot R-M-V2-S1, cf. [ADR-023](../adr/ADR-023-menuiserie360-autonomous-module.md))
 
 ---
 
@@ -43,30 +43,6 @@ _(aucun risque majeur ouvert — R-101 fermée le 2026-05-05. Voir section FERM�
   - **Cible** : 0 référence `route('<business>.*')` dans modules socles, retrait des guards `Route::has` introduits par R-401.
   - **Tests Feature critiques à écrire** : `DashboardLayoutRenderingTest` (4 scénarios verrouillant l'absence de RouteNotFoundException avec Eshop360 ON/OFF + hierarchical_menu ON/OFF).
 
-### R-403 — Menuiserie360 dépend fortement d'Eshop360 via les Contracts ADR-021 (ouvert 2026-05-11)
-
-- **Source** : audit cross-module 2026-05-11. Constat : quand Eshop360 est désactivé via `modules_statuses.json`, 28 tests Menuiserie360/Currency basculent en erreur sur `BindingResolutionException: Target [Modules\Eshop360\Contracts\Customer\CustomerReader] is not instantiable`. La cause est structurelle, pas un bug.
-- **Cartographie** :
-  - **3 contracts publiés** par Eshop360 (ADR-021 §1) : `CustomerReader`, `CatalogReader`, `PricingResolver`. Bindings dans `Eshop360ServiceProvider::register()` lignes 108-119.
-  - **1 consommateur réel** : `Modules/Menuiserie360/Domain/Client/Repositories/ClientMenuiserieRepository` injecte `CustomerReader` au constructeur. `CatalogReader` et `PricingResolver` déclarés en spec mais pas encore consommés.
-  - **Couplage doublé** par les tests : `ClientMenuiserieRepositoryTest` crée des `Modules\Eshop360\Domain\CRM\Models\Customer` directement (autorisé par le commentaire L20-24 du test, hors invariants structurels).
-- **Verdict architectural** : Menuiserie360 est un module **L4 dépendant strictement de L3 Eshop360** par design (MODULE_DEPENDENCY_MAP ligne 27, ADR-021). Le mode « Menuiserie360 actif + Eshop360 inactif » **n'est pas supporté en production** — la sidebar fonctionne (R-402) mais toute action client/devis/facture lève BindingResolutionException.
-- **Mitigation appliquée 2026-05-11** : preflight check dans `Menuiserie360ServiceProvider::register()` qui détecte l'absence des bindings Eshop360 et log un `Log::warning(...)` explicite mentionnant les contrats manquants et R-403. Ne bloque pas le boot — les features autonomes Menuiserie360 (Stock matières, Production OF sans client) restent utilisables.
-- **Garde anti-régression** : `Modules/Menuiserie360/Tests/Unit/Eshop360PreflightTest` (4 tests) — vérifie la détection complète/partielle/absente des bindings + présence du mot-clé R-403 et des FQN dans le message de warning.
-- **Décision opérationnelle** : tant que le user veut développer Menuiserie360 avec Eshop360 désactivé sur sa branche dev, certains tests Menuiserie360/Currency sont acceptés comme rouges/skipped. Réactiver Eshop360 dans `modules_statuses.json` les remet au vert.
-- **Détail des tests impactés (tous skippés proprement)** :
-  - **10 tests** skippés sur binding `CustomerReader` absent : `Modules/Menuiserie360/Tests/Unit/ClientMenuiserieRepositoryTest` — `setUp()` utilise `markTestSkipped(...)` direct avec référence R-403.
-  - **7 tests** skippés sur schema absent : `Modules/Menuiserie360/Tests/Feature/Http/MenuiserieControllersTest` — `setUp()` consomme le trait `RequiresEshop360Schema`.
-  - **2 tests** skippés sur schema absent : `Modules/Menuiserie360/Tests/Feature/Workflow/ChantierTermineFactureSoldeTest` — idem.
-  - **9 tests** skippés individuellement sur schema absent : `Modules/Currency/Tests/Unit/MultiCurrencyTest` — chaque test concerné appelle `$this->requireEshop360Schema()` en première ligne (les 9 autres tests Currency qui ne touchent pas `eshop_*` continuent à passer normalement).
-  - **Trait partagé** : `Modules/Core/Tests/Concerns/RequiresEshop360Schema` — `Schema::hasTable('eshop_customers')` comme proxy de l'état des migrations Eshop360. Vit dans Core pour permettre la consommation cross-module sans créer de dépendance code (le trait n'importe aucune classe Eshop360).
-  - **Suite globale après extension** : 504 tests / 998 assertions / 0 errors / 0 failures / 42 skipped quand Eshop360 OFF. Tous les skips portent le tag R-403.
-- **Cible architecturale (lot R-403-FIX, hors scope immédiat)** : 3 options non décidées :
-  1. **Module gating strict** : `ModuleController::toggle()` bloque l'activation Menuiserie360 si Eshop360 OFF (et inversement la désactivation Eshop360 si Menuiserie360 ON).
-  2. **Null adapters côté Menuiserie360** : `NullCustomerReader` etc. bindés via `bindIf` quand Eshop360 absent. Permet dev en isolation mais pollue l'archi (Menuiserie360 implémente une interface Eshop360).
-  3. **Statu quo + preflight check** : la mitigation actuelle. Pragmatique pour dev, strict en prod (Eshop360 requis).
-- **Doc liée** : `docs/adr/ADR-021-contracts-for-future-business-modules.md` (à enrichir d'une section « Contraintes runtime »).
-
 ### R-402 — MenuItems Menuiserie360 « invisibles » (placeholder P0 oublié post-V1, fermé 2026-05-11)
 
 - **Source** : observation 2026-05-11 — Eshop360 désactivé sur la branche Menuiserie360 P2-B, l'utilisateur a vu une sidebar sans aucune entrée Menuiserie alors que le module est V1 complet (122 tests, controllers et vues livrés en P3 / 2026-05-11).
@@ -78,6 +54,13 @@ _(aucun risque majeur ouvert — R-101 fermée le 2026-05-05. Voir section FERM�
   3. Chaque enfant a une `route` non nulle **et** un `requiredPermission` non nul — détecte le retour du `visibleWhen: false` ou la suppression d'une route nommée.
 
 ## FERMÉ
+
+### R-403 — Menuiserie360 dépendait fortement d'Eshop360 via les Contracts ADR-021 (fermé 2026-05-14)
+
+- **Source** : audit cross-module 2026-05-11. Quand Eshop360 était désactivé, Menuiserie360 échouait sur `BindingResolutionException` (`CustomerReader` absent) et plusieurs tests étaient skippés via R-403.
+- **Décision** : [ADR-023](../adr/ADR-023-menuiserie360-autonomous-module.md) accepté. Menuiserie360 devient module L3 métier autonome ; `mnu_clients_menuiserie` devient le référentiel client natif.
+- **Résolution R-M-V2-S1** : retrait des imports `Modules\Eshop360\*`, suppression du preflight `Menuiserie360ServiceProvider`, retrait de `EshopContracts` du ruleset deptrac Menuiserie360, refonte `ClientMenuiserieRepository`, migration additive `legacy_eshop_customer_id`, réactivation des tests Menuiserie360 précédemment skippés.
+- **Gardes anti-régression** : `NoEshop360ImportTest`, `EshopIsolationTest` resserré, `ClientMenuiserieAutonomousTest`, `ClientMenuiserieRepositoryTest` refondu, tests HTTP/workflow Menuiserie360 réactivés sans `RequiresEshop360Schema`.
 
 ### R-101 — Eshop360 monolithique (fermée 2026-05-05)
 
