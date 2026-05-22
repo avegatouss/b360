@@ -1,0 +1,25 @@
+{
+    "name": "Settings",
+    "alias": "settings",
+    "description": "Gestion des parametres globaux et par module de B360",
+    "keywords": ["settings", "config", "admin"],
+    "priority": 0,
+    "providers": [
+        "Modules\\Settings\\Providers\\SettingsServiceProvider"
+    ],
+    "files": [],
+    "docs": {
+        "summary": "Module de parametres centralise. Chaque module peut contribuer ses propres groupes de parametres via le systeme de hooks (SettingsGroup).",
+        "features": [
+            "Parametres globaux (instance_id = 0)",
+            "Cascade instance -> global",
+            "Groupes de parametres extensibles via hooks",
+            "Cache automatique avec invalidation"
+        ],
+        "hooks": [
+            {"type": "menu", "id": "settings", "description": "Menu item dans la sidebar Administration"},
+            {"type": "settings_group", "id": "general", "description": "Groupe de parametres generaux"}
+        ],
+        "permissions": []
+    }
+}

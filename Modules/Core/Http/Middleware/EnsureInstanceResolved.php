@@ -19,10 +19,7 @@ final class EnsureInstanceResolved
             if ($strategy === 'root') {
                 // Explicit fallback requires a root instance query (system DB).
                 // Only use if you've decided root fallback is acceptable.
-                $root = \App\Instances\Instance::query()
-                    ->on('system')
-                    ->where('slug', 'root')
-                    ->first();
+                $root = \App\Instances\Instance::where('slug', 'root')->first();
 
                 if ($root) {
                     CurrentInstance::set($root);

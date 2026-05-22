@@ -55,8 +55,10 @@ class EnsureNotInstalled
             | - Aucune exception volontairement levée
             |
             */
-             abort(404);
-           // return redirect('/');
+            // abort(404) plutôt que redirect : en prod, l'installateur
+            // ne doit pas révéler son existence. Un 404 neutre est préférable
+            // à un redirect qui confirmerait que la route existe.
+            abort(404);
         }
 
          // Si une installation est déjà en cours : refuser

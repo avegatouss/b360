@@ -3,6 +3,7 @@
 namespace App\Installer;
 
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use RuntimeException;
 
 /**
@@ -107,17 +108,44 @@ final class InstallLock
             );
         }
 
-        // Barrière 2 : empêche les exécutions concurrentes
+        // Barrière 2 : empêche les exécutions concurrentes (avec timeout automatique)
         if (self::isInstalling()) {
             $lockContent = File::get(self::installingPath());
             $data = json_decode($lockContent, true);
 
-            throw new RuntimeException(sprintf(
-                'Une installation est déjà en cours (démarrée le %s). ' .
-                'Si c\'est une erreur, supprimez manuellement %s.',
-                $data['started_at'] ?? 'inconnu',
-                self::installingPath()
-            ));
+            // Auto-cleanup des locks périmés (> 1 heure = probablement un crash)
+            $startedAt = $data['started_at'] ?? null;
+            if ($startedAt) {
+                try {
+                    $lockAge = now()->diffInSeconds(\Carbon\Carbon::parse($startedAt));
+                    if ($lockAge > 3600) {
+                        Log::warning('InstallLock: verrou périmé détecté, nettoyage automatique', [
+                            'started_at' => $startedAt,
+                            'age_seconds' => $lockAge,
+                        ]);
+                        self::releaseInstalling();
+                        // Continuer normalement (le lock est libéré)
+                    } else {
+                        throw new RuntimeException(sprintf(
+                            'Une installation est déjà en cours (démarrée le %s). ' .
+                            'Si c\'est une erreur, supprimez manuellement %s.',
+                            $startedAt,
+                            self::installingPath()
+                        ));
+                    }
+                } catch (RuntimeException $e) {
+                    throw $e;
+                } catch (\Throwable) {
+                    // Date invalide → on considère le lock comme périmé
+                    self::releaseInstalling();
+                }
+            } else {
+                throw new RuntimeException(sprintf(
+                    'Une installation est déjà en cours. ' .
+                    'Si c\'est une erreur, supprimez manuellement %s.',
+                    self::installingPath()
+                ));
+            }
         }
 
         // Création du verrou avec métadonnées structurées

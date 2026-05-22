@@ -1,0 +1,24 @@
+{
+    "name": "Dashboard",
+    "alias": "dashboard",
+    "description": "Tableau de bord principal et layout master de B360",
+    "keywords": ["dashboard", "layout"],
+    "priority": 0,
+    "providers": [
+        "Modules\\Dashboard\\Providers\\DashboardServiceProvider"
+    ],
+    "files": [],
+    "docs": {
+        "summary": "Module protege fournissant le layout master, le composant Sidebar dynamique et la page d'accueil du tableau de bord. Sert de fondation UI pour tous les autres modules.",
+        "features": [
+            "Layout master responsive (sidebar + topbar + content)",
+            "Sidebar dynamique via hooks (HookRegistry + HookFilter)",
+            "Page d'accueil du tableau de bord",
+            "Composants Blade reutilisables"
+        ],
+        "hooks": [
+            {"type": "menu", "id": "dashboard", "description": "Menu item Tableau de bord dans la sidebar principale"}
+        ],
+        "permissions": []
+    }
+}

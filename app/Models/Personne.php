@@ -3,18 +3,27 @@
 
 namespace App\Models;
 
-use App\Services\AppPersonnes\Logic\ContactNormalizer;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class Personne extends Model implements HasMedia
 {
-    use SoftDeletes, HasFactory, InteractsWithMedia;
+    use SoftDeletes, HasFactory, InteractsWithMedia, HasUuids;
+
+    public function uniqueIds(): array
+    {
+        return ['uuid'];
+    }
+
+    public function getRouteKeyName(): string
+    {
+        return 'uuid';
+    }
 
     protected $fillable = [
         'type',
@@ -29,12 +38,6 @@ class Personne extends Model implements HasMedia
 
     protected $casts = [
         'actif' => 'bool',
-    ];
-
-    protected $appends = [
-        'roles_list',
-        'full_name',
-        'nom_affichage'
     ];
 
     /**
@@ -57,39 +60,17 @@ class Personne extends Model implements HasMedia
 
     public function user()
     {
-        return $this->hasOne(User::class, 'personne_id');
+        return $this->hasOne(User::class , 'personne_id');
     }
 
     public function representatives()
     {
         return $this->hasManyThrough(
-            Representant::class,
-            PersonneMorale::class,
+            Representant::class ,
+            PersonneMorale::class ,
             'personne_id',
             'personne_morale_id'
         );
-    }
-
-    /**
-     * RELATIONS AVEC LES BIENS ET CONTRATS
-     */
-
-    // Relation avec les biens comme propriétaire
-    public function biensPossedes()
-    {
-        return $this->hasMany(Bien::class, 'proprietaire_id');
-    }
-
-    // Relation avec les contrats de location comme locataire
-    public function contratsLocation()
-    {
-        return $this->hasMany(ContratLocation::class, 'locataire_id');
-    }
-
-    // NOUVELLE RELATION : Contrats de gérance comme propriétaire
-    public function contratsGerance()
-    {
-        return $this->hasMany(ContratGerance::class, 'proprietaire_id');
     }
 
     /**
@@ -129,8 +110,8 @@ class Personne extends Model implements HasMedia
         return static::query()
             ->where('type', 'physique')
             ->whereHas('personnePhysique', function ($q) {
-                $q->whereDoesntHave('representations');
-            });
+            $q->whereDoesntHave('representations');
+        });
     }
 
     public function scopeOrdered($query)
@@ -218,10 +199,12 @@ class Personne extends Model implements HasMedia
                 return true;
             }
             $pm = $this->relationLoaded('personneMorale') ? $this->personneMorale : $this->personneMorale()->first();
-            if (!$pm) return false;
+            if (!$pm)
+                return false;
 
             $rep = $pm->representantPrincipal();
-            if (!$rep || !$rep->representant) return false;
+            if (!$rep || !$rep->representant)
+                return false;
 
             $repPersonne = $rep->representant->personne;
             return $repPersonne && (filled($repPersonne->email) || filled($repPersonne->telephone));
@@ -244,77 +227,18 @@ class Personne extends Model implements HasMedia
             if ($pp) {
                 $payload['personne_physique_id'] = $pp->id;
                 $payload['first_name'] = $payload['first_name'] ?? ($pp->prenom ?? null);
-                $payload['last_name']  = $payload['last_name']  ?? ($pp->nom ?? null);
-                $payload['name']       = $payload['name']       ?? trim(($payload['first_name'] ?? '') . ' ' . ($payload['last_name'] ?? ''));
+                $payload['last_name'] = $payload['last_name'] ?? ($pp->nom ?? null);
+                $payload['full_name'] = $payload['full_name'] ?? trim(($payload['first_name'] ?? '') . ' ' . ($payload['last_name'] ?? ''));
             }
         }
 
-        if (empty($payload['name'])) {
-            $payload['name'] = $this->nom_affichage ?? ($this->email ?: 'User-' . $this->id);
+        if (empty($payload['full_name'])) {
+            $payload['full_name'] = $this->nom_affichage ?? ($this->email ?: 'User-' . $this->id);
         }
 
         return User::create($payload);
     }
 
-    /**
-     * MÉTHODES POUR LES STATISTIQUES
-     */
-
-    // Nombre de biens possédés par statut
-    public function getNombreBiensParStatut(): array
-    {
-        return $this->biensPossedes()
-            ->selectRaw('statut, COUNT(*) as count')
-            ->groupBy('statut')
-            ->pluck('count', 'statut')
-            ->toArray();
-    }
-
-    // Nombre de contrats actifs
-    public function getNombreContratsActifs(): array
-    {
-        return [
-            'location' => $this->contratsLocation()->actifs()->count(),
-            'gerance' => $this->contratsGerance()->actifs()->count(),
-        ];
-    }
-
-    // Vérifie si la personne a des biens en gérance
-    public function hasBiensEnGerance(): bool
-    {
-        return $this->biensPossedes()
-            ->whereHas('contratGerances', function ($query) {
-                $query->actifs();
-            })
-            ->exists();
-    }
-
-    // Vérifie si la personne a des contrats en cours
-    public function hasContratsActifs(): bool
-    {
-        return $this->contratsLocation()->actifs()->exists() ||
-            $this->contratsGerance()->actifs()->exists();
-    }
-
-    /**
-     * MUTATEURS
-     */
-    protected function email(): Attribute
-    {
-        return Attribute::make(
-            set: fn($value) => ContactNormalizer::normalizeEmail($value)
-        );
-    }
-
-    protected function telephone(): Attribute
-    {
-        return Attribute::make(
-            set: fn($value) => ContactNormalizer::normalizePhone(
-                $value,
-                $this->pays ?: config('app_settings.personnes.default_country_code')
-            )
-        );
-    }
     public function currentRole()
     {
         return $this->roles()->latest()->first();

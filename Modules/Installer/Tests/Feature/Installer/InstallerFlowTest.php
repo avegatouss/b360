@@ -1,82 +1,70 @@
 <?php
 
-namespace Tests\Feature\Installer;
+namespace Modules\Installer\Tests\Feature\Installer;
 
-use Illuminate\Support\Facades\File;
-use Tests\TestCase;
+use Modules\Installer\Services\InstallerRunner;
+use Modules\Installer\Tests\TestCase;
 
-class InstallerFlowTest extends TestCase
+final class InstallerFlowTest extends TestCase
 {
-    protected function tearDown(): void
+    private function seedValidSession(): void
     {
-        parent::tearDown();
-
-        // Nettoyage .env de test
-        if (File::exists(base_path('.env'))) {
-            File::delete(base_path('.env'));
-        }
+        $this->withSession([
+            'installer' => [
+                'steps' => [1 => true, 2 => true, 3 => true, 4 => true],
+                'db_confirmed' => true,
+                'config_confirmed' => true,
+                'admin_confirmed' => true,
+            ],
+        ]);
     }
 
-    /** @test */
-    public function installation_fails_if_database_is_invalid(): void
+    public function test_start_install_requires_all_steps_and_flags(): void
     {
-        config(['app.installed' => false]);
-
-        $payload = [
-            'app_name' => 'B360 Test',
-            'app_url' => 'http://b360.test',
-            'timezone' => 'UTC',
-            'locale' => 'fr',
-
-            'db_host' => 'invalid-host',
-            'db_port' => 3306,
-            'db_database' => 'fake',
-            'db_username' => 'fake',
-            'db_password' => 'fake',
-
-            'instance_mode' => 'single',
-
-            'admin_firstname' => 'Admin',
-            'admin_lastname' => 'Test',
-            'admin_username' => 'admin',
-            'admin_password' => 'password123',
-        ];
-
-        $response = $this->post('/install', $payload);
-
-        $response->assertSessionHasErrors('install');
-
-        // Très important : APP_INSTALLED ne doit PAS être true
-        $this->assertFalse(config('app.installed'));
+        $this->postJson('/install/start', [])
+            ->assertStatus(422);
     }
-    /** @test */
-public function installation_completes_successfully(): void
-{
-    config(['app.installed' => false]);
 
-    $payload = [
-        'app_name' => 'B360',
-        'app_url' => 'http://b360.test',
-        'timezone' => 'UTC',
-        'locale' => 'fr',
+    public function test_start_install_returns_signed_stream_url(): void
+    {
+        config(['app.url' => 'http://localhost']);
 
-        'db_host' => 'localhost',
-        'db_port' => 3306,
-        'db_database' => ':memory:',
-        'db_username' => 'root',
-        'db_password' => '',
+        $this->seedValidSession();
 
-        'instance_mode' => 'single',
+        $response = $this->postJson('/install/start');
 
-        'admin_firstname' => 'Admin',
-        'admin_lastname' => 'Root',
-        'admin_username' => 'admin',
-        'admin_password' => 'password123',
-    ];
+        $response->assertOk()
+            ->assertJsonStructure(['ok', 'stream_url'])
+            ->assertJsonFragment(['ok' => true]);
+    }
 
-    $response = $this->post('/install', $payload);
+    public function test_stream_install_runs_and_returns_events(): void
+    {
+        config(['app.url' => 'http://localhost']);
 
-    $response->assertRedirect('/login');
-}
+        $this->seedValidSession();
 
+        $start = $this->postJson('/install/start');
+        $streamUrl = (string) $start->json('stream_url');
+
+        $this->app->instance(InstallerRunner::class, new class {
+            public function run(array $data, callable $callback): void
+            {
+                $callback(25, 'Step 1');
+                $callback(50, 'Step 2');
+            }
+        });
+
+        $path = parse_url($streamUrl, PHP_URL_PATH) ?? '/install/stream';
+        $query = parse_url($streamUrl, PHP_URL_QUERY);
+        $url = $path . ($query ? ('?' . $query) : '');
+
+        $response = $this->get($url);
+
+        $response->assertOk();
+        $this->assertStringStartsWith('text/event-stream', $response->headers->get('Content-Type'));
+
+        $content = $response->streamedContent();
+        $this->assertStringContainsString('event: done', $content);
+    }
 }

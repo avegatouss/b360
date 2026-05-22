@@ -17,4 +17,9 @@ final class CurrentInstance
     {
         app()->instance('currentInstance', $instance);
     }
+
+    public static function clear(): void
+    {
+        app()->forgetInstance('currentInstance');
+    }
 }

@@ -3,46 +3,46 @@
 namespace Modules\Core\Tests;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Orchestra\Testbench\TestCase as BaseTestCase;
-use Modules\Core\Providers\CoreServiceProvider;
-use Modules\Core\Providers\CoreAuthServiceProvider;
+use Illuminate\Support\Facades\DB;
+use Tests\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
 {
     use RefreshDatabase;
 
-    protected function getPackageProviders($app): array
+    protected function refreshApplication(): void
     {
-        return [
-            CoreServiceProvider::class,
-            CoreAuthServiceProvider::class,
-        ];
+        parent::refreshApplication();
+
+        // Configure system as sqlite so migrations targeting 'system' use SQLite
+        $this->app['config']->set('database.default', 'sqlite');
+        $this->app['config']->set('database.connections.sqlite.database', ':memory:');
+        $this->app['config']->set('database.connections.system', [
+            'driver'                  => 'sqlite',
+            'database'                => ':memory:',
+            'prefix'                  => '',
+            'foreign_key_constraints' => true,
+        ]);
+
+        $this->app['config']->set('permission.teams', true);
+        $this->app['config']->set('permission.team_foreign_key', 'instance_id');
+        $this->app['config']->set('app.installed', true);
+
+        // Share PDO before migrations run (so Schema::connection('system') creates tables in same DB)
+        $this->sharePdo();
     }
 
-    protected function defineEnvironment($app): void
+    protected function setUp(): void
     {
-        // Use sqlite memory by default for tests; map "system" to default
-        $app['config']->set('database.default', 'sqlite');
-        $app['config']->set('database.connections.sqlite.database', ':memory:');
-        $app['config']->set('database.connections.system', $app['config']->get('database.connections.sqlite'));
+        parent::setUp();
 
-        // Spatie teams
-        $app['config']->set('permission.teams', true);
-        $app['config']->set('permission.team_foreign_key', 'instance_id');
+        // Re-share PDO after RefreshDatabase may have reconnected
+        $this->sharePdo();
     }
 
-    protected function defineDatabaseMigrations(): void
+    private function sharePdo(): void
     {
-        // Base tables minimal for tests
-        $this->loadLaravelMigrations(['--database' => 'system']);
-
-        // If your app already has instances/users migrations, you can remove these and load your real ones.
-        $this->artisan('migrate', ['--database' => 'system'])->run();
-
-        // Core migrations
-        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
-
-        // Spatie migrations (point to vendor if present; else ensure they exist in your app)
-        // In real repo, you should run vendor:publish and use your app migrations.
+        $pdo = DB::connection('sqlite')->getPdo();
+        DB::connection('system')->setPdo($pdo)->setReadPdo($pdo);
     }
 }

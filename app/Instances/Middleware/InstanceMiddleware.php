@@ -71,8 +71,10 @@ class InstanceMiddleware
             return $next($request);
         }
 
-     
-        // Publier le contexte dans le container pour usage applicatif
+        // Publier le contexte dans le container pour usage applicatif.
+        // Note : InstanceManager::apply() fait déjà un CurrentInstance::set().
+        // Ce binding supplémentaire (clé 'currentInstance') est conservé
+        // pour compatibilité avec du code legacy qui resolve via app('currentInstance').
         app()->instance('currentInstance', $instance);
 
         // Log minimal : éviter INFO sur chaque requête (bruit/perf)

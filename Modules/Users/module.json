@@ -1,0 +1,29 @@
+{
+    "name": "Users",
+    "alias": "users",
+    "description": "Gestion des utilisateurs et de leurs memberships aux instances",
+    "keywords": ["users", "members", "admin"],
+    "priority": 0,
+    "providers": [
+        "Modules\\Users\\Providers\\UsersServiceProvider"
+    ],
+    "files": [],
+    "docs": {
+        "summary": "Module de gestion des utilisateurs. Permet de creer, editer et supprimer des utilisateurs, ainsi que de gerer leurs memberships (roles par instance via Spatie Permission).",
+        "features": [
+            "CRUD complet des utilisateurs",
+            "Gestion des memberships (ajout/retrait d'instances)",
+            "Attribution de roles par instance (Spatie teams)",
+            "Recherche par nom ou email"
+        ],
+        "hooks": [
+            {"type": "menu", "id": "users", "description": "Menu item Utilisateurs dans la sidebar principale"}
+        ],
+        "permissions": [
+            "users.view",
+            "users.create",
+            "users.edit",
+            "users.delete"
+        ]
+    }
+}

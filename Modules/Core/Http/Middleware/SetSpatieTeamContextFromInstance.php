@@ -13,9 +13,9 @@ final class SetSpatieTeamContextFromInstance
     {
         $instance = CurrentInstance::get();
 
-        // Fail-closed: if no instance, set null team context.
-        // Access remains denied unless Gate::before(super-admin) allows.
-        TeamContext::set($instance?->id);
+        // Si pas d'instance résolue → contexte global (0), pas null
+        // (null viole la PK de model_has_roles)
+        TeamContext::set($instance?->id ?? TeamContext::GLOBAL_TEAM_ID);
 
         return $next($request);
     }
