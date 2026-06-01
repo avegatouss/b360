@@ -10,6 +10,7 @@ final class SettingsServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(SettingsManager::class);
+        $this->app->register(SettingsBootstrapProvider::class);
     }
 
     public function boot(): void

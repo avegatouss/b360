@@ -1,0 +1,243 @@
+## .github/workflows/ci-quality.yml
+## Pipeline qualité (lint + analyse statique + architecture) miroir du local `make qa`.
+## Complémentaire de ci.yml qui gère les tests Pest avec services MySQL/Redis.
+
+name: Quality
+
+on:
+  push:
+    branches: [main, develop, base, 'release/**', 'hotfix/**']
+  pull_request:
+    branches: [main, develop, base]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ## ════════════════════════════════════════════════════════════
+  ## Lint & analyse statique (rapide, parallèle)
+  ## ════════════════════════════════════════════════════════════
+  static-analysis:
+    name: Lint + PHPStan + Deptrac
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: bcmath, ctype, curl, dom, fileinfo, gd, intl, json, mbstring, mysql, openssl, pdo, pdo_mysql, redis, tokenizer, xml, zip
+          tools: composer:v2
+          coverage: none
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Pint (format check)
+        run: vendor/bin/pint --test
+
+      - name: PHPStan
+        run: vendor/bin/phpstan analyse --memory-limit=2G --no-progress --error-format=github
+
+      - name: Deptrac (architecture rules)
+        run: vendor/bin/deptrac analyse --no-progress --formatter=github-actions
+
+  ## ════════════════════════════════════════════════════════════
+  ## Tests par module (matrice — exécution parallèle)
+  ## ════════════════════════════════════════════════════════════
+  tests:
+    name: Tests — ${{ matrix.module }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    strategy:
+      fail-fast: false
+      matrix:
+        module:
+          - Core
+          - Auth
+          - Users
+          - Instances
+          - Settings
+          - Billing
+          - Dashboard
+          - Lang
+          - Currency
+          - ModuleManager
+          - Installer
+          - Demo
+          - Eshop360
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: b360_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: bcmath, ctype, curl, dom, fileinfo, gd, intl, json, mbstring, mysql, openssl, pdo, pdo_mysql, redis, tokenizer, xml, zip
+          tools: composer:v2
+          coverage: pcov
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Setup environment
+        run: |
+          cp .env.example .env || cp .env.testing.example .env || true
+          php artisan key:generate
+          # Override pour tests
+          cat >> .env <<EOF
+          APP_ENV=testing
+          DB_CONNECTION=mysql
+          DB_HOST=127.0.0.1
+          DB_PORT=3306
+          DB_DATABASE=b360_test
+          DB_USERNAME=root
+          DB_PASSWORD=root
+          REDIS_HOST=127.0.0.1
+          REDIS_PORT=6379
+          CACHE_DRIVER=redis
+          QUEUE_CONNECTION=sync
+          MAIL_MAILER=array
+          EOF
+
+      - name: Run migrations
+        run: php artisan migrate --force --no-interaction
+
+      - name: Run tests for ${{ matrix.module }}
+        run: |
+          if [ -d "Modules/${{ matrix.module }}/Tests" ]; then
+            php artisan test Modules/${{ matrix.module }}/Tests --parallel --processes=4
+          else
+            echo "No tests for ${{ matrix.module }} — skip"
+          fi
+
+  ## ════════════════════════════════════════════════════════════
+  ## Sécurité : audit Composer + scan secrets
+  ## ════════════════════════════════════════════════════════════
+  security:
+    name: Security audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer:v2
+
+      - name: Composer audit
+        run: composer audit --no-interaction || true
+
+      - name: Detect secrets
+        uses: trufflesecurity/trufflehog@v3
+        with:
+          base: ${{ github.event.pull_request.base.sha || 'HEAD~1' }}
+          head: ${{ github.event.pull_request.head.sha || 'HEAD' }}
+          extra_args: --only-verified
+
+  ## ════════════════════════════════════════════════════════════
+  ## Mémoire projet : vérifier la fraîcheur sur PR
+  ## ════════════════════════════════════════════════════════════
+  memory-freshness:
+    name: Memory freshness
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check that code changes have memory updates
+        run: |
+          # Liste des fichiers modifiés par la PR
+          BASE="${{ github.event.pull_request.base.sha }}"
+          HEAD="${{ github.event.pull_request.head.sha }}"
+          CHANGED=$(git diff --name-only "$BASE" "$HEAD")
+
+          # Si du code applicatif change
+          CODE_CHANGED=$(echo "$CHANGED" | grep -E '^(Modules/|app/|database/)' | grep -v '/Tests/' || true)
+
+          if [ -n "$CODE_CHANGED" ]; then
+            # On exige qu'au moins un fichier de mémoire ou index ait changé
+            MEMORY_CHANGED=$(echo "$CHANGED" | grep -E '^(docs/memory/|docs/index/|docs/context/|CHANGELOG_ARCHITECTURAL\.md)' || true)
+
+            if [ -z "$MEMORY_CHANGED" ]; then
+              echo "::warning::Cette PR modifie du code applicatif mais ne touche aucun fichier de mémoire projet."
+              echo "::warning::Si la mémoire n'est plus à jour, lance \`make memory-refresh\` localement."
+              # Ne pas bloquer (warning seulement)
+            fi
+          fi
+
+  ## ════════════════════════════════════════════════════════════
+  ## Verdict final : tous les jobs doivent passer
+  ## ════════════════════════════════════════════════════════════
+  ci-success:
+    name: CI Success
+    runs-on: ubuntu-latest
+    needs: [static-analysis, tests, security]
+    if: always()
+
+    steps:
+      - name: Verdict
+        run: |
+          if [ "${{ needs.static-analysis.result }}" != "success" ] || \
+             [ "${{ needs.tests.result }}" != "success" ] || \
+             [ "${{ needs.security.result }}" != "success" ]; then
+            echo "::error::CI failed."
+            exit 1
+          fi
+          echo "✓ CI passed."

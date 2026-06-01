@@ -9,6 +9,7 @@ use Modules\Core\Support\TeamContext;
 use Modules\Core\Tests\TestCase as CoreTestCase;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 abstract class TestCase extends CoreTestCase
 {
@@ -36,8 +37,13 @@ abstract class TestCase extends CoreTestCase
         $user = $this->makeUser();
 
         TeamContext::clear();
-        Permission::findOrCreate('billing.view');
-        Permission::findOrCreate('billing.manage');
+        // Use Eloquent firstOrCreate (DB-authoritative) so Spatie's cache cannot
+        // return a stale entry pointing to a rolled-back row in parallel-mode
+        // tests (CACHE_STORE=array persists per worker process).
+        Permission::firstOrCreate(['name' => 'billing.view', 'guard_name' => 'web']);
+        Permission::firstOrCreate(['name' => 'billing.manage', 'guard_name' => 'web']);
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+
         Role::findOrCreate('super-admin');
         $user->assignRole('super-admin');
 

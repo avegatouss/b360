@@ -2,7 +2,7 @@
   "permissions": {
     "allow": [
       "Bash(find:*)",
-      "Read(//c/Users/agato/**)",
+      "Read(//c/Users/agato/OneDrive/dev/**)",
       "Read(//c/Users/agato/OneDrive/dev/b360/Modules/**)",
       "Bash(C:/laragon/bin/php/php-8.4.16-nts-Win32-vs17-x64/php.exe artisan config:clear)",
       "Bash(echo \"EXIT:$?\")",

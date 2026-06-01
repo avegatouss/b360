@@ -21,10 +21,18 @@ final class ResetPasswordController extends Controller
 
     public function reset(Request $request)
     {
+        $passwordRules = ['required', 'string', 'min:' . (int) setting('security.password_min_length', 8), 'confirmed', 'max:255'];
+        if (setting('security.password_require_uppercase')) {
+            $passwordRules[] = 'regex:/[A-Z]/';
+        }
+        if (setting('security.password_require_number')) {
+            $passwordRules[] = 'regex:/[0-9]/';
+        }
+
         $request->validate([
             'token'                 => ['required'],
             'email'                 => ['required', 'email'],
-            'password'              => ['required', 'confirmed', 'min:8', 'max:255'],
+            'password'              => $passwordRules,
         ]);
 
         $status = Password::reset(

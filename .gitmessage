@@ -1,0 +1,40 @@
+
+
+# === Conseil de rédaction (lignes commentées, ignorées au commit) ===
+#
+# Format Conventional Commits avec scope obligatoire B360 :
+# <type>(<scope>): <résumé impératif sous 72 caractères>
+#
+# Types : feat, fix, refactor, perf, test, docs, chore, build, ci, style, security
+# Scopes B360 (extrait) :
+#   modules : core, auth, users, instances, settings, billing, dashboard,
+#             lang, currency, modulemanager, installer, demo, eshop360
+#   sous-domaines : catalog, pricing, inventory, sales, purchase, invoicing,
+#                   finance, crm, channel, reporting, hr, projects, communication
+#   plateforme   : platform, tenancy, iam, feature-control, observability,
+#                   workflow, integration-hub, file-center, shared-kernel, ui-kit, api
+#   transverse   : deps, ci, docs, governance, security, perf, tests, infra
+#
+# Pour les changements importants, ajoute un corps :
+#
+#   Why:
+#   - problème ou besoin
+#
+#   What:
+#   - changements effectués
+#
+#   Validation:
+#   - tests exécutés (commande + résultat)
+#   - migrations vérifiées
+#   - impacts connus
+#
+#   Refs: #issue (si applicable)
+#   BREAKING CHANGE: <description> (si applicable + ajouter ! avant :)
+#
+# Exemples :
+#   feat(pricing): add channel-specific price calculator
+#   fix(inventory): protect stock decrement with lockForUpdate
+#   refactor(core)!: unify BelongsToInstance trait
+#   docs(governance): add ADR-002 for event-driven inter-module comms
+#
+# === Fin du conseil ===

@@ -1,0 +1,77 @@
+# Normalisation EOL
+* text=auto eol=lf
+
+# PHP / Blade
+*.php text eol=lf
+*.blade.php text eol=lf
+
+# Web
+*.css text eol=lf
+*.scss text eol=lf
+*.html text eol=lf
+*.js text eol=lf
+*.ts text eol=lf
+*.jsx text eol=lf
+*.tsx text eol=lf
+*.vue text eol=lf
+
+# Config
+*.json text eol=lf
+*.jsonc text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.xml text eol=lf
+*.neon text eol=lf
+*.toml text eol=lf
+*.env* text eol=lf
+
+# Docs
+*.md text eol=lf
+*.txt text eol=lf
+
+# Scripts
+*.sh text eol=lf
+Makefile text eol=lf
+
+# Binaires
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.svg text
+*.ico binary
+*.webp binary
+*.zip binary
+*.gz binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+
+# Fichiers exclus de l'archive Git
+.github/        export-ignore
+.vscode/        export-ignore
+docs/           export-ignore
+scripts/        export-ignore
+templates/      export-ignore
+tools/          export-ignore
+tests/          export-ignore
+Tests/          export-ignore
+*.test.php      export-ignore
+phpunit.xml     export-ignore
+phpstan.neon    export-ignore
+deptrac.yaml    export-ignore
+pint.json       export-ignore
+rector.php      export-ignore
+.editorconfig   export-ignore
+.gitattributes  export-ignore
+.gitignore      export-ignore
+.gitmessage     export-ignore
+
+# Diff custom pour les .php (meilleur affichage)
+*.php diff=php
+
+# Linguist hints (pour les statistiques GitHub)
+*.blade.php linguist-language=Blade
+docs/* linguist-documentation

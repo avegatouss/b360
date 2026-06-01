@@ -1,0 +1,57 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\Eshop360\Contracts\Customer;
+
+/**
+ * Contrat public de lecture client (CRM) Eshop360 (ADR-021 §1).
+ *
+ * Consommé par les modules métier futurs (Menuiserie360, etc.) via
+ * injection de dépendance. L'implémentation par défaut est
+ * {@see \Modules\Eshop360\Adapters\Eloquent\EloquentCustomerReader}.
+ *
+ * Lecture seule. Toute mutation (création, mise à jour, wallet) reste
+ * la responsabilité d'Eshop360 et passe par les services internes
+ * (`CustomerService`, `FinanceService` pour le wallet — zone L1
+ * `PROTECTED_AREAS.md`).
+ */
+interface CustomerReader
+{
+    /**
+     * Récupère un client par son ID au sein d'une instance.
+     *
+     * @return CustomerDto|null null si le client n'existe pas ou appartient
+     *                          à une autre instance.
+     */
+    public function findCustomer(int $instanceId, int $customerId): ?CustomerDto;
+
+    /**
+     * Récupère un client par son code (référence métier — ex. CDF-001).
+     */
+    public function findCustomerByCode(int $instanceId, string $code): ?CustomerDto;
+
+    /**
+     * Vérifie l'existence d'un client (utile pour validation FK applicative
+     * avant de créer une référence depuis un module L4).
+     */
+    public function customerExists(int $instanceId, int $customerId): bool;
+
+    /**
+     * Recherche full-text sur le code, le nom, l'email ou le téléphone du
+     * client. Utile pour les autocompletes côté UI (M-UI-4 Menuiserie360).
+     *
+     * @return iterable<CustomerDto>
+     */
+    public function searchCustomers(int $instanceId, string $query, int $limit = 20): iterable;
+
+    /**
+     * Précharge un lot de clients par leurs IDs. Utile pour résoudre les
+     * libellés humains dans les listes (M-UI-5 Menuiserie360) sans
+     * provoquer un N+1 sur des tables externes.
+     *
+     * @param  list<int>  $ids
+     * @return array<int, CustomerDto> indexé par customer id
+     */
+    public function findCustomersByIds(int $instanceId, array $ids): array;
+}

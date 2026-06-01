@@ -1,0 +1,80 @@
+## tools/phpstan/phpstan.neon
+## Analyse statique B360 — niveau 6 + Larastan + règles custom anti-couplage
+
+includes:
+    - vendor/larastan/larastan/extension.neon
+    - tools/phpstan/baseline.neon
+
+parameters:
+    level: 6
+
+    paths:
+        - app
+        - Modules
+        - bootstrap
+        - config
+        - database/seeders
+
+    excludePaths:
+        analyseAndScan:
+            - vendor/*
+            - storage/*
+            - bootstrap/cache/*
+            - public/*
+            - node_modules/*
+            - Modules/*/Database/Migrations/*
+            - Modules/InventoryX/*
+
+    treatPhpDocTypesAsCertain: false
+    reportUnmatchedIgnoredErrors: false
+    checkMissingIterableValueType: false
+    checkGenericClassInNonGenericObjectType: false
+    checkModelProperties: true
+
+    ## Détection ciblée
+    universalObjectCratesClasses:
+        - Illuminate\Http\Request
+        - Illuminate\Support\Fluent
+
+    noUnnecessaryCollectionCall: false
+
+    ## Ignore patterns standards Laravel/Eloquent
+    ignoreErrors:
+        # Eloquent magie (méthodes dynamiques)
+        - '#Call to an undefined method [a-zA-Z\\_]+::scope[a-zA-Z]+\(\)#'
+        # Macros Laravel
+        - '#Call to an undefined method [a-zA-Z\\_]+::macro\(\)#'
+        # Spatie Permission teams
+        - '#Call to an undefined static method Spatie\\Permission\\Models\\(Role|Permission)::setPermissionsTeamId\(\)#'
+        # Laravel Modules helper
+        - '#Call to an undefined method Nwidart\\Modules\\.+#'
+        # Tinker
+        -
+            message: '#Variable \$this might not be defined#'
+            paths:
+                - bootstrap/*
+
+    ## Bootstrap pour autoloading
+    bootstrapFiles:
+        - vendor/autoload.php
+
+    ## Niveau strict supplémentaire (à activer progressivement)
+    # strictRules:
+    #     allRules: true
+    #     disallowedConstructs: true
+    #     disallowedShortTernary: true
+    #     numericOperandsInArithmeticOperators: true
+    #     uselessCast: true
+    #     overwriteVariablesWithLoop: true
+
+services:
+    # Règle custom : interdire DB::table('eshop_*') hors namespace Modules\Eshop360
+    -
+        class: B360\PHPStan\Rules\NoDirectCrossModuleTableAccess
+        tags:
+            - phpstan.rules.rule
+        arguments:
+            tablePrefixToNamespace:
+                eshop_: 'Modules\\Eshop360'
+                billing_: 'Modules\\Billing'
+                core_: 'Modules\\Core'

@@ -8,6 +8,8 @@
 /vendor
 .env
 .env.backup
+.env.bak.*
+*.zip
 .env.production
 .phpactor.json
 .phpunit.result.cache
@@ -19,5 +21,13 @@ yarn-error.log
 /.fleet
 /.idea
 /.nova
-/.vscode
 /.zed
+
+# Caches outils qualité (vibecoding pack)
+.deptrac.cache
+.phpstan.cache
+.phpinsights.cache
+tools/deptrac/architecture.svg
+
+# Claude Code runtime artifacts
+.claude/scheduled_tasks.lock

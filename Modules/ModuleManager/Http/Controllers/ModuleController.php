@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Modules\Core\Hooks\Registry\HookRegistry;
 use Modules\Core\Modules\ModuleManager;
 use Modules\Core\Support\CurrentInstance;
 use Modules\ModuleManager\Services\ModuleInstaller;
@@ -56,7 +57,7 @@ final class ModuleController extends Controller
         $instance = CurrentInstance::get();
 
         $mod = Module::find($name);
-        if (!$mod) {
+        if (! $mod) {
             abort(404, 'Module introuvable.');
         }
 
@@ -69,7 +70,7 @@ final class ModuleController extends Controller
             ->first();
 
         $readme = null;
-        $readmePath = $mod->getPath() . '/README.md';
+        $readmePath = $mod->getPath().'/README.md';
         if (file_exists($readmePath)) {
             $readme = Str::markdown(file_get_contents($readmePath));
         }
@@ -84,7 +85,7 @@ final class ModuleController extends Controller
         }
 
         $mod = Module::find($name);
-        if (!$mod) {
+        if (! $mod) {
             abort(404, 'Module introuvable.');
         }
 
@@ -106,6 +107,23 @@ final class ModuleController extends Controller
                     ['is_enabled' => true, 'updated_at' => now(), 'created_at' => now()]
                 );
             $message = "Module « {$name} » activé.";
+
+            // R-401-FIX S6 — Le module fraîchement activé peut déclarer une
+            // route de redirection (wizard de setup, page d'init, …) via
+            // HookRegistry::addPostEnableRedirect (cf. Eshop360HooksProvider).
+            // Le ModuleController est désormais agnostique au nom du module.
+            $redirect = app(HookRegistry::class)->postEnableRedirect($name);
+            if ($redirect !== null) {
+                $shouldRedirect = $redirect->condition === null
+                    || (bool) ($redirect->condition)($instance);
+                if ($shouldRedirect) {
+                    app(ModuleManager::class)->clearCache();
+
+                    return redirect()
+                        ->route($redirect->route, $instance->slug)
+                        ->with('status', "Module « {$name} » activé. Configurez l'espace dédié.");
+                }
+            }
         }
 
         app(ModuleManager::class)->clearCache();
@@ -137,7 +155,7 @@ final class ModuleController extends Controller
         }
 
         $mod = Module::find($name);
-        if (!$mod) {
+        if (! $mod) {
             abort(404, 'Module introuvable.');
         }
 
@@ -163,9 +181,9 @@ final class ModuleController extends Controller
 
     private function readModuleJson($mod): array
     {
-        $path = $mod->getPath() . '/module.json';
+        $path = $mod->getPath().'/module.json';
 
-        if (!file_exists($path)) {
+        if (! file_exists($path)) {
             return [];
         }
 

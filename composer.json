@@ -7,20 +7,29 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "barryvdh/laravel-dompdf": "^3.0",
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.10.1",
         "nwidart/laravel-modules": "^12.0",
+        "pragmarx/google2fa": "^9.0",
         "sentry/sentry-laravel": "^4.21",
+        "spatie/laravel-medialibrary": "^11.0",
         "spatie/laravel-permission": "^6.24"
     },
     "require-dev": {
+        "brianium/paratest": "^7.8",
+        "ergebnis/composer-normalize": "^2.51",
         "fakerphp/faker": "^1.23",
+        "larastan/larastan": "^3.9",
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.13",
         "laravel/sail": "^1.41",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
-        "phpunit/phpunit": "^11.5.3"
+        "pestphp/pest": "^3.8",
+        "phpunit/phpunit": "^11.5.3",
+        "qossmic/deptrac": "*",
+        "rector/rector": "^2.4"
     },
     "autoload": {
         "psr-4": {
@@ -32,7 +41,8 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Tests\\": "tests/"
+            "Tests\\": "tests/",
+            "B360\\PHPStan\\Rules\\": "tools/phpstan/Rules/"
         }
     },
     "scripts": {
@@ -68,7 +78,10 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true,
-            "wikimedia/composer-merge-plugin": true
+            "wikimedia/composer-merge-plugin": true,
+            "ergebnis/composer-normalize": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "phpstan/extension-installer": true
         }
     },
     "minimum-stability": "stable",

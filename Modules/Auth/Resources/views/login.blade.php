@@ -16,7 +16,8 @@
                 <form method="POST"
                       action="{{ ($mode ?? 'global') === 'instance' && isset($instance)
                           ? route('instance.login.post', $instance->slug)
-                          : route('login.post') }}">
+                          : route('login.post') }}"
+                      data-recaptcha data-recaptcha-action="login">
                     @csrf
 
                     <div class="login-userset">

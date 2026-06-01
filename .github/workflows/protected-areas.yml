@@ -1,0 +1,116 @@
+## .github/workflows/protected-areas.yml
+## Vérifie que les PR touchant des zones L1/L2 contiennent un IMPACT_ANALYSIS
+
+name: Protected Areas
+
+on:
+  pull_request:
+    branches: [main, develop]
+    types: [opened, synchronize, edited, reopened]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  check-protected:
+    name: Check protected areas
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect L1/L2 changes
+        id: detect
+        run: |
+          BASE="${{ github.event.pull_request.base.sha }}"
+          HEAD="${{ github.event.pull_request.head.sha }}"
+          CHANGED=$(git diff --name-only "$BASE" "$HEAD")
+
+          L1_PATTERNS=(
+            "Modules/Auth"
+            "Modules/Core/Database/Traits/BelongsToInstance"
+            "Modules/Core/Services/InstanceManager"
+            "Modules/Core/Services/InstanceResolver"
+            "Modules/Core/Http/Middleware/InstanceMiddleware"
+            "Modules/Core/Http/Middleware/BindInstanceFromRoute"
+            "Modules/Core/Http/Middleware/SetSpatieTeamContextFromInstance"
+            "Modules/Core/Models/AuditLog"
+            "Modules/Eshop360/Services/StockService"
+            "Modules/Eshop360/Services/Pricing"
+            "Modules/Eshop360/Services/CashRegisterService"
+            "Modules/Billing/Services/PaymentService"
+            "Modules/Billing/Services/SubscriptionManager"
+            "Modules/Billing/Webhooks"
+            "app/Models/User.php"
+            "app/Instances"
+          )
+
+          L1_TOUCHED=()
+          for pattern in "${L1_PATTERNS[@]}"; do
+            if echo "$CHANGED" | grep -q "$pattern"; then
+              L1_TOUCHED+=("$pattern")
+            fi
+          done
+
+          if [ ${#L1_TOUCHED[@]} -gt 0 ]; then
+            echo "l1_touched=true" >> $GITHUB_OUTPUT
+            printf '%s\n' "${L1_TOUCHED[@]}" > l1-touched.txt
+            echo "Zones L1 touchées :"
+            cat l1-touched.txt
+          else
+            echo "l1_touched=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Verify IMPACT_ANALYSIS in PR description
+        if: steps.detect.outputs.l1_touched == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          if ! echo "$PR_BODY" | grep -qiE 'impact[ _-]?analysis'; then
+            echo "::error::Cette PR touche des zones L1 (CRITIQUES) mais ne contient pas de section 'Impact Analysis'."
+            echo "::error::Ajoute la section IMPACT_ANALYSIS dans la description de la PR."
+            echo "::error::Template : templates/prompts/impact-analysis.md (snippet VSCode b360-impact)."
+            echo ""
+            echo "Zones L1 touchées par cette PR :"
+            cat l1-touched.txt | sed 's/^/  - /'
+            exit 1
+          fi
+          echo "✓ IMPACT_ANALYSIS détecté dans la description PR."
+
+      - name: Comment on PR
+        if: steps.detect.outputs.l1_touched == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const touched = fs.readFileSync('l1-touched.txt', 'utf8').trim().split('\n');
+            const body = `## ⚠ Zones L1 (CRITIQUES) touchées par cette PR
+
+            ${touched.map(t => `- \`${t}\``).join('\n')}
+
+            **Procédure renforcée requise :**
+
+            1. ✅ IMPACT_ANALYSIS dans la description PR
+            2. Tests étendus :
+               - Tests de concurrence (race conditions)
+               - Tests multi-tenant (isolation)
+               - Tests de permission (refus + acceptation)
+               - Tests d'idempotence (si webhook ou job)
+            3. ADR si modification structurelle
+            4. Mise à jour : \`CHANGELOG_ARCHITECTURAL.md\`, \`docs/memory/RECENT_DECISIONS.md\`
+            5. Double review : Claude Code + humain
+
+            Voir \`docs/governance/PROTECTED_AREAS.md\`.
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });

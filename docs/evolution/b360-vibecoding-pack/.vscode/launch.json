@@ -1,0 +1,75 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "PHP: Listen for Xdebug",
+      "type": "php",
+      "request": "launch",
+      "port": 9003,
+      "pathMappings": {
+        "/var/www/html": "${workspaceFolder}"
+      }
+    },
+    {
+      "name": "PHP: Run current script",
+      "type": "php",
+      "request": "launch",
+      "program": "${file}",
+      "cwd": "${fileDirname}",
+      "port": 0,
+      "runtimeArgs": ["-dxdebug.start_with_request=yes"],
+      "env": {
+        "XDEBUG_MODE": "debug,develop",
+        "XDEBUG_CONFIG": "client_port=${port}"
+      }
+    },
+    {
+      "name": "Pest: Debug current test file",
+      "type": "php",
+      "request": "launch",
+      "program": "${workspaceFolder}/vendor/bin/pest",
+      "args": ["${file}"],
+      "cwd": "${workspaceFolder}",
+      "port": 0,
+      "runtimeArgs": ["-dxdebug.start_with_request=yes"],
+      "env": {
+        "XDEBUG_MODE": "debug,develop",
+        "XDEBUG_CONFIG": "client_port=${port}"
+      }
+    },
+    {
+      "name": "Artisan: Debug command",
+      "type": "php",
+      "request": "launch",
+      "program": "${workspaceFolder}/artisan",
+      "args": ["${input:artisanCommand}"],
+      "cwd": "${workspaceFolder}",
+      "port": 0,
+      "runtimeArgs": ["-dxdebug.start_with_request=yes"],
+      "env": {
+        "XDEBUG_MODE": "debug,develop",
+        "XDEBUG_CONFIG": "client_port=${port}"
+      }
+    },
+    {
+      "name": "Artisan: Debug current Tinker file",
+      "type": "php",
+      "request": "launch",
+      "program": "${workspaceFolder}/artisan",
+      "args": ["tinker", "--execute=${file}"],
+      "cwd": "${workspaceFolder}",
+      "port": 0,
+      "runtimeArgs": ["-dxdebug.start_with_request=yes"],
+      "env": {
+        "XDEBUG_MODE": "debug,develop"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "id": "artisanCommand",
+      "type": "promptString",
+      "description": "Commande artisan (ex: queue:work, migrate:status)"
+    }
+  ]
+}

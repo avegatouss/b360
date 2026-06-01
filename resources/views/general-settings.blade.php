@@ -1,3 +1,10 @@
+{{--
+    @deprecated This legacy static template is superseded by the hook-based settings system.
+    Use Modules/Settings/Resources/views/partials/general.blade.php and
+    Modules/Settings/Resources/views/partials/company.blade.php instead.
+    Accessible via /i/{slug}/settings/general and /i/{slug}/settings/company.
+    This file will be removed in a future release.
+--}}
 <?php $page = 'general-settings'; ?>
 @extends('layout.mainlayout')
 @section('content')

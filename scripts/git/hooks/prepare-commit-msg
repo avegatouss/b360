@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+# .git/hooks/prepare-commit-msg
+# Pré-remplit le message de commit avec le scope déduit de la branche
+# et un template Why/What/Validation si commit non trivial.
+
+set -euo pipefail
+
+COMMIT_MSG_FILE="$1"
+COMMIT_SOURCE="${2:-}"
+SHA1="${3:-}"
+
+# Bypass merge / squash / amend / template / message direct
+if [[ "$COMMIT_SOURCE" == "merge" || "$COMMIT_SOURCE" == "squash" || \
+      "$COMMIT_SOURCE" == "commit" || "$COMMIT_SOURCE" == "message" ]]; then
+    exit 0
+fi
+
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
+CURRENT_MSG=$(cat "$COMMIT_MSG_FILE")
+
+# Si message déjà non vide (utilisateur a tapé -m "..."), on ne touche pas
+NON_COMMENT_LINES=$(echo "$CURRENT_MSG" | grep -v '^#' | sed '/^$/d' | wc -l | tr -d ' ')
+if [ "$NON_COMMENT_LINES" -gt 0 ]; then
+    exit 0
+fi
+
+# Parser la branche : feat/scope-subject -> type=feat, scope=scope, subject=subject
+TYPE=""
+SCOPE=""
+SUBJECT_HINT=""
+if [[ "$CURRENT_BRANCH" =~ ^(feat|fix|refactor|perf|test|docs|chore|build|ci|style|security)/([a-z0-9-]+)-(.+)$ ]]; then
+    TYPE="${BASH_REMATCH[1]}"
+    SCOPE="${BASH_REMATCH[2]}"
+    SUBJECT_HINT="${BASH_REMATCH[3]//-/ }"
+fi
+
+# Construire le template
+{
+    if [ -n "$TYPE" ] && [ -n "$SCOPE" ]; then
+        echo "${TYPE}(${SCOPE}): ${SUBJECT_HINT}"
+    fi
+    echo ""
+    echo ""
+    echo "# === Conseil de rédaction ==="
+    echo "# Sujet : impératif, < 72 chars, sans point final"
+    echo "# Format : <type>(<scope>): <résumé>"
+    echo "#"
+    echo "# Pour les changements importants, ajoute un corps :"
+    echo "#"
+    echo "# Why:"
+    echo "# - problème ou besoin"
+    echo "#"
+    echo "# What:"
+    echo "# - changements effectués"
+    echo "#"
+    echo "# Validation:"
+    echo "# - tests exécutés"
+    echo "# - migrations vérifiées"
+    echo "# - impacts connus"
+    echo "#"
+    echo "# Refs: #issue (si applicable)"
+    echo "# BREAKING CHANGE: <description> (si applicable, et ajoute ! avant :)"
+    echo "# === Fin du conseil ==="
+    echo ""
+    if [ -n "$CURRENT_MSG" ]; then
+        echo "$CURRENT_MSG"
+    fi
+} > "$COMMIT_MSG_FILE.tmp"
+
+mv "$COMMIT_MSG_FILE.tmp" "$COMMIT_MSG_FILE"
+exit 0

@@ -1,0 +1,106 @@
+#!/usr/bin/env bash
+# .git/hooks/pre-push
+# Tests ciblés sur les modules touchés + vérification mémoire projet à jour.
+# Plus lourd que pre-commit (peut prendre 30s à 3min).
+
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+cd "$REPO_ROOT"
+
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m'
+
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+# Bloquer push direct sur branches protégées
+if [[ "$CURRENT_BRANCH" =~ ^(main|develop|master|production)$ ]]; then
+    echo -e "${RED}╔════════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${RED}║  ✗ Push direct sur branche protégée interdit : $CURRENT_BRANCH${NC}"
+    echo -e "${RED}╚════════════════════════════════════════════════════════════════╝${NC}"
+    echo ""
+    echo "Crée une branche dédiée :"
+    echo -e "  ${GREEN}make new-feat scope=<scope> subject=<sujet>${NC}"
+    exit 1
+fi
+
+# Détecter la branche de base (develop si présent, sinon main)
+BASE_BRANCH=$(git rev-parse --verify origin/develop >/dev/null 2>&1 && echo "origin/develop" || echo "origin/main")
+
+echo -e "${GREEN}[pre-push]${NC} Vérifications avant push de $CURRENT_BRANCH..."
+
+# 1. Détection des modules touchés
+CHANGED_FILES=$(git diff --name-only "$BASE_BRANCH"...HEAD 2>/dev/null || git diff --name-only)
+TOUCHED_MODULES=$(echo "$CHANGED_FILES" | grep -oE '^Modules/[^/]+' | sort -u | sed 's|Modules/||' || true)
+
+if [ -z "$TOUCHED_MODULES" ]; then
+    echo -e "${YELLOW}[pre-push]${NC} Aucun module touché. Lance la suite globale par sécurité."
+    if [ -x "vendor/bin/pest" ]; then
+        php artisan test --parallel --stop-on-failure || exit 1
+    fi
+else
+    echo -e "${GREEN}[pre-push]${NC} Modules touchés : $(echo "$TOUCHED_MODULES" | tr '\n' ' ')"
+    for module in $TOUCHED_MODULES; do
+        if [ -d "Modules/$module/Tests" ]; then
+            echo -e "${GREEN}[pre-push]${NC} Tests Modules/$module/Tests..."
+            if ! php artisan test "Modules/$module/Tests" --parallel --stop-on-failure; then
+                echo ""
+                echo -e "${RED}✗ Tests $module en échec.${NC}"
+                echo "Corrige avant de pusher. Bypass d'urgence : git push --no-verify"
+                exit 1
+            fi
+        else
+            echo -e "${YELLOW}[pre-push]${NC} Pas de dossier Tests/ pour $module — skip."
+        fi
+    done
+fi
+
+# 2. Vérifier la fraîcheur de la mémoire projet
+if [ -f "scripts/memory/check-freshness.sh" ]; then
+    echo -e "${GREEN}[pre-push]${NC} Vérification fraîcheur mémoire projet..."
+    if ! bash scripts/memory/check-freshness.sh --strict; then
+        echo ""
+        echo -e "${YELLOW}╔════════════════════════════════════════════════════════════════╗${NC}"
+        echo -e "${YELLOW}║  ⚠ Mémoire projet pas à jour                                   ║${NC}"
+        echo -e "${YELLOW}╚════════════════════════════════════════════════════════════════╝${NC}"
+        echo ""
+        echo "Au moins un de ces fichiers doit être à jour :"
+        echo "  - docs/memory/CURRENT_STATE.md"
+        echo "  - docs/memory/RECENT_DECISIONS.md (si décision structurante)"
+        echo "  - CHANGELOG_ARCHITECTURAL.md (si changement architectural)"
+        echo ""
+        echo "Pour régénérer automatiquement :"
+        echo -e "  ${GREEN}make memory-refresh${NC}"
+        echo ""
+        read -p "Pusher quand même ? (y/N) " -n 1 -r < /dev/tty
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            exit 1
+        fi
+    fi
+fi
+
+# 3. Vérifier que les zones protégées touchées ont bien un IMPACT_ANALYSIS
+if [ -f "scripts/quality/check-impact-analysis.sh" ]; then
+    if ! bash scripts/quality/check-impact-analysis.sh; then
+        echo -e "${YELLOW}⚠ Tu touches une zone protégée sans IMPACT_ANALYSIS visible dans la branche.${NC}"
+        echo "Recommandé : ajoute un commit docs(governance) avec l'analyse."
+        read -p "Pusher quand même ? (y/N) " -n 1 -r < /dev/tty
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            exit 1
+        fi
+    fi
+fi
+
+# 4. Vérifier qu'aucun secret n'a été commité
+if echo "$CHANGED_FILES" | xargs grep -lE '(api[_-]?key|secret|password|token)\s*=\s*["\047][a-zA-Z0-9]{20,}' 2>/dev/null | grep -v '\.example\|\.md\|test'; then
+    echo -e "${RED}✗ Secret potentiel détecté dans les fichiers modifiés.${NC}"
+    echo "Vérifie et utilise .env à la place."
+    exit 1
+fi
+
+echo -e "${GREEN}[pre-push]${NC} ${GREEN}Tout est OK. Push autorisé.${NC}"
+exit 0

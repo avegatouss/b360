@@ -1,0 +1,11 @@
+{
+    "name": "Demo",
+    "alias": "demo",
+    "description": "Module de donnees de demonstration. Chaque module enregistre ses seeders demo via hooks.",
+    "keywords": ["demo", "seed", "sample-data"],
+    "priority": 5,
+    "providers": [
+        "Modules\\Demo\\Providers\\DemoServiceProvider"
+    ],
+    "files": []
+}

@@ -1,0 +1,63 @@
+<x-authmod::layouts.master :title="'Verification 2FA — ' . config('app.name', 'B360')">
+
+    <div class="account-content">
+        <div class="login-wrapper">
+            <div class="login-content authent-content">
+                <div class="login-userset" style="max-width: 420px;">
+
+                    <div class="login-userheading">
+                        <h3>Verification en deux etapes</h3>
+                        <h4 class="fs-16">
+                            Entrez le code a 6 chiffres genere par votre application d'authentification.
+                        </h4>
+                    </div>
+
+                    @if($errors->any())
+                        <div class="alert alert-danger" role="alert">
+                            @foreach($errors->all() as $error)
+                                <p class="mb-0">{{ $error }}</p>
+                            @endforeach
+                        </div>
+                    @endif
+
+                    <form method="POST" action="{{ route('two-factor.challenge') }}">
+                        @csrf
+
+                        <div class="mb-3">
+                            <label class="form-label">Code de verification <span class="text-danger">*</span></label>
+                            <input type="text"
+                                   name="code"
+                                   class="form-control text-center font-monospace fs-4"
+                                   maxlength="6"
+                                   pattern="[0-9]{6}"
+                                   inputmode="numeric"
+                                   autocomplete="one-time-code"
+                                   placeholder="000000"
+                                   required
+                                   autofocus>
+                        </div>
+
+                        <div class="form-login">
+                            <button type="submit" class="btn btn-primary w-100">Verifier</button>
+                        </div>
+                    </form>
+
+                    <div class="mt-3 text-center">
+                        <a href="{{ route('two-factor.recovery') }}" class="text-muted">
+                            Utiliser un code de recuperation
+                        </a>
+                    </div>
+
+                    <div class="mt-2 text-center">
+                        <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                            @csrf
+                            <button type="submit" class="btn btn-link text-muted p-0">Se deconnecter</button>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+</x-authmod::layouts.master>

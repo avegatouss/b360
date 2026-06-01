@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Support\Str;
+use PragmaRX\Google2FA\Google2FA;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
@@ -57,6 +60,10 @@ class User extends Authenticatable
 
         'personne_id',
         'personne_physique_id',
+
+        'two_factor_secret',
+        'two_factor_recovery_codes',
+        'two_factor_confirmed_at',
     ];
 
     /*
@@ -67,6 +74,8 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
     ];
 
     /*
@@ -83,6 +92,10 @@ class User extends Authenticatable
 
         'notification_preferences' => 'array',
         'settings' => 'array',
+
+        'two_factor_secret' => 'encrypted',
+        'two_factor_recovery_codes' => 'encrypted:array',
+        'two_factor_confirmed_at' => 'datetime',
     ];
 
     /*
@@ -194,5 +207,54 @@ class User extends Authenticatable
     public function markAsLoggedIn(): void
     {
         $this->update(['last_login_at' => now()]);
+    }
+
+    /**
+     * Resource assignments (eshop360 user-to-resource mapping).
+     */
+    public function resourceAssignments(): HasMany
+    {
+        return $this->hasMany(\Modules\Eshop360\Models\UserAssignment::class);
+    }
+
+    /*
+     |--------------------------------------------------------------------------
+     | Two-Factor Authentication (TOTP)
+     |--------------------------------------------------------------------------
+     | Requires: pragmarx/google2fa
+     */
+
+    /**
+     * Check if 2FA is fully enabled (secret confirmed).
+     */
+    public function hasTwoFactorEnabled(): bool
+    {
+        return !is_null($this->two_factor_confirmed_at);
+    }
+
+    /**
+     * Generate 8 random 10-character recovery codes.
+     */
+    public function generateTwoFactorRecoveryCodes(): array
+    {
+        $codes = [];
+        for ($i = 0; $i < 8; $i++) {
+            $codes[] = Str::random(10);
+        }
+        return $codes;
+    }
+
+    /**
+     * Validate a TOTP code against the stored secret.
+     */
+    public function validTwoFactorCode(string $code): bool
+    {
+        if (empty($this->two_factor_secret)) {
+            return false;
+        }
+
+        $google2fa = new Google2FA();
+
+        return (bool) $google2fa->verifyKey($this->two_factor_secret, $code);
     }
 }

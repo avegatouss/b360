@@ -1,0 +1,233 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "qa: full pipeline",
+      "type": "shell",
+      "command": "make qa",
+      "group": { "kind": "test", "isDefault": true },
+      "presentation": { "echo": true, "reveal": "always", "panel": "dedicated", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "qa: lint (Pint)",
+      "type": "shell",
+      "command": "vendor/bin/pint --test",
+      "group": "test",
+      "presentation": { "reveal": "always", "panel": "shared" },
+      "problemMatcher": []
+    },
+    {
+      "label": "qa: lint fix (Pint)",
+      "type": "shell",
+      "command": "vendor/bin/pint",
+      "group": "test",
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "qa: phpstan",
+      "type": "shell",
+      "command": "vendor/bin/phpstan analyse --memory-limit=1G --no-progress",
+      "group": "test",
+      "presentation": { "reveal": "always", "panel": "shared" },
+      "problemMatcher": ["$phpstan"]
+    },
+    {
+      "label": "qa: deptrac (architecture rules)",
+      "type": "shell",
+      "command": "vendor/bin/deptrac analyse --no-progress",
+      "group": "test",
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "qa: rector (dry-run)",
+      "type": "shell",
+      "command": "vendor/bin/rector process --dry-run",
+      "group": "test",
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "test: full suite",
+      "type": "shell",
+      "command": "php artisan test --parallel",
+      "group": { "kind": "test", "isDefault": false },
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": []
+    },
+    {
+      "label": "test: module (input)",
+      "type": "shell",
+      "command": "php artisan test Modules/${input:module}/Tests --parallel",
+      "group": "test",
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "test: file in focus",
+      "type": "shell",
+      "command": "php artisan test ${file}",
+      "group": "test",
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "test: filter by name",
+      "type": "shell",
+      "command": "php artisan test --filter=${input:filterName}",
+      "group": "test",
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "db: migrate status",
+      "type": "shell",
+      "command": "php artisan migrate:status",
+      "group": "build"
+    },
+    {
+      "label": "db: migrate (safe)",
+      "type": "shell",
+      "command": "php artisan migrate --pretend && echo '--- Confirme avec migrate sans --pretend si OK ---'",
+      "group": "build"
+    },
+    {
+      "label": "db: rollback last batch",
+      "type": "shell",
+      "command": "php artisan migrate:rollback --step=1",
+      "group": "build"
+    },
+    {
+      "label": "module: list",
+      "type": "shell",
+      "command": "php artisan module:list",
+      "group": "build"
+    },
+    {
+      "label": "module: make (input)",
+      "type": "shell",
+      "command": "php artisan module:make ${input:newModule}",
+      "group": "build"
+    },
+    {
+      "label": "routes: list eshop360",
+      "type": "shell",
+      "command": "php artisan route:list --name=eshop360",
+      "group": "build"
+    },
+    {
+      "label": "routes: list module (input)",
+      "type": "shell",
+      "command": "php artisan route:list --name=${input:module}",
+      "group": "build"
+    },
+    {
+      "label": "memory: refresh state",
+      "type": "shell",
+      "command": "bash scripts/memory/refresh-current-state.sh",
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "memory: check freshness",
+      "type": "shell",
+      "command": "bash scripts/memory/check-freshness.sh",
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "audit: dependency map",
+      "type": "shell",
+      "command": "bash scripts/quality/audit-dependencies.sh",
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "audit: protected areas touched",
+      "type": "shell",
+      "command": "bash scripts/quality/check-protected-areas.sh",
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "git: new feature branch",
+      "type": "shell",
+      "command": "bash scripts/git/new-branch.sh feat ${input:scope} ${input:subject}",
+      "group": "none",
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "git: new fix branch",
+      "type": "shell",
+      "command": "bash scripts/git/new-branch.sh fix ${input:scope} ${input:subject}",
+      "group": "none"
+    },
+    {
+      "label": "git: changed files in branch",
+      "type": "shell",
+      "command": "git diff --stat origin/develop...HEAD",
+      "group": "none"
+    },
+    {
+      "label": "claude: open with full context",
+      "type": "shell",
+      "command": "claude < templates/prompts/00-bootstrap-claude.md",
+      "group": "none",
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "codex: open with full context",
+      "type": "shell",
+      "command": "codex < templates/prompts/00-bootstrap-codex.md",
+      "group": "none",
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "serve: php artisan serve",
+      "type": "shell",
+      "command": "php artisan serve",
+      "isBackground": true,
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "queue: work",
+      "type": "shell",
+      "command": "php artisan queue:work --tries=1 --timeout=60",
+      "isBackground": true,
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "cache: clear all",
+      "type": "shell",
+      "command": "php artisan optimize:clear && php artisan view:clear && php artisan route:clear && php artisan config:clear",
+      "group": "build"
+    }
+  ],
+  "inputs": [
+    {
+      "id": "module",
+      "description": "Nom du module (Eshop360, Core, Auth, ...)",
+      "default": "Eshop360",
+      "type": "promptString"
+    },
+    {
+      "id": "newModule",
+      "description": "Nouveau module à créer",
+      "type": "promptString"
+    },
+    {
+      "id": "scope",
+      "description": "Scope (eshop360, pricing, inventory, sales, ...)",
+      "default": "eshop360",
+      "type": "promptString"
+    },
+    {
+      "id": "subject",
+      "description": "Sujet court du lot (kebab-case)",
+      "type": "promptString"
+    },
+    {
+      "id": "filterName",
+      "description": "Filtre Pest/PHPUnit (--filter)",
+      "type": "promptString"
+    }
+  ]
+}

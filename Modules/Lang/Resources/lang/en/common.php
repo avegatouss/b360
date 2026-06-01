@@ -62,6 +62,38 @@ return [
     'no_subscription' => 'No active subscription.',
     'available_plans' => 'Available plans',
 
+    // Eshop
+    'pos' => 'Point of Sale',
+    'products' => 'Products',
+    'inventory' => 'Inventory',
+    'sales' => 'Sales',
+    'orders' => 'Orders',
+    'customers' => 'Customers',
+    'purchases' => 'Purchases',
+    'invoices_eshop' => 'Invoices',
+    'reports' => 'Reports',
+    'promotions' => 'Promotions',
+    'categories' => 'Categories',
+    'brands' => 'Brands',
+    'stocks' => 'Stocks',
+    'coupons' => 'Coupons',
+    'discounts' => 'Discounts',
+    'quotations' => 'Quotations',
+    'warehouses' => 'Warehouses',
+    'stores' => 'Stores',
+    'translations' => 'Translations',
+
+    // Imports & costs
+    'imports' => 'Imports',
+    'import_order' => 'Import order',
+    'import_costs' => 'Import costs',
+    'cost_allocation' => 'Cost allocation',
+    'receive_goods' => 'Receive goods',
+    'freight' => 'Freight',
+    'customs' => 'Customs clearance',
+    'transit' => 'Transit',
+    'cost_per_unit' => 'Cost per unit',
+
     // Misc
     'copyright' => 'Copyright',
     'all_instances' => 'All instances',
