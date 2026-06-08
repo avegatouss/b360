@@ -1,76 +1,105 @@
-<x-dashboard::layouts.master
-    :title="'Dashboard — ' . ($instance->name ?? $instance->slug ?? 'B360')"
-    :instance="$instance"
-    pageTitle="Tableau de bord">
+<x-dashboard::layouts.master :title="'Dashboard — ' . ($instance->name ?? $instance->slug ?? 'B360')"
+    :instance="$instance" pageTitle="Tableau de bord">
 
     {{-- ============================================================ --}}
-    {{-- Stat Cards — Admin only                                     --}}
+    {{-- Stat Cards — Admin only --}}
     {{-- ============================================================ --}}
-    @if(auth()->user()?->hasRole('super-admin') || auth()->user()?->hasRole('instance-admin') || auth()->user()?->hasRole('manager'))
+    @if(auth()->user()?->hasRole('super-admin') || auth()->user()?->hasRole('instance-admin') ||
+    auth()->user()?->hasRole('manager'))
     <div class="row">
 
-        <div class="col-xl-3 col-sm-6 col-12 d-flex">
-            <div class="dash-widget w-100">
-                <div class="dash-widgetimg">
-                    <span><img src="{{ asset('build/img/icons/dash1.svg') }}" alt="Membres" width="40"></span>
-                </div>
-                <div class="dash-widgetcontent">
-                    <h5>{{ $memberCount }}</h5>
-                    <h6>Membres actifs</h6>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-sm-6 col-12 d-flex">
-            <div class="dash-widget dash1 w-100">
-                <div class="dash-widgetimg">
-                    <span><img src="{{ asset('build/img/icons/dash2.svg') }}" alt="Utilisateurs" width="40"></span>
-                </div>
-                <div class="dash-widgetcontent">
-                    <h5>{{ $totalUsers }}</h5>
-                    <h6>Utilisateurs totaux</h6>
+        {{-- Membres actifs --}}
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="card position-relative">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="me-2">
+                            <span class="avatar avatar-lg bg-soft-info">
+                                <i class="ti ti-users text-info fs-28"></i>
+                            </span>
+                        </div>
+                        <div>
+                            <p class="mb-1">Membres actifs</p>
+                            <h6 class="fs-16 fw-semibold">{{ $memberCount }}</h6>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-3 col-sm-6 col-12 d-flex">
-            <div class="dash-widget dash2 w-100">
-                <div class="dash-widgetimg">
-                    <span><img src="{{ asset('build/img/icons/dash3.svg') }}" alt="Mode" width="40"></span>
-                </div>
-                <div class="dash-widgetcontent">
-                    <h5 style="font-size:1.1rem;text-transform:capitalize;">
-                        {{ config('app.instance_mode', 'single') }}
-                    </h5>
-                    <h6>Mode instance</h6>
+        {{-- Utilisateurs --}}
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="card position-relative">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="me-2">
+                            <span class="avatar avatar-lg bg-success-subtle">
+                                <i class="ti ti-users-group text-success fs-28"></i>
+                            </span>
+                        </div>
+                        <div>
+                            <p class="mb-1">Utilisateurs totaux</p>
+                            <h6 class="fs-16 fw-semibold">{{ $totalUsers }}</h6>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-3 col-sm-6 col-12 d-flex">
-            <div class="dash-widget dash3 w-100">
-                <div class="dash-widgetimg">
-                    <span><img src="{{ asset('build/img/icons/dash4.svg') }}" alt="Statut" width="40"></span>
+        {{-- Mode instance --}}
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="card position-relative">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="me-2">
+                            <span class="avatar avatar-lg bg-warning-subtle">
+                                <i class="ti ti-settings-cog text-warning fs-28"></i>
+                            </span>
+                        </div>
+                        <div>
+                            <p class="mb-1">Mode instance</p>
+                            <h6 class="fs-16 fw-semibold text-capitalize">
+                                {{ config('app.instance_mode', 'single') }}
+                            </h6>
+                        </div>
+                    </div>
                 </div>
-                <div class="dash-widgetcontent">
-                    @if($instance->is_active)
-                        <h5 class="text-success">Active</h5>
-                    @else
-                        <h5 class="text-danger">Inactive</h5>
-                    @endif
-                    <h6>Statut de l'instance</h6>
+            </div>
+        </div>
+
+        {{-- Statut --}}
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="card position-relative">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="me-2">
+                            <span class="avatar avatar-lg bg-primary-subtle">
+                                <i class="ti ti-shield-check text-primary fs-28"></i>
+                            </span>
+                        </div>
+                        <div>
+                            <p class="mb-1">Statut de l'instance</p>
+                            <h6 class="fs-16 fw-semibold">
+                                @if($instance->is_active)
+                                <span class="text-success">Active</span>
+                                @else
+                                <span class="text-danger">Inactive</span>
+                                @endif
+                            </h6>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
     </div>
     {{-- ============================================================ --}}
-    {{-- /Stat Cards                                                  --}}
+    {{-- /Stat Cards --}}
     {{-- ============================================================ --}}
     @endif
 
     {{-- ============================================================ --}}
-    {{-- Instance info card — Admin/Super-Admin only                  --}}
+    {{-- Instance info card — Admin/Super-Admin only --}}
     {{-- ============================================================ --}}
     @if(auth()->user()?->hasRole('super-admin') || auth()->user()?->hasRole('instance-admin'))
     <div class="card mb-0">
@@ -97,9 +126,9 @@
                             <td class="fw-medium text-muted">Statut</td>
                             <td>
                                 @if($instance->is_active)
-                                    <span class="badge bg-success">Active</span>
+                                <span class="badge bg-success">Active</span>
                                 @else
-                                    <span class="badge bg-danger">Inactive</span>
+                                <span class="badge bg-danger">Inactive</span>
                                 @endif
                             </td>
                         </tr>
@@ -119,25 +148,25 @@
         </div>
     </div>
     {{-- ============================================================ --}}
-    {{-- /Instance info card                                         --}}
+    {{-- /Instance info card --}}
     {{-- ============================================================ --}}
     @endif
 
     {{-- ============================================================ --}}
-    {{-- Module Widgets (registered via HookRegistry)                --}}
+    {{-- Module Widgets (registered via HookRegistry) --}}
     {{-- ============================================================ --}}
     @if(isset($widgets) && $widgets->isNotEmpty())
     <div class="row mt-3">
         @foreach($widgets as $widget)
-            <div class="col-xl-6 col-12 mb-3">
-                {!! ($widget->render)() !!}
-            </div>
+        <div class="col-xl-6 col-12 mb-3">
+            {!! ($widget->render)() !!}
+        </div>
         @endforeach
     </div>
     @endif
 
     {{-- ============================================================ --}}
-    {{-- Quick links                                                  --}}
+    {{-- Quick links --}}
     {{-- ============================================================ --}}
     @if(auth()->user()?->hasRole('super-admin') || auth()->user()?->hasRole('instance-admin'))
     <div class="card mt-3 mb-0">
@@ -145,15 +174,14 @@
             <h5 class="card-title">Acces rapides</h5>
         </div>
         <div class="card-body">
-            <a href="{{ route('users.index', $instance->slug) }}"
-               class="btn btn-primary me-2">
+            <a href="{{ route('users.index', $instance->slug) }}" class="btn btn-primary me-2">
                 <i class="ti ti-users me-1"></i>Gerer les utilisateurs
             </a>
         </div>
     </div>
     @endif
     {{-- ============================================================ --}}
-    {{-- /Quick links                                                 --}}
+    {{-- /Quick links --}}
     {{-- ============================================================ --}}
 
 </x-dashboard::layouts.master>

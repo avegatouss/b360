@@ -11,6 +11,6 @@
     "Lang": true,
     "Currency": true,
     "Eshop360": false,
-    "Demo": true,
-    "Menuiserie360": true
+    "Demo": false,
+    "Menuiserie360": false
 }

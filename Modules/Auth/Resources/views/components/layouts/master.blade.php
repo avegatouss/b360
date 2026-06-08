@@ -1,5 +1,7 @@
+{{--
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
@@ -8,7 +10,8 @@
 
     <!-- Favicon -->
     @php $brandFavicon = setting('branding.favicon'); @endphp
-    <link rel="shortcut icon" type="image/x-icon" href="{{ $brandFavicon ? asset('storage/' . $brandFavicon) : asset('build/img/favicon.png') }}">
+    <link rel="shortcut icon" type="image/x-icon"
+        href="{{ $brandFavicon ? asset('storage/' . $brandFavicon) : asset('build/img/favicon.png') }}">
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="{{ asset('build/css/bootstrap.min.css') }}">
@@ -29,11 +32,15 @@
     <!-- Main CSS -->
     <link rel="stylesheet" href="{{ asset('build/css/style.css') }}">
 </head>
+
 <body class="account-page">
     @php
-        $scriptVersion = file_exists(public_path('build/js/script.js')) ? filemtime(public_path('build/js/script.js')) : time();
-        $themeColorpickerVersion = file_exists(public_path('build/js/theme-colorpicker.js')) ? filemtime(public_path('build/js/theme-colorpicker.js')) : $scriptVersion;
-        $select2Version = file_exists(public_path('build/plugins/select2/js/select2.min.js')) ? filemtime(public_path('build/plugins/select2/js/select2.min.js')) : $scriptVersion;
+    $scriptVersion = file_exists(public_path('build/js/script.js')) ? filemtime(public_path('build/js/script.js')) :
+    time();
+    $themeColorpickerVersion = file_exists(public_path('build/js/theme-colorpicker.js')) ?
+    filemtime(public_path('build/js/theme-colorpicker.js')) : $scriptVersion;
+    $select2Version = file_exists(public_path('build/plugins/select2/js/select2.min.js')) ?
+    filemtime(public_path('build/plugins/select2/js/select2.min.js')) : $scriptVersion;
     @endphp
 
     <div class="main-wrapper">
@@ -70,4 +77,66 @@
     </script>
     @include('authmod::components.recaptcha')
 </body>
+
+</html> --}}
+
+
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
+<head>
+
+    <!-- Meta Tags -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>{{ $title ?? config('app.name', 'B360') }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="author" content="">
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" type="image/x-icon" href="{{ asset('assets/img/favicon.png') }}">
+
+    <!-- Apple Touch Icon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('assets/img/apple-touch-icon.png') }}">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/css/bootstrap.min.css') }}">
+
+    <!-- Tabler Icon CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/plugins/tabler-icons/tabler-icons.min.css') }}">
+
+    <!-- Iconsax CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/css/iconsax.css') }}">
+
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
+
+</head>
+
+<body class="bg-white">
+
+    <!-- Begin Wrapper -->
+    <div class="main-wrapper auth-bg">
+
+        <!-- Start Content -->
+        <div class="container-fuild">
+            {{ $slot }}
+        </div>
+        <!-- End Content -->
+
+    </div>
+    <!-- End Wrapper -->
+
+    <!-- jQuery -->
+    <script src="{{ asset('assets/js/jquery-3.7.1.min.js') }}"></script>
+
+    <!-- Bootstrap Core JS -->
+    <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
+
+    <!-- Custom JS -->
+    <script src="{{ asset('assets/js/script.js') }}"></script>
+
 </html>
