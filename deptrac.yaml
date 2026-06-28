@@ -83,6 +83,15 @@ deptrac:
         - type: directory
           value: Modules/Installer/.*
 
+    # ADR-030 : Referentiel360 = master data inter-modules (L2 socle).
+    # Détient le golden record partagé (tiers, articles, finance miroir).
+    # NE dépend d'AUCUN module L3 : inversion de dépendance via l'interface
+    # `PartySource` implémentée par les L3 (Eshop360/Menuiserie360 → Referentiel360).
+    - name: Referentiel360
+      collectors:
+        - type: directory
+          value: Modules/Referentiel360/.*
+
     # ═══════════════════════════════════════════════════════════════
     # L3 — Métier (Eshop360 — monolithique en cours de découpage)
     #
@@ -281,6 +290,15 @@ deptrac:
       - Core
       - Users
       - AppLayer
+    # ADR-030 : Referentiel360 (L2 socle) ne dépend QUE des couches L0/L1.
+    # Aucune dépendance vers un module L3 (le couplage est descendant L3 → L2).
+    Referentiel360:
+      - Core
+      - Auth
+      - Users
+      - Instances
+      - Settings
+      - AppLayer
     # Eshop360 "reste" monolithique — peut dépendre des socles + de
     # tous ses sous-domaines extraits (transition) + EshopShared
     # + EshopContracts (P0-3bis : les Adapters publient les contrats).
@@ -292,6 +310,7 @@ deptrac:
       - Billing
       - Currency
       - Lang
+      - Referentiel360
       - EshopShared
       - EshopContracts
       - EshopCatalog
@@ -329,6 +348,7 @@ deptrac:
       - Billing
       - Currency
       - Lang
+      - Referentiel360
       - AppLayer
 
     # R-101 S12 : EshopShared regroupe l'infrastructure partagée intra-Eshop360
@@ -919,6 +939,7 @@ deptrac:
           - ModuleManager
           - Demo
           - Installer
+          - Referentiel360
         L3:
           - Eshop360
           - Menuiserie360

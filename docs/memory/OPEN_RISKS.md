@@ -1,6 +1,6 @@
 # OPEN_RISKS — B360
 
-> Risques techniques connus, suivi vivant. Mise à jour : **2026-05-14** (R-403 fermé par lot R-M-V2-S1, cf. [ADR-023](../adr/ADR-023-menuiserie360-autonomous-module.md))
+> Risques techniques connus, suivi vivant. Mise à jour : **2026-06-28** (R-505 ouvert : faux-positifs de déduplication du programme Referentiel360 / ADR-030)
 
 ---
 
@@ -13,6 +13,44 @@ _(aucun risque critique ouvert — R-001, R-002, R-003, R-004 fermés le 2026-04
 _(aucun risque majeur ouvert — R-101 fermée le 2026-05-05. Voir section FERMÉ ci-dessous.)_
 
 ## MOYEN
+
+### R-505 — Referentiel360 : faux-positifs de déduplication des tiers (ouvert 2026-06-28)
+
+- **Contexte** : le programme Referentiel360 ([ADR-030](../adr/ADR-030-referentiel360-master-data-tiers.md)) réconcilie les clients/fournisseurs des deux modules en un golden record. La déduplication (clé email/téléphone/RCCM/NIF, scopée `instance_id`) peut **fusionner à tort** deux personnes physiques distinctes partageant un contact (email/téléphone familial ou professionnel commun).
+- **Impact** : fusion erronée = mélange d'historiques commerciaux/financiers de deux tiers réels. Difficile à défaire après coup.
+- **Mitigation cadrée (Lot 1)** : matching **conservateur** (priorité au lien fiable `legacy_eshop_customer_id`) ; collisions ambiguës **jamais auto-fusionnées** → rapport `flag=review` ; commande backfill en `--dry-run` **obligatoire** avant exécution réelle ; isolation `instance_id` testée (`PartyTenantIsolationTest`).
+- **Risque résiduel** : un faux-positif sur clé email/téléphone **non ambiguë** (un seul match) passerait sans flag. À surveiller : envisager un seuil de confiance / validation humaine sur les fusions email-only en Lot 1.a/1.b.
+- **Zone** : L2 (Referentiel360), sensible (intégrité d'identité).
+- **Décision attendue** : valider la politique de matching email-only (auto vs revue) à l'implémentation du Lot 1.
+
+### R-502 — Cross-module `Schema::table(...)` + `hasTable` guard : skip silencieux marqué ran (ouvert 2026-05-19)
+
+- **Constat** : `Modules/Currency/Database/Migrations/2026_04_04_300002_multi_currency_phase2.php` étend `eshop_orders`/`eshop_invoices`/`eshop_payments` via `Schema::table(...)` gardé par `if (Schema::hasTable('eshop_*'))`. Quand Currency est activé avant Eshop360, les 3 blocs skip silencieusement, mais Laravel marque la migration ran → trou structurel permanent (7 colonnes monétaires manquantes), invisible aux tests `RefreshDatabase` qui repartent d'une DB fresh où l'ordre canonique est correct.
+- **Symptôme déclenché 2026-05-19** : la migration consommatrice `Modules/Eshop360/Database/Migrations/2026_04_06_000001_add_amount_in_base_currency_to_eshop_orders_and_invoices.php` échoue sur `after('exchange_rate')` au moment d'une (ré)activation Eshop360. Réparation appliquée via `Modules/Currency/Database/Migrations/2026_04_05_999999_repair_eshop_currency_columns.php` (idempotente).
+- **Risque résiduel** : le pattern peut se reproduire sur **toute** future extension cross-module (Currency / Eshop360 / Menuiserie360 / Treso360 / CCC360) gardée par `hasTable`. Les tests fresh-DB ne le détecteront pas.
+- **Mitigation à formaliser** :
+  1. Soit déclarer explicitement l'ordre d'activation entre modules (module B requiert module A activé d'abord).
+  2. Soit accompagner systématiquement toute migration `Schema::table('<other_module>_*')` d'une migration de réparation idempotente dans le module propriétaire de l'extension, datée après la création des tables cibles.
+  3. Soit retirer le guard `hasTable` pour fail-fast (acceptable si l'ordre d'activation est garanti par contract).
+- **Module touché** : Currency principalement, mais pattern transverse à surveiller en review.
+- **Zone** : L2 (migrations cross-module).
+- **Décision attendue** : choisir la stratégie #1, #2 ou #3 lors du prochain audit d'architecture (à coupler avec discussion `modules.depends` nwidart).
+
+### R-501 — Tests SQLite + PHP 8.4 : `cannot start a transaction within a transaction` (ouvert 2026-05-19)
+
+- **Source** : 3 agents indépendants ont reproduit le symptôme en suite séquentielle pendant le lot V3-S4 (V1.6 Encaissements, V3-S3 Clients enrichis, V3-S2 BOM, V1.8-S1 Employés). Confirmé via `git stash` rollback : baseline `198 failed / 32 passed` indépendante des lots.
+- **Constat** : `PDOException: SQLSTATE[HY000]: General error: 1 cannot start a transaction within a transaction` au `parent::setUp()` du Core TestCase (RefreshDatabase L147). Symptômique sur `FournisseurCrudTest`, `ClientCrudTest`, `ClientAddressesTest`, `ClientContactsTest`, `EmployeCrudTest` — chaque test individuel passe en isolation (`vendor/bin/phpunit --filter <name>`), mais la suite entière casse.
+- **Cause technique** : PHP 8.4 a changé `executeBeginTransactionStatement()` : il émet désormais `BEGIN DEFERRED TRANSACTION` en SQL au lieu d'appeler `pdo->beginTransaction()`. Le couplage `Core/Tests/TestCase::sharePdo()` qui partage le même PDO entre les connexions `sqlite` et `system` fait que le compteur `$transactions` du connector reste à 0 pendant que le PDO sous-jacent est déjà en transaction (ouverte par `RefreshDatabase` côté `system`). Toute requête `DB::transaction()` côté `sqlite` lance alors un BEGIN nested → l'erreur.
+- **Impact** : la majorité des tests Feature HTTP Menuiserie360 (nouveaux V1.6 / V3-S2 / V3-S3 / V1.8-S1 et anciens `FournisseurCrudTest`/`ClientCrudTest`) ne sont plus exécutables en suite. La validation passe uniquement en isolation, ce qui dégrade le signal CI.
+- **Options de résolution** (à arbitrer dans lot dédié `R-M-Infra-Tests`) :
+  1. **Override `Core/Tests/TestCase::connectionsToTransact()`** pour inclure `['sqlite', 'system']` — la moins invasive (zone L1, mais ciblée).
+  2. **Basculer la connexion `system` sur un PDO distinct** côté `phpunit.xml` ou `TestCase::sharePdo()` — plus propre architecturalement mais touche zone L1.
+  3. **Downgrade PHP 8.3** pour CI tests uniquement — contournement, ne résout pas la cause.
+- **Risque actuel** : R-501 n'invalide PAS les lots livrés (le code passe en runtime production MySQL, les tests passent en isolation). C'est un drift de l'infrastructure de tests. **Mais** : le `php artisan test Modules/Menuiserie360` produit des faux positifs négatifs qui peuvent masquer une vraie régression.
+- **Mitigation immédiate** : invocation isolée des tests sensibles (`vendor/bin/phpunit --filter EmployeCrudTest`).
+- **Aggravation constatée 2026-06-12 (lot R-M-EXPERT-BACKEND)** : le symptôme frappe désormais aussi en `--filter <Classe>` dès le 2e test de la classe, et **tout endpoint HTTP traversant `DB::transaction`** échoue même en isolation par méthode (store devis ×4, accepter devis, recevoir stock, imports CSV ×2, chantier terminer ×2 — ~8 échecs préexistants, causalité vérifiée par 3 agents indépendants vs HEAD). Contournements validés : `vendor/bin/phpunit --process-isolation --filter <X>` (1 process/test, fait foi pour la CI locale) ; pour tester la logique d'un store, appel direct du controller (le `DB::transaction` devient SAVEPOINT) — précédent dans `CommercialFinanceExpertScreenTest`. Le lot `R-M-Infra-Tests` (zone L1) reste la seule résolution de fond.
+- **Module touché** : Core (`Modules/Core/Tests/TestCase.php`), conséquences sur tous les modules métier.
+- **Zone** : L1 (multi-tenant test infra) — procédure renforcée nécessaire pour le lot de fix.
 
 ### R-401 — Couplage dur des modules socles vers les modules métier (fermé 2026-05-12)
 
@@ -54,6 +92,17 @@ _(aucun risque majeur ouvert — R-101 fermée le 2026-05-05. Voir section FERM�
   3. Chaque enfant a une `route` non nulle **et** un `requiredPermission` non nul — détecte le retour du `visibleWhen: false` ou la suppression d'une route nommée.
 
 ## FERMÉ
+
+### R-405 — Fuite cross-tenant BomCostService (ouvert 2026-05-19, fermé 2026-06-12)
+
+- **Constat** : `BomCostService::computeCost()` et `isDescendant()` faisaient `CatalogItem::query()->find($componentId)` / `CatalogItemComponent::query()->where('parent_item_id', ...)` sans scope `instance_id` → un `component_item_id` forgé traversait la BOM d'une autre instance et exposait ses coûts de revient. Confirmé par audit complet 2026-06-12 (zéro occurrence `instance_id` dans le service).
+- **Résolution (lot R-M-WORKFLOW-COMPLETION)** : scope explicite `instance_id` (dérivé de l'item racine) sur toutes les requêtes du service ; `validateNoCycle()` reçoit un `?int $instanceId` rétrocompatible. Garde : `BomCostInstanceScopeTest` (5 tests) — un composant d'une autre instance est ignoré.
+
+### R-503 — Upload documents client Menuiserie360 cassé : trait media absent (ouvert 2026-06-11, fermé 2026-06-12)
+
+- **Constat** : `ClientController::uploadDocument/deleteDocument` appelaient `addMedia()` sur `ClientMenuiserie` qui n'implémentait pas `HasMedia`/`InteractsWithMedia` → `BadMethodCallException` à tout upload. Découvert pendant le lot front R-M-FRONT-EXPERT.
+- **Résolution (lot R-M-EXPERT-BACKEND, 2026-06-12)** : `ClientMenuiserie implements HasMedia` + `use InteractsWithMedia` + collection `documents_client` (pdf/jpeg/png/webp, pattern identique à `Chantier::registerMediaCollections()`). Validation `mimes` du controller alignée sur la collection (retrait doc/docx qui auraient passé la validation puis déclenché un 500 Spatie). `$documents` passé à la vue show.
+- **Gardes** : `ClientExpertScreenTest` (upload pdf OK + .exe rejeté) ; `ClientDocumentsTest` 5/5 verts (4/5 échouaient avant le fix).
 
 ### R-403 — Menuiserie360 dépendait fortement d'Eshop360 via les Contracts ADR-021 (fermé 2026-05-14)
 

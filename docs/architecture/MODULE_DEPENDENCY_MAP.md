@@ -23,7 +23,8 @@
 | **L1 — Configuration** | Settings | L0 |
 | **L2 — Transverse** | Billing | L0, L1 |
 | **L2 — Support** | Lang, Currency, Dashboard, ModuleManager, Demo, Installer | L0, L1 |
-| **L3 — Métier** | Eshop360 (catalog, pricing, inventory, sales, finance, crm, channel, hr, projects), Menuiserie360 | L0, L1, L2. Modules L3 mutuellement indépendants : pas de dépendance Eshop360 ↔ Menuiserie360. |
+| **L2 — Référentiel** | Referentiel360 (master data : tiers, articles, finance miroir) — [ADR-030](../adr/ADR-030-referentiel360-master-data-tiers.md) | L0, L1 uniquement. **Ne dépend d'aucun module L3.** |
+| **L3 — Métier** | Eshop360 (catalog, pricing, inventory, sales, finance, crm, channel, hr, projects), Menuiserie360 | L0, L1, L2 (y compris **Referentiel360**). Modules L3 mutuellement indépendants : pas de dépendance Eshop360 ↔ Menuiserie360 — le partage de master data passe par Referentiel360 (L2), jamais en direct. |
 | **L4 — Modules futurs** | CCC360, etc. | L0, L1, L2, `Modules/Eshop360/Contracts/*` et `Modules/Eshop360/Events/*` si le module choisit le pattern ADR-021. **Interdit** : `Modules/Eshop360/Domain/*/Models/*`, `Modules/Eshop360/Models/*`, `DB::table('eshop_*')`. |
 
 ---
@@ -42,8 +43,9 @@
 | Currency | Core, Settings | core / moyen |
 | ModuleManager | Core | core / fort |
 | Demo | Core, Eshop360 | support / moyen |
-| **Eshop360** | Core, Auth, Users, Settings, Billing, app/User, app/Instance | métier / très fort |
-| **Menuiserie360** | Core, Auth, Users, Settings, Billing, Currency, Lang, app/User, app/Instance | métier / autonome |
+| **Referentiel360** | Core, Auth, Users, Instances, Settings, app/User, app/Instance | socle master data (ADR-030) |
+| **Eshop360** | Core, Auth, Users, Settings, Billing, Referentiel360, app/User, app/Instance | métier / très fort |
+| **Menuiserie360** | Core, Auth, Users, Settings, Billing, Currency, Lang, Referentiel360, app/User, app/Instance | métier / autonome |
 
 ---
 

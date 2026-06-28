@@ -1,7 +1,205 @@
 # RECENT_DECISIONS — B360
 
-> Décisions structurantes récentes. Mise à jour : **2026-05-14** (cadrage Menuiserie360 V2, ADR-023/024/025 Proposés).
+> Décisions structurantes récentes. Mise à jour : **2026-06-28** — ADR-030 accepté (programme Referentiel360, master data inter-modules).
 > Pour les décisions complètes argumentées, voir `docs/adr/`.
+
+---
+
+## 2026-06-28 — ADR-030 accepté : Referentiel360, master data inter-modules (Eshop360 ↔ Menuiserie360)
+
+- **Décision humaine** : « faire correspondre les tables communes » entre Menuiserie360 et Eshop360 sous forme de **référentiel unifié propriétaire**, activable, sur **4 domaines** (clients, fournisseurs, produits, finance).
+- **Décision d'architecture** ([ADR-030](../adr/ADR-030-referentiel360-master-data-tiers.md), Accepté) : nouveau **module socle L2 `Referentiel360`** détenteur d'un **golden record mince** (identité partagée) + **liaison polymorphe** `ref_party_links` — chaque module garde ses attributs propres. Active la clause d'extension d'ADR-023 (contrainte #3) sans modifier ADR-023 ; les deux L3 restent mutuellement indépendants (couplage descendant **L3 → L2** seulement).
+- **Inversion de dépendance** (clé de la conformité couches) : Referentiel360 ne lit jamais `eshop_*`/`mnu_*` ; il définit l'interface L2 `PartySource`/`PartyWriter`, implémentée/consommée par les L3. Évite une dépendance interdite L2 → L3.
+- **Neutralise R-502 par construction** : aucune migration cross-module `Schema::table('eshop_*'|'mnu_*')` — la correspondance passe par `ref_party_links`, pas par une colonne `party_id` ajoutée aux tables métier.
+- **Finance** : registre **miroir** (CA/encaissement 360°), **pas** de numérotation légale unique (risque fiscal écarté).
+- **deptrac.yaml + MODULE_DEPENDENCY_MAP** mis à jour (layer L2 Referentiel360 ; Eshop360/Menuiserie360 autorisés à en dépendre).
+- **Reste à faire** : implémentation **Lot 1 — Tiers** ([cadrage](../programs/referentiel360/LOT1-tiers-IMPACT_ANALYSIS.md)) ; Lots 2 (articles) et 3 (finance, zone L1) à suivre. Nouveau risque ouvert : [R-505](OPEN_RISKS.md#R-505) (faux-positifs de déduplication).
+
+## 2026-06-12 (après-midi) — R-M-WORKFLOW-FRONT : hand-off front du workflow exécuté intégralement (vues Blade uniquement)
+
+- **Décision humaine** : « spécialise-toi sur le front et mets en place toute la partie front des différents points en suspens ». Exécution du hand-off `docs/lots/R-M-WORKFLOW-COMPLETION-front-handoff.md` par 4 agents parallèles sur des périmètres de vues **strictement disjoints** (production OF / devis / BC+appro / factures). **0 controller / route / permission / test modifié** — périmètre contractuel du hand-off respecté.
+- **Livré** :
+  - **Production** : `production/of/create.blade.php` créé (select BC éligibles + date planifiée + notes atelier, état vide si aucun BC) ; bouton « Créer un OF » sur l'index (`@can('menuiserie.of.create')`) ; annulation étendue à EN_COURS sur index + show avec confirm « Les matières réservées seront libérées » (ADR-029).
+  - **Devis** : `commercial/devis/edit.blade.php` créé (clone de create, PUT, état Alpine hydraté depuis `$devis->lignes` avec priorité `old()`, fonction `devisEditForm` sans collision) ; barre d'actions complète sur show (Modifier/Soumettre brouillon, Valider soumis, Refuser via modal `motif`, Accepter recadré sur {valide, accepte} conformément à la spec, Dupliquer tout statut) ; mêmes actions en dropdown sur l'index. `_statut-badge` couvrait déjà les 6 statuts.
+  - **BC** : bouton Annuler sur `sales/bc/show` (`@can('menuiserie.bc.cancel')`, statuts cree/en_production seulement) + modal destructif listant les 3 effets (facture d'acompte révoquée, OF libéré, devis reversé) ; flash error « acompte encaissé → avoir » rendu par le layout.
+  - **Factures** : boutons Avoir / Valider / Annuler selon spec ; modal Avoir (`montant` max=TTC + `motif`, réouverture sur erreur — champ backend = `montant`, pas `amount`) ; badge `pending_validation` (`bg-warning-subtle`, « En attente de validation ») ajouté à `_status-badge` + libellé filtre index ; `_type-badge` avoir passé en `bg-danger-subtle` + icône `ti-receipt-refund` (évite la collision visuelle avec le nouveau badge statut) ; avoirs mis en évidence (bandeau notes, montants en crédit « − » text-danger sur show + index) ; modal d'encaissement gère le trop-perçu (`@error('amount')` + réouverture auto + `max` = restant dû).
+  - **Appro** : `approvisionnements/show.blade.php` déjà conforme (vérifié — `@error('amount')` + `session('error')` + réouverture modal déjà en place), aucun changement.
+- **Validation** : `php artisan view:clear && view:cache` vert sur l'état final consolidé. Routes/permissions des vues vérifiées contre `Routes/web.php` par chaque agent.
+- **Dette mineure assumée** : `production/of/create.blade.php` fait un lookup présentation `ClientMenuiserie` (1 query scopée `instance_id`, fallback « Client #id ») dans un bloc `@php` car `OrdreFabricationController::create()` ne fournit que `$bcs` et le hand-off interdisait de toucher les controllers. **Follow-up backend** : fournir une map `$customers` dans `create()` et retirer ce bloc.
+- **Reste ouvert** : validation visuelle navigateur (humain), commit du lot (avec R-M-WORKFLOW-COMPLETION backend), statuts de fin de cycle non câblés (BC LIVRE/CLOTURE, OF CONTROLE/LIVRE), R-501.
+
+## 2026-06-12 — R-M-WORKFLOW-COMPLETION : workflow Menuiserie360 complété + sécurisé (suite à l'audit complet du 2026-06-12)
+
+- **Déclencheur** : audit complet en 4 dimensions (workflow / sécurité / résilience / UX) commandé par l'humain. Verdict : workflow ~55 % (impasse production), 1 faille cross-tenant critique non corrigée (R-405), 2 risques d'intégrité financière. Décision humaine : « vas-y dans l'ordre, fais 100 % du backend, laisse les consignes front à des agents ».
+- **Méthode** : l'architecte (Claude) a possédé tous les fichiers transverses (Routes, HookProvider, RolesSeeder, BootstrapTest, enum StatutFacture) en une passe cohérente, **puis** 3 agents backend parallèles sur des périmètres de fichiers **strictement disjoints** (sécurité+production / intégrité paiement+numérotation+stock / cycle de vie commercial+facture). 0 conflit de fichier. Front laissé en hand-off écrit.
+- **Permissions** : 37 → **43** (+6 : `devis.update`, `devis.validate`, `bc.cancel`, `invoice.cancel`, `invoice.credit_note`, `invoice.validate`). Rôles commercial + comptable étendus. `BootstrapTest` verrouille les 43 (49 assertions vertes).
+- **Lot 1 — Sécurité + déblocage production** :
+  - **R-405 fermé** : `BomCostService` scopé `instance_id` (fuite cross-tenant des coûts BOM).
+  - Listener `CreateOrdreFabricationOnBonCommandeCreee` enregistré → **l'acceptation d'un devis crée enfin l'OF automatiquement** (l'impasse de production est levée). Création manuelle d'OF aussi ajoutée (`production.create/store`).
+  - **ADR-029 (Accepté)** : annulation d'OF EN_COURS autorisée + libération transactionnelle/idempotente du stock réservé (zone L1).
+- **Lot 2 — Intégrité transactionnelle** :
+  - Garde **trop-perçu** sur encaissements facture (`RecordPaymentAction` lève `PaymentExceedsDueException` après lockForUpdate, anti-race) et sur règlements fournisseur.
+  - Numérotation appro alignée **ADR-006** (transaction + retry 1062).
+  - Migration additive : CHECK `quantite_reservee <= quantite_actuelle` (MySQL/PG, no-op SQLite) + index `(instance_id, chantier_id)` sur `mnu_bon_commandes`.
+- **Lot 3 — Cycle de vie commercial + facture** :
+  - Devis : modifier (brouillon), soumettre, valider (Direction), refuser, dupliquer + guard d'expiration sur accepter. Statuts SOUMIS/VALIDE/REFUSE désormais atteignables.
+  - BC : annulation (`CancelBonCommandeAction`) — révoque l'acompte non payé, libère l'OF lié, reverse le devis ; refuse si acompte encaissé (→ avoir).
+  - **ADR-025 (Accepté)** : avoirs implémentés (`CreateMenuiserieInvoiceAction::executeAvoir`, toggle `avoir_require_validation`, statut `PENDING_VALIDATION`, validation Direction) + annulation de facture (interdite si payée).
+- **Tests** : 7 nouvelles classes (~50 tests, 118 assertions, 1 skip MySQL-only) vertes en `--process-isolation`. Non-régression vérifiée (WorkflowDevisToInvoiceTest, CommercialFinanceExpertScreenTest, PurchasingExpertScreenTest). R-501 contourné (appel direct controller/action pour les chemins `DB::transaction`).
+- **Hand-off front** : `docs/lots/R-M-WORKFLOW-COMPLETION-front-handoff.md` — vues à créer (`production/of/create`, `commercial/devis/edit`), boutons conditionnels (devis lifecycle, BC annuler, facture avoir/valider/annuler), badge `pending_validation`, gestion erreur trop-perçu dans les modals.
+- **Reste ouvert** : front (hand-off), colonnes `source_invoice_id`/`validated_by/at` sur `mnu_invoices` (traçabilité avoir reportée à une migration additive), statuts encore non câblés (BC LIVRE/CLOTURE, OF CONTROLE/LIVRE, Chantier LIVRE — transitions de fin de cycle), cumul d'avoirs multiples non plafonné, R-501 (lot R-M-Infra-Tests).
+
+## 2026-06-12 — R-M-EXPERT-BACKEND : le hand-off backend des écrans expert exécuté intégralement (Codex non sollicité, décision humaine)
+
+- **Décision humaine** : « occupe-toi de tout, laisse Codex de côté et avance » — le hand-off `docs/lots/R-M-FRONT-EXPERT-backend-handoff.md` a été implémenté par 5 agents parallèles internes sur des périmètres controllers **strictement disjoints** (miroir de la vague front). Un agent (Opérations) a été interrompu par timeout réseau après avoir livré le code mais avant les tests — un agent de reprise a audité son diff (`php -l` propre, spec conforme, zéro correction nécessaire) et livré les tests manquants.
+- **Livré — les 10 controllers + 2 modèles du hand-off** :
+  - **Clients** : `$clientsKpis`/`$villes`/`$documents`, filtres `ville`/`actifs`, tri whitelisté ; **R-503 fermé** (trait `InteractsWithMedia` + collection `documents_client` sur `ClientMenuiserie`, mimes alignés).
+  - **Fournisseurs/Appros** : `$fournisseursKpis`/`$approsKpis` en agrégats SQL globaux filtrés, `$appros` paginé (fini le limit 50), `$matieres` fournies dérivées des appros, filtres `ville`/`from`/`to`/`impayes`, tris whitelistés. `$paiements = null` confirmé (pas de table de règlements appro — consolidation V1.6 à trancher).
+  - **Catalog/Stock/Catégories** : `$catalogKpis` (marge moyenne SQL portable), `$stockKpis` + relation `stock()` HasOne ajoutée sur `MatierePremiere` + eager-load, filtre `sous_seuil`, `$mouvements` réels (le modèle `MouvementStock` existait), `$usageCounts` ; **bug closure `orWhere` corrigé** dans StockMatiereController (et le même trouvé+corrigé dans TypeProduitController).
+  - **Devis/BC/Factures/Types-produits** : KPIs des 4 index, **persistance de `remise_globale`/`notes_internes`/`lignes.*.catalog_item_id`** dans `DevisController::store` avec formule TTC répliquée exactement depuis la vue (`max(0, HT - remise)` puis TVA) — bug NOT NULL remise corrigé au passage ; maps `$customers`/`$users` sur les show ; filtres période/client_id/unpaid ; tris whitelistés.
+  - **OF/Chantiers/RH/Alertes** : `$ofKpis`/`$chantierKpis`/`$hrKpis` + maps `$bcs`/`$chefs`/`$equipe`/`$linkedUser`/`$customers`, `$chantierLie`, clé **additive** `disponible_qte` dans `BesoinMatiereService::verifierDisponibilite` (contrat prouvé par grep des consommateurs), `$users` du formulaire employé via pivot `instance_user`.
+- **Tests** : 5 nouvelles classes (44 tests / ~200 assertions, toutes vertes en `--process-isolation`) : `ClientExpertScreenTest` (9), `PurchasingExpertScreenTest` (8), `CatalogStockExpertScreenTest` (7), `CommercialFinanceExpertScreenTest` (10), `OperationsExpertScreenTest` (10). Chaque classe couvre : exactitude des KPIs sous filtres, whitelist de tri (injection inoffensive), params invalides ignorés (200), **isolation multi-tenant explicite**. Non-régression : ~8 échecs préexistants tous imputés R-501 (causalité vérifiée vs HEAD par 3 agents indépendants). `ClientDocumentsTest` réparé 5/5 (4/5 échouaient avant R-503 ; 1 assertion de titre ajustée au renommage front).
+- **Aggravation R-501 documentée dans OPEN_RISKS** : tout endpoint HTTP traversant `DB::transaction` échoue désormais même en isolation par méthode ; contournements validés : `--process-isolation` + appel direct du controller pour les stores. Fix de fond = lot `R-M-Infra-Tests` (L1).
+- **Conventions verrouillées par ce lot** : KPIs toujours calculés sur la query filtrée clonée avant pagination ; tris GET toujours whitelistés ; dates GET validées `Y-m-d` et silencieusement ignorées si invalides ; jointures cross-table double-scopées instance dans le ON.
+- **Reste ouvert** : validation visuelle navigateur (humain), `due_date` factures (migration additive à décider — l'heuristique 30 j fait foi), consolidation `mnu_payments`/`mnu_invoice_payments`, R-M-Restore-V1.3-V1.4, R-M-Infra-Tests.
+
+## 2026-06-11 — R-M-FRONT-EXPERT : tous les écrans Menuiserie360 portés au niveau « Eshop360 expert » (front uniquement)
+
+- **Décision humaine** : « fais de chaque écran front des écrans aussi complets que dans Eshop360 mode expert ; concentre-toi uniquement sur le front et mets à disposition les informations pour l'agent backend ». Exécution par 5 agents parallèles sur des périmètres de dossiers de vues **strictement disjoints** (clients / fournisseurs+appros / catalog+stock+catégories / devis+bc+factures+types-produits / of+chantiers+rh+alertes+notifications+imports).
+- **Livré** : ≈45 vues Blade réécrites + 5 partials badges créés. **0 controller / route / provider / modèle / test modifié.** `view:clear` + `view:cache` verts.
+- **Patterns Eshop360 répliqués partout** : 4 KPI cards (`card border-0 shadow-sm` + icône `bg-X bg-opacity-10 rounded-circle` + Tabler), carte filtres GET (recherche + selects + période + reset conditionnel + compteur de résultats), tables `table-hover align-middle` + `thead.table-light`, badges `bg-X-subtle text-X rounded-pill`, avatars initiales, dropdowns d'actions par ligne avec confirms + `@can`, états vides illustrés différenciés filtré/vide, pagination `appends(...)` dans `p-3 border-top`, fiches show 2 colonnes (col-md-4 infos / col-md-8 nav-tabs avec badges count), timelines de statut (devis, OF), chaînes documentaires visuelles (Devis → BC → Facture → Chantier), progress bars (chantiers, paiement facture), formulaires sectionnés en cards avec `@error`/`old()` + footer sticky, modals d'encaissement/réception.
+- **Principe contractuel clé** : toute donnée non encore fournie par le backend est consommée **défensivement** (`$xKpis['…'] ?? fallback page`, `$documents ?? collect()`, placeholders « à venir ») — les écrans fonctionnent dès maintenant, et s'enrichissent automatiquement quand le backend fournira les variables.
+- **Hand-off backend consolidé** : [docs/lots/R-M-FRONT-EXPERT-backend-handoff.md](../lots/R-M-FRONT-EXPERT-backend-handoff.md) — liste exhaustive par controller des variables KPI/maps/relations attendues, paramètres GET à honorer (sort/dir, périodes, ville, unpaid, sous_seuil…), champs POST devis à persister (`remise_globale`, `notes_internes`, `lignes.*.catalog_item_id`), tests à exiger.
+- **Risques découverts pendant le lot** :
+  - **R-503 ouvert** : upload documents client cassé (trait media absent sur `ClientMenuiserie` alors que le controller appelle `addMedia()`).
+  - Bug closure `orWhere` non groupé dans `StockMatiereController::index` (fuite de scope sur le filtre catégorie).
+  - Divergence front/back sur `remise_globale` devis tant que non persistée.
+- **Décisions techniques** : aucune nouvelle dépendance CDN lourde (pas de Select2/Summernote) — Bootstrap 5 natif + Alpine.js (épinglé avec SRI là où ajouté) ; pas de bulk actions catalog (aucune route bulk existante — lot dédié si besoin) ; réordonnancement étapes chantier en monter/descendre (pas de drag-and-drop, lib interdite) ; partials badges locaux par dossier (composants partagés `components/` non touchés pour éviter les conflits inter-agents).
+- **Hors scope reporté** : implémentation backend (lot Codex via hand-off), consolidation tables paiements V1.6, drag-and-drop, bulk actions, `due_date` factures (migration additive à décider).
+
+## 2026-05-19 (matin) — Hotfixes : migration Currency Phase 2 backfill + fix double-wrapping layouts Menuiserie360
+
+### Hotfix 1 — Migration de réparation `multi_currency_phase2` sur tables `eshop_*`
+
+- **Symptôme** : `php artisan migrate` échoue avec `SQLSTATE[42S22]: Column not found: 'exchange_rate'` sur la migration `Modules/Eshop360/Database/Migrations/2026_04_06_000001_add_amount_in_base_currency_to_eshop_orders_and_invoices.php` (`after('exchange_rate')`).
+- **Cause** : `Modules/Currency/Database/Migrations/2026_04_04_300002_multi_currency_phase2.php` a été exécutée au batch 1 **avant** que Eshop360 ait créé ses tables. Les 3 blocs `Schema::table('eshop_orders'|'eshop_invoices'|'eshop_payments')` étaient gardés par `Schema::hasTable(...)` → skip silencieux. Laravel marque la migration ran malgré le no-op effectif. 7 colonnes monétaires manquantes en base, et Eshop360 OFF actuellement (`modules_statuses.json`), donc les `2026_04_06_*` étaient en attente d'activation pour fail.
+- **Fix** : nouvelle migration **idempotente** `Modules/Currency/Database/Migrations/2026_04_05_999999_repair_eshop_currency_columns.php` (datée pour s'insérer avant les consommatrices) qui re-tente les 3 `Schema::table` avec garde `hasColumn`. No-op sur fresh install. `down()` volontairement vide (la propriété schéma reste à phase2). Exécutée en batch 4 — vérification DB OK sur les 7 colonnes.
+- **Pattern à retenir** : tout `Schema::table('<other_module>_*')` cross-module gardé par `hasTable` qui produit du schéma optionnel doit avoir une stratégie de catch-up documentée. Faute de quoi, l'ordre d'activation des modules au fil du temps crée un trou structurel permanent invisible aux tests fresh-DB. Voir R-502 ci-dessous.
+
+### Hotfix 2 — Double-wrapping `page-wrapper > content` dans les layouts Menuiserie360
+
+- **Symptôme** : toutes les pages Menuiserie360 (`/i/<slug>/menuiserie/...`) s'affichent avec le contenu coincé en haut à gauche, double margin-left de la sidebar, gros vide vertical. Capture utilisateur sur `devis/index`.
+- **Cause** : `<x-dashboard::layouts.master>` fournit déjà `<div class="page-wrapper"><div class="content">{{ $slot }}</div></div>` (master.blade L352-377). Les 2 layouts Menuiserie360 (`Resources/views/components/layout.blade.php` et `Resources/views/layouts/app.blade.php`) ré-empilent ce même wrapper dans le slot du master → double imbrication. Pattern présent depuis le commit `14cc55c` (Menuiserie360 vues utilisent le layout Dashboard). Les autres modules (Settings, etc.) déposent leur contenu directement dans le slot.
+- **Fix** : retrait du `<div class="page-wrapper"><div class="content">…</div></div>` des 2 layouts Menuiserie360. **46 vues consommatrices bénéficient automatiquement** (toutes celles qui utilisent `<x-menuiserie360::layout>`) — aucune vue à modifier individuellement. `php artisan view:clear && view:cache` OK, `Menuiserie360BootstrapTest` 6/6 verts.
+- **Validation visuelle navigateur restante** (côté utilisateur, pas testable en CLI).
+- **Garde anti-régression** : pattern canonique = consommer `<x-dashboard::layouts.master>` directement (cf. `Modules/Settings/Resources/views/index.blade.php` comme référence). Aucun module socle ne ré-empile `page-wrapper`/`content` — vérifié par grep.
+
+### Fichiers modifiés
+
+- `Modules/Currency/Database/Migrations/2026_04_05_999999_repair_eshop_currency_columns.php` (créé, 52 lignes)
+- `Modules/Menuiserie360/Resources/views/components/layout.blade.php` (modifié, -2 wrappers)
+- `Modules/Menuiserie360/Resources/views/layouts/app.blade.php` (modifié, -2 wrappers)
+
+### Hors scope (non touché)
+
+- Pas de mise à jour de `Modules/Currency/Database/Migrations/2026_04_04_300002_multi_currency_phase2.php` elle-même : phase2 reste l'autorité légitime sur fresh install ; la réparation comble seulement le trou des installations ayant joué phase2 avant Eshop360.
+- Pas de revisite des layouts d'autres modules : seuls les 2 fichiers Menuiserie360 contenaient le double-wrapping (`grep` confirmé).
+
+---
+
+## 2026-05-19 (nuit) — Vague parallèle 4 lots : V1.6 + V3-S2 + V3-S3 + V1.8-S1 (35 tests, ~30 fichiers nouveaux)
+
+- **Décision humaine** : « continue dans l'ordre défini, enchaîne la totalité avec des agents parallèles et supervise et consolide ». 4 agents `general-purpose` lancés en background sur des périmètres fichier strictement disjoints, avec interdiction d'éditer les fichiers partagés (`HooksProvider`, `RolesSeeder`, `BootstrapTest`, `ServiceProvider`, mémoire/ADR). Les permissions/menus retournés par chaque agent ont été consolidés en une passe Claude unique post-atterrissage.
+
+### Lots livrés
+1. **V1.6 Encaissements multi-modes** (agent ≈12 min, 4 tests, 16 assertions)
+   - Migration `mnu_invoice_payments` + enum `ModePaiement` (5 valeurs : ESPECES, CHEQUE, VIREMENT, MOBILE_MONEY, WALLET) + modèle `InvoicePayment` + extension `RecordPaymentAction` (dual-write transitoire `mnu_payments` + `mnu_invoice_payments`) + section UI timeline d'encaissements sur fiche facture + modal multi-modes.
+   - **Trade-off documenté** : dual-write transitoire pour préserver tests legacy webhook (`MenuiseriePayment` + `idempotency_key` ADR-003). À consolider en ADR moyen terme (`mnu_payments` réservé aux paiements gateway, `mnu_invoice_payments` source de vérité comptable).
+   - Permission `menuiserie.payment.record` ajoutée (séparée de `invoice.create`).
+2. **V3-S2 BOM / Nomenclature** (agent ≈14 min, 11 tests : 4 unit + 7 feature)
+   - Migration `mnu_catalog_item_components` + modèle `CatalogItemComponent` + `BomCostService` (détection cycle direct + transitif, profondeur max 5) + `BomController` (CRUD inline) + vue `catalog/bom.blade.php` + helper `theoreticalCost()` sur `CatalogItem`.
+   - Aucune nouvelle permission (réutilise `menuiserie.catalog.item.view/update`).
+3. **V3-S3 Clients enrichis** (agent ≈26 min, 10 tests créés)
+   - 2 migrations `mnu_client_addresses` + `mnu_client_contacts` + 2 enums `TypeAdresse` (livraison/facturation/pose/principale) + `TypeContact` (commercial/technique/comptable/principal) + 2 modèles + 2 controllers (CRUD inline depuis fiche client) + 2 sections Blade `_addresses_section` + `_contacts_section` + helpers `defaultAddress()` / `primaryContact()` sur `ClientMenuiserie`.
+   - Garde-fou applicatif `(client_id, type, is_default=true)` max 1 (rétrogradation auto dans transaction).
+   - Aucune nouvelle permission (réutilise `menuiserie.client.view/update`).
+4. **V1.8-S1 RH Employés** (agent ≈24 min, 10 tests passent en isolation)
+   - Migration `mnu_employes` + enum `Departement` (5 valeurs : ATELIER/COMMERCIAL/CHANTIER/ADMINISTRATION/DIRECTION) + modèle `Employe` (FK applicative vers `users`) + `EmployeController` CRUD complet + 5 vues Blade + génération code `EMP-YYYY-NNNN` portable SQLite/MySQL.
+   - 2 permissions nouvelles : `menuiserie.hr.employee.view/manage` + MenuItem `menuiserie360.hr.employes` (priority 425).
+   - S2 commissions + S3 paie restent hors scope.
+
+### Consolidation Claude (post-atterrissage 4 agents)
+- **Bug critique réparé** : un `git stash`/`pop` non sollicité durant l'exécution V3-S3 a regressé `HooksProvider` + `Routes/web.php` + `ClientController` + `BootstrapTest` à un état pré-V3-S4. Reconstruction intégrale appliquée :
+  - `ClientController` : restauration des 5 méthodes CRUD (`create/store/edit/update/destroy`) + `uploadDocument/deleteDocument` + `validatePayload` + `generateCode` (pattern portable PHP).
+  - `Routes/web.php` : ré-ajout imports + blocs clients étendus (CRUD + documents) + fournisseurs (CRUD complet) + catalog (CRUD + BOM imbriqué) + setup.bootstrap (V3-S4-Bootstrap).
+  - `HooksProvider::registerPermissionGroups` : restauration complète + ajout perms catalog (4), fournisseurs (4), HR (2), OF granulaires (6), payment.record, chantier.create, client.{create/update/delete/documents.manage}.
+  - `HooksProvider::registerMenuItems` : ajout fournisseurs (priority 475) + HR employés (priority 425).
+  - `MenuiserieRolesSeeder::MENUISERIE_PERMISSIONS` : étendu à 27 entrées (ajout HR x2).
+  - `BootstrapTest::test_validated_permissions_are_registered` : étendu à 27 perms verrouillées (groupées par lot dans le code pour traçabilité).
+- **Pertes résiduelles non restaurées dans ce lot** : `ChantierController` (V1.3 `create/store/storeEtape/updateEtape/destroyEtape/reorderEtapes` regressées) et `OrdreFabricationController` (V1.4 `edit/update/annuler` regressées). Routes orphelines retirées de `web.php`. **À restaurer depuis git history dans un lot dédié `R-M-Restore-V1.3-V1.4`** (~1 j).
+
+### Risque ouvert R-501
+- Drift environnement test **PHP 8.4 + SQLite + sharePdo entre connexions sqlite/system** confirmé par 3 agents indépendants : `cannot start a transaction within a transaction` au `parent::setUp()` de Core TestCase. La majorité des tests Feature HTTP Menuiserie360 ne passe plus en suite, mais passe en isolation (`vendor/bin/phpunit --filter`). **Bug Core/Tests préexistant — pas causé par les lots.**
+- Détail technique + 3 options de résolution dans [OPEN_RISKS R-501](OPEN_RISKS.md).
+- **Validation des lots** : code passe en runtime production MySQL (cible déploiement), tests passent en isolation. Le drift CI tests doit être traité en lot dédié `R-M-Infra-Tests` (zone L1 Core/TestCase).
+
+### Compteurs
+- **Permissions menuiserie.\*** : 17 → **27** (+10 cette vague).
+- **Fichiers nouveaux** : ~30 (4 migrations, 6 enums/models, 5 controllers, 12 vues, 5 fichiers de tests).
+- **Tests créés** : 35 (4 V1.6 + 11 V3-S2 + 10 V3-S3 + 10 V1.8-S1).
+- **Lots restants documentés en feuille de route** : V1.7 Compta (6-8 j), V1.8-S2/S3 Commissions+Paie (3-4 j), V3-S5/S6/S7 chaîne fournisseurs/stock (8-10 j), L1 Caisse (cadrage 0.5 j + 4-5 j après procédure renforcée), V2-S3 Incidents+Rapports journaliers (3-4 j).
+
+### Hors scope (à venir)
+- `R-M-Restore-V1.3-V1.4` (~1 j) : restaurer ChantierController + OrdreFabricationController depuis git history.
+- `R-M-Infra-Tests` (~1 j, zone L1) : résoudre R-501 SQLite/PHP 8.4 via override `connectionsToTransact(['sqlite','system'])`.
+- ADR-029 Wallet Menuiserie (pour la sémantique du mode WALLET ajoutée en V1.6).
+- Consolidation table paiements (`mnu_payments` vs `mnu_invoice_payments` — voir trade-off V1.6).
+
+---
+
+## 2026-05-19 — Session Claude : V3-S4 livré + 5 cadrages Phase 1 V3 + roadmap consolidée
+
+### Lots LIVRÉS dans la branche `base`
+
+- **V3-S4** : Module Fournisseurs (`mnu_fournisseurs`) + CRUD Clients complet (`create/edit/destroy`) + 5 rôles métier Menuiserie360 (`commercial`, `chef-atelier`, `chef-chantier`, `comptable`, `resp-stock`) — `ADR-028` Accepté.
+- **V3-S4-Bootstrap** : `SetupController::bootstrap` + route `menuiserie.setup.bootstrap` + `addPostEnableRedirect` dans `Menuiserie360HooksProvider`. Pattern ADR-022 réutilisé — aucun changement Core/ModuleManager. Risque résiduel auto-câblage seeder = RÉSOLU.
+- **Découpage fin permissions OF** : `menuiserie.of.create` (monolithique) → 6 permissions fines (`view`, `create`, `update`, `start`, `complete`, `cancel`). Routes refactorées, seeder synchronisé, `Menuiserie360BootstrapTest::$expected` étendu à 29 permissions `menuiserie.*` totales.
+
+### 5 IMPACT_ANALYSIS produits (dispatch 4 agents parallèles + L1 manuel)
+
+Sur demande humaine « continue, enchaîne, supervise, consolide » : refus d'implémenter 13 lots en parallèle (CLAUDE.md/AGENTS.md « une passe par lot »), dispatch 4 agents `feature-dev:code-architect` pour cadrer en parallèle :
+
+| Lot | Fichier | Statut codex sur branche `base` |
+|---|---|---|
+| V1.6 Encaissements multi-modes | `docs/lots/R-M-V1.6-impact-analysis.md` | Backend 90% livré — manque event `PaymentRecorded` + correction perm route + KPIs + 10 tests |
+| V3-S3 Clients enrichis (N adresses + N contacts) | `docs/lots/R-M-V3-S3-impact-analysis.md` | Domain/HTTP/vues 90% livrés — manque migration backfill + correction `show.blade.php:L36` + 12 tests |
+| V3-S2 BOM/Nomenclature | `docs/lots/R-M-V3-S2-impact-analysis.md` | Squelette `CatalogItemComponent` + `BomCostService` + `BomController` présent — **bug critique fuite cross-tenant** + manque expansion BOM dans `BesoinMatiereService` + migration `catalog_item_id` sur `mnu_bc_items` + 12 tests + ADR-027 |
+| V1.8-S1 Registre employés | `docs/lots/R-M-V1.8-S1-impact-analysis.md` | Squelette `Employe` + migration `000030` + controller présents non branchés — manque 2 enums (`PosteEmploye`/`StatutEmploye`) + migration `000031` + 5 vues + routes + HookRegistry + seeder + 10–11 tests |
+| L1 Caisse Menuiserie | `docs/lots/R-M-L1-Caisse-impact-analysis.md` | **Zone L1 CRITIQUE bloquée** sur 4 décisions humaines Q1–Q4. 25+ tests obligatoires. ADR-029 à produire. Cadrage manuel (refus délégation agent sur zone L1) |
+
+### Découverte majeure de la session
+
+**Codex code en parallèle sur la branche `base`**. Estimations Phase 1 V3 passent de **9,5–10 j à 4,5–6 j résiduels** (-50%). Les agents ont audité l'état réel et adapté les cadrages en « finalisation » plutôt que « création from scratch ».
+
+### Roadmap consolidée
+
+**Document unique** : `docs/lots/ROADMAP-V3-EXECUTION-PLAN.md` — ordre Codex Phase 1 (V1.6+V3-S3 priorité 1, V3-S2+V1.8-S1 priorité 2, parallélisables), Phase 2 séquentielle (V1.7 attend V1.6, V3-S5/S6/S7 séquentiels), Phase 3 L1 Caisse, Phase 4 transverses (V2-S3, Communications, dette technique).
+
+### Risques transversaux à ouvrir dans OPEN_RISKS.md
+
+- **R-405 CRITIQUE** : fuite cross-tenant `BomCostService` (scope `instance_id` manquant) — fix prioritaire dans V3-S2.
+- R-404 : race `is_default`/`is_primary` adresses/contacts clients — mitigation V3.1.
+- R-406 : convention fragile `CatalogItem.metadata['matiere_id']` — à supprimer V3-S7.
+- R-407 : permission `menuiserie.of.create` historique élargie — vérifier non-régression rôles existants.
+
+### Garde-fou coordination Codex
+
+Ne pas lancer 4 Codex parallèles. Séquencer 1 lot à la fois, push, sync, suivant. Sources cohérentes à maintenir simultanément : `HookRegistry` + `MENUISERIE_PERMISSIONS` constante + `BootstrapTest::$expected`.
+
+### Décisions humaines BLOQUANTES restant à trancher
+
+- **L1 Caisse Q1–Q4** (cf. `R-M-L1-Caisse-impact-analysis.md` §13) : factor Eshop vs autonome, seuil écart XOF, rôle caissier dédié, PDF MediaLibrary
+- **V1.7 Comptabilité** : plan comptable SYSCOA validé OU mode compta simple ?
 
 ---
 
