@@ -7,7 +7,14 @@ namespace Modules\Menuiserie360\Providers;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider;
+use Modules\Core\Modules\ModuleManager;
+use Modules\Menuiserie360\Domain\Client\Models\ClientMenuiserie;
 use Modules\Menuiserie360\Domain\Finance\Jobs\RelancerFacturesImpayeesJob;
+use Modules\Menuiserie360\Domain\Purchasing\Models\Fournisseur;
+use Modules\Menuiserie360\Integration\Referentiel\ClientReferentielObserver;
+use Modules\Menuiserie360\Integration\Referentiel\FournisseurReferentielObserver;
+use Modules\Menuiserie360\Integration\Referentiel\MenuiserieClientPartySource;
+use Modules\Menuiserie360\Integration\Referentiel\MenuiserieSupplierPartySource;
 
 /**
  * Service provider principal du module Menuiserie360 (L3).
@@ -47,6 +54,32 @@ final class Menuiserie360ServiceProvider extends ServiceProvider
 
         $this->registerMorphMap();
         $this->registerScheduledJobs();
+        $this->registerReferentielIntegration();
+    }
+
+    /**
+     * Lot 1.a (ADR-030) — Branchement conditionnel sur Referentiel360 (L2).
+     *
+     * UNIQUEMENT si Referentiel360 est activé : on tag les 2 PartySource pour le
+     * backfill et on attache les 2 observers best-effort qui poussent les tiers
+     * vers le golden record. Si Referentiel360 est éteint : aucun enregistrement
+     * — Menuiserie360 reste totalement autonome (ADR-023).
+     */
+    private function registerReferentielIntegration(): void
+    {
+        if (! $this->app->make(ModuleManager::class)->isEnabled('REFERENTIEL360')) {
+            return;
+        }
+
+        // Backfill : 2 sources taggées (consommées par referentiel:backfill-tiers).
+        $this->app->tag(
+            [MenuiserieClientPartySource::class, MenuiserieSupplierPartySource::class],
+            'referentiel.party_source',
+        );
+
+        // Temps réel : observers best-effort (push via DB::afterCommit).
+        ClientMenuiserie::observe($this->app->make(ClientReferentielObserver::class));
+        Fournisseur::observe($this->app->make(FournisseurReferentielObserver::class));
     }
 
     /**

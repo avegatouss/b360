@@ -1,9 +1,18 @@
 # RECENT_DECISIONS — B360
 
-> Décisions structurantes récentes. Mise à jour : **2026-06-28 (soir)** — Referentiel360 Lot 1 (Tiers) implémenté.
+> Décisions structurantes récentes. Mise à jour : **2026-06-28 (soir)** — Referentiel360 Lot 1.a (Menuiserie branchée).
 > Pour les décisions complètes argumentées, voir `docs/adr/`.
 
 ---
+
+## 2026-06-28 (soir) — Referentiel360 Lot 1.a : Menuiserie360 branchée sur le référentiel
+
+- **Livré** (agents + review architecte) : intégration Menuiserie360 (L3) → Referentiel360 (L2) sous `Modules/Menuiserie360/Integration/Referentiel/`. N'importe QUE `Contracts\Party\*`.
+- **Pattern** : Observer + `DB::afterCommit` (pas d'events natifs — Menuiserie n'en a pas). 2 observers (`ClientMenuiserie`, `Fournisseur`) poussent vers `PartyWriter` sur `created`/`updated`, **best-effort** (`try/catch report()`, hors transaction) ⇒ ne casse jamais le flux Menuiserie. 2 `PartySource` (`mnu.client`/`mnu.supplier`) alimentent le backfill. Mapper unique partagé.
+- **Conditionnel** : enregistré dans `Menuiserie360ServiceProvider::boot()` **uniquement si `ModuleManager::isEnabled('REFERENTIEL360')`** — sinon Menuiserie reste autonome (ADR-023 préservé).
+- **Validation** : 4 tests verts, Pint/PHPStan/deptrac 0. Périmètre strict Menuiserie360. Non-régression `ClientCrudTest`/`FournisseurCrudTest` non vérifiable en suite (R-501) mais échec prouvé pré-existant.
+- **Notes** : helper de test `ImmediateAfterCommitTransactionsManager` (contourne RefreshDatabase qui n'exécute pas `afterCommit`) accepté. Rappel [R-505](OPEN_RISKS.md#R-505)(b) : `mergeInto` non destructif ⇒ un `updated` ne rafraîchit pas un champ déjà rempli du golden (politique à trancher).
+- **Reste** : Lot **1.b** (Eshop360, même pattern), puis Lots 2 (articles) / 3 (finance L1).
 
 ## 2026-06-28 (soir) — Referentiel360 Lot 1 (Tiers) : module socle implémenté
 
