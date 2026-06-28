@@ -1,0 +1,11 @@
+{
+    "name": "Referentiel360",
+    "alias": "referentiel360",
+    "description": "Module socle L2 — master data inter-modules (golden record tiers/articles/finance). ADR-030.",
+    "keywords": ["referentiel", "master-data", "mdm", "l2"],
+    "priority": 5,
+    "providers": [
+        "Modules\\Referentiel360\\Providers\\Referentiel360ServiceProvider"
+    ],
+    "files": []
+}

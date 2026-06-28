@@ -1,9 +1,20 @@
 # RECENT_DECISIONS — B360
 
-> Décisions structurantes récentes. Mise à jour : **2026-06-28** — ADR-030 accepté (programme Referentiel360, master data inter-modules).
+> Décisions structurantes récentes. Mise à jour : **2026-06-28 (soir)** — Referentiel360 Lot 1 (Tiers) implémenté.
 > Pour les décisions complètes argumentées, voir `docs/adr/`.
 
 ---
+
+## 2026-06-28 (soir) — Referentiel360 Lot 1 (Tiers) : module socle implémenté
+
+- **Livré** (par agents, review architecte) : module L2 `Referentiel360` complet — tables `ref_parties` (golden record mince, `party_uid` ULID) + `ref_party_links` (liaison polymorphe), contrats `PartyReader/Resolver/Writer/Source` + DTO, adapters Eloquent + `NullPartyResolver`, `PartyMatcher` (dédup 5 priorités, collisions ⇒ `review`), `BackfillTiersService` + commande `referentiel:backfill-tiers {--instance=} {--dry-run}`, event `PartyUpserted`, permissions `referentiel.parties.view|merge`. **Aucun contrôleur métier branché** (réservé Lots 1.a/1.b).
+- **Validation** : 14 tests verts (50 assertions, en suite), Pint pass, PHPStan 0 erreur, deptrac 0 violation. Périmètre : seuls `modules_statuses.json` + `Modules/Core/Config/hooks.php` touchés hors module (1 ligne chacun).
+- **Points de design tranchés en faveur de la prudence** (à reconfirmer aux Lots 1.a/1.b) :
+  1. `mergeInto` **non destructif** : le golden record ne réécrit jamais une valeur déjà renseignée. OK pour le backfill initial ; la **synchro continue** devra décider si une MAJ source rafraîchit le golden (cf [R-505](OPEN_RISKS.md#R-505)).
+  2. Collision ambiguë ⇒ **abstention totale** (aucun golden record créé, juste un `review`) — le tiers retombe en fallback local jusqu'à résolution humaine. Plus sûr que « créer des parties distinctes ».
+  3. Double résolution backfill (matcher pour le rapport + resolver pour l'action) : inefficience mineure assumée hors hot-path.
+- **Suggestion non bloquante** : pas d'écriture AuditLog B360 sur le backfill (event + `BackfillReport` tiennent lieu de trace CLI).
+- **Reste à faire** : Lots **1.a/1.b** (implémenter `PartySource` + appels `PartyWriter` dans Eshop360/Menuiserie360, choisir le binding `NullPartyResolver` selon activation), puis Lot 2 (articles) et Lot 3 (finance, L1).
 
 ## 2026-06-28 — ADR-030 accepté : Referentiel360, master data inter-modules (Eshop360 ↔ Menuiserie360)
 

@@ -21,7 +21,8 @@ _(aucun risque majeur ouvert — R-101 fermée le 2026-05-05. Voir section FERM�
 - **Mitigation cadrée (Lot 1)** : matching **conservateur** (priorité au lien fiable `legacy_eshop_customer_id`) ; collisions ambiguës **jamais auto-fusionnées** → rapport `flag=review` ; commande backfill en `--dry-run` **obligatoire** avant exécution réelle ; isolation `instance_id` testée (`PartyTenantIsolationTest`).
 - **Risque résiduel** : un faux-positif sur clé email/téléphone **non ambiguë** (un seul match) passerait sans flag. À surveiller : envisager un seuil de confiance / validation humaine sur les fusions email-only en Lot 1.a/1.b.
 - **Zone** : L2 (Referentiel360), sensible (intégrité d'identité).
-- **Décision attendue** : valider la politique de matching email-only (auto vs revue) à l'implémentation du Lot 1.
+- **État (2026-06-28 soir)** : Lot 1 implémenté. `PartyMatcher` conservateur (collision >1 ⇒ `review`, aucune écriture), `PartyTenantIsolationTest` vert. Restent ouverts pour Lots 1.a/1.b : (a) politique de matching **email-only non ambigu** (auto-fusion actuelle vs revue) ; (b) `mergeInto` est **non destructif** → une MAJ source ne rafraîchit pas le golden record (décider la politique de synchro continue : last-write-wins vs golden figé).
+- **Décision attendue** : trancher (a) et (b) à l'implémentation des Lots 1.a/1.b (branchement des modules sur le référentiel).
 
 ### R-502 — Cross-module `Schema::table(...)` + `hasTable` guard : skip silencieux marqué ran (ouvert 2026-05-19)
 

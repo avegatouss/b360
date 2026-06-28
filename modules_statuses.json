@@ -10,6 +10,7 @@
     "Billing": true,
     "Lang": true,
     "Currency": true,
+    "Referentiel360": true,
     "Eshop360": true,
     "Demo": true,
     "Menuiserie360": true

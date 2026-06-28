@@ -1,0 +1,28 @@
+{
+    "name": "b360/referentiel360",
+    "description": "Module socle L2 B360 — master data inter-modules (golden record tiers). ADR-030.",
+    "authors": [
+        {
+            "name": "B360 Core",
+            "email": "dev@b360.app"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {}
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Referentiel360\\": "",
+            "Modules\\Referentiel360\\Database\\Factories\\": "Database/Factories/",
+            "Modules\\Referentiel360\\Database\\Seeders\\": "Database/Seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\Referentiel360\\Tests\\": "Tests/"
+        }
+    }
+}

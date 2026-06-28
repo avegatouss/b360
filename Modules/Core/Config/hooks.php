@@ -16,6 +16,7 @@ return [
         \Modules\Billing\Providers\BillingHooksProvider::class,
         \Modules\Lang\Providers\LangHooksProvider::class,
         \Modules\Currency\Providers\CurrencyHooksProvider::class,
+        \Modules\Referentiel360\Providers\Referentiel360HooksProvider::class,
         \Modules\Eshop360\Providers\Eshop360HooksProvider::class,
         \Modules\Menuiserie360\Providers\Menuiserie360HooksProvider::class,
         \Modules\Demo\Providers\DemoHooksProvider::class,
