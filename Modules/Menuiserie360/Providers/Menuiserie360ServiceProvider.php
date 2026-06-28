@@ -8,12 +8,18 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider;
 use Modules\Core\Modules\ModuleManager;
+use Modules\Menuiserie360\Domain\Catalog\Models\CatalogItem;
 use Modules\Menuiserie360\Domain\Client\Models\ClientMenuiserie;
 use Modules\Menuiserie360\Domain\Finance\Jobs\RelancerFacturesImpayeesJob;
 use Modules\Menuiserie360\Domain\Purchasing\Models\Fournisseur;
+use Modules\Menuiserie360\Domain\Stock\Models\MatierePremiere;
+use Modules\Menuiserie360\Integration\Referentiel\CatalogItemReferentielObserver;
 use Modules\Menuiserie360\Integration\Referentiel\ClientReferentielObserver;
 use Modules\Menuiserie360\Integration\Referentiel\FournisseurReferentielObserver;
+use Modules\Menuiserie360\Integration\Referentiel\MatiereReferentielObserver;
+use Modules\Menuiserie360\Integration\Referentiel\MenuiserieCatalogItemArticleSource;
 use Modules\Menuiserie360\Integration\Referentiel\MenuiserieClientPartySource;
+use Modules\Menuiserie360\Integration\Referentiel\MenuiserieMatiereArticleSource;
 use Modules\Menuiserie360\Integration\Referentiel\MenuiserieSupplierPartySource;
 
 /**
@@ -60,10 +66,13 @@ final class Menuiserie360ServiceProvider extends ServiceProvider
     /**
      * Lot 1.a (ADR-030) — Branchement conditionnel sur Referentiel360 (L2).
      *
-     * UNIQUEMENT si Referentiel360 est activé : on tag les 2 PartySource pour le
-     * backfill et on attache les 2 observers best-effort qui poussent les tiers
-     * vers le golden record. Si Referentiel360 est éteint : aucun enregistrement
-     * — Menuiserie360 reste totalement autonome (ADR-023).
+     * UNIQUEMENT si Referentiel360 est activé : on tag les sources backfill
+     * (tiers + articles) et on attache les observers best-effort qui poussent
+     * tiers et articles vers les golden records. Si Referentiel360 est éteint :
+     * aucun enregistrement — Menuiserie360 reste totalement autonome (ADR-023).
+     *
+     * Lot 1.a : tiers (clients + fournisseurs) → ref_parties.
+     * Lot 2.a : articles (catalogue + matières premières) → ref_articles.
      */
     private function registerReferentielIntegration(): void
     {
@@ -71,15 +80,23 @@ final class Menuiserie360ServiceProvider extends ServiceProvider
             return;
         }
 
-        // Backfill : 2 sources taggées (consommées par referentiel:backfill-tiers).
+        // Backfill tiers : 2 sources taggées (consommées par referentiel:backfill-tiers).
         $this->app->tag(
             [MenuiserieClientPartySource::class, MenuiserieSupplierPartySource::class],
             'referentiel.party_source',
         );
 
+        // Backfill articles : 2 sources taggées (consommées par referentiel:backfill-articles).
+        $this->app->tag(
+            [MenuiserieCatalogItemArticleSource::class, MenuiserieMatiereArticleSource::class],
+            'referentiel.article_source',
+        );
+
         // Temps réel : observers best-effort (push via DB::afterCommit).
         ClientMenuiserie::observe($this->app->make(ClientReferentielObserver::class));
         Fournisseur::observe($this->app->make(FournisseurReferentielObserver::class));
+        CatalogItem::observe($this->app->make(CatalogItemReferentielObserver::class));
+        MatierePremiere::observe($this->app->make(MatiereReferentielObserver::class));
     }
 
     /**
