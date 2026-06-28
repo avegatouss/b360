@@ -6,6 +6,7 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Modules\Core\Modules\ModuleManager;
 use Modules\Core\Support\CurrentInstance;
 use Modules\Eshop360\Console\BirthdayAlertCommand;
 use Modules\Eshop360\Console\Commands\CheckExpiringProducts;
@@ -15,7 +16,13 @@ use Modules\Eshop360\Console\ExpiryAlertCommand;
 use Modules\Eshop360\Console\InstallmentReminderCommand;
 use Modules\Eshop360\Console\RecurringInvoiceCommand;
 use Modules\Eshop360\Console\StockAlertCommand;
+use Modules\Eshop360\Domain\CRM\Models\Customer;
+use Modules\Eshop360\Domain\Purchasing\Models\Supplier;
 use Modules\Eshop360\Http\Middleware\EnsurePaidFeature;
+use Modules\Eshop360\Integration\Referentiel\CustomerReferentielObserver;
+use Modules\Eshop360\Integration\Referentiel\EshopCustomerPartySource;
+use Modules\Eshop360\Integration\Referentiel\EshopSupplierPartySource;
+use Modules\Eshop360\Integration\Referentiel\SupplierReferentielObserver;
 use Modules\Eshop360\Services\AuditService;
 use Modules\Eshop360\Services\CartService;
 use Modules\Eshop360\Services\CashRegisterService;
@@ -236,6 +243,8 @@ final class Eshop360ServiceProvider extends ServiceProvider
         $this->loadTranslationsFrom(__DIR__.'/../Resources/lang', 'eshop');
         $this->loadMigrationsFrom(__DIR__.'/../Database/Migrations');
 
+        $this->registerReferentielIntegration();
+
         // Middleware alias — 'eshop.feature' is now registered by BillingServiceProvider
         // pointing to Modules\Billing\Http\Middleware\EnsureFeature.
         // This registration is kept as fallback if Billing module is not loaded.
@@ -305,5 +314,30 @@ final class Eshop360ServiceProvider extends ServiceProvider
         // hierarchical_menu spécifique à Eshop360 est encapsulée dans
         // la closure `visibleWhen` du `LayoutSlotContribution` enregistré
         // par Eshop360HooksProvider::registerLayoutSlots() (S3).
+    }
+
+    /**
+     * Lot 1.b (ADR-030) — Branchement conditionnel sur Referentiel360 (L2).
+     *
+     * UNIQUEMENT si Referentiel360 est activé : on tag les 2 PartySource pour le
+     * backfill et on attache les 2 observers best-effort qui poussent les tiers
+     * (customers + suppliers) vers le golden record. Si Referentiel360 est éteint :
+     * aucun enregistrement — Eshop360 reste totalement autonome.
+     */
+    private function registerReferentielIntegration(): void
+    {
+        if (! $this->app->make(ModuleManager::class)->isEnabled('REFERENTIEL360')) {
+            return;
+        }
+
+        // Backfill : 2 sources taggées (consommées par referentiel:backfill-tiers).
+        $this->app->tag(
+            [EshopCustomerPartySource::class, EshopSupplierPartySource::class],
+            'referentiel.party_source',
+        );
+
+        // Temps réel : observers best-effort (push via DB::afterCommit).
+        Customer::observe($this->app->make(CustomerReferentielObserver::class));
+        Supplier::observe($this->app->make(SupplierReferentielObserver::class));
     }
 }

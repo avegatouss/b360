@@ -1,9 +1,17 @@
 # RECENT_DECISIONS — B360
 
-> Décisions structurantes récentes. Mise à jour : **2026-06-28 (soir)** — Referentiel360 Lot 1.a (Menuiserie branchée).
+> Décisions structurantes récentes. Mise à jour : **2026-06-28 (soir)** — Referentiel360 Lot 1.b (Eshop branchée) — boucle bidirectionnelle complète.
 > Pour les décisions complètes argumentées, voir `docs/adr/`.
 
 ---
+
+## 2026-06-28 (soir) — Referentiel360 Lot 1.b : Eshop360 branchée (boucle complète)
+
+- **Livré** (agents + review architecte) : intégration Eshop360 (L3) → Referentiel360 (L2), miroir exact du 1.a, sous `Modules/Eshop360/Integration/Referentiel/`. Les **deux** modules métier alimentent désormais le golden record ⇒ `referentiel:backfill-tiers` peut réconcilier Eshop ↔ Menuiserie.
+- **Pattern** : identique au 1.a (Observer + `DB::afterCommit` best-effort, 2 `PartySource` `eshop.customer`/`eshop.supplier`, mapper unique, conditionnel `isEnabled('REFERENTIEL360')`).
+- **Spécificités Eshop tranchées** : (a) **multi-canal** ⇒ 1 party par ROW (`channel_id` ignoré, référentiel scopé instance) ; (b) les `PartySource` bypassent `InstanceScope` **ET** `ChannelScope` (sinon le backfill CLI sans user authentifié ne voit aucun customer) ; (c) `normalizeCountry` (varchar Eshop → char(2), fallback `CI`) — limitation : ne reconnaît que les codes déjà à 2 lettres (à raffiner si pays variés).
+- **Validation** : 5 tests verts, Pint/PHPStan (tests inclus)/deptrac 0. Non-régression Eshop confirmée (afterCommit ne fire pas sous RefreshDatabase).
+- **Reste** : exécuter le backfill réel (prod/recette) ; Lot 2 (articles) ; Lot 3 (finance L1). Décision R-505 (synchro `mergeInto` last-write-wins vs golden figé) à arbitrer avant usage intensif.
 
 ## 2026-06-28 (soir) — Referentiel360 Lot 1.a : Menuiserie360 branchée sur le référentiel
 
