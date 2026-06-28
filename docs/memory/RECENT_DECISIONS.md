@@ -1,9 +1,18 @@
 # RECENT_DECISIONS — B360
 
-> Décisions structurantes récentes. Mise à jour : **2026-06-28 (soir)** — Referentiel360 Lot 2 socle (domaine Article).
+> Décisions structurantes récentes. Mise à jour : **2026-06-28 (soir)** — Referentiel360 Lot 2 bouclé (Articles, Menuiserie + Eshop branchés).
 > Pour les décisions complètes argumentées, voir `docs/adr/`.
 
 ---
+
+## 2026-06-28 (soir) — Referentiel360 Lots 2.a + 2.b : Menuiserie & Eshop branchés sur le domaine Article
+
+- **Livré** (2 agents parallèles + review architecte) : les deux modules alimentent le golden record `ref_articles`. **2.a Menuiserie** : `mnu_catalog_items` (linkType `mnu.catalog_item`) + `mnu_matieres_premieres` (`mnu.matiere`) ⇒ mapper + 2 sources + 2 observers. **2.b Eshop** : `eshop_products` (`eshop.product`) ⇒ mapper + source + observer (bypass `ChannelScope` au backfill comme pour les customers).
+- **Pattern** : identique à 1.a/1.b (Observer + `DB::afterCommit` best-effort, sources taggées `referentiel.article_source`, conditionnel `isEnabled('REFERENTIEL360')`). Extension du `registerReferentielIntegration()` existant de chaque module.
+- **Mapping** : `article_type` Menuiserie dérivé de `item_type` (matiere_premiere→matiere ; service/main_oeuvre/sous_traitance→service ; produit_fini/**fourniture**→produit) ; matière ⇒ salePrice/taxRate null (prix = coût). Eshop : code = `sku ?? 'PRD-'.id`, type `produit`. `categoryLabel` = code brut (pas de lookup, anti-N+1).
+- **Validation** : 2.a 4 tests verts, 2.b 4 tests verts (9 avec 1.b), Pint/PHPStan (tests inclus)/deptrac 0 des deux côtés. Non-régressions vérifiées. Périmètre strict par module.
+- **Point ouvert mineur** : `fourniture`→`produit` (vs `matiere`) à confirmer côté métier (article_type indicatif).
+- **Lot 2 (Articles) COMPLET.** Reste : Lot 3 (finance L1, registre miroir — procédure renforcée) ; décision R-505 (synchro mergeInto) ; exécution backfill réel.
 
 ## 2026-06-28 (soir) — Referentiel360 Lot 2 socle : domaine Article (catalogue)
 

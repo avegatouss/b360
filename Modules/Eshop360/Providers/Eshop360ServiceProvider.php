@@ -16,12 +16,15 @@ use Modules\Eshop360\Console\ExpiryAlertCommand;
 use Modules\Eshop360\Console\InstallmentReminderCommand;
 use Modules\Eshop360\Console\RecurringInvoiceCommand;
 use Modules\Eshop360\Console\StockAlertCommand;
+use Modules\Eshop360\Domain\Catalog\Models\Product;
 use Modules\Eshop360\Domain\CRM\Models\Customer;
 use Modules\Eshop360\Domain\Purchasing\Models\Supplier;
 use Modules\Eshop360\Http\Middleware\EnsurePaidFeature;
 use Modules\Eshop360\Integration\Referentiel\CustomerReferentielObserver;
 use Modules\Eshop360\Integration\Referentiel\EshopCustomerPartySource;
+use Modules\Eshop360\Integration\Referentiel\EshopProductArticleSource;
 use Modules\Eshop360\Integration\Referentiel\EshopSupplierPartySource;
+use Modules\Eshop360\Integration\Referentiel\ProductReferentielObserver;
 use Modules\Eshop360\Integration\Referentiel\SupplierReferentielObserver;
 use Modules\Eshop360\Services\AuditService;
 use Modules\Eshop360\Services\CartService;
@@ -319,10 +322,11 @@ final class Eshop360ServiceProvider extends ServiceProvider
     /**
      * Lot 1.b (ADR-030) — Branchement conditionnel sur Referentiel360 (L2).
      *
-     * UNIQUEMENT si Referentiel360 est activé : on tag les 2 PartySource pour le
-     * backfill et on attache les 2 observers best-effort qui poussent les tiers
-     * (customers + suppliers) vers le golden record. Si Referentiel360 est éteint :
-     * aucun enregistrement — Eshop360 reste totalement autonome.
+     * UNIQUEMENT si Referentiel360 est activé : on tag les PartySource (tiers) +
+     * l'ArticleSource (products) pour le backfill et on attache les observers
+     * best-effort qui poussent tiers (customers + suppliers) et articles (products)
+     * vers le golden record. Si Referentiel360 est éteint : aucun enregistrement —
+     * Eshop360 reste totalement autonome.
      */
     private function registerReferentielIntegration(): void
     {
@@ -330,14 +334,21 @@ final class Eshop360ServiceProvider extends ServiceProvider
             return;
         }
 
-        // Backfill : 2 sources taggées (consommées par referentiel:backfill-tiers).
+        // Backfill tiers : 2 sources taggées (consommées par referentiel:backfill-tiers).
         $this->app->tag(
             [EshopCustomerPartySource::class, EshopSupplierPartySource::class],
             'referentiel.party_source',
         );
 
+        // Backfill articles : 1 source taggée (consommée par referentiel:backfill-articles).
+        $this->app->tag(
+            [EshopProductArticleSource::class],
+            'referentiel.article_source',
+        );
+
         // Temps réel : observers best-effort (push via DB::afterCommit).
         Customer::observe($this->app->make(CustomerReferentielObserver::class));
         Supplier::observe($this->app->make(SupplierReferentielObserver::class));
+        Product::observe($this->app->make(ProductReferentielObserver::class));
     }
 }
