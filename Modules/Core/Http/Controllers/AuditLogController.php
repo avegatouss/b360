@@ -5,7 +5,6 @@ namespace Modules\Core\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
-use Modules\Core\Models\AuditLog;
 use Modules\Core\Support\CurrentInstance;
 
 final class AuditLogController extends Controller
@@ -32,19 +31,19 @@ final class AuditLogController extends Controller
         }
 
         if ($request->filled('action')) {
-            $query->where("{$table}.action", 'like', '%' . $request->input('action') . '%');
+            $query->where("{$table}.action", 'like', '%'.$request->input('action').'%');
         }
 
         if ($request->filled('model')) {
-            $query->where("{$table}.model", 'like', '%' . $request->input('model') . '%');
+            $query->where("{$table}.model", 'like', '%'.$request->input('model').'%');
         }
 
         if ($request->filled('date_from')) {
-            $query->where("{$table}.created_at", '>=', $request->input('date_from') . ' 00:00:00');
+            $query->where("{$table}.created_at", '>=', $request->input('date_from').' 00:00:00');
         }
 
         if ($request->filled('date_to')) {
-            $query->where("{$table}.created_at", '<=', $request->input('date_to') . ' 23:59:59');
+            $query->where("{$table}.created_at", '<=', $request->input('date_to').' 23:59:59');
         }
 
         $logs = $query->paginate(25)->appends($request->query());
@@ -58,7 +57,7 @@ final class AuditLogController extends Controller
 
         $userList = DB::table('users')
             ->whereIn('id', $users)
-            ->select('id', 'name', 'email')
+            ->select('id', 'full_name as name', 'email')
             ->get();
 
         // Get unique actions
@@ -93,7 +92,7 @@ final class AuditLogController extends Controller
             ->where("{$table}.instance_id", $instance->id)
             ->first();
 
-        if (!$log) {
+        if (! $log) {
             abort(404, 'Entree d\'audit introuvable.');
         }
 

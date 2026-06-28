@@ -24,7 +24,7 @@ final class BackupController extends Controller
         $backups = BackupLog::orderByDesc('created_at')->paginate(20);
 
         // Also scan the directory for any files not in DB
-        $files = [];
+        $files = collect();
         if (Storage::exists(self::BACKUP_DIR)) {
             $files = collect(Storage::files(self::BACKUP_DIR))
                 ->map(fn ($path) => [
@@ -49,8 +49,8 @@ final class BackupController extends Controller
         try {
             $filename = $this->performBackup();
 
-            $size = Storage::exists(self::BACKUP_DIR . '/' . $filename)
-                ? Storage::size(self::BACKUP_DIR . '/' . $filename)
+            $size = Storage::exists(self::BACKUP_DIR.'/'.$filename)
+                ? Storage::size(self::BACKUP_DIR.'/'.$filename)
                 : 0;
 
             BackupLog::create([
@@ -66,7 +66,7 @@ final class BackupController extends Controller
             return back()->with('status', "Backup cree avec succes : {$filename}");
         } catch (\Throwable $e) {
             BackupLog::create([
-                'filename' => 'failed_' . date('Y-m-d_His') . '.sql',
+                'filename' => 'failed_'.date('Y-m-d_His').'.sql',
                 'size_bytes' => 0,
                 'type' => 'manual',
                 'status' => 'failed',
@@ -75,7 +75,7 @@ final class BackupController extends Controller
                 'created_at' => now(),
             ]);
 
-            return back()->with('error', 'Echec du backup : ' . $e->getMessage());
+            return back()->with('error', 'Echec du backup : '.$e->getMessage());
         }
     }
 
@@ -84,9 +84,9 @@ final class BackupController extends Controller
      */
     public function download(string $slug, string $filename)
     {
-        $path = self::BACKUP_DIR . '/' . basename($filename);
+        $path = self::BACKUP_DIR.'/'.basename($filename);
 
-        if (!Storage::exists($path)) {
+        if (! Storage::exists($path)) {
             abort(404, 'Fichier de backup introuvable.');
         }
 
@@ -99,15 +99,15 @@ final class BackupController extends Controller
     public function restore(Request $request, string $slug, string $filename)
     {
         $instance = CurrentInstance::get();
-        $path = self::BACKUP_DIR . '/' . basename($filename);
+        $path = self::BACKUP_DIR.'/'.basename($filename);
 
-        if (!Storage::exists($path)) {
+        if (! Storage::exists($path)) {
             return back()->with('error', 'Fichier de backup introuvable.');
         }
 
         try {
             $fullPath = Storage::path($path);
-            $config = config('database.connections.' . config('database.default'));
+            $config = config('database.connections.'.config('database.default'));
 
             $host = $config['host'] ?? '127.0.0.1';
             $port = $config['port'] ?? '3306';
@@ -120,7 +120,7 @@ final class BackupController extends Controller
                 escapeshellarg($host),
                 escapeshellarg($port),
                 escapeshellarg($username),
-                $password ? '-p' . escapeshellarg($password) : '',
+                $password ? '-p'.escapeshellarg($password) : '',
                 escapeshellarg($database),
                 escapeshellarg($fullPath)
             );
@@ -131,9 +131,9 @@ final class BackupController extends Controller
                 return back()->with('status', "Base de donnees restauree depuis {$filename}.");
             }
 
-            return back()->with('error', 'Echec de la restauration : ' . $result->errorOutput());
+            return back()->with('error', 'Echec de la restauration : '.$result->errorOutput());
         } catch (\Throwable $e) {
-            return back()->with('error', 'Echec de la restauration : ' . $e->getMessage());
+            return back()->with('error', 'Echec de la restauration : '.$e->getMessage());
         }
     }
 
@@ -142,7 +142,7 @@ final class BackupController extends Controller
      */
     public function destroy(Request $request, string $slug, string $filename)
     {
-        $path = self::BACKUP_DIR . '/' . basename($filename);
+        $path = self::BACKUP_DIR.'/'.basename($filename);
 
         if (Storage::exists($path)) {
             Storage::delete($path);
@@ -158,7 +158,7 @@ final class BackupController extends Controller
      */
     private function performBackup(): string
     {
-        $config = config('database.connections.' . config('database.default'));
+        $config = config('database.connections.'.config('database.default'));
 
         $host = $config['host'] ?? '127.0.0.1';
         $port = $config['port'] ?? '3306';
@@ -166,32 +166,32 @@ final class BackupController extends Controller
         $username = $config['username'];
         $password = $config['password'] ?? '';
 
-        $filename = 'backup_' . date('Y-m-d_His') . '.sql';
+        $filename = 'backup_'.date('Y-m-d_His').'.sql';
 
-        if (!Storage::exists(self::BACKUP_DIR)) {
+        if (! Storage::exists(self::BACKUP_DIR)) {
             Storage::makeDirectory(self::BACKUP_DIR);
         }
 
-        $fullPath = Storage::path(self::BACKUP_DIR . '/' . $filename);
+        $fullPath = Storage::path(self::BACKUP_DIR.'/'.$filename);
 
         $command = sprintf(
             'mysqldump -h %s -P %s -u %s %s %s --single-transaction --routines --triggers > %s',
             escapeshellarg($host),
             escapeshellarg($port),
             escapeshellarg($username),
-            $password ? '-p' . escapeshellarg($password) : '',
+            $password ? '-p'.escapeshellarg($password) : '',
             escapeshellarg($database),
             escapeshellarg($fullPath)
         );
 
         $result = Process::run($command);
 
-        if (!$result->successful()) {
+        if (! $result->successful()) {
             // Fallback: use PHP-based SQL dump
             $this->phpDump($fullPath, $database);
         }
 
-        if (!file_exists($fullPath) || filesize($fullPath) === 0) {
+        if (! file_exists($fullPath) || filesize($fullPath) === 0) {
             // Try PHP dump as ultimate fallback
             $this->phpDump($fullPath, $database);
         }
@@ -206,10 +206,10 @@ final class BackupController extends Controller
     {
         $connection = DB::connection(config('database.default'));
         $tables = $connection->select('SHOW TABLES');
-        $key = 'Tables_in_' . $database;
+        $key = 'Tables_in_'.$database;
 
         $sql = "-- B360 Database Backup\n";
-        $sql .= "-- Generated: " . date('Y-m-d H:i:s') . "\n";
+        $sql .= '-- Generated: '.date('Y-m-d H:i:s')."\n";
         $sql .= "-- Database: {$database}\n\n";
         $sql .= "SET FOREIGN_KEY_CHECKS=0;\n\n";
 
@@ -220,17 +220,20 @@ final class BackupController extends Controller
             $createResult = $connection->select("SHOW CREATE TABLE `{$tableName}`");
             $createSql = $createResult[0]->{'Create Table'} ?? '';
             $sql .= "DROP TABLE IF EXISTS `{$tableName}`;\n";
-            $sql .= $createSql . ";\n\n";
+            $sql .= $createSql.";\n\n";
 
             // Table data
             $rows = $connection->select("SELECT * FROM `{$tableName}`");
-            if (!empty($rows)) {
+            if (! empty($rows)) {
                 foreach ($rows as $row) {
                     $values = array_map(function ($v) use ($connection) {
-                        if ($v === null) return 'NULL';
+                        if ($v === null) {
+                            return 'NULL';
+                        }
+
                         return $connection->getPdo()->quote($v);
                     }, (array) $row);
-                    $sql .= "INSERT INTO `{$tableName}` VALUES(" . implode(',', $values) . ");\n";
+                    $sql .= "INSERT INTO `{$tableName}` VALUES(".implode(',', $values).");\n";
                 }
                 $sql .= "\n";
             }
