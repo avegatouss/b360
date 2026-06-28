@@ -9,18 +9,24 @@ use Illuminate\Support\ServiceProvider;
 use Modules\Referentiel360\Adapters\Eloquent\EloquentArticleReader;
 use Modules\Referentiel360\Adapters\Eloquent\EloquentArticleResolver;
 use Modules\Referentiel360\Adapters\Eloquent\EloquentArticleWriter;
+use Modules\Referentiel360\Adapters\Eloquent\EloquentFinanceReader;
+use Modules\Referentiel360\Adapters\Eloquent\EloquentFinanceWriter;
 use Modules\Referentiel360\Adapters\Eloquent\EloquentPartyReader;
 use Modules\Referentiel360\Adapters\Eloquent\EloquentPartyResolver;
 use Modules\Referentiel360\Adapters\Eloquent\EloquentPartyWriter;
 use Modules\Referentiel360\Console\Commands\BackfillArticlesCommand;
+use Modules\Referentiel360\Console\Commands\BackfillFinanceCommand;
 use Modules\Referentiel360\Console\Commands\BackfillTiersCommand;
 use Modules\Referentiel360\Contracts\Article\ArticleReader;
 use Modules\Referentiel360\Contracts\Article\ArticleResolver;
 use Modules\Referentiel360\Contracts\Article\ArticleWriter;
+use Modules\Referentiel360\Contracts\Finance\FinanceReader;
+use Modules\Referentiel360\Contracts\Finance\FinanceWriter;
 use Modules\Referentiel360\Contracts\Party\PartyReader;
 use Modules\Referentiel360\Contracts\Party\PartyResolver;
 use Modules\Referentiel360\Contracts\Party\PartyWriter;
 use Modules\Referentiel360\Domain\Article\Models\Article;
+use Modules\Referentiel360\Domain\Finance\Models\FinanceDocument;
 use Modules\Referentiel360\Domain\Party\Models\Party;
 
 /**
@@ -46,6 +52,10 @@ final class Referentiel360ServiceProvider extends ServiceProvider
         $this->app->singleton(ArticleReader::class, EloquentArticleReader::class);
         $this->app->singleton(ArticleResolver::class, EloquentArticleResolver::class);
         $this->app->singleton(ArticleWriter::class, EloquentArticleWriter::class);
+
+        // Lot 3 — domaine Finance (registre miroir, PAS de Resolver : pas de fallback).
+        $this->app->singleton(FinanceReader::class, EloquentFinanceReader::class);
+        $this->app->singleton(FinanceWriter::class, EloquentFinanceWriter::class);
     }
 
     public function boot(): void
@@ -58,6 +68,7 @@ final class Referentiel360ServiceProvider extends ServiceProvider
             $this->commands([
                 BackfillTiersCommand::class,
                 BackfillArticlesCommand::class,
+                BackfillFinanceCommand::class,
             ]);
         }
     }
@@ -73,6 +84,7 @@ final class Referentiel360ServiceProvider extends ServiceProvider
         Relation::morphMap([
             'ref.party' => Party::class,
             'ref.article' => Article::class,
+            'ref.finance_document' => FinanceDocument::class,
             // Short-keys des objets locaux (résolus en L3, pas de classe ici) :
             //   tiers   : mnu.client | mnu.supplier | eshop.customer | eshop.supplier
             //   article : mnu.catalog_item | mnu.matiere | eshop.product

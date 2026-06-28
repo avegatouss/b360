@@ -4,7 +4,7 @@
 
 ## Statut
 
-**Proposé** — 2026-06-28. Arbitrages humains actés (registre miroir lecture seule ; avoirs inclus). **Acceptation conditionnée à la procédure renforcée L1** (tests étendus + double review humaine). Cadrage : [LOT3-finance-IMPACT_ANALYSIS.md](../programs/referentiel360/LOT3-finance-IMPACT_ANALYSIS.md).
+**Accepté** — 2026-06-28. Arbitrages humains actés (registre miroir lecture seule ; avoirs inclus) puis ADR validé. **Reste requis avant merge/déploiement** (procédure renforcée L1) : tests étendus livrés + **double review humaine**. Cadrage : [LOT3-finance-IMPACT_ANALYSIS.md](../programs/referentiel360/LOT3-finance-IMPACT_ANALYSIS.md).
 
 ## Contexte
 

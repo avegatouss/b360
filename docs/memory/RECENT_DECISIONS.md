@@ -1,9 +1,18 @@
 # RECENT_DECISIONS — B360
 
-> Décisions structurantes récentes. Mise à jour : **2026-06-28 (soir)** — Referentiel360 Lot 2 bouclé (Articles, Menuiserie + Eshop branchés).
+> Décisions structurantes récentes. Mise à jour : **2026-06-28 (soir)** — Referentiel360 Lot 3 socle Finance (ADR-031, zone L1).
 > Pour les décisions complètes argumentées, voir `docs/adr/`.
 
 ---
+
+## 2026-06-28 (soir) — Referentiel360 Lot 3 socle : domaine Finance (registre miroir, ZONE L1)
+
+- **Livré** (agent + review architecte) : domaine **Finance** ajouté au module L2 `Referentiel360` — [ADR-031](../adr/ADR-031-referentiel360-finance-mirror-register.md) (Accepté). `ref_documents_finance` (registre miroir mince) + `ref_finance_links`, contrats `FinanceReader/Writer/Source` + DTO (pas de Resolver — registre miroir), `FinanceMatcher` lien-only, `BackfillFinanceService` + commande `referentiel:backfill-finance`, event, permissions `referentiel.finance.view|export`. Cadrage : [LOT3-finance-IMPACT_ANALYSIS.md](../programs/referentiel360/LOT3-finance-IMPACT_ANALYSIS.md).
+- **Invariants L1 (vérifiés en review)** : (1) **zéro écriture vers `mnu_*`/`eshop_*`** (registre lecture seule, modules = émetteurs légaux, numérotation intacte) ; (2) `FinanceWriter` **full-refresh + `lockForUpdate`** sur le doc avant écriture (sérialise les push concurrents) ; (3) `status_normalized` + `due_amount` **dérivés des montants** en **bcmath** (zéro float) ; (4) `party_id` résolu via `PartyReader` ⇒ CA par tiers ; (5) avoirs `doc_type=credit_note` (montants positifs, soustraits à l'agrégation).
+- **R-505 tranché pour la finance** : full-refresh (vs `mergeInto` non destructif des Tiers/Articles).
+- **Validation** : 36 tests verts (16 Finance), Pint/PHPStan (tests inclus)/deptrac 0. Périmètre strict `Modules/Referentiel360/**`.
+- **Exigences L1 restantes (avant merge/déploiement)** : **double review humaine** ; **vrai test de concurrence MySQL** au Lot 3.a (le test socle est séquentiel — SQLite ne simule pas la race ; la sérialisation réelle s'appuie sur `lockForUpdate` côté facture, à brancher en 3.a).
+- **Reste** : Lots **3.a** (Menuiserie : `mnu_invoices` + paiements → FinanceSource + observers, test concurrence MySQL) / **3.b** (Eshop : `eshop_invoices`). Programme Referentiel360 quasi complet.
 
 ## 2026-06-28 (soir) — Referentiel360 Lots 2.a + 2.b : Menuiserie & Eshop branchés sur le domaine Article
 

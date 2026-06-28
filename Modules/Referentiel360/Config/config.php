@@ -32,6 +32,19 @@ return [
     ],
 
     /*
+    |--------------------------------------------------------------------------
+    | Morph short-keys finance (ref_finance_links.linkable_type) — Lot 3
+    |--------------------------------------------------------------------------
+    | Registre MIROIR lecture seule (ADR-031). 1 facture locale = 1 document
+    | miroir (matching lien-only, full refresh des montants/statut). Aucune
+    | écriture retour vers mnu_* / eshop_* — invariant absolu.
+    */
+    'finance_link_types' => [
+        'mnu.invoice',
+        'eshop.invoice',
+    ],
+
+    /*
     | Pays par défaut (ISO-2) lorsque la valeur source est absente / non mappable.
     */
     'default_country' => 'CI',

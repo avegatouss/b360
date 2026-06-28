@@ -23,12 +23,14 @@ final class Referentiel360HooksProvider implements RegistersHooks
     {
         $registry->addPermissionGroup(new PermissionGroup(
             id: 'referentiel',
-            label: 'Référentiel (tiers + articles)',
+            label: 'Référentiel (tiers + articles + finance)',
             permissions: [
                 'referentiel.parties.view' => 'Consulter le référentiel des tiers et les doublons détectés',
                 'referentiel.parties.merge' => 'Fusionner / scinder manuellement des tiers',
                 'referentiel.articles.view' => 'Consulter le référentiel des articles (catalogue unifié)',
                 'referentiel.articles.merge' => 'Rapprocher / scinder manuellement des articles (réservé)',
+                'referentiel.finance.view' => 'Consulter le registre financier consolidé (CA / encaissement / reste-dû)',
+                'referentiel.finance.export' => 'Exporter le registre financier consolidé (réservé)',
             ],
             priority: 500,
             module: 'Referentiel360',

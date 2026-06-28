@@ -9,7 +9,18 @@
 
 ## [non publié]
 
-(rien)
+### 2026-06-28 — Referentiel360 : nouveau module socle L2 (master data inter-modules)
+
+- **Date** : 2026-06-28
+- **Branche** : `base`
+- **ADR** : [ADR-030](docs/adr/ADR-030-referentiel360-master-data-tiers.md) (Accepté), [ADR-031](docs/adr/ADR-031-referentiel360-finance-mirror-register.md) (Accepté, **zone L1**).
+- **Impact** : nouvelle **couche L2 `Referentiel360`** détenant des *golden records* partagés entre Eshop360 et Menuiserie360, **sans dépendance L3 → L3** (inversion via interfaces `*Source` ; les deux L3 dépendent du socle L2). `deptrac.yaml` + `MODULE_DEPENDENCY_MAP` étendus.
+  - **Domaine Tiers** (Lot 1, livré) : `ref_parties` + `ref_party_links` ; dédup conservatrice (collision ⇒ review). Menuiserie + Eshop branchés (Observer + `DB::afterCommit` best-effort, conditionnel `isEnabled`).
+  - **Domaine Article** (Lot 2, livré) : `ref_articles` + `ref_article_links` ; **pas de dédup cross-module** (matcher lien-only, univers disjoints). Menuiserie (catalog_items + matieres) + Eshop (products) branchés.
+  - **Domaine Finance** (Lot 3, en cours, **L1**) : `ref_documents_finance` registre **miroir lecture seule** (modules = émetteurs légaux, numérotation intacte, **zéro écriture retour**). Statut dérivé des montants ; `FinanceWriter` **full-refresh** (tranche R-505 pour la finance) ; `party_id` via `PartyReader` (CA par tiers) ; avoirs inclus.
+- **Conventions** : liaison **polymorphe** (`ref_*_links`, short-keys `mnu.*`/`eshop.*`) — aucune colonne ajoutée aux tables métier (évite le piège cross-module table-extension R-502). Push best-effort `afterCommit` + backfill resync.
+- **Breaking change** : non (additif ; modules autonomes si Referentiel360 désactivé — ADR-023 préservé).
+- **Statut** : Lots 1 & 2 ✅ livrés (commits sur `base`) ; Lot 3 finance ⏳ socle en cours sous procédure renforcée L1 (double review humaine requise avant merge).
 
 ---
 
