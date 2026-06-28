@@ -23,10 +23,12 @@ final class Referentiel360HooksProvider implements RegistersHooks
     {
         $registry->addPermissionGroup(new PermissionGroup(
             id: 'referentiel',
-            label: 'Référentiel (tiers)',
+            label: 'Référentiel (tiers + articles)',
             permissions: [
                 'referentiel.parties.view' => 'Consulter le référentiel des tiers et les doublons détectés',
                 'referentiel.parties.merge' => 'Fusionner / scinder manuellement des tiers',
+                'referentiel.articles.view' => 'Consulter le référentiel des articles (catalogue unifié)',
+                'referentiel.articles.merge' => 'Rapprocher / scinder manuellement des articles (réservé)',
             ],
             priority: 500,
             module: 'Referentiel360',

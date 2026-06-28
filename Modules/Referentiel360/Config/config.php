@@ -19,6 +19,19 @@ return [
     ],
 
     /*
+    |--------------------------------------------------------------------------
+    | Morph short-keys article (ref_article_links.linkable_type) — Lot 2
+    |--------------------------------------------------------------------------
+    | Univers articles disjoints : aucune dédup cross-module (matching
+    | lien-only). 1 row source = 1 golden record article.
+    */
+    'article_link_types' => [
+        'mnu.catalog_item',
+        'mnu.matiere',
+        'eshop.product',
+    ],
+
+    /*
     | Pays par défaut (ISO-2) lorsque la valeur source est absente / non mappable.
     */
     'default_country' => 'CI',

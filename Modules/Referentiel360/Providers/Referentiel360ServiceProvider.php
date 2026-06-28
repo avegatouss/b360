@@ -6,13 +6,21 @@ namespace Modules\Referentiel360\Providers;
 
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider;
+use Modules\Referentiel360\Adapters\Eloquent\EloquentArticleReader;
+use Modules\Referentiel360\Adapters\Eloquent\EloquentArticleResolver;
+use Modules\Referentiel360\Adapters\Eloquent\EloquentArticleWriter;
 use Modules\Referentiel360\Adapters\Eloquent\EloquentPartyReader;
 use Modules\Referentiel360\Adapters\Eloquent\EloquentPartyResolver;
 use Modules\Referentiel360\Adapters\Eloquent\EloquentPartyWriter;
+use Modules\Referentiel360\Console\Commands\BackfillArticlesCommand;
 use Modules\Referentiel360\Console\Commands\BackfillTiersCommand;
+use Modules\Referentiel360\Contracts\Article\ArticleReader;
+use Modules\Referentiel360\Contracts\Article\ArticleResolver;
+use Modules\Referentiel360\Contracts\Article\ArticleWriter;
 use Modules\Referentiel360\Contracts\Party\PartyReader;
 use Modules\Referentiel360\Contracts\Party\PartyResolver;
 use Modules\Referentiel360\Contracts\Party\PartyWriter;
+use Modules\Referentiel360\Domain\Article\Models\Article;
 use Modules\Referentiel360\Domain\Party\Models\Party;
 
 /**
@@ -33,6 +41,11 @@ final class Referentiel360ServiceProvider extends ServiceProvider
         $this->app->singleton(PartyReader::class, EloquentPartyReader::class);
         $this->app->singleton(PartyResolver::class, EloquentPartyResolver::class);
         $this->app->singleton(PartyWriter::class, EloquentPartyWriter::class);
+
+        // Lot 2 — domaine Article (mêmes bindings ADR-021).
+        $this->app->singleton(ArticleReader::class, EloquentArticleReader::class);
+        $this->app->singleton(ArticleResolver::class, EloquentArticleResolver::class);
+        $this->app->singleton(ArticleWriter::class, EloquentArticleWriter::class);
     }
 
     public function boot(): void
@@ -44,6 +57,7 @@ final class Referentiel360ServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([
                 BackfillTiersCommand::class,
+                BackfillArticlesCommand::class,
             ]);
         }
     }
@@ -58,9 +72,11 @@ final class Referentiel360ServiceProvider extends ServiceProvider
     {
         Relation::morphMap([
             'ref.party' => Party::class,
+            'ref.article' => Article::class,
             // Short-keys des objets locaux (résolus en L3, pas de classe ici) :
-            //   mnu.client | mnu.supplier | eshop.customer | eshop.supplier
-            // déclarés en config 'referentiel360.link_types'.
+            //   tiers   : mnu.client | mnu.supplier | eshop.customer | eshop.supplier
+            //   article : mnu.catalog_item | mnu.matiere | eshop.product
+            // déclarés en config 'referentiel360.link_types' / 'article_link_types'.
         ]);
     }
 }

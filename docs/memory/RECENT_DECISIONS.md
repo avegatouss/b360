@@ -1,9 +1,17 @@
 # RECENT_DECISIONS — B360
 
-> Décisions structurantes récentes. Mise à jour : **2026-06-28 (soir)** — Referentiel360 Lot 1.b (Eshop branchée) — boucle bidirectionnelle complète.
+> Décisions structurantes récentes. Mise à jour : **2026-06-28 (soir)** — Referentiel360 Lot 2 socle (domaine Article).
 > Pour les décisions complètes argumentées, voir `docs/adr/`.
 
 ---
+
+## 2026-06-28 (soir) — Referentiel360 Lot 2 socle : domaine Article (catalogue)
+
+- **Livré** (agents + review architecte) : domaine **Article** ajouté au module L2 `Referentiel360`, miroir du domaine Party. `ref_articles` (golden mince : code/label/type/unit/sale_price/tax_rate/category) + `ref_article_links` (polymorphe), contrats `ArticleReader/Resolver/Writer/Source` + DTO, adapters Eloquent + Null, `ArticleMatcher`, `BackfillArticlesService` + commande `referentiel:backfill-articles`, event `ArticleUpserted`, permissions `referentiel.articles.view|merge`. Cadrage : [LOT2-articles-IMPACT_ANALYSIS.md](../programs/referentiel360/LOT2-articles-IMPACT_ANALYSIS.md).
+- **DÉCISION STRUCTURANTE** : **pas de déduplication cross-module** pour les articles. `ArticleMatcher` matche **par lien existant uniquement** (idempotence) ; sinon nouveau golden ⇒ **1 article golden par row source**. Raison : univers articles disjoints (menuiserie sur-mesure + BOM vs produits SKU e-commerce, divergence FORTE). Le rapprochement manuel sera un lot futur si besoin.
+- **`MatchResult`/`BackfillReport` dupliqués** (Article vs Party) plutôt que partagés : sémantiques divergentes (pas de `review`/collision côté article) + découplage des sous-domaines L2. Choix validé en review.
+- **Validation** : 21 tests verts (8 Article + 13 Party), Pint/PHPStan (tests inclus)/deptrac 0. Périmètre strict `Modules/Referentiel360/**`. Aucun module métier branché.
+- **Reste** : Lots **2.a** (Menuiserie : `mnu_catalog_items` + `mnu_matieres_premieres`) / **2.b** (Eshop : `eshop_products`) — ArticleSource + observers, même pattern que 1.a/1.b. Puis Lot 3 (finance L1).
 
 ## 2026-06-28 (soir) — Referentiel360 Lot 1.b : Eshop360 branchée (boucle complète)
 
