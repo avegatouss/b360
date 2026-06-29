@@ -18,9 +18,11 @@ use Modules\Referentiel360\Domain\Article\Models\ArticleLink;
  * Implémentation Eloquent du {@see ArticleWriter} (ADR-030 / Lot 2).
  *
  * `upsertFromModule` délègue la décision (réutiliser via lien / créer) à
- * l'ArticleResolver, puis met à jour le golden record de façon non destructive
- * (ne vide jamais un champ déjà renseigné), garantit le lien (idempotent), et
- * émet ArticleUpserted.
+ * l'ArticleResolver, puis rafraîchit le golden record selon la politique
+ * « refresh-if-present » (R-505) : une valeur source non-vide écrase l'existant ;
+ * une source vide/null ne vide jamais un champ déjà renseigné. `label` n'est
+ * donc jamais vidé et `source_module` conserve l'origine du golden. Le lien est
+ * garanti (idempotent) et ArticleUpserted est émis.
  */
 final class EloquentArticleWriter implements ArticleWriter
 {
@@ -84,25 +86,45 @@ final class EloquentArticleWriter implements ArticleWriter
     }
 
     /**
-     * Fusion non destructive : complète les trous, ne remplace jamais une valeur
-     * existante par un trou.
+     * Fusion « refresh-if-present » (R-505) : chaque champ catalogue est écrasé
+     * dès que la valeur source est non-vide ; une source vide/null laisse
+     * l'existant intact (jamais de remise à vide). `label` n'est donc jamais
+     * vidé. `code` (clé d'identité du golden) reste hors politique : il n'est
+     * complété que s'il est vide. `source_module` n'est pas rafraîchi (on
+     * conserve l'origine du golden).
      */
     private function mergeInto(Article $article, ArticleAttributesDto $attrs): void
     {
         $this->fillIfEmpty($article, 'code', $attrs->code !== '' ? $attrs->code : null);
-        $this->fillIfEmpty($article, 'label', $attrs->label !== '' ? $attrs->label : null);
-        $this->fillIfEmpty($article, 'unit', $attrs->unit);
-        $this->fillIfEmpty($article, 'sale_price', $attrs->salePrice);
-        $this->fillIfEmpty($article, 'tax_rate', $attrs->taxRate);
-        $this->fillIfEmpty($article, 'category_label', $attrs->categoryLabel);
-        $this->fillIfEmpty($article, 'description', $attrs->description);
-        $this->fillIfEmpty($article, 'source_module', $attrs->sourceModule);
+
+        $this->refreshIfPresent($article, 'label', $attrs->label);
+        $this->refreshIfPresent($article, 'unit', $attrs->unit);
+        $this->refreshIfPresent($article, 'sale_price', $attrs->salePrice);
+        $this->refreshIfPresent($article, 'tax_rate', $attrs->taxRate);
+        $this->refreshIfPresent($article, 'category_label', $attrs->categoryLabel);
+        $this->refreshIfPresent($article, 'description', $attrs->description);
 
         if ($article->isDirty()) {
             $article->save();
         }
     }
 
+    /**
+     * Écrase la colonne si la valeur source est présente (non-null et non-vide
+     * après trim) ; sinon laisse l'existant intact. Cœur de la politique R-505.
+     */
+    private function refreshIfPresent(Article $article, string $column, ?string $value): void
+    {
+        if ($value === null || trim($value) === '') {
+            return;
+        }
+        $article->setAttribute($column, $value);
+    }
+
+    /**
+     * Complète une colonne seulement si elle est vide (non destructif). Réservé
+     * à `code`, clé d'identité du golden, hors politique refresh-if-present.
+     */
     private function fillIfEmpty(Article $article, string $column, ?string $value): void
     {
         if ($value === null) {

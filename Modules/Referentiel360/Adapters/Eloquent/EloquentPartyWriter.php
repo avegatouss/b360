@@ -18,8 +18,11 @@ use Modules\Referentiel360\Domain\Party\Models\PartyLink;
  * Implémentation Eloquent du {@see PartyWriter} (ADR-030).
  *
  * `upsertFromModule` délègue la décision (réutiliser / créer) au PartyResolver,
- * puis met à jour le golden record de façon non destructive (ne vide jamais un
- * champ déjà renseigné), garantit le lien (idempotent), et émet PartyUpserted.
+ * puis rafraîchit le golden record selon la politique « refresh-if-present »
+ * (R-505) : une valeur source non-vide écrase l'existant ; une source vide/null
+ * ne vide jamais un champ déjà renseigné. Les rôles restent en OR (jamais
+ * rétrogradés) et `source_module` conserve l'origine du golden. Le lien est
+ * garanti (idempotent) et PartyUpserted est émis.
  */
 final class EloquentPartyWriter implements PartyWriter
 {
@@ -95,31 +98,36 @@ final class EloquentPartyWriter implements PartyWriter
     }
 
     /**
-     * Fusion non destructive : promeut les rôles (OR), complète les trous,
-     * ne remplace jamais une valeur existante par un trou.
+     * Fusion « refresh-if-present » (R-505) : promeut les rôles (OR) et écrase
+     * chaque champ identité dès que la valeur source est non-vide ; une source
+     * vide/null laisse l'existant intact (jamais de remise à vide). `country`,
+     * `display_name`/identité : aucune exception, mais comme la source vide ne
+     * touche rien, `display_name` n'est jamais vidé. `source_module` n'est
+     * volontairement pas rafraîchi (on conserve l'origine du golden).
      */
     private function mergeInto(Party $party, PartyAttributesDto $attrs): void
     {
         $party->is_customer = (bool) $party->is_customer || $attrs->isCustomer;
         $party->is_supplier = (bool) $party->is_supplier || $attrs->isSupplier;
 
-        $this->fillIfEmpty($party, 'display_name', $attrs->displayName !== '' ? $attrs->displayName : null);
-        $this->fillIfEmpty($party, 'first_name', $attrs->firstName);
-        $this->fillIfEmpty($party, 'last_name', $attrs->lastName);
-        $this->fillIfEmpty($party, 'legal_name', $attrs->legalName);
-        $this->fillIfEmpty($party, 'email', $attrs->normalizedEmail());
-        $this->fillIfEmpty($party, 'phone', $attrs->normalizedPhone());
-        $this->fillIfEmpty($party, 'phone_secondary', $attrs->phoneSecondary);
-        $this->fillIfEmpty($party, 'address', $attrs->address);
-        $this->fillIfEmpty($party, 'city', $attrs->city);
-        $this->fillIfEmpty($party, 'tax_id_rccm', $attrs->taxIdRccm);
-        $this->fillIfEmpty($party, 'tax_id_nif', $attrs->taxIdNif);
-        $this->fillIfEmpty($party, 'supplier_category', $attrs->supplierCategory);
-        $this->fillIfEmpty($party, 'payment_terms', $attrs->paymentTerms);
-        $this->fillIfEmpty($party, 'currency', $attrs->currency);
-        $this->fillIfEmpty($party, 'notes', $attrs->notes);
+        $this->refreshIfPresent($party, 'display_name', $attrs->displayName);
+        $this->refreshIfPresent($party, 'first_name', $attrs->firstName);
+        $this->refreshIfPresent($party, 'last_name', $attrs->lastName);
+        $this->refreshIfPresent($party, 'legal_name', $attrs->legalName);
+        $this->refreshIfPresent($party, 'email', $attrs->normalizedEmail());
+        $this->refreshIfPresent($party, 'phone', $attrs->normalizedPhone());
+        $this->refreshIfPresent($party, 'phone_secondary', $attrs->phoneSecondary);
+        $this->refreshIfPresent($party, 'address', $attrs->address);
+        $this->refreshIfPresent($party, 'city', $attrs->city);
+        $this->refreshIfPresent($party, 'country', $attrs->country);
+        $this->refreshIfPresent($party, 'tax_id_rccm', $attrs->taxIdRccm);
+        $this->refreshIfPresent($party, 'tax_id_nif', $attrs->taxIdNif);
+        $this->refreshIfPresent($party, 'supplier_category', $attrs->supplierCategory);
+        $this->refreshIfPresent($party, 'payment_terms', $attrs->paymentTerms);
+        $this->refreshIfPresent($party, 'currency', $attrs->currency);
+        $this->refreshIfPresent($party, 'notes', $attrs->notes);
 
-        if ($attrs->leadTimeDays !== null && $party->lead_time_days === null) {
+        if ($attrs->leadTimeDays !== null) {
             $party->lead_time_days = $attrs->leadTimeDays;
         }
 
@@ -128,15 +136,16 @@ final class EloquentPartyWriter implements PartyWriter
         }
     }
 
-    private function fillIfEmpty(Party $party, string $column, ?string $value): void
+    /**
+     * Écrase la colonne si la valeur source est présente (non-null et non-vide
+     * après trim) ; sinon laisse l'existant intact. Cœur de la politique R-505.
+     */
+    private function refreshIfPresent(Party $party, string $column, ?string $value): void
     {
-        if ($value === null) {
+        if ($value === null || trim($value) === '') {
             return;
         }
-        $current = $party->getAttribute($column);
-        if ($current === null || $current === '') {
-            $party->setAttribute($column, $value);
-        }
+        $party->setAttribute($column, $value);
     }
 
     private function ensureLink(int $instanceId, int $partyId, string $linkType, int $localId): void

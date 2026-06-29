@@ -65,7 +65,7 @@ final class ArticleResolverUpsertTest extends TestCase
         Event::assertDispatched(ArticleUpserted::class, fn (ArticleUpserted $e): bool => $e->created === true && $e->localId === 42 && $e->linkType === 'mnu.catalog_item');
     }
 
-    public function test_same_local_object_reupsert_is_idempotent(): void
+    public function test_same_local_object_reupsert_refreshes_present_fields(): void
     {
         $a = $this->writer->upsertFromModule($this->instanceId, 'mnu.catalog_item', new ArticleAttributesDto(
             localId: 7,
@@ -73,7 +73,8 @@ final class ArticleResolverUpsertTest extends TestCase
             label: 'Châssis',
         ));
 
-        // 2e passage du même objet local : match par lien → même golden, non destructif.
+        // 2e passage du même objet local : match par lien → même golden.
+        // R-505 : une nouvelle valeur non-vide écrase l'existant, un trou complète.
         $b = $this->writer->upsertFromModule($this->instanceId, 'mnu.catalog_item', new ArticleAttributesDto(
             localId: 7,
             code: 'C-7',
@@ -82,10 +83,35 @@ final class ArticleResolverUpsertTest extends TestCase
         ));
 
         $this->assertSame($a->id, $b->id);
-        $this->assertSame('Châssis', $b->label, 'mergeInto non destructif : label existant conservé');
+        $this->assertSame('Châssis modifié', $b->label, 'R-505 : label source non-vide écrase l\'existant');
         $this->assertSame('Détail ajouté', $b->description, 'trou complété');
         $this->assertSame(1, Article::withoutInstanceScope()->where('instance_id', $this->instanceId)->count());
         $this->assertSame(1, ArticleLink::withoutInstanceScope()->where('instance_id', $this->instanceId)->count());
+    }
+
+    public function test_reupsert_with_new_price_updates_golden_and_empty_label_is_kept(): void
+    {
+        // R-505 : prix mis à jour si nouvelle valeur ; label conservé si source vide.
+        $a = $this->writer->upsertFromModule($this->instanceId, 'mnu.catalog_item', new ArticleAttributesDto(
+            localId: 11,
+            code: 'C-11',
+            label: 'Porte battante',
+            salePrice: '100000.0000',
+            taxRate: '0.1800',
+        ));
+
+        $b = $this->writer->upsertFromModule($this->instanceId, 'mnu.catalog_item', new ArticleAttributesDto(
+            localId: 11,
+            code: 'C-11',
+            label: '',                 // source vide → label conservé
+            salePrice: '125000.0000',  // nouvelle valeur → écrase
+        ));
+
+        $this->assertSame($a->id, $b->id);
+        $this->assertSame('Porte battante', $b->label, 'R-505 : label jamais vidé par une source vide');
+        $this->assertSame('125000.0000', $b->salePrice, 'R-505 : prix mis à jour par la nouvelle valeur');
+        $this->assertSame('0.1800', $b->taxRate, 'R-505 : champ absent de la source 2 → conservé');
+        $this->assertSame(1, Article::withoutInstanceScope()->where('instance_id', $this->instanceId)->count());
     }
 
     public function test_no_cross_module_dedup_same_code_two_link_types_two_goldens(): void
