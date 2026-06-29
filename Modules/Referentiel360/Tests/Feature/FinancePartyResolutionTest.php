@@ -76,4 +76,45 @@ final class FinancePartyResolutionTest extends TestCase
 
         $this->assertNull($dto->partyId);
     }
+
+    /**
+     * MAJEUR 5 — pas de downgrade : un party résolu lors d'un 1er push doit être
+     * CONSERVÉ si un 2e push (refresh) ne parvient plus à le re-résoudre
+     * (lien party absent). Le miroir ne repasse JAMAIS party_id à null.
+     */
+    public function test_party_id_not_downgraded_to_null_on_refresh(): void
+    {
+        $party = app(PartyWriter::class)->upsertFromModule(
+            $this->instanceId,
+            'mnu.client',
+            new PartyAttributesDto(localId: 88, isCustomer: true, displayName: 'Client Stable'),
+        );
+
+        // 1er push : party résolu et lié.
+        $first = $this->writer->upsertFromModule($this->instanceId, 'mnu.invoice', new FinanceAttributesDto(
+            localId: 610,
+            documentNumber: 'MNU-FAC-2026-0020',
+            amountTtc: '50000.00',
+            paidAmount: '10000.00',
+            partyLinkType: 'mnu.client',
+            partyLocalId: 88,
+            sourceModule: 'menuiserie',
+        ));
+        $this->assertSame($party->id, $first->partyId);
+
+        // 2e push (refresh paiement) où la résolution courante échoue
+        // (partyLocalId pointant un id sans party) : l'ancien party_id est conservé.
+        $second = $this->writer->upsertFromModule($this->instanceId, 'mnu.invoice', new FinanceAttributesDto(
+            localId: 610,
+            documentNumber: 'MNU-FAC-2026-0020',
+            amountTtc: '50000.00',
+            paidAmount: '50000.00',
+            partyLinkType: 'mnu.client',
+            partyLocalId: 9999, // aucun party lié → résolution null
+            sourceModule: 'menuiserie',
+        ));
+
+        $this->assertSame($first->id, $second->id);
+        $this->assertSame($party->id, $second->partyId, 'party_id conservé (pas de downgrade vers null)');
+    }
 }
