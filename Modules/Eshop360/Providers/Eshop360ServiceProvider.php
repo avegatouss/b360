@@ -18,12 +18,15 @@ use Modules\Eshop360\Console\RecurringInvoiceCommand;
 use Modules\Eshop360\Console\StockAlertCommand;
 use Modules\Eshop360\Domain\Catalog\Models\Product;
 use Modules\Eshop360\Domain\CRM\Models\Customer;
+use Modules\Eshop360\Domain\Finance\Models\Invoice;
 use Modules\Eshop360\Domain\Purchasing\Models\Supplier;
 use Modules\Eshop360\Http\Middleware\EnsurePaidFeature;
 use Modules\Eshop360\Integration\Referentiel\CustomerReferentielObserver;
 use Modules\Eshop360\Integration\Referentiel\EshopCustomerPartySource;
+use Modules\Eshop360\Integration\Referentiel\EshopInvoiceFinanceSource;
 use Modules\Eshop360\Integration\Referentiel\EshopProductArticleSource;
 use Modules\Eshop360\Integration\Referentiel\EshopSupplierPartySource;
+use Modules\Eshop360\Integration\Referentiel\InvoiceFinanceObserver;
 use Modules\Eshop360\Integration\Referentiel\ProductReferentielObserver;
 use Modules\Eshop360\Integration\Referentiel\SupplierReferentielObserver;
 use Modules\Eshop360\Services\AuditService;
@@ -346,9 +349,16 @@ final class Eshop360ServiceProvider extends ServiceProvider
             'referentiel.article_source',
         );
 
+        // Backfill finance : 1 source taggée (consommée par referentiel:backfill-finance).
+        $this->app->tag(
+            [EshopInvoiceFinanceSource::class],
+            'referentiel.finance_source',
+        );
+
         // Temps réel : observers best-effort (push via DB::afterCommit).
         Customer::observe($this->app->make(CustomerReferentielObserver::class));
         Supplier::observe($this->app->make(SupplierReferentielObserver::class));
         Product::observe($this->app->make(ProductReferentielObserver::class));
+        Invoice::observe($this->app->make(InvoiceFinanceObserver::class));
     }
 }
