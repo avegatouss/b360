@@ -1,9 +1,20 @@
 # RECENT_DECISIONS — B360
 
-> Décisions structurantes récentes. Mise à jour : **2026-06-28 (soir)** — Referentiel360 Lot 3 socle Finance (ADR-031, zone L1).
+> Décisions structurantes récentes. Mise à jour : **2026-06-29** — Referentiel360 programme COMPLET (3 domaines branchés + backfill vérifié).
 > Pour les décisions complètes argumentées, voir `docs/adr/`.
 
 ---
+
+## 2026-06-29 — Referentiel360 : programme COMPLET (Lots 3.a/3.b + backfill vérifié)
+
+- **Finance branchée** : Lots 3.a (Menuiserie `mnu_invoices`) et 3.b (Eshop `eshop_invoices`) → `ref_documents_finance`, même pattern best-effort que tiers/articles. Les **3 domaines** (Tiers, Articles, Finance) ont désormais socle + Menuiserie + Eshop.
+- **Backfill vérifié en exécution réelle** (`--dry-run` sur la DB de dev b360) : tiers **9 créations / 0 collision**, articles **13**, finance **4 documents**. Chaîne sources→matcher→rapport validée, aucune écriture.
+- **Bug runtime corrigé** : `app()->tagged()` retourne un `RewindableGenerator` (pas un array) → `array_values()` levait `TypeError` sur les 3 commandes `referentiel:backfill-*`. Fix `iterator_to_array(..., false)`. **Gap de test** : les tests couvraient le Service (sources en array), pas la commande — à compléter par un test d'intégration de commande.
+- **Tables `ref_*` migrées sur la DB de dev** (`module:migrate Referentiel360`, additif) pour permettre le dry-run.
+- **RESTE (hors périmètre de cette session)** :
+  - **L1 finance** : double review humaine de l'ADR-031 + socle finance ; **test de concurrence MySQL réel** (les tests SQLite sont séquentiels).
+  - **WIP V3 Menuiserie** (147 fichiers non commités, non-mien) : **stabilisé techniquement** (Pint + PHPStan 100→0) mais **NON commité** — laissé à son auteur. 1 test exclu : `InvoicePaymentMultiModeTest` est désaligné avec l'API (teste `InvoicePayment`/`mode` alors que seul `RecordPaymentAction → MenuiseriePayment`/`method` est implémenté ; `remainingAmount()` inexistant, c'est `dueAmount()`). À reprendre par l'auteur.
+  - Backfill réel (écriture) + UI reporting consolidé : lots futurs.
 
 ## 2026-06-28 (soir) — Referentiel360 Lot 3 socle : domaine Finance (registre miroir, ZONE L1)
 
