@@ -11,14 +11,17 @@ use Modules\Core\Modules\ModuleManager;
 use Modules\Menuiserie360\Domain\Catalog\Models\CatalogItem;
 use Modules\Menuiserie360\Domain\Client\Models\ClientMenuiserie;
 use Modules\Menuiserie360\Domain\Finance\Jobs\RelancerFacturesImpayeesJob;
+use Modules\Menuiserie360\Domain\Finance\Models\MenuiserieInvoice;
 use Modules\Menuiserie360\Domain\Purchasing\Models\Fournisseur;
 use Modules\Menuiserie360\Domain\Stock\Models\MatierePremiere;
 use Modules\Menuiserie360\Integration\Referentiel\CatalogItemReferentielObserver;
 use Modules\Menuiserie360\Integration\Referentiel\ClientReferentielObserver;
 use Modules\Menuiserie360\Integration\Referentiel\FournisseurReferentielObserver;
+use Modules\Menuiserie360\Integration\Referentiel\InvoiceFinanceObserver;
 use Modules\Menuiserie360\Integration\Referentiel\MatiereReferentielObserver;
 use Modules\Menuiserie360\Integration\Referentiel\MenuiserieCatalogItemArticleSource;
 use Modules\Menuiserie360\Integration\Referentiel\MenuiserieClientPartySource;
+use Modules\Menuiserie360\Integration\Referentiel\MenuiserieInvoiceFinanceSource;
 use Modules\Menuiserie360\Integration\Referentiel\MenuiserieMatiereArticleSource;
 use Modules\Menuiserie360\Integration\Referentiel\MenuiserieSupplierPartySource;
 
@@ -73,6 +76,7 @@ final class Menuiserie360ServiceProvider extends ServiceProvider
      *
      * Lot 1.a : tiers (clients + fournisseurs) → ref_parties.
      * Lot 2.a : articles (catalogue + matières premières) → ref_articles.
+     * Lot 3.a : finance (factures `mnu_invoices`) → ref_documents_finance.
      */
     private function registerReferentielIntegration(): void
     {
@@ -92,11 +96,18 @@ final class Menuiserie360ServiceProvider extends ServiceProvider
             'referentiel.article_source',
         );
 
+        // Backfill finance : 1 source taggée (consommée par referentiel:backfill-finance).
+        $this->app->tag(
+            [MenuiserieInvoiceFinanceSource::class],
+            'referentiel.finance_source',
+        );
+
         // Temps réel : observers best-effort (push via DB::afterCommit).
         ClientMenuiserie::observe($this->app->make(ClientReferentielObserver::class));
         Fournisseur::observe($this->app->make(FournisseurReferentielObserver::class));
         CatalogItem::observe($this->app->make(CatalogItemReferentielObserver::class));
         MatierePremiere::observe($this->app->make(MatiereReferentielObserver::class));
+        MenuiserieInvoice::observe($this->app->make(InvoiceFinanceObserver::class));
     }
 
     /**
