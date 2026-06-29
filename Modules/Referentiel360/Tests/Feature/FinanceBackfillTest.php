@@ -92,8 +92,48 @@ final class FinanceBackfillTest extends TestCase
 
         $totals = app(FinanceReader::class)->totalsForInstance($this->instanceId);
 
-        $this->assertSame('800.00', $totals['ttc'], '1000 - 200 (avoir), annulé exclu');
-        $this->assertSame('400.00', $totals['paid']);
-        $this->assertSame('400.00', $totals['due'], '600 (facture) - 200 (avoir)');
+        // Totaux groupés par devise (MAJEUR 3) — tous les documents sont en XOF.
+        $this->assertSame('800.00', $totals['XOF']['ttc'], '1000 - 200 (avoir), annulé exclu');
+        $this->assertSame('400.00', $totals['XOF']['paid']);
+        $this->assertSame('400.00', $totals['XOF']['due'], '600 (facture) - 200 (avoir)');
+    }
+
+    /**
+     * MAJEUR 3 — deux devises ⇒ deux totaux SÉPARÉS (jamais sommés ensemble).
+     */
+    public function test_totals_are_grouped_per_currency(): void
+    {
+        $writer = app(FinanceWriter::class);
+
+        $writer->upsertFromModule($this->instanceId, 'mnu.invoice', new FinanceAttributesDto(
+            localId: 10, documentNumber: 'F-XOF', currency: 'XOF', amountTtc: '1000.00', paidAmount: '400.00', sourceModule: 'menuiserie',
+        ));
+        $writer->upsertFromModule($this->instanceId, 'eshop.invoice', new FinanceAttributesDto(
+            localId: 11, documentNumber: 'F-EUR', currency: 'EUR', amountTtc: '300.00', paidAmount: '300.00', sourceModule: 'eshop',
+        ));
+
+        $totals = app(FinanceReader::class)->totalsForInstance($this->instanceId);
+
+        $this->assertSame(['EUR', 'XOF'], $this->sortedKeys($totals), '2 devises = 2 clés distinctes');
+
+        $this->assertSame('1000.00', $totals['XOF']['ttc']);
+        $this->assertSame('400.00', $totals['XOF']['paid']);
+        $this->assertSame('600.00', $totals['XOF']['due']);
+
+        $this->assertSame('300.00', $totals['EUR']['ttc']);
+        $this->assertSame('300.00', $totals['EUR']['paid']);
+        $this->assertSame('0.00', $totals['EUR']['due']);
+    }
+
+    /**
+     * @param  array<string, array{ttc: string, paid: string, due: string}>  $totals
+     * @return list<string>
+     */
+    private function sortedKeys(array $totals): array
+    {
+        $keys = array_keys($totals);
+        sort($keys);
+
+        return $keys;
     }
 }

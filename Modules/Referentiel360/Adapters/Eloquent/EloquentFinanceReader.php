@@ -48,7 +48,12 @@ final class EloquentFinanceReader implements FinanceReader
     }
 
     /**
-     * @return array{ttc: string, paid: string, due: string}
+     * Agrégation PAR DEVISE (MAJEUR 3) : on ne somme JAMAIS des montants de devises
+     * hétérogènes. La clé est le code devise (`XOF`, `EUR`, …) ; chaque entrée
+     * porte ses propres `ttc`/`paid`/`due` en bcmath échelle 2. Les avoirs
+     * (`credit_note`) sont soustraits, les documents annulés exclus.
+     *
+     * @return array<string, array{ttc: string, paid: string, due: string}>
      */
     public function totalsForInstance(int $instanceId): array
     {
@@ -56,21 +61,27 @@ final class EloquentFinanceReader implements FinanceReader
             ->withoutGlobalScope(InstanceScope::class)
             ->where('instance_id', $instanceId)
             ->where('is_cancelled', false)
-            ->get(['doc_type', 'amount_ttc', 'paid_amount', 'due_amount']);
+            ->get(['doc_type', 'currency', 'amount_ttc', 'paid_amount', 'due_amount']);
 
-        $ttc = '0';
-        $paid = '0';
-        $due = '0';
+        /** @var array<string, array{ttc: string, paid: string, due: string}> $totals */
+        $totals = [];
 
         foreach ($documents as $document) {
+            $currency = (string) $document->getAttribute('currency');
+            if ($currency === '') {
+                $currency = 'XOF';
+            }
+
+            $totals[$currency] ??= ['ttc' => '0', 'paid' => '0', 'due' => '0'];
+
             $sign = $document->getAttribute('doc_type') === 'credit_note' ? '-1' : '1';
 
-            $ttc = bcadd($ttc, bcmul((string) $document->getAttribute('amount_ttc'), $sign, self::SCALE), self::SCALE);
-            $paid = bcadd($paid, bcmul((string) $document->getAttribute('paid_amount'), $sign, self::SCALE), self::SCALE);
-            $due = bcadd($due, bcmul((string) $document->getAttribute('due_amount'), $sign, self::SCALE), self::SCALE);
+            $totals[$currency]['ttc'] = bcadd($totals[$currency]['ttc'], bcmul((string) $document->getAttribute('amount_ttc'), $sign, self::SCALE), self::SCALE);
+            $totals[$currency]['paid'] = bcadd($totals[$currency]['paid'], bcmul((string) $document->getAttribute('paid_amount'), $sign, self::SCALE), self::SCALE);
+            $totals[$currency]['due'] = bcadd($totals[$currency]['due'], bcmul((string) $document->getAttribute('due_amount'), $sign, self::SCALE), self::SCALE);
         }
 
-        return ['ttc' => $ttc, 'paid' => $paid, 'due' => $due];
+        return $totals;
     }
 
     public static function mapToDto(FinanceDocument $d): FinanceDto

@@ -22,11 +22,13 @@ interface FinanceReader
     public function getByLink(int $instanceId, string $linkType, int $localId): ?FinanceDto;
 
     /**
-     * Agrégation simple pour le reporting consolidé d'une instance.
+     * Agrégation PAR DEVISE pour le reporting consolidé d'une instance.
      *
-     * Les avoirs (`credit_note`) sont SOUSTRAITS ; les documents annulés exclus.
+     * Clé = code devise (`XOF`, `EUR`, …). On ne somme jamais des devises
+     * hétérogènes. Les avoirs (`credit_note`) sont SOUSTRAITS ; les documents
+     * annulés exclus.
      *
-     * @return array{ttc: string, paid: string, due: string}
+     * @return array<string, array{ttc: string, paid: string, due: string}>
      */
     public function totalsForInstance(int $instanceId): array;
 }

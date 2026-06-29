@@ -18,6 +18,13 @@ use Modules\Referentiel360\Contracts\Finance\FinanceWriter;
  * autonome). Le Writer fait un FULL REFRESH (last-write-wins), donc tout update
  * de `paid_amount` re-pousse l'état courant complet.
  *
+ * LAST-WRITE-WINS CORRECT (MAJEUR 2) : on NE capture PAS le DTO au moment de
+ * l'event (snapshot pris hors transaction → périmé si plusieurs afterCommit
+ * s'exécutent dans le désordre, ou si `paid` baisse). On ne retient que
+ * l'identifiant ; le DTO est construit DANS le `afterCommit` à partir de l'état
+ * COMMITTÉ rechargé (`find()`), ce qui élimine la classe de bug. Si l'invoice
+ * n'existe plus (supprimée), on skippe silencieusement.
+ *
  * Attaché uniquement si Referentiel360 est activé (cf. ServiceProvider).
  */
 final class InvoiceFinanceObserver
@@ -40,11 +47,18 @@ final class InvoiceFinanceObserver
     private function push(Invoice $invoice): void
     {
         $instanceId = (int) $invoice->getAttribute('instance_id');
-        $attrs = $this->mapper->fromInvoice($invoice);
+        $invoiceId = (int) $invoice->getKey();
 
-        DB::afterCommit(function () use ($instanceId, $attrs): void {
+        DB::afterCommit(function () use ($instanceId, $invoiceId): void {
             try {
-                $this->writer->upsertFromModule($instanceId, 'eshop.invoice', $attrs);
+                // Recharge l'état committé le plus récent (élimine le snapshot périmé).
+                $fresh = Invoice::query()->find($invoiceId);
+
+                if ($fresh === null) {
+                    return; // invoice supprimée entre-temps : rien à pousser.
+                }
+
+                $this->writer->upsertFromModule($instanceId, 'eshop.invoice', $this->mapper->fromInvoice($fresh));
             } catch (\Throwable $e) {
                 report($e);
             }

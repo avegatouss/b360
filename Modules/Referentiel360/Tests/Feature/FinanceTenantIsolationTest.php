@@ -55,8 +55,8 @@ final class FinanceTenantIsolationTest extends TestCase
         $this->assertSame(1, FinanceDocument::withoutInstanceScope()->where('instance_id', $b->id)->count());
         $this->assertSame(2, FinanceDocument::withoutInstanceScope()->count());
 
-        // Montants isolés par instance.
-        $this->assertSame('100.00', $reader->totalsForInstance((int) $a->id)['ttc']);
-        $this->assertSame('300.00', $reader->totalsForInstance((int) $b->id)['ttc']);
+        // Montants isolés par instance (totaux groupés par devise — ici XOF).
+        $this->assertSame('100.00', $reader->totalsForInstance((int) $a->id)['XOF']['ttc']);
+        $this->assertSame('300.00', $reader->totalsForInstance((int) $b->id)['XOF']['ttc']);
     }
 }

@@ -21,6 +21,13 @@ use Modules\Referentiel360\Contracts\Finance\FinanceWriter;
  * (RecordPaymentAction) ⇒ l'event `updated` capte le changement et re-push.
  * Le Writer écrase tous les champs miroir (last-write-wins) et dérive le statut.
  *
+ * LAST-WRITE-WINS CORRECT (MAJEUR 2) : on NE capture PAS le DTO au moment de
+ * l'event (snapshot pris hors transaction → périmé si plusieurs afterCommit
+ * s'exécutent dans le désordre, ou si `paid` baisse via avoir/annulation). On ne
+ * retient que l'identifiant ; le DTO est construit DANS le `afterCommit` à partir
+ * de l'état COMMITTÉ rechargé (`fresh()`), ce qui élimine la classe de bug.
+ * Si la facture n'existe plus (supprimée), on skippe silencieusement.
+ *
  * Attaché uniquement si Referentiel360 est activé (cf. ServiceProvider).
  */
 final class InvoiceFinanceObserver
@@ -43,11 +50,18 @@ final class InvoiceFinanceObserver
     private function push(MenuiserieInvoice $invoice): void
     {
         $instanceId = (int) $invoice->getAttribute('instance_id');
-        $attrs = $this->mapper->fromInvoice($invoice);
+        $invoiceId = (int) $invoice->getKey();
 
-        DB::afterCommit(function () use ($instanceId, $attrs): void {
+        DB::afterCommit(function () use ($instanceId, $invoiceId): void {
             try {
-                $this->writer->upsertFromModule($instanceId, 'mnu.invoice', $attrs);
+                // Recharge l'état committé le plus récent (élimine le snapshot périmé).
+                $fresh = MenuiserieInvoice::query()->find($invoiceId);
+
+                if ($fresh === null) {
+                    return; // facture supprimée entre-temps : rien à pousser.
+                }
+
+                $this->writer->upsertFromModule($instanceId, 'mnu.invoice', $this->mapper->fromInvoice($fresh));
             } catch (\Throwable $e) {
                 report($e);
             }
