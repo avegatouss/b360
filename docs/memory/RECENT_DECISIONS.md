@@ -1,9 +1,19 @@
 # RECENT_DECISIONS — B360
 
-> Décisions structurantes récentes. Mise à jour : **2026-06-29** — Referentiel360 programme COMPLET (3 domaines branchés + backfill vérifié).
+> Décisions structurantes récentes. Mise à jour : **2026-06-29 (suite)** — Referentiel360 durci (review L1 + R-505 + backfill réel).
 > Pour les décisions complètes argumentées, voir `docs/adr/`.
 
 ---
+
+## 2026-06-29 (suite) — Referentiel360 : durcissement L1 + R-505 + backfill réel exécuté
+
+- **Review adversariale L1 du domaine Finance** (agent dédié) → **5 défauts corrigés** (commit `f0d30bf`) : (1) race à la création → sérialisation sur le lien unique + catch `UniqueConstraintViolation` (plus d'orphelin) ; (2) **last-write-wins cassé** → les observers rechargent la facture committée **dans** `DB::afterCommit` (plus de DTO périmé) ; (3) `totalsForInstance` **par devise** (plus d'addition EUR+XOF) ; (4) `due_amount` borné `max(0, ttc-paid)` ; (5) `party_id` jamais rétrogradé non-null→null.
+- **R-505 (b) résolu** (commit `105e751`) : Tiers/Articles en **refresh-if-present** ; Finance en full-refresh. Reste (a) : politique email-only non ambigu (cf [R-505](OPEN_RISKS.md#R-505)).
+- **Concurrence MySQL réelle prouvée** (commit `6feb81c`) : test InnoDB 2 transactions, `lockForUpdate` bloque ~2 s puis converge.
+- **Tests commandes backfill** (commit `d43c524`) : comble le trou qui avait laissé passer le bug `RewindableGenerator` (commit `990603e`).
+- **Backfill RÉEL exécuté** sur la DB de dev : **9 tiers / 9 liens (0 collision), 13 articles / 13 liens, 4 documents / 4 liens** — chaîne d'écriture complète validée avec le code corrigé.
+- **WIP V3 Menuiserie** : stabilisé (PHPStan 100→0, Pint, 1 test réaligné) mais **NON commité** — le pre-commit PHPStan sur 166 fichiers dépasse 10 min ; à committer par l'auteur (en lots, ou hook par batch). Le working tree le contient.
+- **Reste** : double review humaine finance (L1, non délégable) ; UI reporting consolidé (en cours) ; R-505(a).
 
 ## 2026-06-29 — Referentiel360 : programme COMPLET (Lots 3.a/3.b + backfill vérifié)
 

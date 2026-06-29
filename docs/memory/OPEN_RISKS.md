@@ -22,8 +22,8 @@ _(aucun risque majeur ouvert — R-101 fermée le 2026-05-05. Voir section FERM�
 - **Risque résiduel** : un faux-positif sur clé email/téléphone **non ambiguë** (un seul match) passerait sans flag. À surveiller : envisager un seuil de confiance / validation humaine sur les fusions email-only en Lot 1.a/1.b.
 - **Zone** : L2 (Referentiel360), sensible (intégrité d'identité).
 - **État (2026-06-28 soir)** : Lot 1 implémenté. `PartyMatcher` conservateur (collision >1 ⇒ `review`, aucune écriture), `PartyTenantIsolationTest` vert. Restent ouverts pour Lots 1.a/1.b : (a) politique de matching **email-only non ambigu** (auto-fusion actuelle vs revue) ; (b) `mergeInto` est **non destructif** → une MAJ source ne rafraîchit pas le golden record (décider la politique de synchro continue : last-write-wins vs golden figé).
-- **TRANCHÉ pour la finance (ADR-031, Lot 3)** : le domaine **Finance** utilise `FinanceWriter` en **full-refresh (last-write-wins)** — un miroir financier doit refléter l'état courant. R-505(b) ne concerne donc PLUS la finance ; il reste ouvert pour **Tiers** et **Articles** (identité stable, `mergeInto` non destructif conservé).
-- **Décision attendue** : trancher (a) et (b) **pour Tiers/Articles** à l'usage intensif (politique de synchro identité).
+- **(b) RÉSOLU (2026-06-29)** : politique de synchro tranchée et implémentée. **Finance** : `FinanceWriter` full-refresh (last-write-wins). **Tiers/Articles** : `refresh-if-present` (un champ est mis à jour si la valeur source est non-vide ; jamais effacé par un vide ; rôles en OR ; `code`/`source_module` préservés). Tests verts.
+- **(a) RESTE OUVERT** : faux-positif sur clé email/téléphone **non ambiguë** (un seul match ⇒ fusion auto sans flag). Décision à prendre : seuil de confiance / validation humaine sur les fusions email-only. Non urgent (le backfill réel 2026-06-29 a donné **0 collision** sur les données de dev), mais à trancher avant un déploiement multi-vertical dense.
 
 ### R-502 — Cross-module `Schema::table(...)` + `hasTable` guard : skip silencieux marqué ran (ouvert 2026-05-19)
 
