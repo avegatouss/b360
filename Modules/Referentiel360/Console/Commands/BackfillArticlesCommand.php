@@ -31,7 +31,7 @@ final class BackfillArticlesCommand extends Command
         $dryRun = (bool) $this->option('dry-run');
 
         /** @var array<int, ArticleSource> $sources */
-        $sources = array_values(app()->tagged('referentiel.article_source'));
+        $sources = iterator_to_array(app()->tagged('referentiel.article_source'), false);
 
         if ($sources === []) {
             $this->info('Aucune ArticleSource enregistrée — backfill no-op (les Lots 2.a/2.b les fourniront).');

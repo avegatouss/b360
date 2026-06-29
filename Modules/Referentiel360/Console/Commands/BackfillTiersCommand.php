@@ -31,7 +31,7 @@ final class BackfillTiersCommand extends Command
         $dryRun = (bool) $this->option('dry-run');
 
         /** @var array<int, PartySource> $sources */
-        $sources = array_values(app()->tagged('referentiel.party_source'));
+        $sources = iterator_to_array(app()->tagged('referentiel.party_source'), false);
 
         if ($sources === []) {
             $this->info('Aucune PartySource enregistrée — backfill no-op (les Lots 1.a/1.b les fourniront).');

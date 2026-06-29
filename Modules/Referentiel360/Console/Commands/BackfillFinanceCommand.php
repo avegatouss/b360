@@ -32,7 +32,7 @@ final class BackfillFinanceCommand extends Command
         $dryRun = (bool) $this->option('dry-run');
 
         /** @var array<int, FinanceSource> $sources */
-        $sources = array_values(app()->tagged('referentiel.finance_source'));
+        $sources = iterator_to_array(app()->tagged('referentiel.finance_source'), false);
 
         if ($sources === []) {
             $this->info('Aucune FinanceSource enregistrée — backfill no-op (les Lots 3.a/3.b les fourniront).');
