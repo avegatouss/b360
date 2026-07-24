@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Couture360\Tests\Feature;
 
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Modules\Couture360\Tests\TestCase;
 
 final class DeviceAuthTest extends TestCase
@@ -93,5 +94,30 @@ final class DeviceAuthTest extends TestCase
 
         $this->withHeaders(['Authorization' => 'Bearer '.$token])
             ->getJson('/api/couture/me')->assertStatus(401);
+    }
+
+    public function test_rejects_a_disabled_member_at_login_with_403(): void
+    {
+        $instance = $this->makeInstance();
+        $user = $this->makeMemberWithStatus($instance, 'disabled-agent@test.com', 'disabled');
+
+        $this->postJson('/api/couture/auth/login', $this->loginPayload($user, $instance->id))
+            ->assertStatus(403);
+    }
+
+    public function test_rejects_me_once_the_member_is_disabled_after_token_issuance(): void
+    {
+        $instance = $this->makeInstance();
+        $user = $this->makeMember($instance, 'soon-disabled@test.com');
+        $token = $this->postJson('/api/couture/auth/login', $this->loginPayload($user, $instance->id))->json('token');
+
+        DB::connection('system')->table('instance_user')
+            ->where('instance_id', $instance->id)
+            ->where('user_id', $user->id)
+            ->update(['status' => 'disabled']);
+
+        $this->withHeaders(['Authorization' => 'Bearer '.$token])
+            ->getJson('/api/couture/me')
+            ->assertStatus(403);
     }
 }

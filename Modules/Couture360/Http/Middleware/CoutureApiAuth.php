@@ -9,6 +9,7 @@ use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
 use Modules\Core\Support\CurrentInstance;
+use Modules\Core\Support\TeamContext;
 use Modules\Couture360\Domain\Auth\Services\DeviceTokenService;
 use Modules\Couture360\Domain\Auth\Services\InstanceAccessService;
 use Symfony\Component\HttpFoundation\Response;
@@ -45,6 +46,7 @@ final class CoutureApiAuth
         }
 
         CurrentInstance::set($instance);
+        TeamContext::set((int) $instance->id);
         $request->setUserResolver(fn () => $user);
         $request->attributes->set('couture_device_token', $token);
 

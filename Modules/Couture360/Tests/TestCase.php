@@ -31,6 +31,16 @@ abstract class TestCase extends BillingTestCase
     /** Regular (non-super-admin) active member of the given instance. */
     protected function makeMember(Instance $instance, string $email = 'agent@test.com'): User
     {
+        return $this->makeMemberWithStatus($instance, $email, 'active');
+    }
+
+    /**
+     * Member of the given instance whose `instance_user` pivot row carries an
+     * arbitrary status (e.g. 'invited', 'disabled'), to exercise the
+     * InstanceAccessService active-membership gate.
+     */
+    protected function makeMemberWithStatus(Instance $instance, string $email, string $status): User
+    {
         $user = User::create([
             'full_name' => 'Agent Test',
             'email' => $email,
@@ -40,7 +50,7 @@ abstract class TestCase extends BillingTestCase
         DB::connection('system')->table('instance_user')->insert([
             'instance_id' => $instance->id,
             'user_id' => $user->id,
-            'status' => 'active',
+            'status' => $status,
             'created_at' => now(),
             'updated_at' => now(),
         ]);

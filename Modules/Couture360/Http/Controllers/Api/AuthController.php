@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Hash;
+use Modules\Core\Support\TeamContext;
 use Modules\Couture360\Domain\Auth\Models\CoutureDeviceToken;
 use Modules\Couture360\Domain\Auth\Services\DeviceTokenService;
 use Modules\Couture360\Domain\Auth\Services\InstanceAccessService;
@@ -26,7 +27,7 @@ final class AuthController extends Controller
         $data = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required', 'string'],
-            'instance_id' => ['required'],
+            'instance_id' => ['required', 'integer'],
             'device_name' => ['required', 'string', 'max:120'],
         ]);
 
@@ -43,6 +44,8 @@ final class AuthController extends Controller
         if (! $this->access->canAccess($user, (int) $instance->id)) {
             return response()->json(['error' => 'forbidden'], 403);
         }
+
+        TeamContext::set((int) $instance->id);
 
         $plain = $this->tokens->issue((int) $user->id, (int) $instance->id, $data['device_name']);
 

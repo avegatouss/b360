@@ -27,6 +27,7 @@ final class InstanceAccessService
         $isMember = DB::connection('system')->table('instance_user')
             ->where('user_id', $user->id)
             ->where('instance_id', $instanceId)
+            ->where('status', 'active')
             ->exists();
 
         return $isMember || TeamContext::isSuperAdmin($user);
