@@ -9,14 +9,17 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Modules\Couture360\Domain\Auth\Models\CoutureDeviceToken;
 use Modules\Couture360\Domain\Auth\Services\DeviceTokenService;
+use Modules\Couture360\Domain\Auth\Services\InstanceAccessService;
 
 final class AuthController extends Controller
 {
-    public function __construct(private readonly DeviceTokenService $tokens) {}
+    public function __construct(
+        private readonly DeviceTokenService $tokens,
+        private readonly InstanceAccessService $access,
+    ) {}
 
     public function login(Request $request): JsonResponse
     {
@@ -37,12 +40,7 @@ final class AuthController extends Controller
             return response()->json(['error' => 'instance_not_found'], 404);
         }
 
-        $isMember = DB::connection('system')->table('instance_user')
-            ->where('user_id', $user->id)
-            ->where('instance_id', $instance->id)
-            ->exists();
-        $isSuperAdmin = method_exists($user, 'hasRole') && $user->hasRole('super-admin');
-        if (! $isMember && ! $isSuperAdmin) {
+        if (! $this->access->canAccess($user, (int) $instance->id)) {
             return response()->json(['error' => 'forbidden'], 403);
         }
 

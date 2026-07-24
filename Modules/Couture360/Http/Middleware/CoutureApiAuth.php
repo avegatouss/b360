@@ -8,14 +8,17 @@ use App\Instances\Instance;
 use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Modules\Core\Support\CurrentInstance;
 use Modules\Couture360\Domain\Auth\Services\DeviceTokenService;
+use Modules\Couture360\Domain\Auth\Services\InstanceAccessService;
 use Symfony\Component\HttpFoundation\Response;
 
 final class CoutureApiAuth
 {
-    public function __construct(private readonly DeviceTokenService $tokens) {}
+    public function __construct(
+        private readonly DeviceTokenService $tokens,
+        private readonly InstanceAccessService $access,
+    ) {}
 
     public function handle(Request $request, Closure $next): Response
     {
@@ -35,14 +38,9 @@ final class CoutureApiAuth
             return response()->json(['error' => 'unauthenticated'], 401);
         }
 
-        // Re-verify membership (a user may have been removed from the instance
+        // Re-verify access (a user may have been removed from the instance
         // since the token was issued).
-        $isMember = DB::connection('system')->table('instance_user')
-            ->where('user_id', $user->id)
-            ->where('instance_id', $instance->id)
-            ->exists();
-        $isSuperAdmin = method_exists($user, 'hasRole') && $user->hasRole('super-admin');
-        if (! $isMember && ! $isSuperAdmin) {
+        if (! $this->access->canAccess($user, (int) $instance->id)) {
             return response()->json(['error' => 'forbidden'], 403);
         }
 

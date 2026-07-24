@@ -53,6 +53,18 @@ final class DeviceAuthTest extends TestCase
             ->assertStatus(403);
     }
 
+    public function test_logs_in_a_non_member_global_super_admin_and_returns_a_token(): void
+    {
+        $instance = $this->makeInstance();
+        $superAdmin = $this->makeSuperAdmin();
+
+        $res = $this->postJson('/api/couture/auth/login', $this->loginPayload($superAdmin, $instance->id));
+
+        $res->assertOk()
+            ->assertJsonStructure(['token', 'user' => ['id', 'name', 'email'], 'instance_id', 'permissions']);
+        $this->assertNotEmpty($res->json('token'));
+    }
+
     public function test_returns_profile_on_me_with_a_valid_token(): void
     {
         $instance = $this->makeInstance();

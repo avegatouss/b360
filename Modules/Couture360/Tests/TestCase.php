@@ -8,6 +8,8 @@ use App\Instances\Instance;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Modules\Billing\Tests\TestCase as BillingTestCase;
+use Modules\Core\Support\TeamContext;
+use Spatie\Permission\Models\Role;
 
 /**
  * Base TestCase Couture360. Extends Billing (→ Core) for the multi-tenant
@@ -42,6 +44,29 @@ abstract class TestCase extends BillingTestCase
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+
+        return $user;
+    }
+
+    /**
+     * Global super-admin: role assigned under the Spatie team-0 "cross-instance"
+     * sentinel (see database/seeders/SuperAdminSeeder.php), deliberately NOT
+     * inserted into `instance_user` for any instance. Mirrors
+     * Modules\Billing\Tests\TestCase::makeRootSuperAdmin() minus the
+     * membership row, so it exercises the InstanceAccessService bypass path
+     * rather than the membership path.
+     */
+    protected function makeSuperAdmin(string $email = 'super-admin@test.com'): User
+    {
+        $user = User::create([
+            'full_name' => 'Super Admin',
+            'email' => $email,
+            'password' => 'password',
+        ]);
+
+        TeamContext::clear();
+        Role::findOrCreate('super-admin');
+        $user->assignRole('super-admin');
 
         return $user;
     }
