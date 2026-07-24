@@ -234,6 +234,12 @@ deptrac:
         - type: directory
           value: Modules/Menuiserie360/.*
 
+    # Couture360 : module métier L3 autonome (offline-first).
+    - name: Couture360
+      collectors:
+        - type: directory
+          value: Modules/Couture360/.*
+
     # ═══════════════════════════════════════════════════════════════
     # Couche app/ (User, Instance — historique)
     # ═══════════════════════════════════════════════════════════════
@@ -340,6 +346,18 @@ deptrac:
     # Autorisé : socles + transverses. INTERDIT : EshopContracts, EshopX,
     # Eshop360 résiduel, EshopShared.
     Menuiserie360:
+      - Core
+      - Auth
+      - Users
+      - Instances
+      - Settings
+      - Billing
+      - Currency
+      - Lang
+      - Referentiel360
+      - AppLayer
+
+    Couture360:
       - Core
       - Auth
       - Users

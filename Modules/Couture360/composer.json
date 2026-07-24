@@ -1,0 +1,16 @@
+{
+    "name": "b360/couture360",
+    "description": "SaaS de gestion d'ateliers de couture — module métier L3 B360.",
+    "authors": [{ "name": "B360 Core", "email": "dev@b360.app" }],
+    "extra": { "laravel": { "providers": [], "aliases": {} } },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Couture360\\": "",
+            "Modules\\Couture360\\Database\\Factories\\": "Database/Factories/",
+            "Modules\\Couture360\\Database\\Seeders\\": "Database/Seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": { "Modules\\Couture360\\Tests\\": "Tests/" }
+    }
+}
